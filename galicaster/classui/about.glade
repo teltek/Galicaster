@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk+" version="2.16"/>
+  <!-- interface-naming-policy project-wide -->
+  <object class="GtkAboutDialog" id="dialog">
+    <property name="border_width">5</property>
+    <property name="title" translatable="yes">About</property>
+    <property name="resizable">False</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="skip_taskbar_hint">True</property>
+    <property name="skip_pager_hint">True</property>
+    <property name="accept_focus">False</property>
+    <property name="has_separator">True</property>
+    <property name="program_name"> </property>
+    <property name="copyright" translatable="yes">Copyright © 2011 Teltek
+Copyright © 2011 Héctor Canto, Rubén González
+</property>
+    <property name="website">http://galicaster.teltek.es</property>
+    <property name="website_label" translatable="yes">http://galicaster.teltek.es</property>
+    <property name="license">Galicaster, Multistream Recorder and Player
+Copyright (c) 2011, Teltek Video Research &lt;galicaster@teltek.es&gt;
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License. 
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
+or send a letter to Creative Commons, 171 Second Street, Suite 300, San Francisco, California, 94105, USA. </property>
+    <property name="authors">Héctor Canto
+Rubén González
+Rubén Pérez</property>
+    <property name="documenters"></property>
+    <property name="artists">Natalia García
+Héctor Canto</property>
+    <property name="logo">logo1920.png</property>
+    <child internal-child="vbox">
+      <object class="GtkVBox" id="dialog-vbox2">
+        <property name="visible">True</property>
+        <child>
+          <object class="GtkImage" id="image1">
+            <property name="visible">True</property>
+            <property name="xpad">150</property>
+            <property name="pixbuf">teltek.png</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="pack_type">end</property>
+            <property name="position">-1</property>
+          </packing>
+        </child>
+        <child internal-child="action_area">
+          <object class="GtkHButtonBox" id="dialog-action_area2">
+            <property name="visible">True</property>
+            <property name="layout_style">end</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="pack_type">end</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
