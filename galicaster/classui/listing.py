@@ -136,7 +136,7 @@ class ListingClassUI(gtk.Box):
 				lista.append([mp.metadata_episode['identifier'], #FIXME Add property in mp
 					      mp.metadata_episode['title'], #FIXME Add property in mp
 					      self.list_readable(mp.creators), 
-					      mp.series_title, 
+					      str(mp.series), 
 					      long(mp.getSize()),
 					      int(duration), 
 					      mp.getStartDateAsString(), 
@@ -146,7 +146,8 @@ class ListingClassUI(gtk.Box):
 
 
 	def populate_treeview(self, mp):
-		self.lista = gtk.ListStore(str,str, str, str, long, int, str, int,str)
+		# 1/2-2012 edpck@uib.no size: long -> type_int64
+		self.lista = gtk.ListStore(str, str, str, str, gobject.TYPE_INT64, int, str, int, str)
 		self.insert_data_in_list(self.lista, mp)
 
 		# Edit Cells per column
