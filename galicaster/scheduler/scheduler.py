@@ -208,14 +208,21 @@ class Scheduler():
 
     def __get_sec_until_tomorrow(self):
         now = datetime.datetime.utcnow()
-        aux = now + datetime.timedelta(days=1, minutes=15)
-        tomorrow = datetime.datetime(aux.year, aux.month, aux.day)
-        #tomorrow = datetime.datetime(now.year, now.month, now.day, now.hour, now.minute) + datetime.timedelta(minutes=1)
+        # 21/2-2012 edpck see conf:ingest.nocturne
+        nocturne = self.conf.get("ingest", "active")
+
+        if nocturne == True:
+            aux = now + datetime.timedelta(days=1, minutes=15)
+            tomorrow = datetime.datetime(aux.year, aux.month, aux.day)
+        else:
+            tomorrow = datetime.datetime(now.year, now.month, now.day, now.hour, now.minute) + datetime.timedelta(minutes=5)
+
         diff = tomorrow - now
         return (diff.days*24*60*60 + diff.seconds)
 
 
     def ingest(self):
+        log.info('Proccess ingest')
         mps = self.repo.list_by_status(mediapackage.PENDING)
         for mp in mps:
             self.worker.ingest(mp)
