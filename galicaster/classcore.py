@@ -201,6 +201,14 @@ class Class():
 
     def check_key(self,source,event): # TODO
         """
+        21/2-2012 edpck@uib.no 
+        Filter on Space-bar when recording to pause
+        """
+        if (event.keyval == gtk.gdk.keyval_from_name('space')):
+            if self.conf.get("allow", "pause") == "True":
+                self.recorder.on_pause(None)
+
+        """
         Filter Ctrl combinations for quit,restart and configuration 
         """
         if ((event.state & gtk.gdk.SHIFT_MASK and event.state & gtk.gdk.CONTROL_MASK) 
