@@ -24,7 +24,7 @@ from galicaster import context
 
 
 flavors = [ "presenter", "presentation", "other"]
-devices = [ "vga2usb", "hauppauge", "v4l2", "pulse"]
+devices = [ "vga2usb", "hauppauge", "v4l2", "pulse", "rtpvideo", "rtpaudio"]
 track = [ "name", "type", "flavor", "location", "file", "active" ]
 
 class DeviceUI(gtk.Widget):

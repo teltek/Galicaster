@@ -31,9 +31,9 @@ ingest = [ "host", "username", "password", "workflow" ] # FIXME take names from 
 screen = [ "player", "recorder"]
 flavors = [ "presenter", "presentation", 
 "other"]
-devices = [ "vga2usb", "hauppauge", "v4l2", "pulse"]
+devices = [ "vga2usb", "hauppauge", "v4l2", "pulse", "rtpvideo", "rtpaudio"]
 track = [ "device", "location", "flavor", "file"]
-nums = ["1","2","3","4"]
+nums = ["1","2","3","4","5","6"]
 
 class ConfUI(gtk.Widget):
     """

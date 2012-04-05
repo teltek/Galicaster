@@ -22,7 +22,9 @@ from galicaster.recorder.pipeline import hauppauge
 from galicaster.recorder.pipeline import pulse
 from galicaster.recorder.pipeline import vga2usb
 from galicaster.recorder.pipeline import blackmagic
-from galicaster.core import context
+from galicaster.recorder.pipeline import rtpvideo
+from galicaster.recorder.pipeline import rtpaudio
+from galicaster import context
 
 log = logging.getLogger()
 
