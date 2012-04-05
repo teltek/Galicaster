@@ -47,8 +47,14 @@ class GCpulse(gst.Bin):
         )
 
     def __init__(self, name = None, devicesrc = None, filesink = None, options = {}): 
+        global pipestr
+
         if name == None:
             name = "audio"
+
+        # 2/3-2012 edpck@uib.no use pipestr from conf.ini if it exists
+        if "pipestr" in options:
+            pipestr = options["pipestr"].replace("\n", " ")
 
         gst.Bin.__init__(self, name)
         # Para usar con el gtk.DrawingArea
