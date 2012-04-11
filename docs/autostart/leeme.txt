@@ -1,0 +1,6 @@
+Autostart Galicaster
+====================
+
+Añadir el archivo galicaster.desktop en la carpeta ~/.config/autostart/ del sistema.
+
+Nota: Hay que adecuar las rutas del archivo a las usadas en cada caso.

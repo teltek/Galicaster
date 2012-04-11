@@ -1,0 +1,17 @@
+Instalar el modulo para la Epiphan VGA2USB
+==========================================
+
+Ver http://www.epiphan.com/downloads/linux/
+
+Sigue las instruciones del archivo README para completar la instalacion.
+
+Ejecuta las siguientes instrucciones en un terminal (requiere ser superusuario) para automatizar la configuracion del driver.
+
+install -m 0644 vga2usb.ko /lib/modules/$(uname -r)/kernel/drivers/video/
+echo options vga2usb v4l_num_buffers=2 v4l_err_on_nosignal=0 > /etc/modprobe.d/vga2usb.conf
+echo softdep vga2usb pre: videodev usbvideo post: >> /etc/modprobe.d/vga2usb.conf
+depmod -a
+
+
+
+  

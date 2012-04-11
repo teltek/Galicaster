@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mediapackage duration="2106" id="dae91194-2114-481b-8908-8a8962baf8dd" start="2011-05-06T17:54:04" xmlns:oc="http://mediapackage.opencastporject.org">
+<media>
+<track id="track-1" type="presenter/source">
+<mimetype>video/mpeg</mimetype>
+<url>CAMERA.mpeg</url>
+<duration>2160</duration>
+</track>
+</media>
+<metadata>
+<catalog id="catalog-1" type="dublincore/episode">
+<mimetype>text/xml</mimetype>
+<url>episode.xml</url>
+</catalog>
+</metadata>
+<attachments>
+<attachment><url>org.opencastproject.capture.agent.properties</url></attachment>
+</attachments>
+</mediapackage>

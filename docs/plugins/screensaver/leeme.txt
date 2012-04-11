@@ -1,0 +1,17 @@
+Configurar y controlar el Salvapantallas con Galicaster
+====================================================
+
+Galicaster controla el salvapantallas mediante la herramienta Xorg. Para que funcione correctamente, cualquier otra herramienta de salvapantallas debe ser desactivada (gestión de energía, dpms, gnome-screensaver, etc.).
+
+El salvapantallas se desactivará un minuto antes del comienzo de una gravación agendada, y siempre que se esté grabando.
+
+El salpantallas oscurecerá la pantalla despues de un cierto tiempo de inactividad. Para configurar este tiempo, se puede modificar en conf.ini el parámetro 'screensaver', indicando los segundos de inactividad:
+
+[screensaver]
+inactivity = 60
+
+
+Para activar/desactivar el salvapantallas:
+
+[plugins]
+screensaver = True

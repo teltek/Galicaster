@@ -1,0 +1,133 @@
+INSTALAR
+========
+
+Dependencias
+------------
+
+# Python, Glib, Gobject y GTK2 en Linux
+
+# Gstreamer
+$ sudo apt-get install \
+    gstreamer0.10-ffmpeg gstreamer0.10-alsa gstreamer0.10-plugins-bad gstreamer0.10-plugins-bad-multiverse \ 
+    gstreamer0.10-plugins-base gstreamer0.10-plugins-base-apps gstreamer0.10-plugins-good \
+    gstreamer0.10-plugins-ugly gstreamer0.10-plugins-ugly-multiverse
+
+# python-setuptools y pip
+$ sudo apt-get install python-pip python-setuptools
+
+# iCalendar
+$ sudo pip install icalendar==2.2
+
+# pyCurl
+$ sudo apt-get install python-pycurl
+
+# Herramientas de configuración de tarjetas capturadoras
+$ sudo apt-get install v4l-conf v4l-utils guvcview
+
+  * Nota: Hasta la versión 10.10 de Ubuntu (incluida) debe usarse "ivtv-utils" en lugar de "v4l-utils".
+
+# (Opcional) pyGst
+$ sudo pip install pygst
+
+Configuracion
+-------------
+Se encuentra en los archivos conf.ini y conf-dist.ini. Los valores en conf.ini prevalecen sobre los de conf-dist.ini. Así es posible mantener una configuración por defecto separada de la actual, modificando apenas conf.ini.
+
+Apartados:
+
+-- basic
+   * repository: la ruta del directorio de trabajo. Si no se especifica, se usara un directorio Repository en el home del susario
+   * admin: activa el modo administrador (True|False)
+      - False: Usado por defecto, el usuario solo podra realizar grabaciones. Galicaster operará como GClass.
+      - True: Ademas de grabar, el usuario puede editar metadatos, reproducir y administrar las grabaciones. Galicaster operará como GMobile.
+
+-- screen
+   * right: Nombre del dispositivo de vídeo en las lista de tracks que se mostrará en la pantalla derecha (None para desactivar).
+   * left: Nombre del dispositivo de vídeo en las lista de tracks que se mostrará en la pantalla izquierda (None para desactivar).
+   * quitr: Muestra u oculta el botón de salida del programa. (True|False)
+
+-- ingest
+   Los datos para conectar Galicaster a un servidor Opencast-Matterhorn.
+   * active: Activa o desactiva la conexion al servidor Opencast-Matterhorn (True|False)
+   * default: Habilita la ingesta nocturna de las grabaciones realizadas con Galicaster (True|False)
+   * host: URL del servidor matterhorn
+   * username: Nombre de usuario del la cuenta Matterhorn para realizar llamadas a los REST endpoints.
+   * password: Contraseña del la cuenta Matterhorn para realizar llamadas a los REST endpoints.
+   * workflow: Nombre del Workflow Matterhon usado para ingestar los videos grabados
+   * workflow-parameters: secuencia de pares parámetro y valor (parametro:valor) para ser procesados por el workflow de Matterhorn, separados por punto y coma.
+
+-- track
+   Una seccion por cada dispositivo en el capturador. Cada seccion se configura segun el tipo de dispositivo: hauppauge, pulse, v4l2 or vga2usb:
+
+   [] hauppauge: Dispositivo de Audio y Video:
+       * name: Nombre asignado al dispositivo.
+       * device: Tipo de dispositivo: hauppauge
+       * flavor: "Flavor" de Matterhorn asociado a la pista. (presenter|presentation|other)
+       * location: Punto de montaje de la salida MPG del dispositivo en el sistema (p.ej. /dev/video0).
+       * locprevideo: Punto de montaje de la salida de video RAW del dispositivo en el sistema (p.ej. /dev/video32).
+       * locpreaudio: Punto de montaje de la salida de audio PCM del dispositivo en el sistema (p.ej. /dev/video24).
+       * file: El nombre del fichero en el que se grabará la pista (track).
+       * active: Si el dispositivo será reproducido y grabado. (True|False)
+       * vumeter:  Si la entrada de audio será visualizado en el vumetro. (True|False) 
+       * player:  Si la entrada de audio será reproducida. (True|False) 
+
+
+   [] pulse: Dispositivo de Audio.
+       * name: Nombre asignado al dispositivo.
+       * device: Tipo de dispositivo: pulse
+       * flavor: "Flavor" de Matterhorn asociado a la pista. (presenter|presentation|other)
+       * location: Nombre de la fuente pulse audio. Use "default" para selecionar la fuente por defecto del sistema. Para listar las fuentes dispositivos de PulseAudio ejecutar `pactl -list | grep "Source" -A 5` y usar "Name:" como campo "location".
+       * file: El nombre del fichero en el que se grabará la pista (track).
+       * active: Si el dispositivo será reproducido y grabado. (True|False)
+       * vumeter: Activa el envío de datos al vúmetro del programa. (True|False) Sólo se debe activar 1 dispositivo a a la vez.
+       * amplification: Valor de amplificación en Gstreamer: < 1 atenuación y > 1 amplificación. Estamos utilizando valores entre 1 y 2.
+
+   [] v4l2: Dispositivo de video.
+       * name: Nombre asignado al dispositivo.
+       * device: Tipo de dispositivo: v4l2
+       * flavor: "Flavor" de Matterhorn asociado a la pista. (presenter|presentation|other)
+       * location: Punto de montaje del dispositivo en el sistema (p.ej. /dev/video0).
+       * file: El nombre del fichero en el que se grabará la pista (track).
+       * active: Whether the device will be played and recorded. (True|False)
+       * caps:  GStreamer capabilities del dispositivo.
+       * Videocrop: Marge en para cortar el video. Util para generar un video 4:3 de una camara HD webcam.videocrop-top, videocrop-bottom, videocrop-left, videocrop-right (optional).
+
+    [] vga2usb: Dispositivo de video.
+       * name: Nombre asignado al dispositivo.
+       * device: Tipo de dispositivo: vga2usb
+       * flavor: "Flavor" de Matterhorn asociado a la pista. (presenter|presentation|other)
+       * location: Punto de montaje del dispositivo en el sistema (p.ej. /dev/video0).
+       * file: El nombre del fichero en el que se grabará la pista (track).
+       * active: Whether the device will be played and recorded. (True|False)
+       * drivertype: Indica el tipo de interfaz que se tiene que usar para capturar de la tarjeta. Se puede configurar para garantizar la compativilidad. Por defecto es v4l para poder usar la tarjeta vga2usb conel drive de Ubuntu 10.10  (v4l|v4l2)
+
+    [] Blackmagic: Dispositivo de video.
+       * name: Nombre asignado al dispositivo.
+       * device: Tipo de dispositivo: blackmagic
+       * flavor: "Flavor" de Matterhorn asociado a la pista. (presenter|presentation|other)
+       * file: El nombre del fichero en el que se grabará la pista (track).
+       * active: Whether the device will be played and recorded. (True|False)
+       * input: Formato de la señal de entrada. (sdi|hdmi|opticalsdi|component|composite|svideo)
+       * input-mode: Modo de video de entrada y framerate (1-20). Ejectura 'gst-inpect-0.10 decklink' en un terminal para más información.
+
+-- allows
+   Permisos que afectan al scheduling y a la interfaz de usuario.
+   Por defecto, todos son True excepto "overlap"
+   * manual = Si vale True, el usuario puede iniciar y detener grabaciones desde la interfaz.
+              Si vale False, los controles dependen, respectivamente, del valor de los parámetros "start" y "stop".
+   * stop = Cuando "manual" vale False, controla si es posible detener la grabación desde la interfaz. (True|False)
+   * start = Cuando "manual" vale False, controla si es posible iniciar una grabación desde la interfaz. (True|False)
+   * pause = Controla si es posible pausar/reanudar la grabación desde la interfaz. (True|False)
+             Es independiente del valor del parámetro "manual".
+   * overlap = Cuando vale "True", las grabaciones manuales tienen prioridad sobre las programadas, y viceversa. Es decir:
+                 Si, en el momento de comenzar una grabación programada, ya existe otra (manual) activa:
+                 - Si "overlap" vale True, la grabación programada no se inicia.
+                 - Si "overlap" vale False, la grabación en curso se detiene, y se inicia la que estaba programada.
+
+
+
+Ejecucion
+---------
+Galicaster Class se inicia mediante el comando:
+   
+   ./run_galicaster.py

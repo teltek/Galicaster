@@ -1,0 +1,62 @@
+Configuración de tarjetas Decklink
+===================================
+
+Para capturar con las tarjetas Blackmagic se utiliza el elemento propio de Gstreamer 'decklinksrc'. En caso de no disponer de este elemento, es necesario compilarlo manualmente. Para hacerlo siga las siguientes instrucciones:
+
+
+Compilación del elemento de Gstreamer
+-------------------------------------
+
+Ejecute en un terminal:
+$ svn checkout http://gforge.unl.edu/svn/gst-decklink
+Ingrese 'anonymous' como nombre de usuario y deje la contraseña en blanco para realizar el checkout del código.
+
+Antes de compilar instale las herramientas de desarrollo de gstreamer:
+
+$ sudo aptitude install libgstreamer0.10-dev libgstreamer0.10-dev
+
+Compile el elemento:
+
+$ ./configure
+$ make
+$ sudo make install 
+
+Para cargar el módulo compilado:
+
+$ sudo cp -v /usr/local/lib/gstreamer-0.10/libgstdecklink.* /usr/lib/gstreamer-0.10/
+
+Ahora elimine el registro de Gstreamer y fuerce su recarga:
+$ sudo rm ~/.gstreamer-0.10/registry.*.bin
+$ gst-inspect-0.10
+
+
+Instalación driver
+------------------
+
+Ahora debe instalar el driver propio de la tarjeta. Para hacerlo, primero descargue la última versión en:
+
+http://blackmagic-design.com/support/
+Choose 'Linux', your 'card series' and 'your model' and press 'Search'. Download the latest 'Desktop Video for Linux'.
+
+Para instalarlo ejectute:
+
+$ dpkg -i <name_of_driver_package.deb>
+$ modprobe blackmagic
+
+Existe una guía más completa sobre como instalar el driver e información de interés en:
+http://blackmagic-design.com/media/3397979/Blackmagic_Desktop_Video_Linux_9.2.txt
+
+Comprobar la instalación del driver
+-----------------------------------
+
+Ejecute en un terminal:
+
+$ lspci | grep Blackmagic
+$ lsmod | grep blackmagic
+$ ls dev/blackmagic/*
+
+Y deberá mostrarse por pantallas mensajes como:
+
+$ 02:00.0 Multimedia video controller: Blackmagic Design Device a11b
+$ blackmagic 2082944 1
+$ /dev/blackmagic/card0

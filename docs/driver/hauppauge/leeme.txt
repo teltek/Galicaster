@@ -1,0 +1,56 @@
+Configuración de tarjetas Hauppauge
+===================================
+
+Las tarjetas Hauppauge se pueden configurar fácilmente con la utilidad "v4l2-ctl" del paquete "ivtv-utils" (hasta Ubuntu 10.10) o "v4l-utils" (de Ubuntu 11.04 en adelante).
+
+
+* Encontrar el dispositivo virtual adecuado
+
+La mayoría de las tarjetas Hauppauge crean varios dispositivos virtuales (es decir, varios entradas en el directorio /dev).
+Aunque corresponden al mismo dispositivo físico, cada una tiene una función diferente (típicamente una para vídeo sin comprimir y otra para vídeo codificado en MPEG), así que hay que asegurarse de cuál es el dispositivo virtual que se quiere utilizar. Esto se puede hacer con el comando:
+
+$ udevadm info --attribute-walk --name /dev/<dispositivo>
+
+Normalmente, el primer párrafo contiene un atributo llamado "ATTR{name}" que indica la función del dispositivo, p. ej. "ivtv0 encoder MPG". Úselo para determinar a qué dispositivo concreto desea utilizar o configurar. 
+
+
+* Estableciendo el estándar de vídeo
+
+Para obtener el estándar de vídeo de la tarjeta se puede usar el comando:
+
+$ v4l2-ctl -S -d /dev/<dispositivo>
+
+Si se desea cambiarlo (p. ej. la tarjeta está en NTSC pero queremos PAL), podemos imprimir una lista de los estándares soportados con:
+
+$ v4l2-ctl --list-standards -d /dev/<dispositivo>
+
+Busque el estándar deseado en la lista y recuerde el número de índice. Luego, cambie el estándar utilizado por la tarjeta mediante:
+
+$ v4l2-ctl -s <indice> -d /dev/<dispositivo>
+
+
+* Estableciendo el tipo de entrada
+
+La mayoría de las tarjetas Hauppauge disponen de entradas para vídeo compuesto y supervídeo, pero sólo admiten usar una de ellas a la vez. Para ver la entrada activa, use:
+
+$ v4l2-ctl -I -d /dev/<dispositivo>
+
+Puede verse una lista de entradas disponibles con el comando:
+
+$ v4l2-ctl --list-inputs -d /dev/<dispositivo>
+
+Para activar una de esas entradas, se necesita el número de índice de la entrada (proporcionado por el comando anterior):
+
+$ v4l2-ctl -i <indice> -d /dev/<dispositivo>
+
+Nota: A veces existen varias entradas para el mismo conector (p. ej. "Composite1", "Composite2" y "Composite3"), pero solo una de ellas funciona correctamente. Ésta se tiene que deducir mediante prueba y error.
+
+
+* Ajustes adicionales
+
+Se pueden configurar muchos otros parámetros de la tarjeta usando la herramienta v4l2-ctl. Al escribir simplemente "v4l2-ctl" en un intérprete de comandos, se obtiene una lista completa de todas las opciones disponibles. 
+
+
+* Hacer que los ajustes sean permanentes
+
+Los ajustes realizados con esta herramienta no se conservan al reiniciar. Se puede, no obstante, escribir un script con los comandos apropiados y configurarlo para ejecutarse al inicio del sistema.

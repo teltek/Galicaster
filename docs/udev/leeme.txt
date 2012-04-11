@@ -1,0 +1,28 @@
+Galicaster UDEV
+===============
+
+Crear el fichero /etc/udev/rules.d/galicaster.rules [1] para añadir las reglas que udev aplicará a los dispositivos.
+
+Ejemplos de configuración son:
+
+KERNEL=="video[0-9]*", ATTR{name}=="Epiphan VGA2USB #V2U19350", GROUP="video", SYMLINK+="screen"
+KERNEL=="video[0-9]*", ATTR{name}=="ivtv0 encoder MPG", GROUP="video", SYMLINK+="camera"
+KERNEL=="video[0-9]*", ATTR{name}=="UVC Camera (046d:0821)", GROUP="video", SYMLINK+="webcam"
+KERNEL=="video[0-9]*", ATTR{name}=="ivtv0 encoder MPG", GROUP="video", SYMLINK+="haucamera"
+KERNEL=="video[0-9]*", ATTR{name}=="ivtv0 encoder YUV", GROUP="video", SYMLINK+="hauprevideo"
+KERNEL=="video[0-9]*", ATTR{name}=="ivtv0 encoder PCM", GROUP="audio", SYMLINK+="haupreaudio"
+
+Para ver el valor de ATTR{name} usar:
+   
+   $ udevadm info --attribute-walk --name=${device}
+
+sustituyendo "${device}" por el punto de montaje del dispositivo en cuestión (p.ej. /dev/video0)
+
+
+------------------------------------------------
+[1] Si se trata de una instalación híbrida Galicaster-Matterhorn, se puede utilizar el archivo 
+
+       /etc/udev/rules.d/matterhorn.rules
+
+    si éste existe, y modificarlo de acuerdo a nuestras necesidades.
+    En este caso, puede ser necesario ajustar también la configuración de Matterhorn.

@@ -1,0 +1,12 @@
+Dialogo avisando de que el audio es bajo
+========================================
+
+Con este plugin activado, se mostrará un diálogo avisando que el nivel de audio es muy bajo. Este diálogo solo se muestra en la pantalla de grabación. Es útil para que los ponentes se den cuenta del estado de Galicaster de forma fácil, o para que éstos reciban un aviso si hay problemas con el micrófono.
+
+Cuando se recupera el audio, el diálogo desaparece. Si es necesario, también se puede cerrar el aviso manualmente.
+
+
+Para activar/desactivar el aviso:
+
+[plugins]
+noaudiodialog = True

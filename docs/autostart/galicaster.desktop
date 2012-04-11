@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Galicaster Class
+Version=1.0
+Type=Application
+Terminal=false
+Icon[es_ES]=/home/galicaster/src/galicaster/galicaster/classui/galicaster_class.png
+Name[es_ES]=Galicaster Class
+Exec=python "/home/galicaster/src/galicaster/run_galicaster.py"
+Icon=/home/galicaster/src/galicaster/resources/gc.svg
