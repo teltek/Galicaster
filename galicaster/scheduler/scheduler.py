@@ -208,10 +208,11 @@ class Scheduler():
 
     def __get_sec_until_tomorrow(self):
         now = datetime.datetime.utcnow()
-        tomorrow = datetime.datetime(now.year, now.month, now.day) + datetime.timedelta(days=1)
+        aux = now + datetime.timedelta(days=1, minutes=15)
+        tomorrow = datetime.datetime(aux.year, aux.month, aux.day)
         #tomorrow = datetime.datetime(now.year, now.month, now.day, now.hour, now.minute) + datetime.timedelta(minutes=1)
         diff = tomorrow - now
-        return diff.seconds
+        return (diff.days*24*60*60 + diff.seconds)
 
 
     def ingest(self):

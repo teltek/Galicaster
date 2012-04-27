@@ -34,9 +34,9 @@ def init():
     if conf.get('basic','admin') == 'True':
         focus_is_active = False
 
-        dispatcher.connect('audio-mute', warning_audio)
-        dispatcher.connect('audio-recovered', warning_audio_destroy)
-        dispatcher.connect('galicaster-status', event_change_mode)
+    dispatcher.connect('audio-mute', warning_audio)
+    dispatcher.connect('audio-recovered', warning_audio_destroy)
+    dispatcher.connect('galicaster-status', event_change_mode)
 
 
 def warning_audio(element=None): # TODO make it generic

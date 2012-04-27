@@ -1,20 +1,16 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-# Based on:
-#       galicaster/recorder/pipeline/v4l2
-#       Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
-#
-#
 #       galicaster/recorder/pipeline/blackmagic
 #
-# Copyright (c) 2012, Sami Andberg & Tero Karkkainen, University of Helsinki <atk-verkkovideo@helsinki.fi>
+# Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
 # NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
 # this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
+
 import logging
 
 import gobject
@@ -25,7 +21,7 @@ from os import path
 
 pipestr = (' decklinksrc input=SDI input-mode=12 name=gc-blackmagic-src ! capsfilter name=gc-blackmagic-filter ! '
           ' videorate ! capsfilter name=gc-blackmagic-vrate ! videocrop name=gc-blackmagic-crop ! '
-          ' tee name=tee-cam2  ! queue !  xvimagesink async=false qos=false name=gc-blackmagic-preview'
+          ' tee name=tee-cam2  ! queue !  xvimagesink async=false sync=false qos=false name=gc-blackmagic-preview'
           ' tee-cam2. ! queue ! valve drop=false name=gc-blackmagic-valve ! ffmpegcolorspace ! queue ! '
           #' xvidenc bitrate=50000000 ! queue ! avimux ! '
           ' x264enc quantizer=22 speed-preset=2 profile=1 ! queue ! avimux ! '
@@ -46,7 +42,7 @@ class GCblackmagic(gst.Bin):
        # "codificaton": "Not implemented yet"
        }
 
-   is_pausable = False # TODO check
+   is_pausable = True # TODO check
 
    __gstdetails__ = (
        "Galicaster blackmagic Bin",
@@ -76,10 +72,18 @@ class GCblackmagic(gst.Bin):
 
        if 'input' in options:
            element = self.get_by_name('gc-blackmagic-src')
-           element.set_property('input', options['input'])
+           try:
+              value=int(options['input'])
+           except ValueError:
+              value=options['input']                        
+           element.set_property('input', value)
        if 'input-mode' in options:
            element = self.get_by_name('gc-blackmagic-src')
-           element.set_property('input-mode', gst.Caps(options['input-mode']))
+           try:
+              mode=int(options['input-mode'])
+           except ValueError:
+              mode=options['input-mode']                        
+           element.set_property('input-mode', mode)
        if 'videocrop-right' in options:
            element = self.get_by_name('gc-blackmagic-crop')
            element.set_property('right', int(options['videocrop-right']))

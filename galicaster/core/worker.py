@@ -11,6 +11,7 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
+import logging
 import threading
 import tempfile
 import Queue
@@ -18,6 +19,7 @@ import Queue
 from galicaster.mediapackage import serializer
 from galicaster.mediapackage import mediapackage
 
+logger = logging.getLogger()
 
 class Worker(object):
     """
@@ -50,15 +52,16 @@ class Worker(object):
 
 
     def ingest(self, mp):
+        logger.info("Creating Ingest Job for MP {0}".format(mp.getIdentifier()))
         self.jobs.put((self._ingest, (mp,)))
 
 
     def _ingest(self, mp):
+        logger.info("Executing Ingest for MP {0}".format(mp.getIdentifier()))
         mp.status = mediapackage.INGESTING
         self.repo.update(mp)
         ifile = tempfile.NamedTemporaryFile()
         self._export_to_zip(mp, ifile)
-
 
         if mp.manual:
             try:
@@ -92,10 +95,12 @@ class Worker(object):
 
 
     def export_to_zip(self, mp, location):
+        logger.info("Creating ExportToZIP Job for MP {0}".format(mp.getIdentifier()))
         self.jobs.put((self._export_to_zip, (mp, location)))
 
 
     def _export_to_zip(self, mp, location):
+        logger.info("Executing ExportToZIP for MP {0}".format(mp.getIdentifier()))
         serializer.save_in_zip(mp, location)
 
 
