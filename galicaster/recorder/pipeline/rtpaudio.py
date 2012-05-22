@@ -80,7 +80,6 @@ class GCrtpaudio(gst.Bin):
             ampli.set_property("amplification", float(options["amplification"]))
 
     def getValve(self):
-        log.debug("DEBUG rtpaudio getValve")
         return self.get_by_name("gc-rtp-audio-valve")
 
     def getVideoSink(self):
