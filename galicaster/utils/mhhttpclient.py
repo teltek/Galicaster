@@ -62,6 +62,10 @@ class MHHTTPClient(object):
     def __call(self, method, endpoint, params={}, postfield={}, urlencode=True):
         c = pycurl.Curl()
         b = StringIO()
+
+        # 24/4-2012 edpck@uib.no avoid crash in libcurl "longjmp causes uninitialized stack frame"
+        c.setopt(pycurl.NOSIGNAL, 1)
+
         c.setopt(pycurl.URL, self.server + endpoint.format(**params))
         c.setopt(pycurl.FOLLOWLOCATION, False)
         c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_DIGEST)
