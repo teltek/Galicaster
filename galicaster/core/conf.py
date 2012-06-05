@@ -34,6 +34,12 @@ class Conf(object):
       self.__user_conf = ConfigParser.ConfigParser() #
       # FIXME when using 2.7 dict_type=collections.OrderedDict)
 
+      if conf_file != None:
+         conf_file = os.path.abspath(conf_file)
+
+      if conf_dist_file != None:
+         conf_dist_file = os.path.abspath(conf_dist_file)
+
       self.conf_file = conf_file or os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'conf.ini'))
       self.conf_dist_file = conf_dist_file or os.path.join(os.path.dirname(self.conf_file), "conf-dist.ini")
          

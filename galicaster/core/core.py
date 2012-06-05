@@ -65,14 +65,14 @@ PIN= 4
 
 class Class():
 
-    def __init__(self):
+    def __init__(self, conf_file, conf_dist_file):
         """
         Core class
         """
         self.window = context.get_mainwindow()
 
         # signals and location
-        self.conf = context.get_conf()
+        self.conf = context.get_conf(conf_file, conf_dist_file)
         self.dispatcher = context.get_dispatcher()
 
         self.modules = []

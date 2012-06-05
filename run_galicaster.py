@@ -12,7 +12,7 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import sys
+import optparse, sys
 import gtk
 import threading
 from threading import _Timer
@@ -21,14 +21,19 @@ from galicaster.core import core
 from galicaster.utils.dbusservice import DBusService
 
 def main(args):
-    def usage():
-        sys.stderr.write("usage: %s\n" % args[0])
-        return 1
+    parser = optparse.OptionParser()
+    parser.add_option('-c', '--config', 
+                      dest="conf_file", 
+                      default=None,
+                      )
+    parser.add_option('-d', '--config_dist', 
+                      dest="conf_dist_file", 
+                      default=None,
+                      )
+    options, remainder = parser.parse_args()
 
-    if len(args) != 1:
-        return usage()
     try:
-        v = core.Class()
+        v = core.Class(options.conf_file, options.conf_dist_file)
         service = DBusService(v)
         gtk.main()
     except KeyboardInterrupt:
