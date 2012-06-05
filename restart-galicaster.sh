@@ -6,4 +6,4 @@ pkill -u mca python
 sleep 5
 
 # start galicaster again
-/opt/galicaster-uib/run_galicaster.py &
+/opt/galicaster-uib/run_galicaster.py -c ~mca/.galicaster/`hostname`.conf.ini -d ~mca/.galicaster/conf-dist.ini &
