@@ -20,13 +20,16 @@ import galicaster
 
 log = logging.getLogger()
 
-pipestr = (" rtspsrc name=gc-rtp-src ! "
-           " identity single-segment=true ! "
-           " decodebin2 ! ffmpegcolorspace ! tee name=gc-rtp-tee ! queue leaky=1 ! "
-           " xvimagesink async=false sync=false qos=false name=gc-rtp-preview "
-           " gc-rtp-tee. ! queue ! valve drop=false name=gc-rtp-valve ! "
-           " videorate skip-to-first=true ! xvidenc bitrate=2000000 max-key-interval=25 ! video/mpeg,framerate=25/1 ! avimux ! "
-           " filesink name=gc-rtp-sink async=false ")
+# default pipestr, override in conf.ini
+pipestr = ("rtspsrc debug=false name=gc-rtp-src ! "
+           "identity single-segment=true ! "
+           "rtph264depay ! ffdec_h264 ! ffmpegcolorspace ! "
+           "tee name=gc-rtp-tee ! queue leaky=1 ! "
+           "xvimagesink async=false sync=false qos=false name=gc-rtp-preview "
+           "gc-rtp-tee. ! queue ! valve drop=false name=gc-rtp-valve ! "
+           "videorate skip-to-first=true ! "
+           "x264enc quantizer=22 speed-preset=2 profile=1 ! queue ! avimux ! "
+           "filesink name=gc-rtp-sink async=false ")
 
 class GCrtpvideo(gst.Bin):
 

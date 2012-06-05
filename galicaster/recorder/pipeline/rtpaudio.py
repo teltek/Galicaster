@@ -21,14 +21,15 @@ import galicaster
 log = logging.getLogger()
 
 # default pipestr, override in conf.ini
-pipestr = (" rtspsrc name=gc-rtp-audio-src ! "
-           " decodebin2 ! tee name=tee-aud ! queue leaky=1 ! " 
-           " level name=gc-rtp-audio-level message=true interval=100000000 ! "
-           " volume name=gc-rtp-audio-volume ! fakesink name=gc-rtp-audio-preview "
-           " tee-aud. ! queue ! valve drop=false name=gc-rtp-audio-valve ! "
-           " audioconvert ! audioamplify name=gc-rtp-audio-amplify amplification=1 ! "
-           " lamemp3enc target=bitrate cbr=true bitrate=192 ! "
-           " filesink name=gc-rtp-audio-sink async=false ")
+pipestr = ("rtspsrc debug=false name=gc-rtp-audio-src ! "
+           "identity single-segment=true ! "
+           "rtpmp4gdepay ! faad ! tee name=tee-aud ! queue leaky=1 ! "
+           "level name=gc-rtp-audio-level message=true interval=100000000 ! "
+           "volume name=gc-rtp-audio-volume ! fakesink name=gc-rtp-audio-preview "
+           "tee-aud. ! queue ! valve drop=false name=gc-rtp-audio-valve ! "
+           "audioconvert ! audioamplify name=gc-rtp-audio-amplify amplification=1 ! "
+           "faac ! mp4mux ! "
+           "filesink name=gc-rtp-audio-sink async=false ")
 
 class GCrtpaudio(gst.Bin):
 
