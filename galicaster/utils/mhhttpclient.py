@@ -64,7 +64,6 @@ class MHHTTPClient(object):
         b = StringIO()
         c.setopt(pycurl.URL, self.server + endpoint.format(**params))
         c.setopt(pycurl.FOLLOWLOCATION, False)
-        c.setopt(pycurl.NOSIGNAL, 1)
         c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_DIGEST)
         c.setopt(pycurl.USERPWD, self.user + ':' + self.password)
         c.setopt(pycurl.HTTPHEADER, ['X-Requested-Auth: Digest'])
