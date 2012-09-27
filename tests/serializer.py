@@ -15,16 +15,19 @@
 """
 Unit tests for `galicaster.serializer` module.
 """
-from os import path
+import zipfile
+from os import path,remove
+from shutil import rmtree
+from tempfile import mkdtemp, mkstemp
 from xml.dom import minidom
 from xml.dom.minidom import parseString
 from xml.parsers.expat import ExpatError
 from unittest import TestCase
 
+
 from galicaster.mediapackage import repository
 from galicaster.mediapackage import mediapackage
 from galicaster.mediapackage import serializer
-
 
 
 class TestFunctions(TestCase):
@@ -35,7 +38,8 @@ class TestFunctions(TestCase):
     path_catalog = path.join(baseDir, 'episode.xml') 
     path_attach = path.join(baseDir, 'attachment.txt')
     path_other = path.join(baseDir, 'manifest.xml')
-    
+    path_gc = path.join(baseDir, 'galicaster.xml')
+
     def setUp(self):
         self.track1 = mediapackage.Track(uri = self.path_track1, duration = 532, 
                                          flavor = "presentation/source", mimetype = "video/mpeg")
@@ -43,7 +47,9 @@ class TestFunctions(TestCase):
                                          flavor = "presenter/source", mimetype = "video/mpeg")
         self.catalog = mediapackage.Catalog(uri = self.path_catalog, flavor = "dublincore/episode", 
                                             mimetype = "text/xml")
-        
+        self.gc_catalog = mediapackage.Catalog(uri = self.path_gc, flavor = "galicaster", 
+                                            mimetype = "text/xml")
+
     def tearDown(self):
         del self.track1
         del self.track2
@@ -74,7 +80,6 @@ class TestFunctions(TestCase):
             raise AssertionError("Error in serializer.set_properties")
 
 
-
     def test_save_in_zip(self):
         mp = mediapackage.Mediapackage()
         mp.add(self.track1)
@@ -91,4 +96,37 @@ class TestFunctions(TestCase):
                                  db.getElementsByTagName(name)[0].firstChild.wholeText.strip().strip("\n"))
             except IndexError:
                 continue
+
+    def test_save_system_zip(self):
+        mp = mediapackage.Mediapackage()
+        mp.add(self.track1,mediapackage.TYPE_TRACK, "presentation/source", "video/mpeg", 532)
+        mp.add(self.track2,mediapackage.TYPE_TRACK, "presenter/source", "video/mpeg", 532)
+        mp.add(self.catalog,mediapackage.TYPE_CATALOG, "catalog/source","xml")
+        tmppath = mkdtemp()
+        repo = repository.Repository(tmppath)
+        repo.add(mp)
+        path_zip = "system.zip"
+
+        serializer.save_system_zip(mp,path_zip)
+        zfile = zipfile.ZipFile(path_zip,'r')
+        files=zfile.namelist()
+        
+        for element in mp.getElements():
+            self.assertTrue(path.split(element.getURI())[1] in files)
+        rmtree(tmppath)
+        remove(path_zip)
+        
+
+    def no_test_operation_status(self):
+        mp = mediapackage.Mediapackage()
+        mp.add(self.track1)
+        mp.operation["ingest"] = 4
+        mp.marshalDublincore()
+        da = minidom.parseString(serializer.set_properties(mp))
+        name = "key:ingest"
+        try:
+            self.assertEqual(da.getElementsByTagName(name)[0].firstChild.wholeText.strip().strip("\n"), 
+                             da.getElementsByTagName(name)[0].firstChild.wholeText.strip().strip("\n"))
+        except IndexError:
+            pass
 

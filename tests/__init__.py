@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       test/__init__.py
+#       test/__init__
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #

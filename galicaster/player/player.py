@@ -17,12 +17,17 @@
 #
 #
 
-import logging
 
+import logging
 import gtk
 import gst
-
+import os
+from gst.extend.discoverer import Discoverer
 from galicaster.core import context
+
+import time
+import sys
+import threading
 
 log = logging.getLogger()
 
@@ -51,13 +56,18 @@ class Player(object):
         self.files = files
         self.players = players
         self.duration = 0
-        #self.mainloop = gobject.MainLoop() #FIXME **2
+        self.decoded_pads = 0
+
+        self.get_duration_and_run()
+
+    def run_pipeline(self):
+
         self.pipeline = gst.Pipeline()
         self.bus = self.pipeline.get_bus()
         self.has_audio = False
         self.audio_sink = None
 
-        # Create bus and connect several handlers
+  # Create bus and connect several handlers
         self.bus.add_signal_watch()
         self.bus.enable_sync_message_emission()
         self.bus.connect('message::eos', self.__on_eos)
@@ -66,7 +76,7 @@ class Player(object):
         self.bus.connect('sync-message::element', self.__on_sync_message)
 
         # Create elements
-        for name, location in files.iteritems():
+        for name, location in self.files.iteritems():
             log.info('playing %r', location)
             src = gst.element_factory_make('filesrc', 'src-' + name)
             src.set_property('location', location)
@@ -79,6 +89,7 @@ class Player(object):
             self.pipeline.add(src, dec)
             src.link(dec)
 
+        self.play()
         return None
 
 
@@ -87,6 +98,13 @@ class Player(object):
         Get the player status
         """
         return self.pipeline.get_state()
+
+
+    def is_playing(self):
+        """
+        Get True if is playing else False
+        """
+        return (self.pipeline.get_state()[1] == gst.STATE_PLAYING)
 
 
     def get_clock(self):
@@ -135,6 +153,7 @@ class Player(object):
         """
         log.debug("player deleted")
         self.pipeline.set_state(gst.STATE_NULL)
+        self.pipeline.get_state()
         # self.mainloop.quit() #FIXME **2
         return None
 
@@ -153,12 +172,16 @@ class Player(object):
             self.pipeline.set_state(gst.STATE_PLAYING)
         return result
 
-
     def get_duration(self):       
         return self.duration
 
-
     def __on_new_decoded_pad(self, element, pad, last):
+
+        # if all pads decoded send signal 
+        self.decoded_pads+=1
+        if self.decoded_pads == len(self.files):
+            self.dispatcher.emit("player-ready")
+         
         name = pad.get_caps()[0].get_name()
         element_name = element.get_name()[7:]
         log.debug('new decoded pad: %r in %r', name, element_name)
@@ -176,18 +199,15 @@ class Player(object):
                 pad.link(vumeter.get_pad('sink'))
                 vumeter.link(self.audio_sink)
                 vumeter.set_state(gst.STATE_PLAYING)
-                self.audio_sink.set_state(gst.STATE_PLAYING)
+                assert self.audio_sink.set_state(gst.STATE_PLAYING)
                 
         elif name.startswith('video/'):
             sink = gst.element_factory_make('xvimagesink', 'sink-' + element_name) 
             sink.set_property('force-aspect-ratio', True)
             self.pipeline.add(sink)
             pad.link(sink.get_pad('sink'))
-            sink.set_state(gst.STATE_PLAYING)
+            assert sink.set_state(gst.STATE_PLAYING)
             
-        if not self.duration:
-            self.duration = self.pipeline.query_duration(gst.FORMAT_TIME)[0]/1000000000
-            log.info('duration ON_DECODED_PAD %r', self.duration)
         return sink
 
 
@@ -254,3 +274,36 @@ class Player(object):
     def set_volume(self, volume):
         if self.audio_sink != None:
             self.audio_sink.set_property('volume', volume)
+
+
+    def discover(self,filepath):
+        discoverer = Discoverer(filepath)
+        discoverer.connect('discovered', self.on_discovered, filepath)
+        discoverer.discover()
+        return False # Don't repeat idle call
+
+
+    def on_discovered(self, discoverer, ismedia, infile):
+        if discoverer.is_audio:
+            self.duration = discoverer.audiolength / 1000000000            
+        else:
+            self.duration = discoverer.videolength / 1000000000   
+
+        log.info("Duration ON_DISCOVERED: "+str(self.duration))
+
+        self.run_pipeline()
+
+    def get_duration_and_run(self):
+        # choose lighter file
+        size = None
+        name = None
+        location = None
+        for key,value in self.files.iteritems():
+            new = os.path.getsize(value)
+            if not size or new>size:
+                name = key
+                location = value
+        self.discover(location)
+
+        return None
+	

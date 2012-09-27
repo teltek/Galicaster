@@ -11,33 +11,39 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-# TODO
-# * in getBins for options extract no_in_options keys
-# * in getBins do hauppauge generic.
-
-"""
-TODO Add Description
-"""
 
 import os
 import sys
+import shutil
 import logging
 import ConfigParser
 import collections
+import exceptions
+import socket
 
-log = logging.getLogger()
+logger = logging.getLogger()
 
-class Conf(object):
+YES = ['true', 'yes', 'ok', 'si', 'y']
 
-   def __init__(self, conf_file=None, conf_dist_file=None):
-      self.__conf = ConfigParser.ConfigParser() #
-      self.__user_conf = ConfigParser.ConfigParser() #
+class Conf(object): # TODO list get and other ops arround profile
+
+   def __init__(self, conf_file='/etc/galicaster/conf.ini', 
+                conf_dist_file='/usr/share/galicaster/conf-dist.ini', 
+                profile_folder='/etc/galicaster/profiles'):
+      self.__conf = ConfigParser.ConfigParser() 
+      self.__user_conf = ConfigParser.ConfigParser() 
+      self.__profiles = {}
+      self.__default_profile = None
+      self.__current_profile = None
+      
       # FIXME when using 2.7 dict_type=collections.OrderedDict)
 
-      self.conf_file = conf_file or os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'conf.ini'))
-      self.conf_dist_file = conf_dist_file or os.path.join(os.path.dirname(self.conf_file), "conf-dist.ini")
+      self.conf_file = conf_file if os.path.isfile(conf_file) else os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'conf.ini'))
+      self.conf_dist_file = conf_dist_file if os.path.isfile(conf_dist_file) else os.path.join(os.path.dirname(self.conf_file), 'conf-dist.ini')
+      self.profile_folder = profile_folder if os.path.isdir(profile_folder) else os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'profiles'))
          
       self.reload()
+      self.hostname = self.get_hostname()
 
 
    def reload(self):
@@ -46,9 +52,10 @@ class Conf(object):
       """
       self.__conf.read((self.conf_dist_file, self.conf_file))
       self.__user_conf.read(self.conf_file)
+      self.__profiles = self.__get_profiles(self.profile_folder)
 
 
-   def get(self, sect, opt):
+   def get(self, sect, opt): # TODO overload ConfigParser?
        """
        Return the value of option in section
        """
@@ -57,6 +64,27 @@ class Conf(object):
        except:
           response = None
        return response
+
+
+   def get_int(self, sect, opt):
+       """
+       Return int value of option in section
+       """
+       return self.get(sect, opt) and int(self.get(sect, opt))
+
+
+   def get_lower(self, sect, opt):
+       """
+       Return the value in lower
+       """
+       return self.get(sect, opt) and self.get(sect, opt).lower()
+
+
+   def get_boolean(self, sect, opt):
+       """
+       Return int value of option in section
+       """
+       return True if self.get_lower(sect, opt) in YES else False
 
 
    def get_section(self, sect):
@@ -74,6 +102,15 @@ class Conf(object):
       self.__force_set(self.__user_conf, sect, opt, value)
       self.__force_set(self.__conf, sect, opt, value)
 
+
+   def get_hostname(self):
+      prefix = 'GCMobile-' if self.is_mobile() else 'GC-'
+      return self.get('ingest', 'hostname') or (prefix + socket.gethostname())
+
+
+   def is_mobile(self):
+      return self.get_boolean('basic', 'admin')
+      
 
    def __force_set(self, conf, section, option, value):
        """
@@ -100,173 +137,368 @@ class Conf(object):
       """
       Update the configuration file
       """
-      configfile = open(self.conf_file, "wb")
+
+      self.update_profiles()
+      configfile = open(self.conf_file, 'wb')
       self.__user_conf.write(configfile)
       configfile.close()
+      
 
-
-   def getBins(self, base_path):
+   def update_profiles(self):
       """
-      Generate list for Recorder.
+      Write on disk profile modifications, delete file if neccesary.
       """
-      no_in_options = ['active', 'flavor', 'device', 'location', 'file']
-      bins = []
-      index = 0
-      while True:
-         index += 1
-         section = 'track' + unicode(index)
-         try:
-            if self.__conf.get(section, 'active', 'True') == 'True': #FIXME get as a boolean
-               if self.__conf.get(section, 'device') == 'hauppauge': #FIXME make generic
-                  try: # FIXME take out
-                     other_dev = unicode(int(self.__conf.get(section, 'location')[-1:]) + 32)
-                  except:
-                     other_dev = "32"
-                  hau= {'name': self.__conf.get(section, "name"), 
-                        'dev': { 'file' :  self.__conf.get(section, 'location') , 'device' : self.__conf.get(section, 'locprevideo'), 'audio' :  self.__conf.get(section, 'locpreaudio') },
-                        'file': os.path.join(base_path, self.__conf.get(section, 'file')),
-                        'klass' : 'hauppauge.GChau',
-                        'options' : self.get_section(section) #FIXME extract no_in_options
-                        }
-                  bins.append(hau)
-               else:
-                  values = {
-                     'name' : self.__conf.get(section, "name"),
-                     'dev' : self.__conf.get(section, 'location'),
-                     'file' : os.path.join(base_path, self.__conf.get(section, 'file')),
-                     'klass' : self.__conf.get(section, 'device') + '.GC' + self.__conf.get(section, 'device'),
-                     'options' : self.get_section(section)
-                     }
-                  bins.append(values)
-         
-
-         except ConfigParser.NoSectionError:
-            break
-      return bins
-
-   def get_tracks(self):
-      #TODO make a test
-      tracks = []
-      index = 0
-      while True:
-         index += 1
-         section = 'track' + unicode(index)
-         if self.__conf.has_section(section):
-            tracks.append(self.get_section(section))
-         else:
-            break
-
-      return tracks  
+      for profile in self.__profiles.values():
+         if profile.to_delete:
+            os.remove(profile.path)
+            self.__profiles.pop(profile.name)
+         elif profile.name != 'Default':
+            profile.export_to_file()  
+            if profile == self.__current_profile:
+               self.__conf.set('basic','profile',profile.name)
+            
 
    def get_tracks_in_mh_dict(self):
-      #TODO make a test
-      tracks = {}
-      index = 0
+      # Galicaster Mobile
+      if self.is_mobile(): 
+         return {'capture.device.names': 'defaults'}
+      # Galicaster Class
+      logger.info('Be careful using profiles and matterhorn scheduler')
+      default  = self.get_current_profile()
       names = []
-      while True:
-         index += 1
-         section = 'track' + unicode(index)
-         if self.__conf.has_section(section):
-            if self.get(section, 'active') == 'True':
-               name = self.get(section, 'name')
-               names.append(name)
-               tracks['capture.device.' + name + '.flavor']     = self.get(section, 'flavor') + '/source' 
-               tracks['capture.device.' + name + '.outputfile'] = self.get(section, 'file')
-               tracks['capture.device.' + name + '.src']        = self.get(section, 'location')
-         else:
-            break
-
+      tracks = {}
+      for track in default.tracks:
+               names.append(track.name)
+               tracks['capture.device.' + track.name + '.flavor']     = track.flavor + '/source' 
+               tracks['capture.device.' + track.name + '.outputfile'] = track.file
+               tracks['capture.device.' + track.name + '.src']        = track.location or '/dev/null'
       if names:
-         tracks['capture.device.names'] = ",".join(names)
+         tracks['capture.device.names'] = ','.join(names)
 
       return tracks  
 
 
-      
-   def devices(self): # Not in use
-       d=[ "a" , "b" ]
-       try:
-          d[0] = ConfigParser.ConfigParser(dict_type=collections.OrderedDict) 
-          d[1] = ConfigParser.ConfigParser(dict_type=collections.OrderedDict)
-       except:
-          d[0] = ConfigParser.ConfigParser()
-          d[1] = ConfigParser.ConfigParser()
-       d[0].read(self.get("devices",self.get("track1","device")))
-       d[1].read(self.get("devices",self.get("track2","device")))
-       for a in d:
-           if a.get("default","type")=="v4l2":
-               comando="v4l2-ctl -d "+a.get("default","device")+" -i "+a.get("default","input")+" -s " + a.get("default","standard")
-               os.system(comando)
-           elif  a.get("default","type")=="v4l":
-               comando="dov4l -d " + a.get("default","device") + " -i "+a.get("default","input")
-               os.system(comando)
-           else: print "Unknow device type"
+   def create_profile_from_conf(self, activated=True):
+      profile = Profile()
+      parser = self.__conf
+      profile.name = 'Default'
+      profile.import_tracks_from_parser(parser)
+      if activated:
+         for track in profile.tracks:
+            if track['active'].lower() not in YES:
+               profile.tracks.remove(track)
+      return profile
+
+
+   def set_default_profile_as_current(self):
+      self.__current_profile = self.__default_profile
+
 
    def get_permission(self,permit):
       try: 
-         return self.__conf.getboolean("allows",permit)
+         return self.__conf.getboolean('allows',permit)
       except:
-         log.error("Unknow permission")
+         logger.error('Unknow permission')
          return None
 
-      # TODO Move all above to Device Configurator
-      # FIXME transform parameters into a dictionary 
-   def new_track(self, name, kind, flavor, location, archive, vumeter = False, playing = False):
 
-      number=self.__get_free_number()
-      section="track"+unicode(number)
-      self.__conf.add_section(section)
+   def __get_profiles(self, profile_folder=None): # TODO profiles as a key variable
+      """
+      Load existing profiles, including the default one, as a dictionary with 
+      the profile name as key
+      """
+      profile_list = {}
+      self.__default_profile= self.create_profile_from_conf()
 
-      # Name
-      if name not in ["",None,]:
-         self.__conf.set(section, "name",name)# FIXEM check for repeated names
-      else:
-         self.__conf.set(section, "name","device"+number)
+      profile_list[self.__default_profile.name] = self.__default_profile
+      for filename in os.listdir(profile_folder):
+         filepath = os.path.join(profile_folder, filename)
+         if os.path.splitext(filename)[1]=='.ini':
+            profile = Profile()
+            profile.import_from_file(filepath)
+            profile_list[profile.name] = profile
+      
+      current = self.get("basic","profile")      
+      try:
+         self.__current_profile = profile_list[current]
+      except:
+         logger.error("Forcing default profile since current doesn't exits")
+         self.__current_profile = self.__default_profile
 
-      # Type      
-      self.__conf.set(section, "device",kind) # OBLIGATORY
-
-      # Flavor
-      if flavor != None:
-         self.__conf.set(section, "flavor",flavor)
-      else:
-         self.__conf.set(section, "flavor",other)
-
-      # Location of the device
-      self.__conf.set(section, "location", location) # OBLIGATORY
-
-      # File to be recorded in
-      self.__conf.set(section, "file",archive)
-
-      # Default values
-      self.__conf.set(section, "active", "False")
-
-      if kind == "pulse":
-         self.__conf.set(section, "vumeter", "False")
-         self.__conf.set(section, "playing", "False")
-
-      if kind == "mjpeg":
-         self.__conf.set(section, "videocrop-left", 160)
-         self.__conf.set(section, "videocrop-right", 160)
-         self.__conf.set(section, "caps", "image/jpeg,framerate=24/1,width=1280,height=720")
-
-      if kind == "vga2usb":
-         pass # FIXME set proper caps
-
-      #REMEMBER TO reload device
+      return profile_list
 
 
-   def delete_track(self,section):
-      self.__conf.remove_section(section)
-      return True
+   def get_profiles(self):
+      """
+      Return the current list of profiles
+      """
+      profiles = {}
+
+      #return filter(,self.__
+      for name,profile in self.__profiles.iteritems():
+         if not profile.to_delete:
+            profiles[name]=profile           
+      return profiles
 
 
-   def modify_track(self,section,options): # options a dictionary
-      for key in options.keys():
-         self.__conf.set(section,key,options[key])
-      return True
+   def add_profile(self,profile, old_key=None):
+      self.__profiles[profile.name] = profile
+      if old_key:
+         if self.__profiles.has_key(old_key):
+            del self.__profiles[old_key]
+      
+
+   def get_current_profile(self):      
+      return self.__current_profile
+
+
+   def change_current_profile(self,name):
+      if name != self.__current_profile.name:
+         self.__current_profile = self.__profiles[name]
+         self.force_set_current_profile(name)
+
+
+   def force_set_current_profile(self,name):
+       self.set("basic","profile",name)   
+
+
+   def set_default_profile_as_current(self):
+      self.__current_profile = self.__default_profile
+      self.force_set_current_profile("Default")
+
+
+   def get_default_profile(self):
+      return self.__default_profile
+
+
+   def get_all_default_tracks(self):
+      profile=Profile()
+      profile.import_from_conf(False)                                     
+
    
    def __get_free_number(self):
       for i in range(100):
-         if not self.__conf.has_section("track"+unicode(i)):
+         if not self.__conf.has_section('track'+unicode(i)):
             return i
+
+
+   def get_free_profile(self): # TODO include in conf
+      index=0
+      while True:
+         index+=1
+         new_path=os.path.join(self.profile_folder, 'profile'+str(index)+ '.ini')
+         if not os.path.isfile(new_path):
+            break
+      return new_path
+
+
+   def get_color_style(self):
+      classic = self.get_boolean('color','classic')
+      return classic
+
+
+   def get_palette(self, old_style = True):
+      none = self.get('color','none')
+      nightly = self.get('color','nightly')
+      pending = self.get('color','pending')
+      processing = self.get('color','processing')
+      done = self.get('color','done')
+      failed = self.get('color','failed')
+
+      if not old_style:
+         return [none, none, none, none, none, none] 
+      else:
+         return [none, nightly, pending,processing, done, failed]
+
+
+class Profile(object):
+   """
+   Contains the name, location and tracks of a profile
+   Allows to import and export to files, and also import from conf
+   Tracks can be created
+   Other features are reordering tracks
+   """
+   def __init__(self, name='New Profile', path=None, current=False):
+      self.name = name
+      self.tracks = []
+      self.path = path
+      self.to_delete = False
+      
+   def new_track(self, options):
+      new = Track(options)
+      return self.add_track(new)
+
+   def add_track(self, track):
+      self.tracks.append(track)
+      return track
+
+   def remove_track(self, track):
+      self.tracks.remove(track)
+      return track
+
+   #TODO error OJO self.tracks(. No es un metodo
+   def reorder_tracks(self, order=[]):
+      new_order = []
+      for index in range(len(order)):
+         new_order.append(self.tracks(order[index]).copy())
+      for track in self.tracks:
+         if self.tracks.index(track) not in order:
+            new_order.append(track.copy())        
+      self.tracks = new_order
+
+   #TODO igual que profile.path
+   def set_path(self, path):
+      self.path = path
+
+   def import_tracks_from_parser(self, parser):
+      for section in parser.sections():
+         if section.count('track'):
+            self.tracks.append(Track(parser.items(section)))
+
+   def import_from_file(self, filepath):
+      parser = ConfigParser.ConfigParser()
+      parser.read(filepath)
+      self.name = parser.get('data','name')
+      self.path = filepath
+      self.import_tracks_from_parser(parser)
+
+   def export_to_file(self, filepath=None): #MAYBE move to conf, for sure ONLY used by conf  
+      if not filepath:
+         filepath = self.path
+               
+      parser = ConfigParser.ConfigParser()
+      parser.add_section('data')
+      parser.set('data','name',self.name)
+      index = 1
+      for track in self.tracks:
+         section = 'track'+str(index)
+         parser.add_section(section)
+         for key in track.itemlist:                   
+            parser.set(section,key,track[key])
+         index+=1
+
+      configfile = open(filepath, 'wb')
+      parser.write(configfile)
+      configfile.close()
+
+   def get_video_areas(self):
+      # TODO filter not showable areas
+      areas = {}
+      index = 1
+      for track in self.tracks:
+         if track.device not in ['pulse', 'audiotest']:
+            areas[index] = track.name
+            index +=1                             
+      return areas
+
+
+
+
+class Track(dict):
+   """ 
+   Custom dictionary focused on Galicaster's Track parameters handling.
+   BASIC parameters allways exists and are properties
+   It is capable of mantain the parameters ordered, for UI porpuses.
+   
+   Based on:
+   http://stackoverflow.com/questions/2328235/pythonextend-the-dict-class
+
+   """
+
+   BASIC = ['name', 'device', 'flavor', 'location', 'file']
+
+   def __init__(self, *args, **kw):
+      super(Track,self).__init__(*args, **kw)
+      self.itemlist = super(Track,self).keys()
+
+      for key in self.BASIC:
+         if not self.has_key(key):
+            self[key] = None
+
+   def _get_name(self):
+        return self['name']
+
+   def _set_name(self, value):
+        self['name'] = value
+
+   name = property(_get_name, _set_name)
+
+   def _get_device(self):
+        return self['device']
+
+   def _set_device(self, value):
+        self['device'] = value
+
+   device = property(_get_device, _set_device)
+
+   def _get_flavor(self):
+        return self['flavor']
+
+   def _set_flavor(self, value):
+        self['flavor'] = value
+
+   flavor = property(_get_flavor, _set_flavor)
+
+   def _get_location(self):
+        return self['location']
+
+   def _set_location(self, value):
+        self['location'] = value
+
+   location = property(_get_location, _set_location)
+
+   def _get_file(self):
+        return self['file']
+
+   def _set_file(self, value):
+        self['file'] = value
+
+   file = property(_get_file, _set_file)
+
+   def __setitem__(self, key, value):
+      if not key in self.itemlist: 
+         self.itemlist.append(key)
+      super(Track,self).__setitem__(key, value)
+
+   def __delitem__(self, key):
+      self.itemlist.remove(key)
+      super(Track,self).__delitem__(key)
+
+   def __iter__(self):
+      return iter(self.itemlist)
+
+   def keys(self):
+      return self.itemlist
+   
+   def values(self):
+      return [self[key] for key in self.itemlist]  
+
+   def itervalues(self):
+      return (self[key] for key in self.itemlist)
+   
+   def ordered_keys(self):
+      return self.itemlist
+
+   def options_keys(self):
+      sequence = []
+      for key in self.keys():
+         if key not in self.BASIC:
+            sequence.append(key)
+      return sequence
+
+   def basic(self):      
+      out = {}
+      for key in self.BASIC:
+         out[key] = self[key]
+      return out
+
+   def options(self):
+      out = {}
+      for key in self.options_keys():
+         out[key] = self[key]
+      return out
+
+
+      
+
+

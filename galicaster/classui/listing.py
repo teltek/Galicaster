@@ -23,17 +23,14 @@ import datetime
 import pango
 import logging
 
+from galicaster.classui.managerui import ManagerUI
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 from galicaster.classui import get_ui_path
-from galicaster.classui import message
-from galicaster.classui.metadata import MetadataClass as Metadata
-
-log = logging.getLogger()
 
 
-EXP_STRINGS = [ (0, 'B'), (10, 'KB'),(20, 'MB'),(30, 'GB'),(40, 'TB'), (50, 'PB'),]
-ONE_MB = 1024*1024
+logger = logging.getLogger()
+
 dcterms = ["title", "creator", "ispartof", "description", "subject", "language", "identifier", "contributor", "created"]
 metadata ={"title": "Title:", "creator": "Presenter:", "ispartof": "Course/Series:", "description": "Description:", 
            "subject": "Subject:", "language": "Language:", "identifier": "Identifier:", "contributor": "Contributor:", 
@@ -41,17 +38,21 @@ metadata ={"title": "Title:", "creator": "Presenter:", "ispartof": "Course/Serie
            "Description:":"description", "Subject:":"subject", "Language:":"language", "Identifier:":"identifier", 
            "Contributor:":"contributor", "Start Time:":"created"}
 
+#color = {0: "#FFFFA0", # Iddle
+#	 1: "#C8FFC8", # Nightly
+#	 2: "#C8FFC8", # Pending
+#	 3: "#FF9955", # Processing
+#	 4: "#77FF77", # Done
+#	 5: "#FFABAB", # Failed
+#	 }
 
-color = {0: "#FFFFFF",
-	 1: "#FFFFFF",
-	 2: "#FFFFFF",
-	 3: "#FFFFFF",	       
-	 4: "#FFFFA0",
-	 5: "#FFABAB",
-	 6: "#C8FFC8", 
-	 7: "#C8FFC8",
-	 8: "#ABFFAB",
-	 9: "#FF9955" }
+color = {0: "#FFFFA0", # Iddle
+	 1: "#FFFFA0", # Nightly
+	 2: "#FFFFA0", # Pending
+	 3: "#FFFFA0", # Processing
+	 4: "#FFFFA0", # Done
+	 5: "#FFFFA0", # Failed
+	 }
 
 rcstring = """
 style "big-scroll" {
@@ -82,7 +83,7 @@ gtk.rc_parse_string(rcstring)
 
 
 
-class ListingClassUI(gtk.Box):
+class ListingClassUI(ManagerUI):
 	"""
 	Create Recording Listing in a VBOX with TreeView from an MP list
 	"""
@@ -90,7 +91,7 @@ class ListingClassUI(gtk.Box):
 
 
 	def __init__(self):
-		gtk.Box.__init__(self)
+		ManagerUI.__init__(self,3)
 
 		builder = gtk.Builder()
 		builder.add_from_file(get_ui_path('listing.glade'))
@@ -100,30 +101,26 @@ class ListingClassUI(gtk.Box):
 		self.vista = builder.get_object("vista")		
 		self.scroll = builder.get_object("scrolledw")
 		self.vista.get_selection().set_mode(gtk.SELECTION_SINGLE) # could SELECTION_MULTIPLE
-		self.conf = context.get_conf()
-		self.dispatcher = context.get_dispatcher() 
-		self.repository = context.get_repository()
-		self.network = False
-		self.parse_ingesting()
+
+		old_style = context.get_conf().get_color_style()
+		self.color = context.get_conf().get_palette(old_style)
 
 		builder.connect_signals(self)
-		self.dispatcher.connect("galicaster-status", self.event_change_mode)
 		self.dispatcher.connect("refresh-row", self.refresh_row_from_mp)
-		self.dispatcher.connect("net-up", self.network_status,True)
-		self.dispatcher.connect("net-down", self.network_status,False)
-
-		# ENABLE INGEST BUTTON
-		#self.gui.get_object("ingestbutton").set_sensitive(True) if self.conf.get("ingest", "active") == "True" else False)
+		self.dispatcher.connect("start-operation", self.refresh_operation)
+		self.dispatcher.connect("stop-operation", self.refresh_operation)
+		self.dispatcher.connect("galicaster-status", self.event_change_mode)
+		
 		self.populate_treeview(self.repository.list().values())
+		self.box.pack_start(self.strip,False,False,0)
+		self.box.reorder_child(self.strip,0)
 		self.box.show()
 		self.pack_start(self.box,True,True,0)
-
+		
 	
 	def event_change_mode(self, orig, old_state, new_state):
 		if new_state == 1:
 			self.refresh()
-
-
 
 	def insert_data_in_list(self, lista, mps):
 		lista.clear()
@@ -133,24 +130,28 @@ class ListingClassUI(gtk.Box):
 				duration = 0
 
 			if mp.status != mediapackage.SCHEDULED:
-				lista.append([mp.metadata_episode['identifier'], #FIXME Add property in mp
-					      mp.metadata_episode['title'], #FIXME Add property in mp
+				lista.append([mp.metadata_episode['identifier'], 
+					      mp.metadata_episode['title'], 
 					      self.list_readable(mp.creators), 
 					      mp.series_title, 
 					      long(mp.getSize()),
 					      int(duration), 
 					      mp.getStartDateAsString(), 
 					      mp.status,
-					      color[mp.status]])	
-				    
+					      self.color[mp.getOpStatus("ingest")],
+					      mp.getOpStatus("ingest"),
+					      mp.getOpStatus("exporttozip"),
+					      mp.getOpStatus("sidebyside"),
+					      ]
+					     )				    
 
 
 	def populate_treeview(self, mp):
-		self.lista = gtk.ListStore(str,str, str, str, long, int, str, int,str)
+		self.lista = gtk.ListStore(str,str, str, str, long, int, str, int, str, int, int, int)
+		# gobject.TYPE_PYOBJECT
 		self.insert_data_in_list(self.lista, mp)
 
 		# Edit Cells per column
-		# TODO rename and set as dict
 		render1 = gtk.CellRendererText() #name
 		render6 = gtk.CellRendererText() #presenter
 		render7 = gtk.CellRendererText() #series
@@ -159,74 +160,47 @@ class ListingClassUI(gtk.Box):
 		render4 = gtk.CellRendererText() #date
 		render5 = gtk.CellRendererText() #id
 		render8 = gtk.CellRendererText() #status
+		render9 = gtk.CellRendererText() #operation
 		#render9 = gtk.CellRendererText() #bg
-
-		window=gtk.gdk.get_default_root_window()
-		self.size = [ 1920 , 1080 ]
-		wsize = 1920
-		try: 
-			#wsize =  window.get_screen().get_width()
-			self.size = [ window.get_screen().get_width(), window.get_screen().get_height()]
-		except:
-			log.error("Screen width not catched")
-		self.wprop = self.size[0] / 1920.0
-		self.hprop = self.size[1] / 1080.0	
+		self.renders= [render1, render2, render3, render4, render5, render6, render7, render8, render9]
+		self.renders[1].set_property('xalign',1.0)
+		self.renders[2].set_property('xalign',0.5)
+		self.renders[3].set_property('xalign',0.5)
+		self.renders[8].set_property('xalign',0.5)
 
 
-		render6.set_property('width-chars',int(self.wprop*38))
-		render7.set_property('width-chars',int(self.wprop*24)) # should be a short version of the Series' name
-
-		render2.set_property('width-chars',int(self.wprop*15))
-		render2.set_property('xalign',1.0)
-
-		render3.set_property('width-chars',int(self.wprop*14))
-		render3.set_property('xalign',0.5)
-
-		render4.set_property('width-chars',int(self.wprop*26))
-		render4.set_property('xalign',0.5)
-		render8.set_property('width-chars',int(self.wprop*16))
-		
-		render1.set_property('height', int(self.hprop*40))
-	
-		fsize = self.hprop*12
-		
-		for cell in [render1, render2, render3, render4, render5, render6, render7, render8 ]:
-			font = pango.FontDescription(str(fsize))
-			cell.set_property('font-desc', font)
-		
 		vbar = self.scroll.get_vscrollbar()
-		vbar.set_size_request(int(self.wprop*50),-1)
 		vbar.set_update_policy(gtk.UPDATE_DELAYED)
 		
-
 		# Create each column
-
-		header= gtk.VBox()
-		name = gtk.Label("Name")
-		name.set_property("ypad",int(self.hprop*5))
-		header.pack_start(name)
-		header.show_all()		
-
 		columna5 = gtk.TreeViewColumn("Id",render5,text = 0, background= 8) # column5 wont be append to the treeview
 		columna1 = gtk.TreeViewColumn("Name",render1,text = 1, background= 8)
-		columna1.set_widget(header)
-		columna6 = gtk.TreeViewColumn("Presenter",render6,text = 2, background= 8)
-		columna7 = gtk.TreeViewColumn("Series",render7,text = 3, background= 8)
-		columna2 = gtk.TreeViewColumn("Size",render2,text = 4, background= 8)
-		columna3 = gtk.TreeViewColumn("Duration",render3,text = 5, background= 8)
-		columna4 = gtk.TreeViewColumn("Date",render4,text = 6, background= 8)
-		columna8 = gtk.TreeViewColumn("Status",render8,text = 7, background= 8)
+		columna6 = gtk.TreeViewColumn("Presenter", render6, text = 2, background= 8)
+		columna7 = gtk.TreeViewColumn("Series", render7, text = 3, background= 8)
+		columna2 = gtk.TreeViewColumn("Size", render2, text = 4, background= 8)
+		columna3 = gtk.TreeViewColumn("Duration", render3, text = 5, background= 8)
+		columna4 = gtk.TreeViewColumn("Date", render4, text = 6, background= 8)
+		
+		#columna8 = gtk.TreeViewColumn("Status", render8, text = 7, background= 8)
+		columna9 = gtk.TreeViewColumn("Ingest", render9)
+		columna10 = gtk.TreeViewColumn("Zip", render9)
+		columna11 = gtk.TreeViewColumn("SbS", render9)		
+
+		#columna8 = gtk.TreeViewColumn("Status", render8, text = 7, background= 8)
+		#columna9 = gtk.TreeViewColumn("Operations", render9, text = 9, background= 8)
 		#columna9 = gtk.TreeViewColumn("Background",render9, text = 8)
 
 		# Edit columns				
 		columna1.set_expand(True)
-		columna1.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
 
 		# Edit content
 		columna2.set_cell_data_func(render2,self.size_readable,None)	
 		columna3.set_cell_data_func(render3,self.time_readable,None)
 		columna4.set_cell_data_func(render4,self.date_readable,None)
-		columna8.set_cell_data_func(render8,self.status_readable,None)
+		#columna8.set_cell_data_func(render8,self.status_readable,None)
+		columna9.set_cell_data_func(render9,self.operation_readable,"ingest")
+		columna10.set_cell_data_func(render9,self.operation_readable,"exporttozip")
+		columna11.set_cell_data_func(render9,self.operation_readable,"sidebyside")
 		#columna7.set_cell_data_func(render7,self.series_readable,None)
 		# Columns 6 and 7 are not edited
 
@@ -240,8 +214,15 @@ class ListingClassUI(gtk.Box):
 		self.vista.append_column(columna7) # series
 		self.vista.append_column(columna2) # size
 		self.vista.append_column(columna3) # duration
-		self.vista.append_column(columna8) # status
-		self.equivalent= {6: 0, 1: 1, 2 : 2, 3 : 3, 4: 4, 5 : 5, 7 : 3} # column versus position
+		#self.vista.append_column(columna8) # operation former status
+		self.vista.append_column(columna9) # operation former status
+		self.vista.append_column(columna10) # operation
+		self.vista.append_column(columna11) # operation
+		
+
+		#self.resize()
+		self.equivalent= {6: 0, 1: 1, 2 : 2, 3 : 3, 4: 4, 5 : 5, 7: 3, 9:6, 10:7, 11:8}  # 9
+		# data position versus column position
 
 		# Show TreeView
 		self.vista.show()
@@ -256,123 +237,31 @@ class ListingClassUI(gtk.Box):
 		columna4.set_sort_column_id(6) # date
 		columna6.set_sort_column_id(2) # presenter <<
 		columna7.set_sort_column_id(3) # series <<
-		columna8.set_sort_column_id(7) # status <<
+		#columna8.set_sort_column_id(7) # operation form status <<		
+		columna9.set_sort_column_id(9) # operation <<
+		columna10.set_sort_column_id(10) # operation <<
+		columna11.set_sort_column_id(11) # operation <<
 
 		self.lista.set_sort_func(5,self.sorting,5)
 		self.lista.set_sort_func(1,self.sorting_text,1)
 		self.lista.set_sort_func(2,self.sorting_empty,2)
 		self.lista.set_sort_func(3,self.sorting_empty,3)
-		self.lista.set_sort_func(7,self.sorting,7)
+		#self.lista.set_sort_func(7,self.sorting,7)
+		#self.lista.set_sort_func(10,self.sorting,10)
+		#self.lista.set_sort_func(11,self.sorting,11)
+		#self.lista.set_sort_func(12,self.sorting,12)
 
 		self.vista.connect('row-activated',self.on_double_click)
 		self.vista.connect('button-release-event',self.menu)
 
 		self.lista.set_sort_column_id(6,gtk.SORT_DESCENDING)
-		
-
-
-	def sorting(self, treemodel, iter1, iter2, data, regular=True, ascending=1):
-		
-		first =treemodel[iter1][data]
-		second = treemodel[iter2][data]
-
-		if  first >  second:
-			return 1 * ascending
-
-		elif first == second:
-			if regular:
-				if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:
-					ascending=-1
-				# order by date
-				response = self.sorting(treemodel,iter1,iter2,6,False,ascending) 
-				return response
-			else:
-				return 0		       
-		else:
-			return -1 * ascending
-
-	def sorting_text(self, treemodel, iter1, iter2, data, regular=True, ascending=1):
-		# Null sorting
-		first = treemodel[iter1][data]
-		second = treemodel[iter2][data]
-		if first != None:
-			first = first.lower()
-		if second != None:
-			second = second.lower()
-
-		if first in ["",None] and second in ["",None]:
-			if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:
-					ascending=-1
-			# order by date
-			response = self.sorting(treemodel,iter1,iter2,6,False,ascending) 
-			return response
-
-		elif  first in ["",None]:
-			if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:	
-				return -1  
-			else:
-				return 1
-
-		elif  second in ["",None]:
-			if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:	
-				return 1  
-			else:
-				return -1
-
-		# Regular sorting
-		if first > second:
-			return 1 * ascending
-		elif first == second:
-			if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:
-				ascending=-1
-			# order by date
-			response = self.sorting(treemodel,iter1,iter2,6,False,ascending) 
-			return response 
-		else:
-			return -1 * ascending
-
-	def sorting_empty(self, treemodel, iter1, iter2, data, regular=True, ascending=1):
-		# Null sorting
-		first = treemodel[iter1][data]
-		second = treemodel[iter2][data]
-		if first in ["",None] and second in ["",None]:
-			if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:
-					ascending=-1
-			# order by date
-			response = self.sorting(treemodel,iter1,iter2,6,False,ascending) 
-			return response
-
-		elif  first in ["",None]:
-			if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:	
-				return -1  
-			else:
-				return 1
-
-		elif  second in ["",None]:
-			if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:	
-				return 1  
-			else:
-				return -1
-
-		# Regular sorting
-		if first > second:
-			return 1 * ascending
-		elif first == second:
-			if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:
-				ascending=-1
-			# order by date
-			response = self.sorting(treemodel,iter1,iter2,6,False,ascending) 
-			return response 
-		else:
-			return -1 * ascending
 
 	def refresh_treeview(self):
-		log.info("Refreshing TreeView")
+		logger.info("Refreshing TreeView")
 		model, selected = self.vista.get_selection().get_selected_rows()
 		self.repository.refresh()
 		self.insert_data_in_list(self.lista, self.repository.list().values())
 
-		#self.vista.grab_focus()
 		s = 0 if len(selected) == 0 else selected[0][0]
 		self.vista.get_selection().select_path(s)
 
@@ -384,8 +273,12 @@ class ListingClassUI(gtk.Box):
 				i = row.iter
 
 		mp = self.repository.get(identifier)
-		self._refresh(mp,i)
+		if i:
+			self._refresh(mp,i)
 
+	def refresh_operation(self, origin, operation, package, success = None):
+		identifier = package.identifier
+		self.refresh_row_from_mp(origin,identifier)
 
 	def refresh_row(self,reference,i):# FIXME keep the sort id 
 		mpid = self.lista[i][0] # FIXME set the id as the first metadata
@@ -397,106 +290,22 @@ class ListingClassUI(gtk.Box):
 		self.lista.set(i,1,mp.metadata_episode['title'])
 		self.lista.set(i,2,self.list_readable(mp.creators))
 		self.lista.set(i,3,mp.series_title)
-		self.lista.set(i,4,long(mp.getSize()))#FIXME dont use the function use the value
+		self.lista.set(i,4,long(mp.getSize()))
 		self.lista.set(i,5,int(mp.getDuration()))
 		self.lista.set(i,6,mp.getStartDateAsString())
 		self.lista.set(i,7,mp.status)
-		self.lista.set(i,8,color[mp.status])
+		self.lista.set(i,8,self.color[mp.getOpStatus("ingest")])
+		self.lista.set(i,9,mp.getOpStatus("ingest"))
+		self.lista.set(i,10,mp.getOpStatus("exporttozip"))
+		self.lista.set(i,11,mp.getOpStatus("sidebyside"))
 
 	def refresh(self,element=None,package=None):
 		# self refresh_row()
 		self.refresh_treeview()
 		return True
 	
-		
-#-------------------------------- DATA PRESENTATION --------------------------------
+#---------------------------- MOUSE AND SELECTION MANAGMENT --------------------
 
-
-	def size_readable(self,column,cell,model,iterador,user_data):
-		""" Generates human readable string for a number.
-		Returns: A string form of the number using size abbreviations (KB, MB, etc.) """
-		num = float(cell.get_property('text'))
-		i = 0
-		rounded_val = 0
-		while i+1 < len(EXP_STRINGS) and num >= (2 ** EXP_STRINGS[i+1][0]):
-			i += 1
-			rounded_val = round(float(num) / 2 ** EXP_STRINGS[i][0], 2)
-
-		resultado = '%s %s' % (rounded_val, EXP_STRINGS[i][1])
-		cell.set_property('text',resultado)
-		return resultado
-
-	def date_readable(self,column,cell,model,iterador,user_data):
-		""" Generates date readable string from an isoformat datetime. """		
-		iso = (cell.get_property('text'))
-		date = datetime.datetime.strptime(iso, '%Y-%m-%dT%H:%M:%S')
-		novo = date.strftime("%d-%m-%Y %H:%M")
-		cell.set_property('text',novo)		
-		return novo
-
-	def time_readable(self,column,cell,model,iterador,user_data):
-		""" Generates date hout:minute:seconds from seconds """		
-		ms = cell.get_property('text')
-		iso = int(ms)/1000
-		dur = datetime.time(iso/3600,(iso%3600)/60,iso%60)		
-		novo = dur.strftime("%H:%M:%S")
-		cell.set_property('text',novo)		
-		return novo
-
-	def list_readable(self,listed):
-		""" Generates a string of items from a list, separated by commass """		
-		novo = ""
-		if len(listed):
-			novo  = ", ".join(listed)
-		return novo
-
-	def list_readable2(self,column,cell,model,iterador,user_data):
-		""" Generates a string of items from a list, separated by commass """		
-		ms = cell.get_property('text')		
-		if ms != "[]":
-			novo  = ", ".join(list(ms))
-		else:
-			novo=""
-		cell.set_property('text',novo)		
-		return novo
-
-	def status_readable(self,column,cell,model,iterator,user_data):
-		""" Set text equivalent for numeric status of mediapackages """	
-		ms = cell.get_property('text')
-		novo = mediapackage.mp_status[int(ms)]
-		cell.set_property('text',novo)
-		
-	def series_readable(self,column,cell,model,iterator,user_data):
-		""" Set text equivalent for numeric status of mediapackages """	
-		ms = cell.get_property('text')
-		if ms == None:
-			novo=""
-		else: 
-			novo=self.repository.get((model[iterator])[0]).series_title
-		cell.set_property('text',novo)
-		return novo
-
-
-
-
-
-
-	#row = model[iterator]
-	#	if ms.count("5"):#RED-failed 
-	#		row[8]="#FFABAB"
-	#	elif ms.count("4"): # YELLOW- recorded
-	#		row[8]="#FFFFA0"
-	#	elif ms.count("6") or ms.count("7"): # LIGHT GREEN- ingesting or pending
-	#		row[8]="#C8FFC8"
-	#	elif ms.count("8"):# GREEN - ingested
-	#		row[8]="#ABFFAB"
-	#	else: # WHITE - not recorded yet
-	#		row[8]="#FFFFFF"
-	#
-		return novo
-
-
-#---------------------------- MOUSE AND SELECTION MANAGMENT --------------------------------
 
 	def on_action(self, action):
 		"""
@@ -506,7 +315,7 @@ class ListingClassUI(gtk.Box):
 		if not isinstance(op,str):
 			op=action.get_label()
 
-		log.info("ON_action >> "+op)
+		logger.info("ON_action >> "+op)
 
 
 		if op == "Delete":
@@ -517,26 +326,26 @@ class ListingClassUI(gtk.Box):
 				iterator=self.lista.get_iter(row)
 				iters.append(iterator)
 			for i in iters:
-				self.delete(self.lista,i)
+				self.on_delete(self.lista,i)
 				#TODO connect "row-deleted" to delete package
-		#elif op == "Zip":
-		#	self.vista.get_selection().selected_foreach(self.zip)
-		elif op == "Ingest":
-			self.vista.get_selection().selected_foreach(self.ingest_question)
+		elif op == "Operations" or op == "Ingest":
+			self.vista.get_selection().selected_foreach(self.on_ingest_question)
 		elif op == "Play":
-			self.vista.get_selection().selected_foreach(self.play)# FIX single operation
+			self.vista.get_selection().selected_foreach(self.on_play)# FIX single operation
 		elif op == "Edit":
-			self.vista.get_selection().selected_foreach(self.edit)# FIX single operation
+			self.vista.get_selection().selected_foreach(self.on_edit)# FIX single operation
+		elif op == "Info":
+			self.vista.get_selection().selected_foreach(self.on_info)
 		else:
-			log.debug('Invalid action')
+			logger.debug('Invalid action')
 			   
 
 	def create_menu(self):
 		menu = gtk.Menu()
-		if self.conf.get("ingest", "active") == "True":
-			operations = ["Play", "Edit", "Ingest", "Delete"]
+		if self.conf.get_boolean('ingest', 'active'):
+			operations = ["Play", "Edit", "Operations", "Info", "Delete"]
 		else:
-			operations = ["Play", "Edit", "Delete"]
+			operations = ["Play", "Edit", "Info", "Delete"]
 
 		for op in operations:
 			item = gtk.MenuItem(op)
@@ -551,13 +360,11 @@ class ListingClassUI(gtk.Box):
 		If rigth-button is clicked: ensure proper selection, get row,  create menu and pop it
 		"""		
 		if event.button == 3:
-			# print "Showing Operations Menu"
 			reference,column,xcell,ycell = widget.get_path_at_pos(int(event.x),int(event.y))
 			c = self.lista.get_iter(reference)
 			self.vista.get_selection().unselect_all()
 			self.vista.get_selection().select_iter(c)	
 			menu = self.create_menu()
-			# pop up: shell,item,position_func,mousebutton,time,optional_data
 			menu.popup(None,None,None,event.button,event.time)
 			menu.show()
 			return True
@@ -568,264 +375,86 @@ class ListingClassUI(gtk.Box):
 		"""
 		Set the player for previewing if double click
 		"""
-		self.play(treeview.get_model(),reference,treeview.get_model().get_iter(reference))
+		self.on_play(treeview.get_model(),reference,treeview.get_model().get_iter(reference))
 
 
-#---------------------------------------- ACTION CALLBACKS -------------------------------------------------#
+	def zip(self,store, zip_path, iterator):
+		key = store[iterator][0]
+		return super.zip(package)
 
-	def delete(self,store,iterator):
-		log.info("Delete: "+store[iterator][0])
-		t1 = "This action will remove the recording from the hard disk."
-		t2 = 'Recording:  "'+store[iterator][1]+'"'
-		text = {"title" : "Delete",
-			"main" : "Are you sure you want to delete?",
-			"text" : t1+"\n\n"+t2
-			}
-		buttons = ( gtk.STOCK_DELETE, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
-		size = [ self.window.get_screen().get_width(), self.window.get_screen().get_height() ]
-		warning = message.PopUp(message.WARNING, text, size, 
-					self.get_toplevel(), buttons)
-		
-		if warning.response in message.POSITIVE:
-			package = self.repository.get(store[iterator][0])
-			self.repository.delete(package)
+	def on_ingest_question(self,store,reference,iterator):
+		package = self.repository.get(store[iterator][0])
+		self.ingest_question(package)
+		self.refresh_row(reference,iterator)
+		return True
+
+	def on_delete(self,store,iterator):
+		key = store[iterator][0]
+		response = self.delete(key)
+		if response:
 			self.lista.remove(iterator)
 			self.vista.get_selection().select_path(0)
 		return True
-
-
-	def zip(self,store, zip_path, iterator):# FIXME use Class message.PopUp
-		log.info("Zip: "+store[iterator][4])
-
-
-		builder = gtk.Builder() # create a module for dialogs
-		builder.add_from_file(get_ui_path('save.glade'))       
-		dialog=builder.get_object("dialog")
-		response = dialog.run()
-		if response == 1:
-			package = self.repository.get(store[iterator][0])
-			self.repository.export_to_zip(package,dialog.get_filename())            
-		dialog.destroy()
-		return True
-
-
-	def ingest(self,store,reference,iterator):
-		log.info("Ingest requested on: " + store[iterator][0])
-
-		if not self.network:
-			text = {"title" : "Media Manager",
-				"main" : "No connection available with the\nMatterhorn Core available."}
-			icon = message.WARNING
-			buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK)
-			
-			size = [ self.window.get_screen().get_width(), 
-				 self.window.get_screen().get_height() ]
-
-			warning = message.PopUp(icon, text, size, 
-						self.get_toplevel(), buttons)
-		elif self.repository.list_by_status(mediapackage.INGESTING):
-			text = {"title" : "Media Manager",
-				"main" : "There is another recording being ingested.\nPlease wait until it's finished."}
-			icon = message.WARNING
-			buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK)
-			
-			size = [ self.window.get_screen().get_width(), 
-				 self.window.get_screen().get_height() ]
-
-			warning = message.PopUp(icon, text, size, 
-						self.get_toplevel(), buttons)
-			
-			
-		else:
-			
-			package = self.repository.get(store[iterator][0])
-
-			if package.status in [ mediapackage.RECORDED, mediapackage.PENDING, 
-					       mediapackage.INGESTED, mediapackage.INGEST_FAILED]:
-
-				context.get_worker().ingest(package)
-				self.refresh_row(reference,iterator)
-
-			else:
-				log.warning(store[iterator][0]+" cant be ingested")
-
-		return True
-
-
-	def pending(self,store,reference,iterator):		
-		package = self.repository.get(store[iterator][0])
-		if package.status in [ mediapackage.RECORDED, mediapackage.INGESTED, mediapackage.INGEST_FAILED ]:
-			log.info("Enqueue: " + store[iterator][0])
-			package.status = mediapackage.PENDING			
-			self.repository.update(package)
-			self.refresh_row(reference,iterator)
-		elif package.status == mediapackage.PENDING :
-			log.info("Cancel ingest: " + store[iterator][0])
-			package.status = mediapackage.RECORDED			
-			self.repository.update(package)
-			self.refresh_row(reference,iterator)
-			
-		elif package.status != mediapackage.INGESTING:
-			log.warning(store[iterator][0]+" cant be enqueued to Ingest")
-
-
-	def ingest_question(self,store,reference,iterator):
-		package = self.repository.get(store[iterator][0])
-		buttons = None
-
-		if self.conf.get("ingest", "active") != "True":			
-			text = {"title" : "Media Manager",
-				"main" : "The ingest service is disabled."}
-			icon = message.WARNING
-			buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK)
-
-		elif package.status == mediapackage.PENDING:
-			text = {"title" : "Media Manager",
-				"main" : "Do you wan to cancel the ingest,\n"+
-				"or do you want to ingest it now?"}
-
-			buttons = ( "Cancel Ingest", gtk.RESPONSE_ACCEPT, 
-				    "Ingest Now", gtk.RESPONSE_APPLY, 
-				    gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT
-				    )
-			icon = message.QUESTION
-			
-		elif package.status in [ mediapackage.RECORDED, mediapackage.INGEST_FAILED ]:			
-			text = {"title" : "Media Manager",
-				"main" : "Do you want to enqueue \n"+
-				"this recording for ingesting?"}
-
-			buttons = ( "Ingest", gtk.RESPONSE_ACCEPT, 
-				    "Ingest Now", gtk.RESPONSE_APPLY , 
-				    gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT
-				    )
-			icon = message.QUESTION
-
-		elif package.status == mediapackage.INGESTED:
-			text = {"title" : "Media Manager",
-				"main" : "This recording was already ingested.\n"+
-				"Do you want to enqueue it again?"}
-
-			buttons = ( "Ingest", gtk.RESPONSE_ACCEPT, 
-				    "Ingest Now", gtk.RESPONSE_APPLY, 
-				    gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT
-				    )
-			icon = message.WARNING
-
-		elif package.status == mediapackage.INGESTING:
-			text = {"title" : "Media Manager",
-				"main" : "This package is already being ingested."}
-			icon = message.WARNING
-			buttons = (gtk.STOCK_OK, gtk.RESPONSE_OK)
-
-
-			
-		else: 
-			text = {"title" : "Media Manager",
-				"main" : "This recording can't be ingested."}
-			icon = message.WARNING
-			buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK)
-
-		size = [ self.window.get_screen().get_width(), 
-			 self.window.get_screen().get_height() ]
-
-		warning = message.PopUp(icon, text, size, 
-					self.get_toplevel(), buttons)
-
-		if warning.response == gtk.RESPONSE_OK: # Warning
-			return True
-		elif warning.response == gtk.RESPONSE_APPLY: # Force Ingest
-			self.ingest(store, reference, iterator)			
-		elif warning.response == gtk.RESPONSE_ACCEPT: # Enqueue or cancel enqueue
-			self.pending(store, reference, iterator)
-
-		return True
-
 		
-	def play(self,store,reference,iterator):
+	def on_play(self,store,reference,iterator):
 		""" 
 		Retrieve mediapackage and send videos to player
 		"""
-		log.info("Play: "+store[iterator][0])
 		key = store[iterator][0]
-		package = self.repository.get(key)
-
-		if package.status in [mediapackage.RECORDED, mediapackage.PENDING, 
-				      mediapackage.INGESTED, mediapackage.INGESTING,
-				      mediapackage.INGEST_FAILED]:
-			self.dispatcher.emit("play-list", package)
-		else:			
-			text = {"title" : "Media Manager",
-				"main" : "This recording can't be played",
-				}
-			buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
-			size = [ self.window.get_screen().get_width(), self.window.get_screen().get_height() ]
-			warning = message.PopUp(message.WARNING, text, size, 
-						self.get_toplevel(), buttons)
-		return True
-
-
-	def change_mode(self,button): # UNUSED
-		text=button.get_children()[0].get_text()
-		if text == "Recorder":
-			self.dispatcher.emit("change-mode", 0)
-		else:
-			self.dispatcher.emit("change-mode", 2)
-	
+		self.play(key)
+		return True	
 
 #--------------------------------------- Edit METADATA -----------------------------
 	
-	def edit(self,store,reference,iterator):
-		ide = store[iterator][0]
-		log.info("Edit: "+ide)
-		selected_mp = self.repository.get(ide)
-		meta = Metadata(selected_mp)
-		self.repository.update(selected_mp)
+	def on_edit(self,store,reference,iterator):
+		key = store[iterator][0]
+		self.edit(key)		
 		self.refresh_row(reference,iterator)
+	def on_info(self,store,reference,iterator):
+		key = store[iterator][0]
+		self.info(key)
 
+	def resize(self):
+		buttonlist = ["playbutton","editbutton","ingestbutton","deletebutton"]
+		size = context.get_mainwindow().get_size()
+		wprop = size[0]/1920.0
+		hprop = size[1]/1080.0
 
-	def resize(self,size): 
-		altura = size[1]
-		anchura = size[0]
+		vbar = self.scroll.get_vscrollbar()
+		vbar.set_size_request(int(wprop*6),-1)
 
-		def relabel(label,size,bold):           
-			if bold:
-				modification = "bold "+str(size)
+		self.renders[0].set_property('height', int(hprop*40))
+		self.renders[0].set_property('width-chars',int(wprop*56))#name
+		self.renders[1].set_property('width-chars',int(wprop*14))#size
+		self.renders[2].set_property('width-chars',int(wprop*10))#duration
+		self.renders[3].set_property('width-chars',int(wprop*23))#date
+		self.renders[5].set_property('width-chars',int(wprop*27))#presenter
+		self.renders[6].set_property('width-chars',int(wprop*33.5))#series
+		#self.renders[7].set_property('width-chars',int(wprop*12.5))#statusess
+		self.renders[8].set_property('width-chars',int(wprop*14))#operations less
+
+		fsize = 12*hprop
+		for cell in self.renders:
+			font = pango.FontDescription(str(fsize))
+			cell.set_property('font-desc', font)
+
+		for column in self.vista.get_columns():
+			first = column.get_widget()
+			if not first:
+				label = gtk.Label(" "+column.get_title())
 			else:
-				modification = str(size)
-			label.modify_font(pango.FontDescription(modification))
-        
-		k1 = anchura / 1920.0
-		k2 = altura / 1080.0
-		self.proportion = k1
+				label = column.get_widget()
+			attr = pango.AttrList()
+			attr.insert(pango.AttrFontDesc(font,0,-1))
+			label.set_attributes(attr)
+			if not first:
+				label.show()			
+				column.set_widget(label)
+			column.queue_resize()
 
-		for name  in ["playbutton","editbutton","ingestbutton","deletebutton"]:
-			button = self.gui.get_object(name) 
-			button.set_property("width-request", int(k2*100) )
-			button.set_property("height-request", int(k2*100) )
-			
-			image = button.get_children()
-			if type(image[0]) == gtk.Image:
-				image[0].set_pixel_size(int(k1*80))   
-                     
-			elif type(image[0]) == gtk.VBox:
-				for element in image[0].get_children():
-					if type(element) == gtk.Image:
-						element.set_pixel_size(int(k1*46))
-
+		self.do_resize(buttonlist)
 		return True
-
-	def parse_ingesting(self):
-		"""Check if any recording was ingesting before the previous running"""
-		mps = self.repository.list_by_status(mediapackage.INGESTING)
-		for mp in mps:
-			mp.status = mediapackage.INGEST_FAILED
-			self.repository.update(mp)
-			log.warn("Mediapackage %s status changed to INGEST FAILED", mp.identifier)
-
-	def network_status(self,signal,status):
-		self.network = status
-
+		
 
 gobject.type_register(ListingClassUI)
 

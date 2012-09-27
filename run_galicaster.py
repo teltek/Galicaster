@@ -14,11 +14,14 @@
 
 import sys
 import gtk
-import threading
-from threading import _Timer
+
+import pygtk
+pygtk.require('2.0')
+import pygst
+pygst.require('0.10')
+
 
 from galicaster.core import core
-from galicaster.utils.dbusservice import DBusService
 
 def main(args):
     def usage():
@@ -28,15 +31,12 @@ def main(args):
     if len(args) != 1:
         return usage()
     try:
-        v = core.Class()
-        service = DBusService(v)
+        gc = core.Main()
         gtk.main()
     except KeyboardInterrupt:
+        gc.emit_quit()
         print "Interrupted by user!"
-        # FIXME call Scheduler.do_stop_timers()
-        for t in threading.enumerate():
-            if isinstance(t, _Timer):
-                t.cancel()
+
     return 0
 
 if __name__ == '__main__':

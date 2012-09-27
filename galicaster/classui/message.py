@@ -17,6 +17,7 @@ INFO = gtk.STOCK_DIALOG_INFO
 QUESTION = gtk.STOCK_DIALOG_QUESTION
 WARNING = gtk.STOCK_DIALOG_WARNING
 ERROR = gtk.STOCK_DIALOG_ERROR
+ACTION = gtk.STOCK_DIALOG_QUESTION
 POSITIVE = [gtk.RESPONSE_ACCEPT, gtk.RESPONSE_OK, gtk.RESPONSE_YES, gtk.RESPONSE_APPLY]
 NEGATIVE = [gtk.RESPONSE_REJECT, gtk.RESPONSE_DELETE_EVENT, gtk.RESPONSE_CANCEL, gtk.RESPONSE_CLOSE, gtk.RESPONSE_NO]
 
@@ -26,19 +27,14 @@ class PopUp(gtk.Widget):
     """
     __gtype_name__ = 'PopUp'
 
-    def __init__(self, message = None, text = dict(), size = None, parent=None , buttons = None): 
+    def __init__(self, message = None, text = dict(), parent=None,
+                 buttons = None, two_lines = None): 
 
         # Parse Size proportions
-        self.wprop = 1
-        self.hprop = 1
-        if size != None:
-            self.wprop = size[0]/1920.0
-            self.hprop = size[1]/1080.0
-        else:
-            size = [1280,960]
-            self.wprop = 0.6667
-            self.hprop = 0.8889
-        self.size=size
+        size = parent.get_size()
+        self.size = size
+        self.wprop = size[0]/1920.0
+        self.hprop = size[1]/1080.0
             
         # Default buttons
         if buttons == None:
@@ -49,36 +45,69 @@ class PopUp(gtk.Widget):
             elif message == QUESTION:
                 buttons = ( gtk.STOCK_ACCEPT, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,)
             elif message == ERROR:
-                buttons = ( gst.STOCK_CLOSE, gtk.RESPONSE_CLOSE )
+                buttons = ( gtk.STOCK_CLOSE, gtk.RESPONSE_CLOSE )
 
-
-        # Define types: WARNING (OK), YES_NO, ACCEPT_CANCEL, THREE_BUTTONS
 
         # Create an display dialog
-        dialog=self.create_ui(buttons,text, message, parent)
+        if message == "INGEST":
+            joined = two_lines+buttons
+            dialog = self.create_framed_lines(joined, text, QUESTION, parent)
+        elif two_lines:
+            dialog = self.create_ui_two_lines(buttons, two_lines, text, message, parent)
+        else:
+            dialog = self.create_ui(buttons,text, message, parent, message == ERROR)  
         self.response = dialog.run()
-        self.dialog.destroy()
+        dialog.destroy()
         return None
 
-    def create_ui(self, buttons, text, icon, parent):
-       
-        #dialog
-        dialog = gtk.Dialog(text.get("title","Galicaster"),parent,0,buttons)
-        self.dialog = dialog
-        dialog.set_property('width-request',int(self.size[0]/2.5)) # relative to screen size       
-        if self.size[0]<1300:
-            dialog.set_property('width-request',int(self.size[0]/2.2)) # relative to screen size   
- 
-        if buttons != None:
-            if len(buttons) > 5:
-                dialog.set_property('width-request',int(self.size[0]/2)) # relative to screen size       
+    def create_ui_two_lines(self, buttons, secondary, text, message, parent):
 
+        secondary_area = gtk.HButtonBox()
+        secondary_area.set_homogeneous(True)
+        for element in secondary:
+            if type(element) is str:
+                response = secondary[secondary.index(element)+1]
+                button = gtk.Button(element)
+                button.show()
+                secondary_area.pack_start(button,True,True)                
+                button.connect("clicked",self.force_response,response)
+
+        self.resize_buttons(secondary_area, 35)            
+
+        dialog = self.create_ui(buttons,text, message, parent, message == ERROR, True)  
+
+        self.resize_buttons(dialog.action_area, 20)
+
+        dialog.vbox.pack_end(secondary_area,True,True,0)
+        secondary_area.set_layout(gtk.BUTTONBOX_SPREAD)        
+        secondary_area.show() 
+
+        return dialog       
+
+
+    def create_ui(self, buttons, text, icon, parent, modifier = None, another = False):
+
+  
+        #dialog        
+        dialog = gtk.Dialog(text.get("title","Galicaster"),parent,0,buttons)
+
+        self.dialog = dialog
+        dialog.set_property('width-request',int(self.size[0]/2.5)) 
+        # relative to screen size       
+        if self.size[0]<1300:
+            dialog.set_property('width-request',int(self.size[0]/2.2))
+        if another:
+             dialog.set_property('width-request',int(self.size[0]/1.5)) 
+         
+
+        wprop = self.wprop
 
         dialog.vbox.set_property('spacing',int(self.hprop*20)) # vertical
             
         dialog.set_property('border-width',30) # full
         if parent != None:
             dialog.set_position(gtk.WIN_POS_CENTER_ON_PARENT)
+            
         else:
             dialog.set_position(gtk.WIN_POS_CENTER_ALWAYS)
         dialog.set_resizable(False)
@@ -90,15 +119,11 @@ class PopUp(gtk.Widget):
         font=self.set_font(str(int(self.hprop*30))+"px")
         label.set_attributes(font)
         label.set_alignment(0,0.5)
-        #label.set_justify(gtk.JUSTIFY_LEFT)
-        #label.set_line_wrap(True)
-        #label.set_line_wrap_mode(pango.WRAP_WORD)
 
 
         image = gtk.Image()
         image.set_from_icon_name(icon, gtk.ICON_SIZE_DIALOG)
         image.set_pixel_size(int(self.wprop*80))
-
         box.pack_start(image,True,True,0)
         box.pack_start(label,True,True,0)  
         dialog.vbox.pack_start(box, True , True ,0)
@@ -108,27 +133,20 @@ class PopUp(gtk.Widget):
                 stext= gtk.Label(text["text"])
                 font=self.set_font(str(int(self.hprop*20))+"px")
                 stext.set_attributes(font)
-                stext.set_alignment(0.5,0.5)
-                stext.set_ellipsize(pango.ELLIPSIZE_END)
+                if not modifier:
+                    stext.set_alignment(0.5,0.5)                
+                    stext.set_ellipsize(pango.ELLIPSIZE_END)
+                else:
+                    stext.set_alignment(0,0.5)                
+                    stext.set_line_wrap(True)
                 dialog.vbox.pack_start(stext)
                 stext.show()
 
         # Action Area
-        
         dialog.action_area.set_layout(gtk.BUTTONBOX_SPREAD)
-       
 
-        for e1 in dialog.action_area.get_children(): #buttons
-            for e2 in e1.get_children(): #aligns
-                if type(e2) == gtk.Label:
-                    font2 = self.set_font(str(int(self.wprop*35))+"px")
-                    e2.set_attributes(font2)
-                else:
-                    for e3 in e2.get_children(): #boxes
-                        for e4 in e3.get_children():# images and labels
-                            if type(e4) == gtk.Label:
-                                font2 = self.set_font(str(int(self.wprop*35))+"px")
-                                e4.set_attributes(font2)
+        self.resize_buttons(dialog.action_area, 35)
+
         # Show
                         
         image.show()
@@ -138,6 +156,174 @@ class PopUp(gtk.Widget):
         #align.show()
 
         return dialog
+
+    def create_framed_lines(self, buttons, text, icon, parent):
+
+        dialog = gtk.Dialog(text.get("title","Galicaster"),parent,0)
+        self.dialog = dialog
+        dialog.set_property('width-request',int(self.size[0]/1.8)) # relative to screen size       
+        wprop = self.wprop
+
+        dialog.vbox.set_property('spacing',int(self.hprop*20)) # vertical
+            
+        dialog.set_property('border-width',30) # full
+        if parent != None:
+            dialog.set_position(gtk.WIN_POS_CENTER_ON_PARENT)
+            #dialog.set_transient_for(parent)
+            #dialog.set_destroy_with_parent(True)
+            
+        else:
+            dialog.set_position(gtk.WIN_POS_CENTER_ALWAYS)
+        dialog.set_resizable(False)
+
+        #Content
+        box = gtk.HBox(spacing=int(self.wprop*30)) # between image and text
+
+        label = gtk.Label(text["main"])
+        font=self.set_font(str(int(self.hprop*30))+"px")
+        label.set_attributes(font)
+        label.set_alignment(0,0.5)
+
+
+        image = gtk.Image()
+        image.set_from_icon_name(icon, gtk.ICON_SIZE_DIALOG)
+        image.set_pixel_size(int(self.wprop*80))
+        box.pack_start(image,True,True,0)
+        box.pack_start(label,True,True,0)  
+        dialog.vbox.pack_start(box, True , True ,0)
+   
+        if text.has_key("text"):
+            if text["text"] != None:
+                stext= gtk.Label(text["text"])
+                font=self.set_font(str(int(self.hprop*20))+"px")
+                stext.set_attributes(font)
+                stext.set_alignment(0.5,0.5)                
+                stext.set_line_wrap(True)
+                dialog.vbox.pack_start(stext)
+                stext.show()
+
+ 
+        # Show
+                        
+        image.show()
+        label.show()        
+        box.show()
+
+        options = gtk.HBox()
+
+        has_ingest = False
+        for element in buttons:
+            if type(element) is str:
+                if element.count("Ingest"):
+                    has_ingest = True
+
+        if has_ingest:
+            ingest = gtk.Frame("Ingest")
+            ingest.set_label_align(0.5,0.5)
+            ing_align = gtk.Alignment(0.5,0.5,0.6,0.6)
+            ing_buttons =  gtk.VButtonBox()
+            ing_buttons.set_layout(gtk.BUTTONBOX_SPREAD)
+            ingest.add(ing_align)
+            ing_align.add(ing_buttons)
+
+        export = gtk.Frame("Export")
+        exp_align = gtk.Alignment(0.5,0.5,0.7,0.7)
+        export.set_label_align(0.5,0.5)
+        export_box = gtk.Table(2,2,homogeneous=True)       
+        exp_align.add(export_box)
+        export.add(exp_align)
+
+        cancel_frame = gtk.Frame(" ")
+        cancel_align = gtk.Alignment(0.5,0.5,0.7,0.7)
+        cancel_buttons = gtk.VButtonBox()
+        cancel_frame.add(cancel_align)
+        cancel_align.add(cancel_buttons)
+        cancel_frame.set_shadow_type(gtk.SHADOW_NONE)
+
+        index_down=0
+        index_up=0
+        for element in buttons:
+            if type(element) is str:
+                response = buttons[buttons.index(element)+1]
+                button = gtk.Button(element)
+                #PATCH
+                if element == "Cancel Export to Zip Nightly":
+                    button.set_label("Cancel Zip Nightly")
+                if element == "Cancel Side by Side Nightly":
+                    button.set_label("Cancel SbS Nightly")
+
+                button.connect("clicked",self.force_response,response)
+                if element.count("Ingest"):
+                    ing_buttons.pack_start(button, True, True, int(self.hprop*20))
+                elif element ==("Cancel"):
+                    cancel_buttons.pack_start(button, True, True,int(self.hprop*20))
+                else:
+                    if element.count("Nightly"):
+                        export_box.attach(button,index_down,index_down+1,1,2,gtk.FILL|gtk.EXPAND,0,
+                                          int(self.wprop*5),int(self.hprop*5))
+                        index_down+=1
+                    else:
+                        export_box.attach(button,index_up,index_up+1,0,1,gtk.EXPAND|gtk.FILL,0,
+                                          int(self.wprop*5),int(self.hprop*5))
+                        index_up+=1
+                button.show()
+
+        if has_ingest:
+            options.pack_start(ingest)
+            ing_buttons.show()
+            ing_align.show()
+            ingest.show()
+
+        options.pack_start(export)
+        options.pack_start(cancel_frame)
+
+        cancel_buttons.show()
+        exp_align.show()
+        export_box.show()
+        cancel_align.show()
+        cancel_buttons.show()
+        export.show()
+        cancel_frame.show()
+        options.show()
+        dialog.vbox.pack_start(options, True, True)
+
+        self.resize_buttons(options, 22, True)
+        return dialog
+
+    def resize_buttons(self, area, fontsize, equal = False):    
+        wprop = self.wprop
+        fsize=int(wprop*fontsize)
+        font2 = self.set_font(str(fsize)+"px")
+        chars = int(wprop*26)
+        for button in area.get_children():
+            for element in button.get_children():
+                if type(element) == gtk.Label:
+                    element.set_attributes(font2)
+                    if equal:
+                        element.set_padding(-1,int(wprop*fsize/2.6))
+                        element.set_width_chars(chars)
+                else:# is a box
+                    for box in element.get_children():
+                        for label in box.get_children():
+                            if type(label) == gtk.Label:
+                                label.set_attributes(font2)
+                                label.set_padding(int(wprop*fsize),
+                                                  int(wprop*fsize/3))
+                                if equal:
+                                    label.set_padding(int(wprop*fsize/3),
+                                                      int(wprop*fsize/2.6))
+                                    label.set_width_chars(chars)
+                            elif type(label) == gtk.Button:
+                                for other in label.get_children():
+                                    if type(other) == gtk.Label:
+                                        other.set_attributes(font2)
+                                        if equal:
+                                            other.set_padding(-1,int(wprop*fsize/2.6))
+                                            other.set_width_chars(chars)
+                                    
+
+    def force_response(self, origin, response):
+        self.dialog.response(response)
     
     def set_font(self,description):
         alist = pango.AttrList()
@@ -146,16 +332,15 @@ class PopUp(gtk.Widget):
         alist.insert(attr)
         return alist
 
-    def destroy(self):
-        self.dialog_destroy()
+    def dialog_destroy(self):
+        self.dialog.destroy()
+        self.dialog = None 
     
-    
-        #buttons
-
 gobject.type_register(PopUp)
 
 def main(args):
-    v = PopUplisting()
+    print "Running Main Message PopUp"
+    v = PopUp()
     gtk.main()
     return 0
 

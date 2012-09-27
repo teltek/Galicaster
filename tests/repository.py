@@ -11,12 +11,11 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-
-
 """
 Unit tests for `galicaster.repository` module.
 """
 import os
+import datetime
 from shutil import rmtree
 from tempfile import mkdtemp, mkstemp
 from unittest import TestCase
@@ -84,9 +83,15 @@ class TestFunctions(TestCase):
 
         self.assertEqual(repo.get("dae91194-2114-481b-8908-8a8962baf8da").status, mediapackage.SCHEDULED)
         self.assertEqual(repo.get("dae91194-2114-481b-8908-8a8962baf8db").status, mediapackage.RECORDING)
-        self.assertEqual(repo.get("dae91194-2114-481b-8908-8a8962baf8dc").status, mediapackage.PENDING)
+        self.assertEqual(repo.get("dae91194-2114-481b-8908-8a8962baf8dc").status, mediapackage.RECORDED)
         self.assertEqual(repo.get("dae91194-2114-481b-8908-8a8962baf8dd").status, mediapackage.FAILED)
         self.assertEqual(repo.get("dae91194-2114-481b-8908-8a8962baf8de").status, mediapackage.RECORDED)
+
+        self.assertEqual(len(repo.get("dae91194-2114-481b-8908-8a8962baf8da").operation), 0)
+        self.assertEqual(len(repo.get("dae91194-2114-481b-8908-8a8962baf8db").operation), 0)
+        self.assertEqual(len(repo.get("dae91194-2114-481b-8908-8a8962baf8dc").operation), 1)
+        self.assertEqual(len(repo.get("dae91194-2114-481b-8908-8a8962baf8dd").operation), 2)
+        self.assertEqual(len(repo.get("dae91194-2114-481b-8908-8a8962baf8de").operation), 3)
 
         mp_duration = repo.get("dae91194-2114-481b-8908-8a8962baf8da").getDuration()
         self.assertEqual(mp_duration, 2106)
@@ -160,13 +165,19 @@ class TestFunctions(TestCase):
         pass
 
 
+    def __get_tmp_bin(self, name, values):
+        tmp_file = mkstemp(name)[1]
+        bin = {'file': os.path.basename(tmp_file), 'path': os.path.dirname(tmp_file)}
+        bin.update(values)
+        return bin
+
     def test_add_after_rec_manual(self):
         duration = 134
         repo = repository.Repository(self.tmppath)
         mp = mediapackage.Mediapackage()
         #TODO file extension to mimetype???
-        bins = [{'name': 'name1', 'dev': 'dev1', 'file' : mkstemp('t.avi')[1], 'klass': 'klass1', 'options': {'flavor': 'presenter' }},
-                {'name': 'name2', 'dev': 'dev2', 'file' : mkstemp('t.mp4')[1], 'klass': 'klass2', 'options': {'flavor': 'presentation' }}
+        bins = [self.__get_tmp_bin('t.avi', {'device': 'test', 'name': 'name1', 'dev': 'dev1', 'flavor': 'presenter' }),
+                self.__get_tmp_bin('t.mp4', {'device': 'test', 'name': 'name2', 'dev': 'dev2', 'flavor': 'presentation' })
                 ]
 
         self.assertTrue(mp.manual)        
@@ -186,8 +197,8 @@ class TestFunctions(TestCase):
 
         mp.manual = False
         #TODO file extension to mimetype???
-        bins = [{'name': 'name1', 'dev': 'dev1', 'file' : mkstemp('t.avi')[1], 'klass': 'klass1', 'options': {'flavor': 'presenter' }},
-                {'name': 'name2', 'dev': 'dev2', 'file' : mkstemp('t.mp4')[1], 'klass': 'klass2', 'options': {'flavor': 'presentation' }}
+        bins = [self.__get_tmp_bin('t.avi', {'device': 'test', 'name': 'name1', 'dev': 'dev1', 'flavor': 'presenter' }),
+                self.__get_tmp_bin('t.mp4', {'device': 'test', 'name': 'name2', 'dev': 'dev2', 'flavor': 'presentation' })
                 ]
 
         self.assertFalse(mp.manual)        
@@ -196,3 +207,71 @@ class TestFunctions(TestCase):
         self.assertEqual(mp.getDuration(), duration)
         self.assertEqual(len(repo), 1)
         self.assertEqual(len(mp.getTracks()), 1)
+
+
+    def test_get_next_and_past_mediapackages(self):
+        repo = repository.Repository(self.tmppath)
+        now = datetime.datetime.utcnow()
+
+        mp = mediapackage.Mediapackage(identifier="1", title='MP#1', date=(now - datetime.timedelta(days=1)))
+        repo.add(mp)
+        mp = mediapackage.Mediapackage(identifier="2", title='MP#2', date=(now - datetime.timedelta(days=30)))
+        repo.add(mp)
+        mp = mediapackage.Mediapackage(identifier="3", title='MP#3', date=(now - datetime.timedelta(days=60)))
+        repo.add(mp)
+        mp_next = mediapackage.Mediapackage(identifier="4", title='MP#4', date=(now + datetime.timedelta(days=1)))
+        repo.add(mp_next)
+        mp = mediapackage.Mediapackage(identifier="5", title='MP#5', date=(now + datetime.timedelta(days=30)))
+        repo.add(mp)
+
+        self.assertEqual(repo.get_next_mediapackage(), mp_next)
+        self.assertEqual(len(repo.get_next_mediapackages()), 2)
+        self.assertEqual(len(repo.get_past_mediapackages()), 3)
+        self.assertEqual(len(repo.get_past_mediapackages(40)), 1)
+
+
+    def test_repair_inconsistencies(self):
+        repo = repository.Repository(self.tmppath)
+
+        mp = mediapackage.Mediapackage()
+        mp.status = mediapackage.INGESTED
+        mp.setOpStatus("pr0", mediapackage.OP_IDLE)
+        mp.setOpStatus("pr1", mediapackage.OP_PENDING)
+        mp.setOpStatus("pr2", mediapackage.OP_PROCESSING)
+        mp.setOpStatus("pr3", mediapackage.OP_DONE)
+        mp.setOpStatus("pr4", mediapackage.OP_FAILED)
+
+        repo.add(mp)
+        repo.repair_inconsistencies(mp)
+        
+        self.assertEqual(mp.status, mediapackage.RECORDED)
+        self.assertEqual(mp.getOpStatus("pr0"), mediapackage.OP_IDLE)
+        self.assertEqual(mp.getOpStatus("pr1"), mediapackage.OP_FAILED)
+        self.assertEqual(mp.getOpStatus("pr2"), mediapackage.OP_FAILED)
+        self.assertEqual(mp.getOpStatus("pr3"), mediapackage.OP_DONE)
+        self.assertEqual(mp.getOpStatus("pr4"), mediapackage.OP_FAILED)
+
+        
+    
+    def test_repo_lifecycle(self):
+        repo = repository.Repository(self.tmppath)
+
+        mp = mediapackage.Mediapackage()
+        mp.title = 'lifecycle test MP'
+        self.assertEqual(len(repo), 0)
+
+        repo.add_after_rec(mp, [], 30)
+        self.assertEqual(len(repo), 1)
+        
+        for catalog in mp.getCatalogs():
+            self.assertEqual(mp.getURI(), os.path.dirname(catalog.getURI()))
+            self.assertTrue(os.path.isfile(catalog.getURI()), 
+                            'The catalog path {0} not exists'.format(catalog.getURI()))
+        
+    
+
+    def test_init_folder_prefix(self):
+        self.assertEqual(repository.init_folder_prefix(''), 'gc_')
+        self.assertEqual(repository.init_folder_prefix('FooBar'), 'gc_FooBar_')
+        self.assertEqual(repository.init_folder_prefix('Foo-Bar'), 'gc_FooBar_')
+        self.assertEqual(repository.init_folder_prefix('Foo-Bar[!!??]'), 'gc_FooBar_')

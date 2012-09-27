@@ -27,7 +27,7 @@ from galicaster.utils import ical
 
 class TestFunctions(TestCase):
     
-    baseDir = path.join(path.dirname(path.abspath(__file__)), 'resources', 'ical')
+    base_dir = path.join(path.dirname(path.abspath(__file__)), 'resources', 'ical')
 
 
     def setUp(self):
@@ -36,20 +36,40 @@ class TestFunctions(TestCase):
     def tearDown(self):
         rmtree(self.tmppath)
     
-    def test_ical(self):   
+    def test_ical_create_mp(self):   
         repo = repository.Repository(self.tmppath)
         
-        events = ical.get_events_from_file_ical(path.join(self.baseDir, 'test.ical'))
+        events = ical.get_events_from_file_ical(path.join(self.base_dir, 'test.ical'))
         
         for event in events:
             ical.create_mp(repo, event)
-
         
         next = repo.get_next_mediapackage()
-        self.assertEqual(next.getDate(), datetime.strptime('2012-08-25 17:00:00', '%Y-%m-%d %H:%M:%S'))
+        self.assertEqual(next.getDate(), datetime.strptime('3012-08-25 17:00:00', '%Y-%m-%d %H:%M:%S'))
+        self.assertEqual(len(next.getElements()), 2)
+        self.assertEqual(len(next.getAttachments()), 1)
+        self.assertTrue(next.getAttachment('org.opencastproject.capture.agent.properties'))
+        self.assertEqual(len(next.getCatalogs()), 1)
 
         nexts = repo.get_next_mediapackages()
-        self.assertEqual(nexts[0].getDate(), datetime.strptime('2012-08-25 17:00:00', '%Y-%m-%d %H:%M:%S'))
+        self.assertEqual(nexts[0].getDate(), datetime.strptime('3012-08-25 17:00:00', '%Y-%m-%d %H:%M:%S'))
             
+
+    def test_ical_get_delete_events(self):
+        old_events = ical.get_events_from_file_ical(path.join(self.base_dir, 'test.ical'))
+        new_events = ical.get_events_from_file_ical(path.join(self.base_dir, 'none.ical'))
+        
+        delete_events = ical.get_delete_events(old_events, new_events)
+
+        self.assertEqual(len(delete_events), 2)
+        
+        
+    def test_ical_get_update_events(self):
+        old_events = ical.get_events_from_file_ical(path.join(self.base_dir, 'test.ical'))
+        new_events = ical.get_events_from_file_ical(path.join(self.base_dir, 'test_update.ical'))
+        
+        update_events = ical.get_update_events(old_events, new_events)
+
+        self.assertEqual(len(update_events), 1)
 
 

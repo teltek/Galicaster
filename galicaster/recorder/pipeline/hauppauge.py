@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+1# -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
 #       galicaster/recorder/pipeline/hauppauge
@@ -19,6 +19,9 @@ import gst
 
 from os import path
 
+from galicaster.recorder import base
+from galicaster.recorder import module_register
+
 pipestr = ( " filesrc name=gc-hauppauge-file-src ! valve drop=false name=gc-hauppauge-valve !  filesink  name=gc-hauppauge-sink async=false "
             " v4l2src name=gc-hauppauge-device-src ! queue name=queue33 ! ffmpegcolorspace ! xvimagesink qos=false async=false name=gc-hauppauge-preview " 
             " filesrc name= gc-hauppauge-audio-src ! audio/x-raw-int, rate=48000, channels=2, endianness=1234, width=16, depth=16, signed=true ! "
@@ -28,15 +31,91 @@ pipestr = ( " filesrc name=gc-hauppauge-file-src ! valve drop=false name=gc-haup
             #" gc-hauppauge-audio. ! queue ! mpegdemux name=demuxer "
             #" { demuxer.audio_00 ! queue ! decodebin2 ! level peak-falloff=1000 ! fakesink silent=True } " )
 
-class GChau(gst.Bin):
+class GChauppauge(gst.Bin, base.Base):
+
+    order = ["name","flavor","location","locprevideo","locpreaudio","file", 
+             "vumeter", "player", "input", "standard"]
 
     gc_parameters = {
-        "vumeter": "Activate Level message",
-        "player": "Enable sound play",
-        # "codification": "Not implemented yet",
+        "name": {
+            "type": "text",
+            "default": "Hauppauge",
+            "description": "Name assigned to the device",
+            },
+        "flavor": {
+            "type": "flavor",
+            "default": "presenter",
+            "description": "Matterhorn flavor associated to the track",
+            },
+        "location": {
+            "type": "device",
+            "default": "/dev/haucamera",
+            "description": "Device's mount point of the MPEG output",
+            },
+        "locprevideo": {
+            "type": "device",
+            "default": "/dev/hauprevideo",
+            "description": " Device's mount point of the RAW output",
+            },
+        "locpreaudio": {
+            "type": "device",
+            "default": "/dev/haupreaudio",
+            "description": "Device's mount point of the PCM output",
+            },
+        "file": {
+            "type": "text",
+            "default": "CAMERA.mpg",
+            "description": "The file name where the track will be recorded.",
+            },
+        "vumeter": {
+            "type": "boolean",
+            "default": "True",
+            "description": "Activate Level message",
+            },
+        "player": {
+            "type": "boolean",
+            "default": "True",
+            "description": "Enable sound play",
+            },
+        "input" : {
+            "type": "select",
+            "default": "Composite 3",
+            "options": [ # use index for parameter
+                "Tuner 1", "S-Video 1", "Composite 1", 
+                "S-Video 2", "Composite 2", "Composite 3",
+                ],
+            "description": "Select video input",
+            },
+        "standard" : {
+            "type": "select",
+            "default": "PAL",
+            "options": [
+                "NTSC", "NTSC-M", "NTSC-M-JP", "NTSC-M-KR", "NTSC-443", 
+                "PAL", "PAL-BG", "PAL-H", "PAL-I", "PAL-DK", "PAL-M", 
+                "PAL-N", "PAL-Nc", "PAL-60", "SECAM", "SECAM-B", "SECAM-G", 
+                "SECAM-H", "SECAM-DK", "SECAM-L", "SECAM-Lc"
+                ],
+            "description": "Select video standard",
+            },
+        }
+    
+    options = {
+        "0": "NTSC", "1": "NTSC-M", "2": "NTSC-M-JP", "3": "NTSC-M-KR", 
+        "4": "NTSC-443", "5": "PAL", "6": "PAL-BG", "7": "PAL-H", 
+        "8": "PAL-I", "9": "PAL-DK", "10": "PAL-M", "11": "PAL-N", 
+        "12": "PAL-Nc", "13": "PAL-60", "14": "SECAM", "15": "SECAM-B", 
+        "16": "SECAM-G", "17": "SECAM-H", "18": "SECAM-DK", "19": "SECAM-L", 
+        "20": "SECAM-Lc"
         }
 
+    options2 = {
+                "0": "Tuner 1", "1": "S-Video 1", "2": "Composite 1",
+                "3": "S-Video 2", "4": "Composite 2", "5": "Composite 3",
+                },
+
     is_pausable = False
+    has_audio   = True
+    has_video   = True
     
     __gstdetails__ = (
         "Galicaster Hauppauge BIN",
@@ -45,55 +124,50 @@ class GChau(gst.Bin):
         "Teltek Video Research"
         )
 
-    def __init__(self, name = None, devicesrc = {}, filesink = None, options = {}): 
-        if not isinstance(devicesrc, dict):
-            raise TypeError()
-
-        for key in ("device", "file", "audio"):
-            if not path.exists(devicesrc[key]):
-                raise SystemError("Device error in hauppauge bin: path %s not exists" % (devicesrc[key],) )
-
-        if name == None:
-            name = "v4l2"
-
-        gst.Bin.__init__(self, name)
+    def __init__(self, options={}): 
+        base.Base.__init__(self, options)
+        gst.Bin.__init__(self, self.options['name'])
         # Para usar con el gtk.DrawingArea
-        bin = gst.parse_bin_from_description(pipestr.replace("gc-hauppauge-preview", "sink-" + name), True)
-        # bin = gst.parse_bin_from_description(pipestr.replace("gc-hauppauge-preview", "sink-" + name), True)
+        bin = gst.parse_bin_from_description(pipestr.replace("gc-hauppauge-preview", "sink-" + self.options['name']), True)
+        # bin = gst.parse_bin_from_description(pipestr.replace("gc-hauppauge-preview", "sink-" + self.options['name']), True)
 
         self.add(bin)
 
         sink = self.get_by_name("gc-hauppauge-device-src")
-        sink.set_property("device", devicesrc["device"])
+        sink.set_property("device", self.options["locprevideo"])       
 
         sink = self.get_by_name("gc-hauppauge-file-src")
-        sink.set_property("location", devicesrc["file"])
+        sink.set_property("location", self.options["location"])
+
 
         sink = self.get_by_name("gc-hauppauge-audio-src") 
-        sink.set_property("location", devicesrc["audio"])
+        sink.set_property("location", self.options["locpreaudio"])
 
-        if "player" in options and options["player"] == "False":
+        if self.options["player"] == False:
             self.mute = True
             element = self.get_by_name("gc-hauppauge-volume")
             element.set_property("mute", True)
         else:
             self.mute = False
 
-        if filesink != None:
-            sink = self.get_by_name("gc-hauppauge-sink")
-            sink.set_property("location", filesink)
+        sink = self.get_by_name("gc-hauppauge-sink")
+        sink.set_property('location', path.join(self.options['path'], self.options['file']))
 
-        if "vumeter" in options:
+        if self.options["vumeter"] == False:
             level = self.get_by_name("gc-hauppauge-level")
-            if options["vumeter"] == "False":
-                level.set_property("message", False) 
+            level.set_property("message", False) 
 
-
-    def getValve(self):
-        return self.get_by_name("gc-hauppauge-valve")
+    def changeValve(self, value):
+        valve1=self.get_by_name('gc-hauppauge-valve')
+        valve1.set_property('drop', value)
 
     def getVideoSink(self):
         return self.get_by_name("gc-hauppauge-preview")
+
+    def getSource(self):
+        return self.get_by_name("gc-hauppauge-file-src")
+
+
   
     def send_event_to_src(self,event): # IDEA made a common for all our bins
         src1 = self.get_by_name("gc-hauppauge-device-src")
@@ -108,5 +182,13 @@ class GChau(gst.Bin):
             element = self.get_by_name("gc-hauppauge-volume")
             element.set_property("mute", value)
 
-gobject.type_register(GChau)
-gst.element_register(GChau, "gc-hauppauge-bin")
+    def configure(self):
+        ## 
+        # v4l2-ctl -d self.options["location"] -s self.options["standard"]
+        # v4l2-ctl -d self.options["location"] -i self.options["input"]
+        pass
+     
+
+gobject.type_register(GChauppauge)
+gst.element_register(GChauppauge, "gc-hauppauge-bin")
+module_register(GChauppauge, 'hauppauge')

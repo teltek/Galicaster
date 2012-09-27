@@ -19,6 +19,9 @@ import pango
 from galicaster.core import context
 from galicaster.classui import get_ui_path, get_image_path
 from galicaster import __version__
+from galicaster.classui.profile import ProfileUI as ListProfile
+from galicaster.classui.about import GCAboutDialog
+from galicaster.utils.resize import relabel
 
 class DistribUI(gtk.Box):
     """
@@ -34,22 +37,38 @@ class DistribUI(gtk.Box):
         dbox = dbuilder.get_object("distbox")
         release = dbuilder.get_object("release_label")
         release.set_label("Galicaster "+__version__)
-        br = dbuilder.get_object("button1")
-        bm = dbuilder.get_object("button2")
-        bq =  dbuilder.get_object("button3")
+
+        recorder = dbuilder.get_object("button1")        
+        manager = dbuilder.get_object("button2")
+        quit_button =  dbuilder.get_object("button3")
+        profile_button = dbuilder.get_object("profile_button")
+        self.selected = dbuilder.get_object("selected_profile")
+        self.update_selected_profile()
+        
+        #Connect signals
         dispatcher = context.get_dispatcher()
-        br.connect("clicked", self.emit_signal, "change_mode",0 )
-        bm.connect("clicked", self.emit_signal, "change_mode",1 )
-        bq.connect("clicked", self.emit_signal, "galicaster-quit")
+        dispatcher.connect("reload-profile", self.update_selected_profile)
+        recorder.connect("clicked", self.emit_signal, "change_mode",0 )
+        manager.connect("clicked", self.emit_signal, "change_mode",1 )
+        quit_button.connect("clicked", self.emit_signal, "galicaster-quit")
+        profile_button.connect("clicked", self.on_profile_button)
+        
         about = dbuilder.get_object("aboutevent")
-        about.connect("button-press-event", self.emit_signal2,"show-about")
+        about.connect("button-press-event", self.show_about_dialog)
 
         conf = context.get_conf()
-
-        if conf.get("screen", "quit") not in ["False","false","None","none"]:
-            bq.set_visible(True)
-
+        quit_button.set_visible(conf.get_boolean("basic", "quit"))
         self.pack_start(dbox,True,True,0)
+
+    def on_profile_button(self, origin):
+        parent=self.get_toplevel()
+        window = ListProfile(parent)
+
+    def update_selected_profile(self, button = None):
+        profile = context.get_conf().get_current_profile()
+             
+        if self.selected.get_text() != profile.name:
+            self.selected.set_text("Profile: "+profile.name)          
 
     def emit_signal(origin, button, signal, value=None):
 
@@ -59,47 +78,51 @@ class DistribUI(gtk.Box):
         else:
             dispatcher.emit(signal)
 
-    def emit_signal2(origin, button, event, signal):
-        dispatcher = context.get_dispatcher()
-        dispatcher.emit(signal)
+    def show_about_dialog(self,origin, button):
+        dialog=GCAboutDialog()
 
-    def resize(self,size): 
+    def resize(self): 
+        size = context.get_mainwindow().get_size()
+
         altura = size[1]
         anchura = size[0]
         k = anchura / 1920.0
 
-        def relabel(label,size,bold):           
-            if bold:
-                modification = "bold "+str(size)
-            else:
-                modification = str(size)
-            label.modify_font(pango.FontDescription(modification))
-   
-
         builder= self.builder
         logos = builder.get_object("logo_align")
-        logos.set_padding(int(k*56),int(k*45),int(k*120),int(k*120))
+        logos.set_padding(int(k*52),int(k*30),0,0)
         disal = builder.get_object("dis_align")
-        disal.set_padding(int(k*25),int(k*25),int(k*50),int(k*50))
+        #disal.set_padding(int(k*25),int(k*25),int(k*50),int(k*50))
 
         l1 = builder.get_object("reclabel")
         l2 = builder.get_object("mmlabel")
+        l3 = builder.get_object("selected_profile")
         i1 = builder.get_object("recimage")
         i2 = builder.get_object("mmimage")
         b1 = builder.get_object("button1")
         b2 = builder.get_object("button2")
 	relabel(l1,k*48,True)
         relabel(l2,k*48,True)  
+        relabel(l3,k*26,True)  
         i1.set_pixel_size(int(k*120))
         i2.set_pixel_size(int(k*120))
-        b1.set_property("width-request", int(k*500) )
-        b2.set_property("width-request", int(k*500) )
-        b1.set_property("height-request", int(k*500) )
-        b2.set_property("height-request", int(k*500) )
+        b1.set_property("width-request", int(anchura/3.5) )
+        b2.set_property("width-request", int(anchura/3.5) )
+        b1.set_property("height-request", int(anchura/3.5) )
+        b2.set_property("height-request", int(anchura/3.5) )
    
         lclass = builder.get_object("logo2")
         lcompany = builder.get_object("logo1")
-        iclass=gtk.gdk.pixbuf_new_from_file(get_image_path("logo"+str(anchura)+".png"))
-        icompany=gtk.gdk.pixbuf_new_from_file(get_image_path("teltek"+str(anchura)+".png"))
+
+        iclass=gtk.gdk.pixbuf_new_from_file(get_image_path("logo.svg"))
+        icompany=gtk.gdk.pixbuf_new_from_file(get_image_path("teltek.svg"))
+        iclass = iclass.scale_simple(
+            int(iclass.get_width()*k),
+            int(iclass.get_height()*k),
+            gtk.gdk.INTERP_BILINEAR)
+        icompany = icompany.scale_simple(
+            int(icompany.get_width()*k),
+            int(icompany.get_height()*k),
+            gtk.gdk.INTERP_BILINEAR)
         lclass.set_from_pixbuf(iclass)
         lcompany.set_from_pixbuf(icompany)

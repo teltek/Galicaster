@@ -13,37 +13,61 @@
 
 import logging
 import os
+import datetime
+import re
 from shutil import rmtree
-from datetime import datetime
+import ConfigParser
 
+from galicaster import __version__
 from galicaster.mediapackage import mediapackage
 from galicaster.mediapackage import serializer
 from galicaster.mediapackage import deserializer
 
 logger = logging.getLogger()
 
+
+def init_folder_prefix(hostname):
+    sanitize_hostname = re.sub(r'\W+', '', hostname)
+    if sanitize_hostname:
+        return 'gc_{0}_'.format(sanitize_hostname)
+    return 'gc_'
+
+
 class Repository(object):
     attach_dir = 'attach'
 
-    def __init__(self, root=None):
+    def __init__(self, root=None, hostname=''):
         """
-        FIXME doc
-
-        param: root...
+        param: root: absolute path to the working folder. ~/Repository use if is None
+        param: hostname: galicaster name use in folder prefix
         """ 
         self.root = root or os.path.expanduser('~/Repository')
+        self.folder_prefix = init_folder_prefix(hostname)
 
+        self.create_repo(hostname)
+
+        self.__list = dict()
+        self.refresh(True)
+
+
+    def create_repo(self, hostname):
         if not os.path.isdir(self.root):
             os.mkdir(self.root)
             
         if not os.path.isdir(os.path.join(self.root, self.attach_dir)):
             os.mkdir(os.path.join(self.root, self.attach_dir))
-            
-        self.__list = dict()
-        self.refresh()
 
+        info_repo_file = os.path.join(self.root, self.attach_dir, 'info.ini')
+        if not os.path.isfile(info_repo_file):
+            with open(info_repo_file, 'wb') as configfile:
+                conf = ConfigParser.ConfigParser() 
+                conf.add_section('repository')
+                conf.set('repository', 'version', __version__)
+                conf.set('repository', 'hostname', hostname)
+                conf.write(configfile)
+        
 
-    def refresh(self):
+    def refresh(self, check_inconsistencies=False):
         self.__list.clear()
         if self.root != None:
             for folder in os.listdir(self.root):
@@ -52,10 +76,28 @@ class Repository(object):
                 try:
                     manifest = os.path.join(self.root, folder, "manifest.xml")
                     if os.path.exists(manifest):
-                        novo = deserializer.fromXML(manifest)
-                        self.__list[novo.getIdentifier()] = novo
+                        new_mp = deserializer.fromXML(manifest)
+                        self.__list[new_mp.getIdentifier()] = new_mp
+                        if check_inconsistencies: self.repair_inconsistencies(new_mp)
                 except:
                     logger.error('Error in deserializer {0}'.format(folder))
+
+
+    def repair_inconsistencies(self, mp):
+        """
+        Check if any operations was being processed before the previous running
+        """
+        change = False
+        if mp.status > mediapackage.FAILED:
+            mp.status = mediapackage.RECORDED
+            change = True
+        for (op_name, op_value) in mp.operation.iteritems():
+            if op_value in [mediapackage.OP_PROCESSING, mediapackage.OP_PENDING]:
+                mp.setOpStatus(op_name, mediapackage.OP_FAILED)
+                change = True
+
+        if change:
+            self.update(mp)
 
 
     def list(self):
@@ -65,6 +107,14 @@ class Repository(object):
     def list_by_status(self, status):
         def is_valid(mp):
             return mp.status == status
+
+        next = filter(is_valid, self.__list.values())
+        return next
+
+
+    def list_by_operation_status(self, job, status):
+        def is_valid(mp):
+            return (mp.getOpStatus(job) == status)
 
         next = filter(is_valid, self.__list.values())
         return next
@@ -102,7 +152,7 @@ class Repository(object):
         Return de next mediapackages to be record.
         """
         def is_future(mp):
-            return mp.getDate() > datetime.utcnow()
+            return mp.getDate() > datetime.datetime.utcnow()
 
         next = filter(is_future, self.__list.values())
         next = sorted(next, key=lambda mp: mp.startTime) 
@@ -115,13 +165,25 @@ class Repository(object):
         """
         next = None
         for mp in self.__list.values():
-            if mp.getDate() > datetime.utcnow():
+            if mp.getDate() > datetime.datetime.utcnow():
                 if next == None:
                     next = mp
                 else:
                     if mp.getDate() < next.getDate():
                         next = mp
 
+        return next
+
+
+    def get_past_mediapackages(self, days=0):
+        """
+        Return de next mediapackages to be record.
+        """
+        def is_stale(mp):
+            return mp.getDate() < (datetime.datetime.utcnow() - datetime.timedelta(days=days))
+
+        next = filter(is_stale, self.__list.values())
+        next = sorted(next, key=lambda mp: mp.startTime) 
         return next
 
 
@@ -134,15 +196,15 @@ class Repository(object):
         return self.__list.has_key(mp.getIdentifier())
 
 
-    def has_by_key(self, key):
+    def has_key(self, key):
         return self.__list.has_key(key)
     
 
-    def add(self, mp):
+    def add(self, mp, name=None):
         if self.has(mp):
             raise KeyError('Key Repeated')
         if mp.getURI() == None:
-            mp.setURI(self.__get_folder_name())
+            mp.setURI(self.__get_folder_name(name or mp.getDate()))
         else:
             assert mp.getURI().startswith(self.root + os.sep)            
         os.mkdir(mp.getURI())
@@ -150,24 +212,30 @@ class Repository(object):
         return self.__add(mp)
 
 
-    def add_after_rec(self, mp, bins, duration):
+    def add_after_rec(self, mp, bins, duration, name=None, add_catalogs=True):
         if not self.has(mp):
-            mp.setURI(self.__get_folder_name())
+            mp.setURI(self.__get_folder_name(name or mp.getDate()))
             os.mkdir(mp.getURI())
 
         for bin in bins:
-            if mp.manual or (mp.getOCCaptureAgentProperty('capture.device.names') 
-                             and bin['name'] in mp.getOCCaptureAgentProperty('capture.device.names')):
-                filename = bin['file']
+            # TODO rec all and ingest 
+            capture_dev_names = mp.getOCCaptureAgentProperty('capture.device.names')
+            if mp.manual or len(capture_dev_names) == 0 or capture_dev_names == 'defaults' or bin['name'] in capture_dev_names:
+                filename = os.path.join(bin['path'], bin['file'])
                 dest = os.path.join(mp.getURI(), os.path.basename(filename))
                 os.rename(filename, dest)
-                etype = 'audio/mp3' if bin['klass'] in ['pulse.GCpulse'] else 'video/' + dest.split('.')[1].lower()
-                flavour = bin['options']['flavor'] + '/source'
+                etype = 'audio/mp3' if bin['device'] in ['pulse','audiotest'] else 'video/' + dest.split('.')[1].lower()
+                flavour = bin['flavor'] + '/source'
                 mp.add(dest, mediapackage.TYPE_TRACK, flavour, etype, duration) # FIXME MIMETYPE
         mp.forceDuration(duration)
+
+        if add_catalogs:
+            mp.add(os.path.join(mp.getURI(), 'episode.xml'), mediapackage.TYPE_CATALOG, 'dublincore/episode', 'text/xml')
+            if mp.series:
+                mp.add(os.path.join(mp.getURI(), 'series.xml'), mediapackage.TYPE_CATALOG, 'dublincore/series', 'text/xml')
+
         # ADD MP to repo
         self.__add(mp) 
-        
 
 
     def delete(self, mp):
@@ -184,34 +252,37 @@ class Repository(object):
             raise KeyError('Key not Exists')
         #Si cambio URI error.
         return self.__add(mp)
-            
 
-    def get_new_mediapackage(self, name=None, add_episode=True, timestamp=None):
-        folder = self.__get_folder_name(name)
-        mp = mediapackage.Mediapackage(uri=folder, date=timestamp)
-        if add_episode:
-            mp.add(os.path.join(folder, 'episode.xml'), mediapackage.TYPE_CATALOG, 'dublincore/episode', 'text/xml')
-        return mp
 
     def save_attach(self, name, data):
         m = open(os.path.join(self.root, self.attach_dir, name), 'w')  
         m.write(data)  
         m.close()
         
+
     def get_attach(self, name):
         return open(os.path.join(self.root, self.attach_dir, name))  
 
-    def get_attach_path(self):
-        return os.path.join(self.root, self.attach_dir)
+
+    def get_attach_path(self, name=None):
+        if name:
+            return os.path.join(self.root, self.attach_dir, name)
+        else:
+            return os.path.join(self.root, self.attach_dir)
+
 
     def __get_folder_name(self, name=None):
         if name == None:
-            timestamp = datetime.now().replace(microsecond=0).isoformat()
-            folder = os.path.join(self.root, "gc_" + timestamp)
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%Hh%Mm%S")
+            folder = os.path.join(self.root, self.folder_prefix + timestamp)
+        elif isinstance(name, datetime.datetime):
+            timestamp = name.strftime("%Y-%m-%dT%Hh%Mm%S")
+            folder = os.path.join(self.root, self.folder_prefix + timestamp)
         else:
-            folder = os.path.join(self.root, "gc_" + name)
+            folder = os.path.join(self.root, self.folder_prefix + name)
         
         return folder
+
 
     def __add(self, mp):
         self.__list[mp.getIdentifier()] = mp

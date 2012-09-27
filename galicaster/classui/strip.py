@@ -17,7 +17,7 @@ import gtk
 
 from galicaster.core import context
 from galicaster.classui import get_ui_path, get_image_path
-
+from galicaster.classui.about import GCAboutDialog
 
 class StripUI(gtk.Box):
     """
@@ -31,37 +31,39 @@ class StripUI(gtk.Box):
         dispatcher = context.get_dispatcher()
         builder = gtk.Builder()
         builder.add_from_file(get_ui_path('strip.glade'))
-        self.builder=builder
-        self.strip=builder.get_object("stripbox")
+        self.builder = builder
+        self.strip = builder.get_object("stripbox")
         button = builder.get_object("previousbutton")
         button.connect("clicked", self.emit_signal, "change-mode", back_page)
         about = builder.get_object("aboutevent")
-        about.connect("button-press-event", self.emit_signal2, "show-about")
+        about.connect("button-press-event", self.show_about_dialog)
 
         self.pack_start(self.strip,True,True,0)
 
     def emit_signal(origin, button, signal, value):
         dispatcher = context.get_dispatcher()
-        dispatcher.emit(signal,value)
+        dispatcher.emit(signal, value)
 
-    def emit_signal2(origin, button, event, signal):
-        dispatcher = context.get_dispatcher()
-        dispatcher.emit(signal)
+    def show_about_dialog(self, origin, button):
+        dialog=GCAboutDialog()
 
-
-    def resize(self,size): 
+    def resize(self): 
+        size = context.get_mainwindow().get_size()
         altura = size[1]
         anchura = size[0]
         k = anchura / 1920.0
 
-        image=gtk.gdk.pixbuf_new_from_file(get_image_path("logo"+str(anchura)+".png"))
-
+        pixbuf = gtk.gdk.pixbuf_new_from_file(get_image_path('logo.svg'))    
+        pixbuf = pixbuf.scale_simple(
+            int(pixbuf.get_width()*k),
+            int(pixbuf.get_height()*k),
+            gtk.gdk.INTERP_BILINEAR)
         align2 = self.builder.get_object("top_align")
         
         logo2 = self.builder.get_object("logo2")
 
-        logo2.set_from_pixbuf(image)
-        align2.set_padding(int(k*55),int(k*31),int(k*120),int(k*120))
+        logo2.set_from_pixbuf(pixbuf)
+        align2.set_padding(int(k*51),int(k*30),0,0)
 
         for name in ["previousbutton"]:
             button = self.builder.get_object(name)
