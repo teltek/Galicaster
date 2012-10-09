@@ -16,6 +16,7 @@
 # * metadata dict in mediapackage *33
 import os
 import sys
+import traceback
 import logging
 import zipfile
 from os import path,system
@@ -124,11 +125,16 @@ def save_system_zip(mp, loc):
     # FIXME other elements
     
     try:
+        loc = loc if type(loc) in [str,unicode] else loc.name
         system('zip -j0 "'+loc + '" "'+'" "'.join(files) + '" >/dev/null')
+        if os.path.isfile(loc+".zip"): # WORKARROUND to eliminate automatic extension .zip
+            os.rename(loc+".zip",loc)
+        
         #FNULL = open('/dev/null', 'w')
         #subprocess.check_call(['zip','-j0',loc]+files,stdout=FNULL)
-    except:
+    except Exception:
         logger.error("Zip failed: "+str(sys.exc_info()[0]))
+    loc = None
     os.remove(tmp_file)
 
 if ziptype == "system":
@@ -136,7 +142,7 @@ if ziptype == "system":
     save_in_zip = save_system_zip
 else: 
     logger.debug("Ussing Native Zip")
-    save_in_zip = save_native_ip
+    save_in_zip = save_native_zip
 
 
 def set_properties(mp):

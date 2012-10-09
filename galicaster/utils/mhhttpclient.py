@@ -20,6 +20,7 @@ import socket
 #IDEA use cStringIO to improve performance
 from StringIO import StringIO
 import pycurl
+import json
 
 INIT_ENDPOINT = '/welcome.html'
 ME_ENDPOINT = '/info/me.json'
@@ -28,7 +29,8 @@ SETSTATE_ENDPOINT = '/capture-admin/agents/{hostname}'
 SETCONF_ENDPOINT = '/capture-admin/agents/{hostname}/configuration'
 INGEST_ENDPOINT = '/ingest/addZippedMediaPackage'
 ICAL_ENDPOINT = '/recordings/calendars?agentid={hostname}'
-SERIES_ENDPOINT = '/series/series.json'
+#SERIES_ENDPOINT = '/series/series.json'
+SERIES_ENDPOINT = '/series/series.json?count=100'
 
 logger = logging.getLogger()
 
@@ -188,4 +190,7 @@ class MHHTTPClient(object):
 
 
     def getseries(self):
-        return self.__call('GET', SERIES_ENDPOINT)
+        """ Get all series upto 100"""
+        # TODO make a workaround to get all
+        return self.__call('GET', SERIES_ENDPOINT,100)
+        

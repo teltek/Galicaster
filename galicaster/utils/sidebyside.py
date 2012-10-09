@@ -54,29 +54,28 @@ def create_sbs(out, camera, screen, audio=None):
     """
 
     old_pipestr = """
-
     videomixer name=mix 
         sink_0::xpos=0 sink_0::ypos=0 sink_0::zorder=0
         sink_1::xpos=640 sink_1::ypos=120 sink_1::zorder=1 !
     ffmpegcolorspace name=colorsp_saida ! 
-    video/x-raw-yuv, format=(fourcc)I420, width=1280, height=720, framerate=25/1 !
     x264enc quantizer=45 speed-preset=6 profile=1 ! queue ! 
     mp4mux name=mux  ! queue ! filesink location="{OUT}"
 
     filesrc location="{SCREEN}" !
-    queue ! decodebin2 name=dbscreen ! ffmpegcolorspace ! videoscale ! videorate name=v2 !
+    queue ! decodebin2 name=dbscreen ! ffmpegcolorspace ! deinterlace ! videoscale ! videorate name=v2 !
     video/x-raw-yuv,width=640,height=480,framerate=25/1 !
     videobox right=-640 top=-120 bottom=-120 ! ffmpegcolorspace !
     mix.sink_0 
 
     filesrc location="{CAMERA}" !
-    queue ! decodebin2 name=dbcamera ! ffmpegcolorspace ! videoscale ! videorate name=v1 !
-    video/x-raw-yuv,width=640,height=480,framerate=25/1 !
+    queue ! decodebin2 name=dbcamera ! ffmpegcolorspace ! deinterlace ! videoscale ! videorate name=v1 !
+    video/x-raw-yuv,width=640,height=480,framerate=25/1,interlaced=false !
     mix.sink_1 
     """
 
     old_caps = " video/x-raw-yuv,width=640,height=480,framerate=25/1 ! "
     newer_caps = " video/x-raw-yuv, format=(fourcc)AYUV, framerate=25/1, width=640, height=480 ! "
+
                                                                                                                                  
 
     pipestr_audio = """
@@ -103,10 +102,11 @@ def create_sbs(out, camera, screen, audio=None):
     embeded = False
     if audio:
         pipestr = "".join((pipestr, pipestr_audio_file.format(AUDIO=audio)))
-        logger.debug('Audio track detected: %r', audio)
+        logger.debug('Audio track detected: %s', audio)
     else:
         logger.debug('Audio embeded')
         embeded = True        
+
 
     parameters = {'OUT': out, 'SCREEN': screen, 'CAMERA': camera}
 
@@ -140,7 +140,7 @@ def create_sbs(out, camera, screen, audio=None):
 def on_audio_decoded(element, pad, bin, muxer):
 
     name = pad.get_caps()[0].get_name()
-    element_name = element.get_name()[7:]
+    element_name = element.get_name()[:8]
     sink = None
 
     # only one audio will be muxed
@@ -149,7 +149,7 @@ def on_audio_decoded(element, pad, bin, muxer):
 
     if name.startswith('audio/x-raw') and pending:
         # db%. audioconvert ! queue ! faac bitrate = 12800 ! queue ! mux.
-        logger.debug('Audio decoded pad: %r in %r', name, element_name)
+        logger.debug('Audio decoded pad: %r in %s', name, element_name)
 
         convert = gst.element_factory_make('audioconvert', 'sbs-audio-convert')
         q1 = gst.element_factory_make('queue','sbs-audio-queue1')
