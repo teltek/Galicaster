@@ -10,6 +10,9 @@
 # this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
+"""
+UI for the welcoming page
+"""
 
 
 import gtk
@@ -52,12 +55,14 @@ class GCWindow(gtk.Window):
 
 
     def start(self):
-        
+        """Shifts to fullscreen mode and triggers content resizing and drawing"""
         self.fullscreen()
         self.resize_childs()
         self.show_all()
         
     def toggle_fullscreen(self, other = None):
+        """Allows shifting between full and regular screen mode.
+        For development purposes."""
         if self.is_fullscreen:
             self.is_fullscreen = False
             self.unfullscreen()
@@ -67,6 +72,7 @@ class GCWindow(gtk.Window):
         self.resize_childs()
 
     def resize_childs(self):
+        """Resize the children upon the main window screen size."""
         nbook = self.get_child()
         current = nbook.get_nth_page(self.get_current_page())
         current.resize()
@@ -77,12 +83,14 @@ class GCWindow(gtk.Window):
             child.resize()            
 
     def get_size(self):
+        """Returns the current size of the main window. """
         if self.is_fullscreen:
             return self.full_size
         else:
             return self.__def_win_size__
 
     def discover_size(self):
+        """Retrieves the current size of the window where the application will be shown"""
         size = (1920,1080)
         try:
             root = gtk.gdk.get_default_root_window()
@@ -97,24 +105,29 @@ class GCWindow(gtk.Window):
         
 
     def insert_page(self, page, label, cod):
+        """Insert an area on the main window notebook widget"""
         self.nbox.insert_page(page, gtk.Label(label), cod) 
 
         
     def set_current_page(self, cod):
+        """Changes active area"""
         self.nbox.set_current_page(cod)
 
 
     def get_current_page(self):
+        """Gets the current page id number"""
         return self.nbox.get_current_page()
 
 
     def __on_delete_event(self):
+        """Emits the quit signal to its childs"""
         log.debug("Delete Event Received")
         if self.dispatcher:
             self.dispatcher.emit('galicaster-quit')
 
 
     def close(self, signal):
+        """Pops up a dialog asking to quit"""
         text = {"title" : "Galicaster",
                 "main" : "Are you sure you want to QUIT? ", 
                 }

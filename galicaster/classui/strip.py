@@ -10,7 +10,9 @@
 # this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
-
+"""
+Top bar widget including back to previous page button and Galicaster logo
+"""
 
 from os import path
 import gtk
@@ -26,6 +28,10 @@ class StripUI(gtk.Box):
     __gtype_name__ = 'StripUI'
     
     def __init__(self, back_page ):  
+        """
+        Creates a top bar widget with the Galicaster Logo.
+        If a back_page is provided - the tab number on the Core notebook wiget - it will show a back to the previous page button. 
+        """
         gtk.Box.__init__(self)
 
         dispatcher = context.get_dispatcher()
@@ -41,13 +47,16 @@ class StripUI(gtk.Box):
         self.pack_start(self.strip,True,True,0)
 
     def emit_signal(origin, button, signal, value):
+        """Connect a button to a signal emission"""
         dispatcher = context.get_dispatcher()
         dispatcher.emit(signal, value)
-
+        
     def show_about_dialog(self, origin, button):
+        """Pop up the About Dialog"""
         dialog=GCAboutDialog()
 
     def resize(self): 
+        """Adapts GUI elements to the screen size"""
         size = context.get_mainwindow().get_size()
         altura = size[1]
         anchura = size[0]
