@@ -19,11 +19,11 @@ from os import path
 import galicaster
 
 from galicaster.recorder.utils import Switcher
+from galicaster.recorder import base
+from galicaster.recorder import module_register
 
 
 log = logging.getLogger()
-
-  
 
 pipestr = (" identity name=\"joint\" ! tee name=gc-vga2usb-tee ! "
            " queue !  videorate silent=true ! video/x-raw-yuv,framerate=25/1 ! "
@@ -36,14 +36,49 @@ pipestr = (" identity name=\"joint\" ! tee name=gc-vga2usb-tee ! "
            " queue ! ffmpegcolorspace ! identity single-segment=true ! "
            " xvimagesink qos=false async=false sync=false name=gc-vga2usb-preview " )
 
-class GCvga2usb(gst.Bin):
+class GCvga2usb(gst.Bin, base.Base):
+
+    order = ["name","flavor","location","file","drivertype"]
 
     gc_parameters = {
-        'drivertype': 'v4l2 or v4l to epiphan driver',
-        'background': 'Not implemented yet'
+        "name": {
+            "type": "text",
+            "default": "Epiphan",
+            "description": "Name assigned to the device",
+            },
+        "flavor": {
+            "type": "flavor",
+            "default": "presentation",
+            "description": "Matterhorn flavor associated to the track",
+            },
+        "location": {
+            "type": "device",
+            "default": "/dev/screen",
+            "description": "Device's mount point of the MPEG output",
+            },
+        "file": {
+            "type": "text",
+            "default": "SCREEN.avi",
+            "description": "The file name where the track will be recorded.",
+            },
+        "drivertype": {
+            "type": "select",
+            "default": "v4l2",
+            "options": [
+                "v4l", "v4l2"
+                ],
+            "description": "v4l2 or v4l to epiphan driver",
+            },
+        "background": {
+            "type": "text",
+            "default": "",
+            "description": "Not implemented yet",
+            },
         }
     
     is_pausable = True
+    has_audio   = False
+    has_video   = True
 
     __gstdetails__ = (
         "Galicaster Epiphan VGA2USB BIN",
@@ -52,45 +87,41 @@ class GCvga2usb(gst.Bin):
         "Teltek Video Research"
         )
 
-    def __init__(self, name = None, devicesrc = None, filesink = None, options = {}): 
-        # FIXME take out background        
-        if not path.exists(devicesrc):
-            raise SystemError('Device error in vga2usb bin: path %s not exists' % (devicesrc,) )
-
-        if name == None:
-            name = "vga2usb"
-
-        gst.Bin.__init__(self, name)
+    def __init__(self, options={}): 
+        base.Base.__init__(self, options)
+        gst.Bin.__init__(self, self.options['name'])
 
         # FIXME check route in conf/recorderui and define options
-        if "background" not in options:
+        if "background" not in self.options:
             background= (path.join(path.dirname(path.abspath(galicaster.__file__)), "..", "resources", "bg.png") )
         else:
-            background = (path.join(path.dirname(path.abspath(galicaster.__file__)), "..", options["background"]))
+            background = (path.join(path.dirname(path.abspath(galicaster.__file__)), "..", self.options["background"]))
 
-        if "drivertype" not in options or options["drivertype"] == "v4l":
+        if self.options["drivertype"] == "v4l":
             driver_type = "v4lsrc"
         else:
             driver_type = "v4l2src"
 
-        bin_end = gst.parse_bin_from_description(pipestr.replace("gc-vga2usb-preview", "sink-" + name), True)
+        bin_end = gst.parse_bin_from_description(pipestr.replace("gc-vga2usb-preview", "sink-" + self.options['name']), True)
         log.info("Setting background for Epiphan: %s", background)
-        bin_start = Switcher("canguro", devicesrc, background, driver_type)
+        bin_start = Switcher("canguro", self.options['location'], background, driver_type)
         self.bin_start=bin_start            
 
         self.add(bin_start, bin_end)
         bin_start.link(bin_end)
 
-        if filesink != None:
-            sink = self.get_by_name("gc-vga2usb-sink")
-            sink.set_property("location", filesink)
+        sink = self.get_by_name("gc-vga2usb-sink")
+        sink.set_property('location', path.join(self.options['path'], self.options['file']))
 
-
-    def getValve(self):
-        return self.get_by_name("gc-vga2usb-valve")
+    def changeValve(self, value):
+        valve1=self.get_by_name('gc-vga2usb-valve')
+        valve1.set_property('drop', value)
 
     def getVideoSink(self):
         return self.get_by_name("gc-vga2usb-preview")
+
+    def getSource(self):
+        return self.get_by_name("gc-vga2usb-tee")
 
     def send_event_to_src(self,event): # IDEA made a common for all our bins
         self.bin_start.send_event_to_src(event)
@@ -102,3 +133,4 @@ class GCvga2usb(gst.Bin):
 
 gobject.type_register(GCvga2usb)
 gst.element_register(GCvga2usb, "gc-vga2usb-bin")
+module_register(GCvga2usb, 'vga2usb')

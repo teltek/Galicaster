@@ -14,7 +14,7 @@
 
 import logging
 
-__version__ = '1.1.x'
+__version__ = 'gc_dev_svn'
 
 
 format = [

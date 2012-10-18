@@ -37,6 +37,8 @@ Apartados:
 
 -- basic
    * repository: la ruta del directorio de trabajo. Si no se especifica, se usara un directorio Repository en el home del susario
+   * stopdialog: Activa/Desactiva un diálogo que solicita confirmación para deterner la grabación. Por defecto a True. (True|False)
+   * quit: Muestra u oculta el botón de salida del programa. (True|False)
    * admin: activa el modo administrador (True|False)
       - False: Usado por defecto, el usuario solo podra realizar grabaciones. Galicaster operará como GClass.
       - True: Ademas de grabar, el usuario puede editar metadatos, reproducir y administrar las grabaciones. Galicaster operará como GMobile.
@@ -44,15 +46,16 @@ Apartados:
 -- screen
    * right: Nombre del dispositivo de vídeo en las lista de tracks que se mostrará en la pantalla derecha (None para desactivar).
    * left: Nombre del dispositivo de vídeo en las lista de tracks que se mostrará en la pantalla izquierda (None para desactivar).
-   * quitr: Muestra u oculta el botón de salida del programa. (True|False)
 
 -- ingest
    Los datos para conectar Galicaster a un servidor Opencast-Matterhorn.
    * active: Activa o desactiva la conexion al servidor Opencast-Matterhorn (True|False)
-   * default: Habilita la ingesta nocturna de las grabaciones realizadas con Galicaster (True|False)
+   * manual: Configura el método de ingestión automática de las grabaciones manuales. Las opciones posibles son: desactivar la ingestión automática (none), ingestar inmediatamente después de la grabación (immediately) o realizar una ingestión nocturna de todas las grabaciones de ese día (nightly). Por defecto 'none'. (none|immediately|nightly)
+   * scheduled: Configura el método de ingestión automática de las grabaciones programadas. Las opciones posibles son: desactivar la ingestión automática (none), ingestar inmediatamente después de la grabación (immediately) o realizar una ingestión nocturna de todas las grabaciones de ese día (nightly). Por defecto 'none'. (none|immediately|nightly)
    * host: URL del servidor matterhorn
-   * username: Nombre de usuario del la cuenta Matterhorn para realizar llamadas a los REST endpoints.
+   * username: Nombre del equipo Galicaster. Por defecto se usa el nombre del equipo en el sistema operativo, precedido de "GC-" si es Galicaster Class o "GCMobile-" si es Galicaster Mobile.
    * password: Contraseña del la cuenta Matterhorn para realizar llamadas a los REST endpoints.
+   * hostname: Nombre del equipo galicaster. Por defecto se obtiene del sistema operativo
    * workflow: Nombre del Workflow Matterhon usado para ingestar los videos grabados
    * workflow-parameters: secuencia de pares parámetro y valor (parametro:valor) para ser procesados por el workflow de Matterhorn, separados por punto y coma.
 

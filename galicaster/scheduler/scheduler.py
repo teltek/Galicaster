@@ -15,110 +15,100 @@ import logging
 
 import datetime
 import tempfile
+from os import path
 from threading import Timer
 from threading import _Timer
 
-from galicaster.core import context
-from galicaster.utils.mhhttpclient import MHHTTPClient
 from galicaster.utils import ical
 from galicaster.mediapackage import mediapackage
 
-log = logging.getLogger()
+logger = logging.getLogger()
 
-class Scheduler():
+class Scheduler(object):
 
-    #FIXME set timer on Conf
-    INTERVAL_INIT_CLIENT = 30
-    INTERVAL_PUSH_STATE = 5
-    INTERVAL_POLL_ICAL = 10
-
-    def __init__(self):
+    def __init__(self, repo, conf, disp, mhclient):
         """
+        Arguments:
+        repo -- the galicaster mediapackage repository
+        conf -- galicaster configuration
+        disp -- the galicaster event-dispatcher to emit signals
+        mhclient -- matterhorn HTTP client
         """
         self.ca_status = 'idle'
 
-        self.conf = context.get_conf()
-        self.repo = context.get_repository() 
-        self.worker = context.get_worker()
-        self.dispatcher = context.get_dispatcher() 
-        self.dispatcher.connect("galicaster-notify-quit", self.do_stop_timers)
-        self.__init_client()
+        self.conf = conf
+        self.repo = repo
+        self.dispatcher = disp
+        self.client = mhclient
+
+        self.dispatcher.connect('galicaster-notify-timer-short', self.do_timers_short)
+        self.dispatcher.connect('galicaster-notify-timer-long',  self.do_timers_long)
+
         self.t_stop = None
 
         self.start_timers = dict()
-        self.stop_timers = False
         self.mp_rec = None
-        #FIXME init last_events with ical from repo.attach
-        self.last_events = list()
+        self.last_events = self.init_last_events()
+        self.net = False
+
+
+    def init_last_events(self):
+        ical_path = self.repo.get_attach_path('calendar.ical')
+        if path.isfile(ical_path):
+            return ical.get_events_from_file_ical(ical_path)
+        else:
+            return list()
+
+
+    def do_timers_short(self, sender):
+        if self.net:
+            self.set_state()
+        else:
+            self.init_client()
+
+
+    def do_timers_long(self, sender):
+        if self.net:
+            self.proccess_ical()
 
     
-    def __init_client(self):
-        log.info('Init matterhorn client')
-        server = self.conf.get_section('ingest')
-
-        self.t_state = None
-        self.t_ical = None
-        self.t_client = None
-        self.t_ingest = None
-
-        self.client = context.get_mhclient()
+    def init_client(self):
+        logger.info('Init matterhorn client')
 
         try:
             self.client.welcome()
         except:
-            log.warning('Unable to connect to matterhorn server')
-            self.t_client = Timer(self.INTERVAL_INIT_CLIENT, self.__init_client) 
-            self.t_client.start()
+            logger.warning('Unable to connect to matterhorn server')
+            self.net = False
+            self.dispatcher.emit('net-down')
         else:
-            self.__init_timers()
-            self.dispatcher.emit("net-up")
+            self.net = True
+            self.dispatcher.emit('net-up')
 
-    def __init_timers(self):
-        self.t_state = Timer(2, self.set_state) 
-        self.t_state.start()
-        self.t_ical = Timer(2, self.proccess_ical)
-        self.t_ical.start()
-        self.t_ingest = Timer(self.__get_sec_until_tomorrow(), self.ingest)
-        self.t_ingest.start()
-        self.t_client = None
-        self.t_stop = None
-
-
-    def __stop_timers(self):
-        log.debug('stop timers')
-        self.dispatcher.emit("net-down")
-        timers = [self.t_state, self.t_ical, self.t_ingest]
-        for ti in timers:
-            if isinstance(ti, _Timer):
-                ti.cancel()
-        self.__init_client()
 
 
     def set_state(self):
-        log.info('Set status %s to server', self.ca_status)
-        #log.info('Hostname %s %s', socket.gethostname(), socket.gethostbyname(socket.gethostname()))
+        logger.info('Set status %s to server', self.ca_status)
         try:
             res = self.client.setstate(self.ca_status)
             res = self.client.setconfiguration(self.conf.get_tracks_in_mh_dict()) 
-            self.dispatcher.emit("net-up")
+            self.net = True
+            self.dispatcher.emit('net-up')
         except:
-            log.warning('Problems to connect to matterhorn server ')
-            self. __stop_timers()
+            logger.warning('Problems to connect to matterhorn server ')
+            self.net = False
+            self.dispatcher.emit('net-down')
             return
-
-        if not self.stop_timers:
-            self.t_state = Timer(self.INTERVAL_PUSH_STATE, self.set_state)
-            self.t_state.start()
 
 
     def proccess_ical(self):
-        log.info('Proccess ical')
-
+        logger.info('Proccess ical')
         try:
             ical_data = self.client.ical()
         except:
-            log.warning('Problems to connect to matterhorn server ')
-            self. __stop_timers()
+            logger.warning('Problems to connect to matterhorn server ')
+            self.net = False
+            self.dispatcher.emit('net-down')
             return
 
         try:
@@ -126,15 +116,17 @@ class Scheduler():
             delete_events = ical.get_delete_events(self.last_events, events)
             update_events = ical.get_update_events(self.last_events, events)
         except:
-            log.error('Error proccessing ical')
+            logger.error('Error proccessing ical')
             return
 
         self.repo.save_attach('calendar.ical', ical_data)
         
         for event in events:
+            logger.info('Creating MP with UID {0} from ical'.format(event['UID']))
             ical.create_mp(self.repo, event)
         
         for event in delete_events:
+            logger.info('Deleting MP with UID {0} from ical'.format(event['UID']))
             mp = self.repo.get(event['UID'])
             if mp.status == mediapackage.SCHEDULED:
                 self.repo.delete(mp)
@@ -143,6 +135,7 @@ class Scheduler():
                 del self.start_timers[mp.getIdentifier()]
 
         for event in update_events:
+            logger.info('Updating MP with UID {0} from ical'.format(event['UID']))
             mp = self.repo.get(event['UID'])
             if self.start_timers.has_key(mp.getIdentifier()) and mp.status == mediapackage.SCHEDULED:
                 self.start_timers[mp.getIdentifier()].cancel()
@@ -153,9 +146,6 @@ class Scheduler():
             self.__create_new_timer(mp)
                 
         self.last_events = events
-        if not self.stop_timers:
-            self.t_ical = Timer(self.INTERVAL_POLL_ICAL, self.proccess_ical)
-            self.t_ical.start()
 
 
     def __create_new_timer(self, mp):
@@ -175,16 +165,17 @@ class Scheduler():
             
             mp = self.repo.get(key)      
             
-            log.info('Start record %s, duration %s ms', mp.getIdentifier(), mp.getDuration())
+            logger.info('Start record %s, duration %s ms', mp.getIdentifier(), mp.getDuration())
 
             self.t_stop = Timer(mp.getDuration()/1000, self.stop_record, [mp.getIdentifier()])
             self.t_stop.start()
-            self.dispatcher.emit("start-record", mp.getIdentifier())
+            self.dispatcher.emit('start-record', mp.getIdentifier())
+
             try:
-                res = self.client.setrecordingstate(key, "capturing")
+                res = self.client.setrecordingstate(key, 'capturing')
             except:
-                log.warning('Problems to connect to matterhorn server ')
-                self. __stop_timers()
+                logger.warning('Problems to connect to matterhorn server ')
+
 
         del self.start_timers[mp.getIdentifier()]
 
@@ -192,60 +183,17 @@ class Scheduler():
     def stop_record(self, key):
         self.ca_status = 'idle'
         self.mp_rec = None
-        log.info('Stop record %s', key)
+        logger.info('Stop record %s', key)
 
         mp = self.repo.get(key)
         if mp.status == mediapackage.RECORDING:
-            self.dispatcher.emit("stop-record", key)
+            self.dispatcher.emit('stop-record', key)
             try:
-                res = self.client.setrecordingstate(key, "capture_finished")
+                res = self.client.setrecordingstate(key, 'capture_finished')
             except:
-                log.warning('Problems to connect to matterhorn server ')
+                logger.warning('Problems to connect to matterhorn server ')
                 self. __stop_timers()
             
         self.t_stop = None
-
-
-    def __get_sec_until_tomorrow(self):
-        now = datetime.datetime.utcnow()
-        # 21/2-2012 edpck see conf:ingest.nocturne
-        nocturne = self.conf.get("ingest", "active")
-
-        if nocturne == True:
-            aux = now + datetime.timedelta(days=1, minutes=15)
-            tomorrow = datetime.datetime(aux.year, aux.month, aux.day)
-        else:
-            tomorrow = datetime.datetime(now.year, now.month, now.day, now.hour, now.minute) + datetime.timedelta(minutes=5)
-
-        diff = tomorrow - now
-        return (diff.days*24*60*60 + diff.seconds)
-
-
-    def ingest(self):
-        log.info('Proccess ingest')
-        mps = self.repo.list_by_status(mediapackage.PENDING)
-        for mp in mps:
-            self.worker.ingest(mp)
-
-        if not self.stop_timers:
-            self.t_ingest = Timer(self.__get_sec_until_tomorrow(), self.ingest)
-            self.t_ingest.start()
-
-
-    def clean(self):
-        pass
-
-
-    def do_stop_timers(self, sender=None):
-        self.stop_timers = True
-
-        timers = [self.t_client, self.t_state, self.t_ical, self.t_stop, self.t_ingest]
-        for ti in timers:
-            if isinstance(ti, _Timer):
-                ti.cancel()
-        for ti in self.start_timers.values():
-            if isinstance(ti, _Timer):
-                ti.cancel()
-
 
 

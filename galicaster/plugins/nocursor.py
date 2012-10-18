@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       galicaster/plugins/cursor
+#       galicaster/plugins/nocursor
 #
 # Copyright (c) 2012, Teltek Video Research <galicaster@teltek.es>
 #

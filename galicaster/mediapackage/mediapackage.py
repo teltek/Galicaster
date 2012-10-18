@@ -26,7 +26,6 @@ import os
 from os import path
 from datetime import datetime
 from xml.dom import minidom
-
 from galicaster.mediapackage.utils import _checknget, read_ini
 
 # Mediapackage Status
@@ -36,12 +35,21 @@ SCHEDULED = 2
 RECORDING = 3
 RECORDED = 4
 FAILED = 5
-PENDING = 6
-INGESTING = 7
-INGESTED = 8
-INGEST_FAILED = 9
+PENDING = 6 #DEPRECATED see Operation Status
+INGESTING = 7 #DEPRECATED see Operation Status
+INGESTED = 8 #DEPRECATED see Operation Status
+INGEST_FAILED = 9 #DEPRECATED see Operation Status
+
+# Operation Status
+OP_IDLE = 0
+OP_NIGHTLY = 1
+OP_PENDING = 2
+OP_PROCESSING = 3
+OP_DONE = 4
+OP_FAILED = 5
 
 
+# Text equivalents
 mp_status = {
     0: 'New',
     1: 'Unscheduled',
@@ -55,16 +63,26 @@ mp_status = {
     9: 'Fail Ingesting'        
 }
 
+op_status = {
+    0: 'No',
+    1: 'Nightly',
+    2: 'Pending',
+    3: 'Processing',
+    4: 'Done',
+    5: 'Failed',
+
+}
 
 # Module Constants
-TYPE_TRACK = "Track"
-TYPE_CATALOG = "Catalog"
-TYPE_ATTACHMENT = "Attachment"
-TYPE_OTHER = "Other"
+TYPE_TRACK = 'Track'
+TYPE_CATALOG = 'Catalog'
+TYPE_ATTACHMENT = 'Attachment'
+TYPE_OTHER = 'Other'
 
 ELEMENT_TYPES = frozenset([TYPE_TRACK, TYPE_CATALOG, TYPE_ATTACHMENT, TYPE_OTHER])
 MANIFEST_TAGS = { TYPE_TRACK: 'track', TYPE_CATALOG: 'catalog', TYPE_ATTACHMENT: 'attachment', TYPE_OTHER: 'other' }
-DCTERMS = ["title", "creator", "ispartof", "description", "subject", "language", "identifier", "contributor", "created", "temporal"]
+DCTERMS = ['title', 'creator', 'ispartof', 'description', 'subject', 'language', 'identifier', 'contributor', 'created', 'temporal']
+
 
 class IllegalStateError(Exception):
     pass
@@ -151,8 +169,7 @@ class Element(object):
         if mp == None or isinstance(mp, Mediapackage):
             self.__mp = mp
         else:
-            raise TypeError("Argument 'mp' needs to be a Mediapackage")
-
+            raise TypeError("Argument 'mp' needs to be a Mediapackage")       
 
 class Track(Element):
     """
@@ -212,7 +229,7 @@ class Other(Element):
 
 
 
-class Mediapackage():
+class Mediapackage(object):
     """ 
     Class to manage Matterhorn Mediapackages
     See: org.opencastproject.mediapackage.MediaPackage Java Interface in 
@@ -225,10 +242,6 @@ class Mediapackage():
         self.startTime = date
         self.presenter = presenter # FIXME presenter shouldnt exist, its creator
 
-        # Series metadata
-        self.series_title = None
-        self.series = None # Series ID
-
         # Secondary metadata
         self.language = None
         self.license = None # why
@@ -237,11 +250,11 @@ class Mediapackage():
             self.creators.append(presenter)
         self.contributors = list()
         self.subjects = list()
-        self.metadata_series = dict() #FIXME fill when able to
+        self.metadata_series = {'identifier': None, 
+                                'title': None}
         self.uri = uri
         self.manual = True
         self.status = NEW
-        self.notes = ""
         self.__duration = None
         self.__howmany = dict( (k, 0) for k in ELEMENT_TYPES )
           
@@ -252,7 +265,8 @@ class Mediapackage():
         
         self.metadata_episode = {"title" : title, "created" : self.startTime, "identifier" : self.identifier, 
                                  "creator" : self.creators, "contributor": self.contributors, "subject": self.subjects}
-        # FIXME check old way assignations and renew loops
+        self.operation = dict()
+        self.properties = {'notes':'', 'origin': ''}
 
         self.elements = dict()
 
@@ -312,10 +326,12 @@ class Mediapackage():
     title = property(getTitle, setTitle)
         
     def getSeriesTitle(self):
-        return self.series_title
+        return self.metadata_series['title']
     
     def setSeriesTitle(self, series_title):
-        self.series_title = series_title
+        self.metadata_series['title'] = series_title
+
+    series_title = property(getSeriesTitle, setSeriesTitle)
         
     def addCreator(self, creator):
         self.creators.append(creator)
@@ -330,11 +346,13 @@ class Mediapackage():
         return self.creators
 
     def getSeries(self):
-        return self.series
+        return self.metadata_series["identifier"]
     
     def setSeries(self, identifier):
-        self.series = identifier
-        
+        self.metadata_series["identifier"] = identifier
+       
+    series = property(getSeries, setSeries)
+
     def getLicense(self):
         return self.license
     
@@ -422,6 +440,16 @@ class Mediapackage():
             self.__duration = int(duration)
         else:
             self.__duration = duration
+
+    def getOpStatus(self, name):
+        if name in self.operation:
+            return self.operation[name] 
+        
+        self.operation[name] = OP_IDLE
+        return OP_IDLE
+
+    def setOpStatus(self, name, value):
+        self.operation[name] = value
     
     def contains(self, element):
         if element == None:
@@ -432,7 +460,7 @@ class Mediapackage():
             return self.getElementById(element) != None
          
     def getElements(self, etype=None, flavor=None, tags=None):
-        results = self.elements.values()
+        results = sorted(self.elements.values(), key=lambda e: e.getIdentifier())
         if etype != None:
             results = filter(lambda elem: elem.getElementType() == etype, results)
         if flavor != None:

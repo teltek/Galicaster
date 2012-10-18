@@ -16,22 +16,126 @@ from os import path
 import gtk
 
 from galicaster.core import context
-from galicaster.classui import get_ui_path
+from galicaster.classui import get_ui_path, get_image_path
 
-class AboutMsg(gtk.Widget):
-    """
-    GUI for the Welcoming - Distribution Screen
-    """
-    __gtype_name__ = 'AboutMessage'
-    
-    def __init__(self, parent=None ):  
-        gui = gtk.Builder()
-        gui.add_from_file(get_ui_path('about.glade'))
-        dialog = gui.get_object("dialog")
-        dialog.set_transient_for(parent)        
+from galicaster import __version__
 
-        response = dialog.run()
-        if response:
-            dialog.destroy()
-        else:
-            dialog.destroy()
+PROGRAM = "Galicaster"
+COPY1 = "Copyright © 2011 Teltek"
+COPY2 = "Copyright © 2011 Héctor Canto, Rubén González"
+WEB = "http://galicaster.teltek.es"
+LICENSE = """
+Galicaster, Multistream Recorder and Player
+Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License. 
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
+or send a letter to Creative Commons, 171 Second Street, Suite 300, San Francisco, California, 94105, USA. 
+"""
+
+AUTHORS = [
+"Héctor Canto",
+"Rubén González"
+]
+
+DOCS = (
+"Héctor Canto",
+"Rubén González",
+"Rubén Pérez"
+)
+
+ARTISTS = [
+"Natalia García",
+"Héctor Canto"
+]
+
+class GCAboutDialog(gtk.AboutDialog):
+
+     __gtype_name__ = 'GCAboutDialog'
+
+     def __init__(self, parent=None):
+         if not parent:
+             parent = context.get_mainwindow()
+         gtk.AboutDialog.__init__(self)
+         if parent:
+             self.set_transient_for(parent)
+         
+         size=context.get_mainwindow().get_size()
+         a=0.3*size[0]
+         b=0.5*size[1]
+         k = size[0]/1920.0
+         self.set_resizable(True)
+         self.set_default_size(int(0.3*size[0]),int(0.4*size[1]))
+         self.set_title("About Galicaster "+__version__)
+         
+         #self.set_decorated(True)
+         self.set_position(gtk.WIN_POS_CENTER_ON_PARENT)
+
+         self.set_program_name(PROGRAM)
+         self.set_version(__version__)
+         self.set_website(WEB)
+         self.set_website_label("Galicaster Website")
+         self.set_authors(AUTHORS)
+         self.set_documenters(DOCS)
+         self.set_artists(ARTISTS)
+         self.set_copyright("\n".join((COPY1,COPY2)))
+         self.set_license(LICENSE)
+         pixbuf = gtk.gdk.pixbuf_new_from_file(get_image_path('logo.svg')) 
+         pixbuf = pixbuf.scale_simple(
+              int(pixbuf.get_width()*k),
+              int(pixbuf.get_height()*k),
+              gtk.gdk.INTERP_BILINEAR)
+
+         self.set_logo(pixbuf)
+
+         #ADD TELTEK LOGO
+         box=self.get_content_area()
+         company_logo=gtk.Image()
+         pixbuf = gtk.gdk.pixbuf_new_from_file(get_image_path('teltek.svg')) 
+         pixbuf = pixbuf.scale_simple(
+              int(pixbuf.get_width()*k),
+              int(pixbuf.get_height()*k),
+            gtk.gdk.INTERP_BILINEAR)
+
+         company_logo.set_from_pixbuf(pixbuf)
+
+         box.pack_end(company_logo,True,True,0)
+         company_logo.show()
+
+         #ADD THANKS
+         #thanks=gtk.Button("Thanks")
+         #buttons=self.get_action_area()
+         #thanks.connect("clicked",self.show_thanks)
+         #buttons.pack_start(thanks)
+         #buttons.reorder_child(thanks,0)
+         #thanks.show()
+
+         self.run()
+         self.destroy()
+
+     def show_thanks(self, orgin):
+         dialog = gtk.Dialog()
+         dialog.set_title("Special thanks to...")
+         dialog.add_button("Close",gtk.RESPONSE_CLOSE)
+         dialog.set_default_size(350,150)
+         box = dialog.get_content_area()
+         textbuffer= gtk.TextBuffer()
+         textbuffer.set_text("")
+         label= gtk.TextView(textbuffer)
+         align= gtk.Alignment()
+         align.set_padding(10,-1,10,10)
+         align.add(label)
+         box.pack_start(align, True, True, 0)
+         align.show()
+         label.show()
+         dialog.run()
+         dialog.destroy()
+
+
+
+         
+         
+         
+
+
+     

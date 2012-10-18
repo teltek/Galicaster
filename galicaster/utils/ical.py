@@ -12,45 +12,36 @@
 # San Francisco, California, 94105, USA.
 
 
-"""
-La libreria icalendar tiene un problema con los adjutnos de tipo:
-
-ATTACH;FMTTYPE=application/xml;VALUE=BINARY;ENCODING=BASE64;X-APPLE-FILEN
- AME=episode.xml:PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5k
-...
-ATTACH;FMTTYPE=application/text;VALUE=BINARY;ENCODING=BASE64;X-APPLE-FILE
- NAME=org.opencastproject.capture.agent.properties:I0NhcHR1cmUgQWdlbnQgc3
-
-La clave de esta estrada es `ATTACH` para ambos y no se puede acceder a los
-valores de FMTTYPE, VALUE=BINARY, ENCODING y X-APPLE-FILENAME. Se usa un workarround
-para solucionar esto mirando el comienzo del adjunto (si empieza por `<?xml`) y si
-tiene `dcterms:temporal` para dif entre serie y episode
-"""
-
 from os import path
 import base64
+import logging
 
-import time
 from datetime import datetime
 from xml.dom import minidom
 
 from icalendar import Calendar
 from galicaster.mediapackage import mediapackage
 
+logger = logging.getLogger()
+
 def get_events_from_string_ical(ical_data):
-    cal = Calendar.from_string(ical_data)
+    # See https://github.com/collective/icalendar#api-change
+    f = getattr(Calendar, 'from_ical', getattr(Calendar, 'from_string', None))
+    cal = f(ical_data)
     return cal.walk('vevent')
 
 
 def get_events_from_file_ical(ical_file):
-    cal = Calendar.from_string(open(ical_file).read())
+    # See https://github.com/collective/icalendar#api-change
+    f = getattr(Calendar, 'from_ical', getattr(Calendar, 'from_string', None))
+    cal = f(open(ical_file).read())
     return cal.walk('vevent')
 
 
 def get_delete_events(old_events, new_events):
     out = list()
     for old_event in old_events:
-        dtstart = datetime.strptime(str(old_event['DTSTART']), '%Y%m%dT%H%M%SZ')
+        dtstart = old_event['DTSTART'].dt.replace(tzinfo=None)
         now = datetime.utcnow()
         #FIXME in python use filter
         not_e = True
@@ -66,36 +57,41 @@ def get_update_events(old_events, new_events):
     out = list()
     for old_event in old_events:
         for new_event in new_events:
-            if old_event['UID'] == new_event['UID'] and str(old_event['DTSTART']) != str(new_event['DTSTART']):
+            if (old_event['UID'] == new_event['UID'] and 
+                old_event['DTSTART'].dt.replace(tzinfo=None) != new_event['DTSTART'].dt.replace(tzinfo=None)):
                 out.append(old_event)
     return out
 
 
 def create_mp(repo, event):
-    if repo.has_by_key(event['UID']):
+    if repo.has_key(event['UID']):
         mp = repo.get(event['UID'])
         if mp.status != mediapackage.SCHEDULED:
             return False
         rewrite = True
     else:
-        mp = repo.get_new_mediapackage(event['UID'], False)
+        mp = mediapackage.Mediapackage()
         mp.status = mediapackage.SCHEDULED
         mp.manual = False
         mp.setIdentifier(event['UID'])
-        repo.add(mp)
+        repo.add(mp, event['UID'])
         rewrite = False
 
     mp.setTitle(event['SUMMARY'])
-    mp.setDate(datetime.strptime(str(event['DTSTART']), '%Y%m%dT%H%M%SZ'))
+    mp.setDate(event['DTSTART'].dt.replace(tzinfo=None))
+    
+    ca_properties_name = 'org.opencastproject.capture.agent.properties'
     for attach_enc in event['ATTACH']:
         attach =  base64.b64decode(attach_enc)
-        if attach[0:5] == '<?xml': #PARCHE para identificar attach
-            if attach.find('dcterms:temporal') != -1:
-                mp.addDublincoreAsString(attach, 'episode.xml', rewrite)
-            else:
-                mp.addSeriesDublincoreAsString(attach, 'series.xml', rewrite)
-        else:           
-            mp.addAttachmentAsString(attach, 'org.opencastproject.capture.agent.properties', rewrite, 'org.opencastproject.capture.agent.properties')
+        if attach_enc.params['X-APPLE-FILENAME'] == 'episode.xml':
+            mp.addDublincoreAsString(attach, 'episode.xml', rewrite)
+        elif attach_enc.params['X-APPLE-FILENAME'] == 'series.xml':
+            mp.addSeriesDublincoreAsString(attach, 'series.xml', rewrite)
+        elif attach_enc.params['X-APPLE-FILENAME'] == ca_properties_name:
+            mp.addAttachmentAsString(attach, ca_properties_name, rewrite, ca_properties_name)
+        else:
+            logger.error('call error parse ical attachs %s', attach_enc.params['X-APPLE-FILENAME']) 
+                         
     mp.marshalDublincore()
     repo.update(mp)
 

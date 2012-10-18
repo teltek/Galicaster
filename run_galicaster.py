@@ -14,11 +14,14 @@
 
 import optparse, sys
 import gtk
-import threading
-from threading import _Timer
+
+import pygtk
+pygtk.require('2.0')
+import pygst
+pygst.require('0.10')
+
 
 from galicaster.core import core
-from galicaster.utils.dbusservice import DBusService
 
 def main(args):
     parser = optparse.OptionParser()
@@ -33,15 +36,12 @@ def main(args):
     options, remainder = parser.parse_args()
 
     try:
-        v = core.Class(options.conf_file, options.conf_dist_file)
-        service = DBusService(v)
+        v = core.Main(options.conf_file, options.conf_dist_file)
         gtk.main()
     except KeyboardInterrupt:
+        gc.emit_quit()
         print "Interrupted by user!"
-        # FIXME call Scheduler.do_stop_timers()
-        for t in threading.enumerate():
-            if isinstance(t, _Timer):
-                t.cancel()
+
     return 0
 
 if __name__ == '__main__':

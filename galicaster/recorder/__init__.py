@@ -13,3 +13,13 @@
 
 
 from galicaster.recorder.recorder import Recorder
+
+modules = {}
+def module_register(klass, name):
+    modules[name] = klass
+    
+def get_modules():
+    return modules
+
+def get_module(name):
+    return modules[name]

@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       galicaster/recorder/pipeline/blackmagic
+#       galicaster/recorder/pipeline/v4l2
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
@@ -19,94 +19,249 @@ import re
 
 from os import path
 
-pipestr = (' decklinksrc input=SDI input-mode=12 name=gc-blackmagic-src ! capsfilter name=gc-blackmagic-filter ! '
-          ' videorate ! capsfilter name=gc-blackmagic-vrate ! videocrop name=gc-blackmagic-crop ! '
-          ' tee name=tee-cam2  ! queue !  xvimagesink async=false sync=false qos=false name=gc-blackmagic-preview'
-          ' tee-cam2. ! queue ! valve drop=false name=gc-blackmagic-valve ! ffmpegcolorspace ! queue ! '
-          #' xvidenc bitrate=50000000 ! queue ! avimux ! '
-          ' x264enc quantizer=22 speed-preset=2 profile=1 ! queue ! avimux ! '
-          #' ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000 ! queue ! avimux ! '
-          ' queue ! filesink name=gc-blackmagic-sink async=false')
+from galicaster.recorder import base
+from galicaster.recorder import module_register
+
+videostr = ( ' decklinksrc connection=sdi mode=12 name=gc-blackmagic-src ! '
+             ' identity name=gc-blackmagic-idvideo ! queue ! videorate ! videocrop name=gc-blackmagic-crop !'
+             ' tee name=tee-cam2  ! queue ! ffmpegcolorspace ! xvimagesink async=false sync=false qos=false name=gc-blackmagic-preview'
+             #REC VIDEO
+             ' tee-cam2. ! queue ! valve drop=false name=gc-blackmagic-valve ! ffmpegcolorspace ! '
+             #' xvidenc bitrate=50000000 ! queue ! avimux name=gc-blackmagic-muxer ! '
+             ' x264enc quantizer=22 speed-preset=2 profile=1 ! queue ! avimux name=gc-blackmagic-muxer ! '
+             #' ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000 ! queue ! avimux name=gc-blackmagic-muxer ! '
+             ' queue ! identity name=gc-blackmagic-idend ! filesink name=gc-blackmagic-sink async=false' 
+             )
+audiostr= (
+            #AUDIO
+            ' gc-blackmagic-src.audiosrc ! identity name=gc-blackmagic-idaudio ! queue ! '
+            ' audiorate ! audioamplify name=gc-blackmagic-amplify amplification=1 ! tee name=gc-blackmagic-audiotee ! queue ! '
+            ' level name=gc-blackmagic-level message=true interval=100000000 ! '
+            ' volume name=gc-blackmagic-volume ! alsasink sync=false name=gc-blackmagic-audio-preview '
+            # REC AUDIO
+            ' gc-blackmagic-audiotee. ! queue ! valve drop=false name=gc-blackmagic-audio-valve ! '
+            ' audioconvert ! lamemp3enc target=1 bitrate=192 cbr=true ! queue ! gc-blackmagic-muxer. '
+            )
 
 
-class GCblackmagic(gst.Bin):
 
-   gc_parameters = {
-       "caps": "Forced capabilities",
-       "videocrop-right": "Right  Cropping",
-       "videocrop-left": "Right  Cropping",
-       "videocrop-top": "Right  Cropping",
-       "videocrop-bottomt": "Right  Cropping",
-       "input": "Video input to capture from",
-       "input-mode": "Video input mode (resolution and frame rate)"
-       # "codificaton": "Not implemented yet"
-       }
+class GCblackmagic(gst.Bin, base.Base):
 
-   is_pausable = True # TODO check
+  order = ["name","flavor","location","file",
+           "input-mode","input","audio-input","subdevice"]
 
-   __gstdetails__ = (
-       "Galicaster blackmagic Bin",
-       "Generic/Video",
-       "Add descripcion",
-       "University of Helsinki & Teltek Video Research",
-       )
+  gc_parameters = {
+    "name": {
+      "type": "text",
+      "default": "Blackmagic",
+      "description": "Name assigned to the device",
+      },
+    "flavor": {
+      "type": "flavor",
+      "default": "presenter",
+      "description": "Matterhorn flavor associated to the track",
+      },
+    "location": {
+      "type": "device",
+      "default": "/dev/blackmagic/card0",
+      "description": "Device's mount point of the MPEG output",
+      },
+    "file": {
+      "type": "text",
+      "default": "CAMERA.mpg",
+      "description": "The file name where the track will be recorded.",
+      },
+    "videocrop-right": {
+      "type": "integer",
+      "default": 0,
+      "range": (0,200),
+      "description": "Right  Cropping",
+      },
+    "videocrop-left": {
+      "type": "integer",
+      "default": "0",
+      "range": (0,200),
+      "description": "Left  Cropping",
+      },
+    "videocrop-top": {
+      "type": "integer",
+      "default": "0",
+      "range": (0,200),
+      "description": "Top  Cropping",
+      },
+    "videocrop-bottom": {
+      "type": "integer",
+      "default": "0",
+      "range": (0,200),
+      "description": "Bottom  Cropping",
+      },
+    "input" : {
+      "type": "select",
+      "default": "sdi",
+      "options": [
+        "sdi", "hdmi", "optical-sdi",
+        "component", "composite", "svideo"
+        ],
+      "description": "Type of connection for the video input to capture from",
+      },
+    "input-mode" : {
+      "type": "select",
+      "default": "1080p25",
+      "options": [
+        "ntsc","ntsc2398", "pal", "ntsc-p","pal-p",        
+        "1080p2398", "1080p24", "1080p25", "1080p2997", "1080p30", 
+        "1080i50", "1080i5994", "1080i60", 
+        "1080p50", "1080p5994", "1080p60", 
+        "720p50", "720p5994","720p60", 
+        ],
+      "description": "Video input mode (resolution and frame rate)",
+      },
+    "audio-input" : {
+      "type": "select",
+      "default": "auto",
+      "options": [
+        "auto", "embedded", "aes","analog", "none"
+        ],
+      "description": "Audio  input mode",
+      },
+    "subdevice" : {
+      "type": "select",
+      "default": "0",
+      "options": [
+        "0", "1", "2","3" 
+        ],
+      "description": "Select a Blackmagic card from a maximum of 4 devices",
+      },
+    "vumeter": {
+      "type": "boolean",
+      "default": "True",
+      "description": "Activate Level message",
+      },
+    "player": {
+      "type": "boolean",
+      "default": "True",
+      "description": "Enable sound play",
+      },
+    "amplification": {
+      "type": "float",
+      "default": 1.0,
+      "range": (0,10),
+      "description": "Audio amplification",
+      },
+   
+    }
+    
+    
+  is_pausable  = False
+  has_audio    = True
+  has_video    = True
+    
+  __gstdetails__ = (
+        "Galicaster blackmagic Bin",
+        "Generic/Video",
+        "Blackmagic plugin for decklinksrc on gstreamer-plugins-uggly",
+        "Teltek Video Research",
+        )
 
-   def __init__(self, name=None, devicesrc=None, filesink=None, options={}):
-       if not path.exists(devicesrc):
-           raise SystemError('Device error in blackmagic bin: path %s not exists' % (devicesrc,) )
+  def __init__(self, options={}):
+        base.Base.__init__(self, options)
+        gst.Bin.__init__(self, self.options['name'])
 
-       if name == None:
-           name = 'blackmagic'
+        audio_activated = False  if self.options["audio-input"] == "none" else True
+        pipestr = videostr+audiostr if audio_activated else videostr
+        self.has_audio = audio_activated
 
-       gst.Bin.__init__(self, name)
-       self.options = options
+        aux = pipestr.replace('gc-blackmagic-preview', 'sink-' + self.options['name'])
+        self.pipestr=aux
+        bin = gst.parse_bin_from_description(aux, False)
+        self.add(bin)
 
-       aux = pipestr.replace('gc-blackmagic-preview', 'sink-' + name)
-       bin = gst.parse_bin_from_description(aux, True)
-       # replace identity
-       self.add(bin)
+        sink = self.get_by_name('gc-blackmagic-sink')
+        sink.set_property('location', path.join(self.options['path'], self.options['file']))
+        
+        element = self.get_by_name('gc-blackmagic-src')
+        try:
+            value = int(self.options['input'])
+        except ValueError:
+            value = self.options['input']                                
+        element.set_property('connection', value)
 
-       if filesink != None:
-           element = self.get_by_name('gc-blackmagic-sink')
-           element.set_property('location', filesink)
+        try:
+            mode = int(self.options['input-mode'])
+        except ValueError:
+            mode = self.options['input-mode']                                
+        element.set_property('mode', mode)
 
-       if 'input' in options:
-           element = self.get_by_name('gc-blackmagic-src')
-           try:
-              value=int(options['input'])
-           except ValueError:
-              value=options['input']                        
-           element.set_property('input', value)
-       if 'input-mode' in options:
-           element = self.get_by_name('gc-blackmagic-src')
-           try:
-              mode=int(options['input-mode'])
-           except ValueError:
-              mode=options['input-mode']                        
-           element.set_property('input-mode', mode)
-       if 'videocrop-right' in options:
-           element = self.get_by_name('gc-blackmagic-crop')
-           element.set_property('right', int(options['videocrop-right']))
-       if 'videocrop-left' in options:
-           element = self.get_by_name('gc-blackmagic-crop')
-           element.set_property('left', int(options['videocrop-left']))
-       if 'videocrop-top' in options:
-           element = self.get_by_name('gc-blackmagic-crop')
-           element.set_property('top', int(options['videocrop-top']))
-       if 'videocrop-bottom' in options:
-           element = self.get_by_name('gc-blackmagic-crop')
-           element.set_property('bottom', int(options['videocrop-bottom']))
+        if audio_activated:
+          try:
+            audio = int(self.options['audio-input'])
+          except ValueError:
+            audio = self.options['audio-input']                                
+          element.set_property('audio-input', audio)
+        else:
+          element.set_property('audio-input', "auto")
+          
+        try:
+          subdevice = int(self.options['subdevice'])
+        except ValueError:
+          subdevice = self.options['subdevice']                                
+        element.set_property('subdevice', subdevice)
 
-   def getValve(self):
-       return self.get_by_name('gc-blackmagic-valve')
+        if audio_activated:
+          if "player" in self.options and self.options["player"] == False:
+            self.mute = True
+            element = self.get_by_name("gc-blackmagic-volume")
+            element.set_property("mute", True)
+          else:
+            self.mute = False
 
-   def getVideoSink(self):
-       return self.get_by_name('gc-blackmagic-preview')
+          if "vumeter" in self.options:
+            level = self.get_by_name("gc-blackmagic-level")
+            if self.options["vumeter"] == False:
+              level.set_property("message", False)
 
-   def send_event_to_src(self, event):
-       src1 = self.get_by_name('gc-blackmagic-src')
-       src1.send_event(event)
+          if "amplification" in self.options:
+            ampli = self.get_by_name("gc-blackmagic-amplify")
+            ampli.set_property("amplification", float(self.options["amplification"]))
+
+        for pos in ['right','left','top','bottom']:
+            element = self.get_by_name('gc-blackmagic-crop')
+            element.set_property(pos, int(self.options['videocrop-' + pos]))
+
+  def changeValve(self, value):
+    valve1=self.get_by_name('gc-blackmagic-valve')
+    if self.has_audio:
+      valve2=self.get_by_name('gc-blackmagic-audio-valve')
+      valve2.set_property('drop', value)
+    valve1.set_property('drop', value)
+
+  def getVideoSink(self):
+    return self.get_by_name('gc-blackmagic-preview')
+
+  def getSource(self):
+    return self.get_by_name('gc-blackmagic-src')
+
+  def getAudioSink(self):
+    return self.get_by_name('gc-blackmagic-audio-preview')
+
+  def mute_preview(self, value):
+    if not self.mute:
+      element = self.get_by_name("gc-blackmagic-volume")
+      element.set_property("mute", value)
+
+  def send_event_to_src(self, event):
+    src = self.get_by_name('gc-blackmagic-src')
+    src.set_state(gst.STATE_NULL)
+    src.get_state()
+
+    src_video = self.get_by_name('gc-blackmagic-idvideo')
+    if self.has_audio:
+      src_audio = self.get_by_name('gc-blackmagic-idaudio')
+      src_audio.send_event(event)
+    src_video.send_event(event)
+    
 
 
 gobject.type_register(GCblackmagic)
 gst.element_register(GCblackmagic, 'gc-blackmagic-bin')
+module_register(GCblackmagic, 'blackmagic')

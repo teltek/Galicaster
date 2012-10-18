@@ -95,8 +95,12 @@ class Test(Command):
 
 setup(
     name = 'galicaster',
-    url = 'http://galicaster.com',
+    url = 'http://galicaster.org',
     version = galicaster.__version__,
+    author = 'Héctor Canto, Rubén González',
+    author_email = 'galicaster@teltek.es',
+    description = 'Galicaster, multistream recorder and player',
+    license = 'NonCommercial-ShareAlike 3.0 Unported License',
     cmdclass={
         'test': Test,
         },
@@ -112,6 +116,27 @@ setup(
         'galicaster.utils',
         'galicaster.plugins',
         ],
-    requires=["pygst", "pycurl", "icalendar"],
+    requires=["pycurl", "icalendar"],
+
+    data_files=[
+        ('/usr/bin', ['docs/autostart/galicaster']), # Shell launcher
+        ('/usr/share/applications', ['docs/autostart/galicaster.desktop']), # Unity launcher
+        ('/usr/share/icons/hicolor/scalable/apps/', ['docs/autostart/galicaster.svg',]),#Icons
+        ('/usr/share/icons/hicolor/16x16/apps/', ['docs/icons/16x16/galicaster.png']),
+        ('/usr/share/icons/hicolor/22x22/apps/', ['docs/icons/22x22/galicaster.png']),
+        ('/usr/share/icons/hicolor/24x24/apps/', ['docs/icons/24x24/galicaster.png']),
+        ('/usr/share/icons/hicolor/32x32/apps/', ['docs/icons/32x32/galicaster.png']),
+        ('/usr/share/icons/hicolor/36x36/apps/', ['docs/icons/36x36/galicaster.png']),
+        ('/usr/share/icons/hicolor/48x48/apps/', ['docs/icons/48x48/galicaster.png']),
+        ('/usr/share/icons/hicolor/64x64/apps/', ['docs/icons/64x64/galicaster.png']),
+        ('/usr/share/icons/hicolor/72x72/apps/', ['docs/icons/72x72/galicaster.png']),
+        ('/usr/share/icons/hicolor/96x96/apps/', ['docs/icons/96x96/galicaster.png']), 
+        ('/usr/share/icons/hicolor/128x128/apps/', ['docs/icons/128x128/galicaster.png']), 
+        ('/usr/share/icons/hicolor/192x192/apps/', ['docs/icons/192x192/galicaster.png']), 
+        ('/usr/share/icons/hicolor/256x256/apps/', ['docs/icons/256x256/galicaster.png']),
+        ],
+
+
+
 )
 

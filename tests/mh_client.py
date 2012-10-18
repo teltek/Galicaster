@@ -14,17 +14,20 @@
 
 """
 Unit tests for `galicaster.utils` module.
+
+Disble by default. You can enable it to test MatterHorn HTTP Client.
 """
 import socket
 import pycurl
+from xml.dom.minidom import parseString
 from unittest import TestCase
 
 from galicaster.utils.mhhttpclient import MHHTTPClient
 
 class TestFunctions(TestCase):
 
-    def test_userandaddressinit(self):
-        server = 'http://admindev.matterhorn.uvigo.es:8080'
+    def no_test_userandaddressinit(self):
+        server = 'http://demo.opencastproject.org'
         user = 'matterhorn_system_account';
         password = 'CHANGE_ME';
         hostname = 'rubenruaHost'
@@ -59,7 +62,7 @@ class TestFunctions(TestCase):
 
 
 
-    def test_prepare_ingest(self):
+    def no_test_prepare_ingest(self):
         workflow = 'mini-full'
         workflow_parameters = 'uno:uno;dos:dos'
         client = MHHTTPClient(None, None, None, None, None, workflow, workflow_parameters)
@@ -97,7 +100,7 @@ class TestFunctions(TestCase):
         
     # OC-MH whoami endpoint return anonymous.
     def no_test_whoami(self):
-        server = 'http://admindev.matterhorn.uvigo.es:8080'
+        server = 'http://demo.opencastproject.org'
         user = 'matterhorn_system_account';
         password = 'CHANGE_ME';
 
@@ -107,8 +110,8 @@ class TestFunctions(TestCase):
         self.assertEqual(mh_user['username'], 'matterhorn_system_account')
 
 
-    def test_whoami(self):
-        server = 'http://admindev.matterhorn.uvigo.es:8080'
+    def no_test_whoami(self):
+        server = 'http://demo.opencastproject.org'
         user = 'matterhorn_system_account';
         password = 'CHANGE_ME';
 
@@ -118,8 +121,8 @@ class TestFunctions(TestCase):
         self.assertTrue(True)
 
 
-    def test_series(self):
-        server = 'http://admindev.matterhorn.uvigo.es:8080'
+    def no_test_series(self):
+        server = 'http://demo.opencastproject.org'
         user = 'matterhorn_system_account';
         password = 'CHANGE_ME';
 
@@ -129,8 +132,8 @@ class TestFunctions(TestCase):
         self.assertTrue(isinstance(series, basestring))
 
 
-    def test_setstate(self):
-        server = 'http://admindev.matterhorn.uvigo.es:8080'
+    def no_test_setstate(self):
+        server = 'http://demo.opencastproject.org'
         user = 'matterhorn_system_account';
         password = 'CHANGE_ME';
         client_name = 'rubenrua_pr'
@@ -146,8 +149,8 @@ class TestFunctions(TestCase):
             self.assertEqual(a, '{0} set to {1}'.format(client_name, state))
 
 
-    def test_setcapabilities(self):
-        server = 'http://admindev.matterhorn.uvigo.es:8080'
+    def no_test_setcapabilities(self):
+        server = 'http://demo.opencastproject.org'
         user = 'matterhorn_system_account';
         password = 'CHANGE_ME';
         client_name = 'rubenrua_pr'
@@ -157,9 +160,17 @@ class TestFunctions(TestCase):
         client.hostname = client_name
         client.address = client_address
         
-        a = client.setconfiguration({}) 
-        #print a
-        #FIXME add ssert
-        #self.assertEqual(a, '{0} set to {1}'.format(client_name, state))
+        out = parseString(client.setconfiguration({}))
+        for item  in out.getElementsByTagName('item'):
+            if item.getAttribute('key') == 'service.pid':
+                self.assertEqual(item.firstChild.firstChild.wholeText, 'galicaster')
 
 
+    def no_test_limit_init_duration(self):
+        server = 'http://10.10.10.10:10'
+        user = 'matterhorn_system_account';
+        password = 'CHANGE_ME';
+
+        client = MHHTTPClient(server, user, password)
+
+        self.assertRaises(RuntimeError, client.welcome)

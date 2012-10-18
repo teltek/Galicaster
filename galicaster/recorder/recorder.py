@@ -16,12 +16,8 @@ import logging
 import gtk
 import gst
 import os
+import sys
 
-from galicaster.recorder.pipeline import v4l2
-from galicaster.recorder.pipeline import hauppauge
-from galicaster.recorder.pipeline import pulse
-from galicaster.recorder.pipeline import vga2usb
-from galicaster.recorder.pipeline import blackmagic
 from galicaster.recorder.pipeline import rtpvideo
 from galicaster.recorder.pipeline import rtpaudio
 from galicaster.core import context
@@ -57,8 +53,8 @@ class Recorder(object):
         self.players = players
         self.restart = False
         self.mute = False
+        self.error = False
 
-        #self.mainloop = gobject.MainLoop() #FIXME **2
         self.pipeline_name = "galicaster_recorder"  
         self.pipeline = gst.Pipeline(self.pipeline_name)
         self.bus = self.pipeline.get_bus()
@@ -77,18 +73,20 @@ class Recorder(object):
 
         for bin in bins:
             name = bin['name']
+
             try:
-                klass = eval(bin['klass'])  # FIXME use of eval?
+                mod_name = 'galicaster.recorder.pipeline.' + bin['device']
+                __import__(mod_name)
+                mod = sys.modules[mod_name]
+                Klass = getattr(mod, "GC" + bin['device'])
             except:
                 raise NameError(
-                    'Invalid track type %s for %s track' % (bin['klass'], name)
+                    'Invalid track type %s for %s track' % (mod_name, name)
                     )
 
-            log.debug("Init bin %s %s", name, klass)
-            self.bins[name] = klass(name, bin['dev'], bin['file'], bin['options'])
+            log.debug("Init bin %s %s", name, mod_name)
+            self.bins[name] = Klass(bin)
             self.pipeline.add(self.bins[name])
-
-        return None
 
     def get_status(self):
         return self.pipeline.get_state()
@@ -98,22 +96,46 @@ class Recorder(object):
 
     def preview(self):
         log.debug("recorder preview")
-        self.pipeline.set_state(gst.STATE_PAUSED)
-        #self.mainloop.run() # FIXME  **2
-        return None
+        if not len(self.bins):
+            self.dispatcher.emit("recorder-error","No tracks on profile")
+            return False
+        else:
+            change=self.pipeline.set_state(gst.STATE_PAUSED)
+            
+            if change == gst.STATE_CHANGE_FAILURE:
+                text = None
+                random_bin = None
+                for key,value in self.bins.iteritems():
+                    if not value.getSource():
+                        random_bin = value
+                        text = "Error on track : "+ key
+                    if not random_bin:
+                        random_bin = value
+                        text = "Error on unknow track"
+
+                src = random_bin
+                error = gst.GError(gst.RESOURCE_ERROR,
+                                   gst.RESOURCE_ERROR_FAILED, text)
+                
+                message = gst.message_new_error(
+                    src, error, 
+                    str(random_bin)+"\nsystem_error: Driver not available")
+                self.bus.post(message)
+                #self.dispatcher.emit("recorder-error","Driver error")
+                return False
+            else:          
+                return True
 
     def stop_preview(self):
         #FIXME send EOS
         self.pipeline.set_state(gst.STATE_NULL)
         self.pipeline.get_state()
-        # self.mainloop.quit() #FIXME **2
         return None
 
     def record(self):
         if self.pipeline.get_state()[1] == gst.STATE_PLAYING:
             for bin_name, bin in self.bins.iteritems():
-                valve = bin.getValve()                
-                valve.set_property('drop', False)
+                valve = bin.changeValve(False)                
             # Get clock
 
     def stop_record(self):                
@@ -121,8 +143,8 @@ class Recorder(object):
         event = gst.event_new_custom(gst.EVENT_EOS, a)
         for bin_name, bin in self.bins.iteritems():
             resultado = bin.send_event_to_src(event)
-            if resultado: 
-                print "EOS sended to src of: " + bin_name
+            #if resultado: 
+            #    print "EOS sended to src of: " + bin_name
         return True
 
     def stop_record_and_restart_preview(self):
@@ -131,8 +153,8 @@ class Recorder(object):
         event = gst.event_new_custom(gst.EVENT_EOS, a)
         for bin_name, bin in self.bins.iteritems():
             resultado = bin.send_event_to_src(event)
-            if resultado: 
-                print "EOS sended to src of: " + bin_name
+            #if resultado: 
+            #    print "EOS sended to src of: " + bin_name
         self.restart = True  # FIXME send user_data on the EOS to force restart
         if self.pipeline.get_state()[1] == gst.STATE_PAUSED: 
             # If paused ensure sending EOS
@@ -142,7 +164,6 @@ class Recorder(object):
     def just_restart_preview(self):
         log.debug("Stopping Preview and Restarting")
         self.stop_preview()
-        #FIXME  wait until state NULL??
         log.debug("EMITTING restart preview")
         self.dispatcher.emit("restart-preview")
         return True
@@ -159,7 +180,7 @@ class Recorder(object):
         self.pipeline.get_state()
         return None
 
-    def __debug(self, bus, msg):        
+    def __debug(self, bus, msg):       
         if msg.type != gst.MESSAGE_ELEMENT or msg.structure.get_name() != 'level':
             print "DEBUG ", msg
 
@@ -173,17 +194,36 @@ class Recorder(object):
             self.dispatcher.emit("restart-preview")
 
     def __on_error(self, bus, msg):
-        error = msg.parse_error()[1]
-        log.error(error)
-        #self.stop_preview()
+        error, debug = msg.parse_error()
+        error_info = "%s (%s)" % (error, debug)
+        log.error(error_info)
+        if not debug.count('canguro'):
+            self.stop_elements()
+            gtk.gdk.threads_enter()
+            self.error = error_info
+            self.dispatcher.emit("recorder-error", error_info)
+            gtk.gdk.threads_leave()
+            # return True
+    
+    def stop_elements(self):        
+        iterator = self.pipeline.elements()
+        while True:
+            try:                
+                element = iterator.next()
+                element.set_state(gst.STATE_NULL)
+                state = element.get_state()
+            except StopIteration:
+                break           
+        self.pipeline.set_state(gst.STATE_NULL)
+        self.pipeline.get_state()
+        #return True
 
     def __on_state_changed(self, bus, message):
         old, new, pending = message.parse_state_changed()
         if (isinstance(message.src, gst.Pipeline) and 
             (old, new) == (gst.STATE_READY, gst.STATE_PAUSED) ):
             for bin_name, bin in self.bins.iteritems():
-                valve = bin.getValve()  # TODO function change valves for each bin
-                valve.set_property('drop', True)                
+                valve = bin.changeValve(True) 
             self.pipeline.set_state(gst.STATE_PLAYING)
 
     def __on_sync_message(self, bus, message):
@@ -198,7 +238,7 @@ class Recorder(object):
                 if not isinstance(gtk_player, gtk.DrawingArea):
                     raise TypeError()
                 gtk.gdk.threads_enter()
-                gtk.gdk.display_get_default().sync()
+                gtk.gdk.display_get_default().sync()            
                 message.src.set_xwindow_id(gtk_player.window.xid)
                 message.src.set_property('force-aspect-ratio', True)
                 gtk.gdk.threads_leave()
@@ -238,7 +278,6 @@ class Recorder(object):
 
     def mute_preview(self, value):
         for bin_name, bin in self.bins.iteritems():
-            # FIXME
-            if type(bin) in [hauppauge.GChau, pulse.GCpulse]:
+            if bin.has_audio:
                 bin.mute_preview(value)
                 
