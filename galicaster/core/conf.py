@@ -38,12 +38,6 @@ class Conf(object): # TODO list get and other ops arround profile
       
       # FIXME when using 2.7 dict_type=collections.OrderedDict)
 
-      if conf_file != None:
-         conf_file = os.path.abspath(conf_file)
-
-      if conf_dist_file != None:
-         conf_dist_file = os.path.abspath(conf_dist_file)
-
       self.conf_file = conf_file if os.path.isfile(conf_file) else os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'conf.ini'))
       self.conf_dist_file = conf_dist_file if os.path.isfile(conf_dist_file) else os.path.join(os.path.dirname(self.conf_file), 'conf-dist.ini')
       self.profile_folder = profile_folder if os.path.isdir(profile_folder) else os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'profiles'))
@@ -506,5 +500,6 @@ class Track(dict):
 
 
       
+
 
 

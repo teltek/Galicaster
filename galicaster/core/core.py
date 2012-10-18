@@ -39,9 +39,9 @@ PIN= 4
 
 
 class Main():
-    def __init__(self, conf_file, conf_dist_file):
+    def __init__(self):
         service = DBusService(self)
-        self.conf = context.get_conf(conf_file, conf_dist_file)
+        self.conf = context.get_conf()
         self.state = context.get_state()
         self.dispatcher = context.get_dispatcher()
 

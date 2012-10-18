@@ -53,12 +53,12 @@ def delete(service_name):
     del __galicaster_context[service_name]
     
 
-def get_conf(conf_file=None, conf_dist_file=None):
+def get_conf():
     """
     Get the Conf class from the App Context
     """
     if 'conf' not in __galicaster_context:
-        __galicaster_context['conf'] = Conf(conf_file, conf_dist_file)
+        __galicaster_context['conf'] = Conf()
 
     return __galicaster_context['conf']
 
