@@ -18,8 +18,6 @@ import gst
 import os
 import sys
 
-from galicaster.recorder.pipeline import rtpvideo
-from galicaster.recorder.pipeline import rtpaudio
 from galicaster.core import context
 
 log = logging.getLogger()

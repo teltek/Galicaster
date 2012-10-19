@@ -1,14 +1,14 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       galicaster/recorder/pipeline/rtp
+# galicaster/recorder/pipeline/rtp
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 import logging
@@ -16,7 +16,9 @@ import logging
 import gobject
 import gst
 from os import path
-import galicaster
+
+from galicaster.recorder import base
+from galicaster.recorder import module_register
 
 log = logging.getLogger()
 
@@ -31,7 +33,7 @@ pipestr = ("rtspsrc debug=false name=gc-rtp-src ! "
            "x264enc quantizer=22 speed-preset=2 profile=1 ! queue ! avimux ! "
            "filesink name=gc-rtp-sink async=false ")
 
-class GCrtpvideo(gst.Bin):
+class GCrtpvideo(gst.Bin, base.Base):
 
     gc_parameters = {
         # http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-good-plugins/html/gst-plugins-good-plugins-rtspsrc.html
@@ -44,32 +46,42 @@ class GCrtpvideo(gst.Bin):
         "UiB"
         )
 
-    def __init__(self, name = None, devicesrc = None, filesink = None, options = {}): 
+    is_pausable = True
+    has_audio = False
+    has_video = True
+
+    def __init__(self, options={}):
+        base.Base.__init__(self, options)
+        gst.Bin.__init__(self, self.options['name'])
+        
         global pipestr
 
-        if name == None:
-            name = "rtp"
+        if self.options['name'] == None:
+            self.options['name'] = "rtp"
 
         # 2/3-2012 edpck@uib.no use pipestr from conf.ini if it exists
-        if "pipestr" in options:
-            pipestr = options["pipestr"].replace("\n", " ")
+        if "pipestr" in self.options:
+           pipestr = self.options["pipestr"].replace("\n", " ")
+        
+        print (pipestr)
+                
+        gst.Bin.__init__(self, self.options['name'])
 
-        gst.Bin.__init__(self, name)
+        aux = pipestr.replace("gc-rtp-preview", "sink-" + self.options['name'])
 
-        bin = gst.parse_bin_from_description(pipestr.replace("gc-rtp-preview", "sink-" + name), False)
+        bin = gst.parse_bin_from_description(aux, False)
         self.add(bin)
+      
+        self.set_value_in_pipeline(self.options['location'], 'gc-rtp-src', 'location')
+        self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-rtp-sink', 'location')
 
-        if devicesrc != None:
-            sink = self.get_by_name('gc-rtp-src')
-            sink.set_property('location', devicesrc)
+        for opt in ['debug', 'protocols', 'retry', 'timeout', 'latency', 'tcp-timeout', 'connection-speed', 'nat-method', 'do-rtcp', 'proxy', 'rtp-blocksize', 'user-id', 'user-pw', 'buffer-mode', 'port-range', 'udp-buffer-size']:
+            if opt in options:
+                self.set_value_in_pipeline(self.options[opt], 'gc-rtp-src', opt)
 
-            for opt in ['debug', 'protocols', 'retry', 'timeout', 'latency', 'tcp-timeout', 'connection-speed', 'nat-method', 'do-rtcp', 'proxy', 'rtp-blocksize', 'user-id', 'user-pw', 'buffer-mode', 'port-range', 'udp-buffer-size']:
-                if opt in options:
-                    sink.set_property(opt, options[opt])
-
-        if filesink != None:
-            sink = self.get_by_name("gc-rtp-sink")
-            sink.set_property("location", filesink)
+    def changeValve(self, value):
+        valve1=self.get_by_name('gc-rtp-valve')
+        valve1.set_property('drop', value)
 
     def getValve(self):
         return self.get_by_name("gc-rtp-valve")
@@ -83,3 +95,4 @@ class GCrtpvideo(gst.Bin):
 
 gobject.type_register(GCrtpvideo)
 gst.element_register(GCrtpvideo, "gc-rtp-bin")
+module_register(GCrtpvideo, "rtpvideo")
