@@ -63,8 +63,6 @@ class GCrtpvideo(gst.Bin, base.Base):
         if "pipestr" in self.options:
            pipestr = self.options["pipestr"].replace("\n", " ")
         
-        print (pipestr)
-                
         gst.Bin.__init__(self, self.options['name'])
 
         aux = pipestr.replace("gc-rtp-preview", "sink-" + self.options['name'])
