@@ -16,12 +16,14 @@ develop-eggs
 # Installer logs
 pip-log.txt
 
-# Unit test / coverage reports
-.coverage
-.tox
-
 #Translations
 *.mo
 
 #IDE
 *~
+
+#Galicaster unit test / coverage reports
+.coverage
+.tox
+tests/resources/attach/
+tests/resources/repository/attach/
