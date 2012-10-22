@@ -19,6 +19,7 @@ Disble by default. You can enable it to test MatterHorn HTTP Client.
 """
 import socket
 import pycurl
+import json
 from xml.dom.minidom import parseString
 from unittest import TestCase
 
@@ -130,6 +131,7 @@ class TestFunctions(TestCase):
         series = client.getseries()    
 
         self.assertTrue(isinstance(series, basestring))
+        self.assertTrue(isinstance(json.loads(series), dict))
 
 
     def no_test_setstate(self):
