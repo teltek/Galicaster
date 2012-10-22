@@ -29,8 +29,7 @@ SETSTATE_ENDPOINT = '/capture-admin/agents/{hostname}'
 SETCONF_ENDPOINT = '/capture-admin/agents/{hostname}/configuration'
 INGEST_ENDPOINT = '/ingest/addZippedMediaPackage'
 ICAL_ENDPOINT = '/recordings/calendars?agentid={hostname}'
-#SERIES_ENDPOINT = '/series/series.json'
-SERIES_ENDPOINT = '/series/series.json?count=100'
+SERIES_ENDPOINT = '/series/series.json?count={count}'
 
 logger = logging.getLogger()
 
@@ -191,6 +190,6 @@ class MHHTTPClient(object):
 
     def getseries(self):
         """ Get all series upto 100"""
-        # TODO make a workaround to get all
-        return self.__call('GET', SERIES_ENDPOINT,100)
+        # TODO No limit, to get all
+        return self.__call('GET', SERIES_ENDPOINT, {'count': 100})
         
