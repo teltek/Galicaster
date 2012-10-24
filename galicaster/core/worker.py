@@ -189,14 +189,14 @@ class Worker(object):
 
     def export_to_zip(self, mp, location=None):
         logger.info('Creating ExportToZIP Job for MP {0}'.format(mp.getIdentifier()))
-        if not location:
-            name = datetime.now().replace(microsecond=0).isoformat()
-            location = location or os.path.join(self.export_path, name + '.zip')
         mp.setOpStatus('exporttozip',mediapackage.OP_PENDING)
         self.jobs.put((self._export_to_zip, (mp, location)))
 
 
-    def _export_to_zip(self, mp, location, is_action=True):
+    def _export_to_zip(self, mp, location=None, is_action=True):
+        if not location:
+            name = datetime.now().replace(microsecond=0).isoformat()
+            location = location or os.path.join(self.export_path, name + '.zip')
         if is_action:
             logger.info("Executing ExportToZIP for MP {0}".format(mp.getIdentifier()))
             mp.setOpStatus('exporttozip',mediapackage.OP_PROCESSING)
@@ -222,17 +222,16 @@ class Worker(object):
 
     def side_by_side(self, mp, location=None):
         logger.info('Creating SideBySide Job for MP {0}'.format(mp.getIdentifier()))
-        if not location:
-            name = datetime.now().replace(microsecond=0).isoformat()
-            location = location or os.path.join(self.export_path, name + '.mp4')
-
         mp.setOpStatus('sidebyside',mediapackage.OP_PENDING)
         self.jobs.put((self._side_by_side, (mp, location)))
 
 
-    def _side_by_side(self, mp, location):
+    def _side_by_side(self, mp, location=None):
         logger.info('Executing SideBySide for MP {0}'.format(mp.getIdentifier()))
         mp.setOpStatus('sidebyside',mediapackage.OP_PROCESSING)
+        if not location:
+            name = datetime.now().replace(microsecond=0).isoformat()
+            location = location or os.path.join(self.export_path, name + '.mp4')
         self.repo.update(mp)
         self.dispatcher.emit('start-operation', 'sidebyside', mp)
 
