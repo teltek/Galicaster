@@ -96,7 +96,7 @@ def save_native_zip(mp, loc):
 
 def save_system_zip(mp, loc):
 
-    tmp_file = 'manifest.xml'
+    tmp_file = path.join(mp.getURI(), 'manifest.xml')
     m = open(tmp_file,'w')
     m.write(set_manifest(mp))
     m.close()    
