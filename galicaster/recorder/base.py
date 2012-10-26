@@ -93,8 +93,8 @@ class Base(object):
                             k,type(self).__name__,v['type']))
 
             if v['type'] is 'boolean':
-                parse = self.options[k].lower()
-                if parse in [True, 'true', 'yes', 1, '1']:
+                parse = self.options[k]
+                if parse in [True, 'True', 'true', 'yes', 1, '1']:
                     self.options[k] = True
                 elif parse in [False, 'false', 'no', 0, '0']:
                     self.options[k] = False
