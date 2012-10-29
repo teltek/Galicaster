@@ -35,6 +35,11 @@ pipestr = ("rtspsrc debug=false name=gc-rtp-audio-src ! "
 
 class GCrtpaudio(gst.Bin, base.Base):
 
+    order = ["name", "flavor", "location", "file", 
+             "vumeter", "player","amplification",
+             "volume", "pattern", "frequency",
+             ]
+    
     gc_parameters = {
         # http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-good-plugins/html/gst-plugins-good-plugins-rtspsrc.html
         "name": {
