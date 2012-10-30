@@ -224,7 +224,7 @@ class Repository(object):
                 filename = os.path.join(bin['path'], bin['file'])
                 dest = os.path.join(mp.getURI(), os.path.basename(filename))
                 os.rename(filename, dest)
-                etype = 'audio/mp3' if bin['device'] in ['pulse','audiotest'] else 'video/' + dest.split('.')[1].lower()
+                etype = 'audio/mp3' if bin['device'] in ['pulse','audiotest','rtpaudio'] else 'video/' + dest.split('.')[1].lower()
                 flavour = bin['flavor'] + '/source'
                 mp.add(dest, mediapackage.TYPE_TRACK, flavour, etype, duration) # FIXME MIMETYPE
         mp.forceDuration(duration)

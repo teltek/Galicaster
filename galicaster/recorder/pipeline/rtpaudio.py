@@ -30,7 +30,7 @@ pipestr = ("rtspsrc debug=false name=gc-rtp-audio-src ! "
            "volume name=gc-rtp-audio-volume ! fakesink name=gc-rtp-audio-preview "
            "tee-aud. ! queue ! valve drop=false name=gc-rtp-audio-valve ! "
            "audioconvert ! audioamplify name=gc-rtp-audio-amplify amplification=1 ! "
-           "faac ! mp4mux ! "
+           "lame ! "
            "filesink name=gc-rtp-audio-sink async=false ")
 
 class GCrtpaudio(gst.Bin, base.Base):
