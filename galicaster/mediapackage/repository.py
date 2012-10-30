@@ -26,7 +26,7 @@ from galicaster.mediapackage import deserializer
 logger = logging.getLogger()
 
 
-def init_folder_prefix(hostname):
+def init_folder_prefix(hostname): # TODO delete function
     sanitize_hostname = re.sub(r'\W+', '', hostname)
     if sanitize_hostname:
         return 'gc_{0}_'.format(sanitize_hostname)
@@ -36,13 +36,17 @@ def init_folder_prefix(hostname):
 class Repository(object):
     attach_dir = 'attach'
 
-    def __init__(self, root=None, hostname=''):
+    def __init__(self, root=None, hostname='', 
+                 folder_template='gc_{hostname}_{year}-{month}-{day}T{hour}h{minute}m{second}'):
         """
         param: root: absolute path to the working folder. ~/Repository use if is None
         param: hostname: galicaster name use in folder prefix
+        param: folder_template
         """ 
         self.root = root or os.path.expanduser('~/Repository')
-        self.folder_prefix = init_folder_prefix(hostname)
+
+        self.hostname = hostname
+        self.folder_template = folder_template
 
         self.create_repo(hostname)
 
@@ -200,11 +204,11 @@ class Repository(object):
         return self.__list.has_key(key)
     
 
-    def add(self, mp, name=None):
+    def add(self, mp):  # TODO review change API
         if self.has(mp):
             raise KeyError('Key Repeated')
         if mp.getURI() == None:
-            mp.setURI(self.__get_folder_name(name or mp.getDate()))
+            mp.setURI(self.__get_folder_name(mp))
         else:
             assert mp.getURI().startswith(self.root + os.sep)            
         os.mkdir(mp.getURI())
@@ -212,9 +216,9 @@ class Repository(object):
         return self.__add(mp)
 
 
-    def add_after_rec(self, mp, bins, duration, name=None, add_catalogs=True):
+    def add_after_rec(self, mp, bins, duration, add_catalogs=True): # TODO review change API
         if not self.has(mp):
-            mp.setURI(self.__get_folder_name(name or mp.getDate()))
+            mp.setURI(self.__get_folder_name(mp))
             os.mkdir(mp.getURI())
 
         for bin in bins:
@@ -271,18 +275,22 @@ class Repository(object):
             return os.path.join(self.root, self.attach_dir)
 
 
-    def __get_folder_name(self, name=None):
-        if name == None:
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%Hh%Mm%S")
-            folder = os.path.join(self.root, self.folder_prefix + timestamp)
-        elif isinstance(name, datetime.datetime):
-            timestamp = name.strftime("%Y-%m-%dT%Hh%Mm%S")
-            folder = os.path.join(self.root, self.folder_prefix + timestamp)
-        else:
-            folder = os.path.join(self.root, self.folder_prefix + name)
+    def __get_folder_name(self, mp):
+        mappings = {
+            'id'       : mp.identifier,
+            'title'    : mp.title, 
+            'series'   : mp.series_title, 
+            'hostname' : self.hostname, 
+            'year'     : mp.getDate().strftime('%Y'),
+            'month'    : mp.getDate().strftime('%m'),
+            'day'      : mp.getDate().strftime('%d'),
+            'hour'     : mp.getDate().strftime('%H'),
+            'minute'   : mp.getDate().strftime('%M'),
+            'second'   : mp.getDate().strftime('%S')}
         
-        return folder
-
+        forder_name = re.sub(r'\W+', '', self.folder_template.format(**mappings))
+        #TODO check if forder exists in repo??
+        return os.path.join(self.root, forder_name)
 
     def __add(self, mp):
         self.__list[mp.getIdentifier()] = mp
@@ -290,9 +298,4 @@ class Repository(object):
         #FIXME escribir de nuevo los XML de metadata.xml y episode.xml y series.xml
         return mp
         
-    
-
-
-
-    
     
