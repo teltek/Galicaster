@@ -281,6 +281,8 @@ class Repository(object):
             'title'    : mp.title, 
             'series'   : mp.series_title, 
             'hostname' : self.hostname, 
+            'type'     : 'M' if mp.manual else 'S',
+            'longtype' : 'manual' if mp.manual else 'scheduled',
             'year'     : mp.getDate().strftime('%Y'),
             'month'    : mp.getDate().strftime('%m'),
             'day'      : mp.getDate().strftime('%d'),
