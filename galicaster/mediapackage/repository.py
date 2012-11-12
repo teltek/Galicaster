@@ -198,7 +198,7 @@ class Repository(object):
         return self.__list.has_key(key)
     
 
-    def add(self, mp):  # TODO review change API
+    def add(self, mp): 
         if self.has(mp):
             raise KeyError('Key Repeated')
         if mp.getURI() == None:
@@ -210,7 +210,7 @@ class Repository(object):
         return self.__add(mp)
 
 
-    def add_after_rec(self, mp, bins, duration, add_catalogs=True): # TODO review change API
+    def add_after_rec(self, mp, bins, duration, add_catalogs=True): 
         if not self.has(mp):
             mp.setURI(self.__get_folder_name(mp))
             os.mkdir(mp.getURI())
