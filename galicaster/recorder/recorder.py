@@ -117,7 +117,7 @@ class Recorder(object):
                 
                 message = gst.message_new_error(
                     src, error, 
-                    str(random_bin)+"\nsystem_error: Driver not available")
+                    str(random_bin)+"\nunknown system_error")
                 self.bus.post(message)
                 #self.dispatcher.emit("recorder-error","Driver error")
                 return False
@@ -237,8 +237,8 @@ class Recorder(object):
                     raise TypeError()
                 gtk.gdk.threads_enter()
                 gtk.gdk.display_get_default().sync()            
-                message.src.set_xwindow_id(gtk_player.window.xid)
                 message.src.set_property('force-aspect-ratio', True)
+                message.src.set_xwindow_id(gtk_player.window.xid)
                 gtk.gdk.threads_leave()
 
             except KeyError:
