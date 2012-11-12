@@ -15,6 +15,7 @@ import logging
 import os
 import datetime
 import re
+import itertools
 from shutil import rmtree
 import ConfigParser
 
@@ -290,9 +291,15 @@ class Repository(object):
             'minute'   : mp.getDate().strftime('%M'),
             'second'   : mp.getDate().strftime('%S')}
         
-        forder_name = re.sub(r'\W+', '', self.folder_template.format(**mappings))
-        #TODO check if forder exists in repo??
-        return os.path.join(self.root, forder_name)
+        base = folder_name = re.sub(r'\W+', '', self.folder_template.format(**mappings))
+        
+        # Check if folder_name exists
+        count = itertools.count(2)
+        while os.path.exists(os.path.join(self.root, folder_name)):
+            folder_name = (base + "_" + str(next(count)))
+
+        return os.path.join(self.root, folder_name)
+
 
     def __add(self, mp):
         self.__list[mp.getIdentifier()] = mp
