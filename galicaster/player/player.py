@@ -22,7 +22,7 @@ import logging
 import gtk
 import gst
 import os
-from gst.extend.discoverer import Discoverer
+from gst.pbutils import Discoverer
 from galicaster.core import context
 
 import time
@@ -277,21 +277,13 @@ class Player(object):
 
 
     def discover(self,filepath):
-        discoverer = Discoverer(filepath)
-        discoverer.connect('discovered', self.on_discovered, filepath)
-        discoverer.discover()
-        return False # Don't repeat idle call
-
-
-    def on_discovered(self, discoverer, ismedia, infile):
-        if discoverer.is_audio:
-            self.duration = discoverer.audiolength / 1000000000            
-        else:
-            self.duration = discoverer.videolength / 1000000000   
-
-        log.info("Duration ON_DISCOVERED: "+str(self.duration))
-
+        discoverer = Discoverer(1*gst.SECOND)
+        info = discoverer.discover_uri('file://'+filepath)
+        self.duration = info.get_duration() / 1000000000
+        log.info("Duration ON_DISCOVERED: "+str(self.duration))        
         self.run_pipeline()
+        return True
+
 
     def get_duration_and_run(self):
         # choose lighter file
