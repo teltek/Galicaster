@@ -27,13 +27,6 @@ from galicaster.mediapackage import deserializer
 logger = logging.getLogger()
 
 
-def init_folder_prefix(hostname): # TODO delete function
-    sanitize_hostname = re.sub(r'\W+', '', hostname)
-    if sanitize_hostname:
-        return 'gc_{0}_'.format(sanitize_hostname)
-    return 'gc_'
-
-
 class Repository(object):
     attach_dir = 'attach'
 
