@@ -146,7 +146,7 @@ class Worker(object):
         self.dispatcher.emit('start-operation', 'ingest', mp)
         self.dispatcher.emit('refresh-row', mp.identifier)
 
-        ifile = tempfile.NamedTemporaryFile(dir=self.tmp_path)
+        ifile = tempfile.NamedTemporaryFile(dir=self.tmp_path, suffix='.zip')
         self._export_to_zip(mp, ifile, False)
 
         if mp.manual:
