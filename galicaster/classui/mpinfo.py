@@ -10,6 +10,9 @@
 # this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
+"""
+Pop Up with exhaustive information of a Mediapackage
+"""
 
 import gtk
 from os import path
@@ -124,6 +127,7 @@ class MPinfo(gtk.Window):
         self.show_all()
 		    
     def add_framed_table(self,name, expanded = False):
+        """Stablished a framed table for the information to be shown in"""
         frame =gtk.Frame()
         frame.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         expander= gtk.Expander()
@@ -146,7 +150,7 @@ class MPinfo(gtk.Window):
 
 
     def add_data(self,table,name,value):
-
+        """Attach data to the table"""
         row = table.get_property("n-rows")
         title = gtk.Label(name)
         title.set_alignment(1,0)
@@ -168,6 +172,7 @@ class MPinfo(gtk.Window):
                      int(self.wprop*10),0)
 
     def add_button(self, text, connection, data = None, end=False):
+        """Adds a action button on the bottom of the window"""
         k1 = self.wprop
         button = gtk.Button(text)
         button.set_property("width-request", int(k1*150))
@@ -186,6 +191,7 @@ class MPinfo(gtk.Window):
         return button
 
     def openfolder(self, button, folder):
+        """Bypass to open a folder on the system file manager"""
         open_folder(folder)
 
     def close(self,button=None):
