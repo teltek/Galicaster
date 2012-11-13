@@ -267,13 +267,6 @@ class TestFunctions(TestCase):
             self.assertEqual(mp.getURI(), os.path.dirname(catalog.getURI()))
             self.assertTrue(os.path.isfile(catalog.getURI()), 
                             'The catalog path {0} not exists'.format(catalog.getURI()))
-        
-    
-    def test_init_folder_prefix(self):
-        self.assertEqual(repository.init_folder_prefix(''), 'gc_')
-        self.assertEqual(repository.init_folder_prefix('FooBar'), 'gc_FooBar_')
-        self.assertEqual(repository.init_folder_prefix('Foo-Bar'), 'gc_FooBar_')
-        self.assertEqual(repository.init_folder_prefix('Foo-Bar[!!??]'), 'gc_FooBar_')
 
 
     def test_folder_name_template(self):
@@ -283,6 +276,15 @@ class TestFunctions(TestCase):
         repo.add(mp)
         self.assertEqual(mp.getURI(), os.path.join(repo.root, 
           'gc_{hostname}_m{second}'.format(hostname="test", second=mp.getDate().strftime('%S'))))
+
+
+    def test_folder_name_template_no_alphanumeric(self):
+        repo = repository.Repository(self.tmppath, 'test', 'Foo-Bar[!!??]-{hostname}_m{second}')
+
+        mp = mediapackage.Mediapackage()
+        repo.add(mp)
+        self.assertEqual(mp.getURI(), os.path.join(repo.root, 
+          'FooBar{hostname}_m{second}'.format(hostname="test", second=mp.getDate().strftime('%S'))))
 
 
     def test_folder_name_template_unique(self):

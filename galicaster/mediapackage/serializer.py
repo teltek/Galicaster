@@ -185,7 +185,7 @@ def set_manifest(mp):
     """
     doc = minidom.Document()
     xml = doc.createElement("mediapackage") 
-    #xml.setAttribute("xmlns:oc","http://mediapackage.opencastporject.org") FIXME is necesary?
+    xml.setAttribute("xmlns", "http://mediapackage.opencastproject.org")  
     xml.setAttribute("id", mp.getIdentifier()) 
     xml.setAttribute("start", mp.getDate().isoformat())
     if mp.getDuration() != None:
