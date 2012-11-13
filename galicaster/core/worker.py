@@ -172,7 +172,7 @@ class Worker(object):
                 if k[0:36] == 'org.opencastproject.workflow.config.':
                     workflow_parameters[k[36:]] = v
             try:
-                self.mh_client.ingest(ifile.name, workflow, mp.getIdentifier(), workflow_parameters)
+                self.mh_client.ingest(ifile.name, workflow, mp.properties['workflow_id'], workflow_parameters)
                 logger.info("Finalized Ingest for MP {0}".format(mp.getIdentifier()))
                 mp.setOpStatus("ingest",mediapackage.OP_DONE)
                 self.dispatcher.emit('stop-operation', 'ingest', mp, True)

@@ -100,7 +100,10 @@ def get_repository():
     """
     if 'repository' not in __galicaster_context:
         conf = get_conf()
-        __galicaster_context['repository'] = Repository(conf.get('basic', 'repository'), conf.hostname)
+        __galicaster_context['repository'] = Repository(
+          conf.get('basic', 'repository'), 
+          conf.hostname,
+          conf.get('repository', 'foldertemplate'))
 
     return __galicaster_context['repository']
 

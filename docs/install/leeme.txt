@@ -42,6 +42,19 @@ Apartados:
    * admin: activa el modo administrador (True|False)
       - False: Usado por defecto, el usuario solo podra realizar grabaciones. Galicaster operará como GClass.
       - True: Ademas de grabar, el usuario puede editar metadatos, reproducir y administrar las grabaciones. Galicaster operará como GMobile.
+   * plantilla para los direcotrios del repositorio. Util para cuando se explora de forma manual. Valor por defecto es gc_{hostname}_{year}-{month}-{day}T{hour}h{minute}m{second}. Los codigos que se puedes usar son:
+      - {id}: Identificador de MP
+      - {title}: Titulo original del MP
+      - {series}: Titulo original de la seria a la que pertenece el MP
+      - {hostname}: Nombre del equipo grabador
+      - {type}: 'M' si el MP se genera con una grabacion manual o 'S' si es agendado.
+      - {longtype}: 'manual' si el MP se genera con una grabacion manual o 'scheduled' si es agendado.
+      - {year}: Año de grabacion del MP con siglo como un numero decimal.
+      - {month}: Mes de grabacion del MP como un numero decimal [01,12]
+      - {day}: Dia de grabacion del MP como un numero decimal [01,31]
+      - {hour}: Hora de grabacion del MP como un numero decimal [00,23]
+      - {minute}: Minuto de grabacion del MP como un numero decimal
+      - {second}: Segundo de grabacion del MP como un numero decimal
 
 -- screen
    * right: Nombre del dispositivo de vídeo en las lista de tracks que se mostrará en la pantalla derecha (None para desactivar).
