@@ -5,7 +5,9 @@
 # this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
-
+"""
+Basic Dialog Messag UI
+"""
 
 import gtk
 import pango
@@ -22,14 +24,18 @@ POSITIVE = [gtk.RESPONSE_ACCEPT, gtk.RESPONSE_OK, gtk.RESPONSE_YES, gtk.RESPONSE
 NEGATIVE = [gtk.RESPONSE_REJECT, gtk.RESPONSE_DELETE_EVENT, gtk.RESPONSE_CANCEL, gtk.RESPONSE_CLOSE, gtk.RESPONSE_NO]
 
 class PopUp(gtk.Widget):
-    """
-    Handle a pop up for warnings and tipos
-    """
+    """Handle a pop up for warnings and questions"""
     __gtype_name__ = 'PopUp'
 
     def __init__(self, message = None, text = dict(), parent=None,
                  buttons = None, two_lines = None): 
-
+        """
+        message: type of message (INFO,QUESTION,WARNING, ERROR, ACTION)
+        text: dictionary with three fields (title, main question, explanation text)
+        parent: program main window 
+        buttons: buttons to be shown and values
+        two_lines: second line of buttons
+        """
         # Parse Size proportions
         size = parent.get_size()
         self.size = size
@@ -61,6 +67,7 @@ class PopUp(gtk.Widget):
         return None
 
     def create_ui_two_lines(self, buttons, secondary, text, message, parent):
+        """Creates and additional button box"""
 
         secondary_area = gtk.HButtonBox()
         secondary_area.set_homogeneous(True)
@@ -86,7 +93,7 @@ class PopUp(gtk.Widget):
 
 
     def create_ui(self, buttons, text, icon, parent, modifier = None, another = False):
-
+        """Creates the dialog window and sets its configuration"""
   
         #dialog        
         dialog = gtk.Dialog(text.get("title","Galicaster"),parent,0,buttons)
@@ -158,7 +165,7 @@ class PopUp(gtk.Widget):
         return dialog
 
     def create_framed_lines(self, buttons, text, icon, parent):
-
+        """Creates frames arround groups of buttons"""
         dialog = gtk.Dialog(text.get("title","Galicaster"),parent,0)
         self.dialog = dialog
         dialog.set_property('width-request',int(self.size[0]/1.8)) # relative to screen size       
@@ -291,6 +298,7 @@ class PopUp(gtk.Widget):
         return dialog
 
     def resize_buttons(self, area, fontsize, equal = False):    
+        """Adapts buttons to the dialog size"""
         wprop = self.wprop
         fsize=int(wprop*fontsize)
         font2 = self.set_font(str(fsize)+"px")
@@ -326,6 +334,7 @@ class PopUp(gtk.Widget):
         self.dialog.response(response)
     
     def set_font(self,description):
+        """Asign a font description to a text"""
         alist = pango.AttrList()
         font=pango.FontDescription(description)
         attr=pango.AttrFontDesc(font,0,-1)
@@ -339,6 +348,7 @@ class PopUp(gtk.Widget):
 gobject.type_register(PopUp)
 
 def main(args):
+    """Launcher for debugging purposes"""
     print "Running Main Message PopUp"
     v = PopUp()
     gtk.main()

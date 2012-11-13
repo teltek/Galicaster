@@ -10,7 +10,9 @@
 # this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
-
+"""
+UI for the Media Manager and Player area
+"""
 
 import sys
 import os
@@ -57,6 +59,7 @@ class ManagerUI(gtk.Box):
     __gtype_name__ = 'Manager'
 
     def __init__(self, element):
+        """elements set the previous area to which the top bar's back button points to"""
         gtk.Box.__init__(self)
         self.strip = StripUI(element)
         
@@ -70,7 +73,8 @@ class ManagerUI(gtk.Box):
 	self.dispatcher.connect("net-down", self.network_status, False)
 
 
-    def sorting(self, treemodel, iter1, iter2, data, regular=True, ascending=1):	    
+    def sorting(self, treemodel, iter1, iter2, data, regular=True, ascending=1):	 
+        """Basic Sort comparisson"""
         first =treemodel[iter1][data]
         second = treemodel[iter2][data]
 
@@ -90,6 +94,7 @@ class ManagerUI(gtk.Box):
             return -1 * ascending
 
     def sorting_text(self, treemodel, iter1, iter2, data, regular=True, ascending=1):
+        """Sort algorithm, giving similar value to capital and regular letters"""
         # Null sorting
         first = treemodel[iter1][data]
         second = treemodel[iter2][data]
@@ -130,6 +135,7 @@ class ManagerUI(gtk.Box):
             return -1 * ascending
 
     def sorting_empty(self, treemodel, iter1, iter2, data, regular=True, ascending=1):
+        """Sorting algorithm, placing empty values always and the end, both descending and ascending"""
         # Null sorting
         first = treemodel[iter1][data]
         second = treemodel[iter2][data]
@@ -169,7 +175,7 @@ class ManagerUI(gtk.Box):
 
 
     def size_readable(self,column,cell,model,iterador,user_data):
-        """ Generates human readable string for a number.
+        """Generates human readable string for a number.
         Returns: A string form of the number using size abbreviations (KB, MB, etc.) """
         resultado = readable.size(cell.get_property('text'))
         cell.set_property('text',resultado)
@@ -182,25 +188,25 @@ class ManagerUI(gtk.Box):
         return novo
 
     def time_readable(self,column,cell,model,iterador,user_data):
-        """ Generates date hout:minute:seconds from seconds """		
+        """Generates date hout:minute:seconds from seconds."""		
         ms = cell.get_property('text')
         novo = readable.time(int(ms)/1000)
         cell.set_property('text',novo)		
         return novo
 
     def list_readable(self,listed):
-        """ Generates a string of items from a list, separated by commas """		
+        """Generates a string of items from a list, separated by commas."""		
         novo = readable.list(listed)
         return novo
 
     def status_readable(self,column,cell,model,iterator,user_data):
-        """ Set text equivalent for numeric status of mediapackages """	
+        """Set text equivalent for numeric status of mediapackages."""	
         ms = cell.get_property('text')
         novo = mediapackage.mp_status[int(ms)]
         cell.set_property('text',novo)
 
     def operation_readable(self,column,cell,model,iterator,operation):
-        """ Set text equivalent for numeric operation status of mediapackages """	
+        """Sets text equivalent for numeric operation status of mediapackages."""	
         mp=self.repository.get((model[iterator])[0])
         status=mp.getOpStatus(operation)
         out = mediapackage.op_status[status]
@@ -215,7 +221,7 @@ class ManagerUI(gtk.Box):
      
 
     def series_readable(self,column,cell,model,iterator,user_data):
-        """ Set text equivalent for numeric status of mediapackages """	
+        """Sets text equivalent for numeric status of mediapackages."""	
         ms = cell.get_property('text')
         if ms == None:
             novo=""
@@ -227,6 +233,7 @@ class ManagerUI(gtk.Box):
 #---------------------------------------- ACTION CALLBACKS ------------------
 
     def ingest_question(self,package):            
+        """Pops up a question dialog for available operations."""
         buttons = None
         disabled = not self.conf.get_boolean("ingest", "active")
         day,night = context.get_worker().get_all_job_types_by_mp(package)
@@ -302,9 +309,7 @@ class ManagerUI(gtk.Box):
 
 
     def play(self,key):
-	""" 
-	Retrieve mediapackage and send videos to player
-	"""
+	"""Retrieves mediapackage and send videos to player."""
 	logger.info("Play: "+str(key))
 	package = self.repository.get(key)
 
@@ -321,7 +326,8 @@ class ManagerUI(gtk.Box):
 	return True
 
 
-    def change_mode(self,button): # UNUSED
+    def change_mode(self,button):
+        """Handles a change mode"""
 	text=button.get_children()[0].get_text()
         
 	if text == "Recorder":
@@ -333,16 +339,19 @@ class ManagerUI(gtk.Box):
 #--------------------------------------- METADATA -----------------------------
 
     def edit(self,key):
+        """Pop ups the Metadata Editor"""
 	logger.info("Edit: "+str(key))
 	selected_mp = self.repository.get(key)
 	meta = Metadata(selected_mp)
 	self.repository.update(selected_mp)
 
     def info(self,key):
+        """Pops up de MP info dialog"""
         logger.info("Info: "+str(key))
         dialog = MPinfo(key)
 
     def do_resize(self, buttonlist, secondlist=[]): 
+        """Force a resize on the Media Manager"""
         size = context.get_mainwindow().get_size()
         self.strip.resize()
 	altura = size[1]
@@ -383,6 +392,7 @@ class ManagerUI(gtk.Box):
 	return True
 
     def delete(self,key):
+        """Pops up a dialog. If response is positive, deletes a MP."""
 	logger.info("Delete: "+str(key))
 	package = self.repository.get(key)
 	t1 = "This action will remove the recording from the hard disk."
@@ -404,12 +414,14 @@ class ManagerUI(gtk.Box):
 
 
     def network_status(self, signal, status):
-	    self.network = status
-
+        """Updates the signal status from a received signal"""
+        self.network = status
+            
 
 gobject.type_register(ManagerUI)
 
 def main(args):
+    """Launcher for debugging purposes"""
     v = listing()
     gtk.main()
     return 0
