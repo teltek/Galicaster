@@ -97,8 +97,7 @@ class TestFunctions(TestCase):
         dispatcher = self.DispatcherMock()
         w = worker.Worker(dispatcher, repo, client)
 
-        mp = mediapackage.Mediapackage(uri='/tmp')
-        mp.properties['workflow_id'] = "1"
+        mp = mediapackage.Mediapackage(identifier='1', uri='/tmp')
         mp.add(self.path_capture_agent_properties, mediapackage.TYPE_ATTACHMENT, identifier='org.opencastproject.capture.agent.properties')
         mp.manual = False
         
@@ -114,8 +113,7 @@ class TestFunctions(TestCase):
         dispatcher = self.DispatcherMock()
         w = worker.Worker(dispatcher, repo, client)
 
-        mp = mediapackage.Mediapackage(uri='/tmp')
-        mp.properties['workflow_id'] = "1"
+        mp = mediapackage.Mediapackage(identifier='1', uri='/tmp')
         mp.addAttachmentAsString('org.opencastproject.workflow.definition=mini-full', 
                                  name='org.opencastproject.capture.agent.properties', identifier='org.opencastproject.capture.agent.properties')
         mp.manual = False

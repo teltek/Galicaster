@@ -73,7 +73,7 @@ def create_mp(repo, event):
         mp = mediapackage.Mediapackage()
         mp.status = mediapackage.SCHEDULED
         mp.manual = False
-        mp.properties['workflow_id'] = event['UID']
+        mp.setIdentifier(event['UID'])
         repo.add(mp)
         rewrite = False
 
