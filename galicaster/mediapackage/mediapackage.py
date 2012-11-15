@@ -291,7 +291,7 @@ class Mediapackage(object):
         elif name == "subject":
             return self.subjects
         elif name == "created":
-            return self.starTime
+            return self.startTime
         elif name == "ispartof":
             return self.series_title
         else:
