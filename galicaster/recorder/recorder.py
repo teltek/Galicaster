@@ -278,19 +278,3 @@ class Recorder(object):
         for bin_name, bin in self.bins.iteritems():
             if bin.has_audio:
                 bin.mute_preview(value)
-<<<<<<< HEAD
-                
-=======
-
-
-    def create_discon(self, origin):
-        for bin_name, bin in self.bins.iteritems():
-             bin.cutFile()
-        return True
-
-    def shift_streaming(self, origin,value):
-        for bin_name, bin in self.bins.iteritems():
-             bin.changeStream(value)
-        return True
-
->>>>>>> classui docstrings filled
