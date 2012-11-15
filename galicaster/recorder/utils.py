@@ -122,8 +122,8 @@ class Switcher(gst.Bin):
         pipe.set_state(gst.STATE_PAUSED)
         pipe.set_state(gst.STATE_PLAYING)
         state = pipe.get_state()
+        pipe.set_state(gst.STATE_NULL)
         if state[0] != gst.STATE_CHANGE_FAILURE:
-            pipe.set_state(gst.STATE_NULL)
             return True
         return False
 
