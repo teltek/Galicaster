@@ -10,7 +10,9 @@
 # this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
-
+"""
+UI for a Metadata Editor Pop UP
+"""
 
 import gtk
 import datetime
@@ -40,10 +42,8 @@ class MetadataClass(gtk.Widget):
     Handle a pop up metadata editor, updating it if necessary
     """
     __gtype_name__ = 'MetadataClass'
-    
 
-
-    def __init__(self,package = None, parent = None): 
+    def __init__(self,package = None, parent = None):
 
         parent = context.get_mainwindow()
         size = parent.get_size()
@@ -157,12 +157,11 @@ class MetadataClass(gtk.Widget):
             row=row+1
 
     def strip_spaces(self,value):
+        """Remove spaces before and after a value"""
         return value.strip()
 
     def update_metadata(self,table,mp):
-        """
-        Write data back to the mediapackage
-        """
+        """Write data back to the mediapackage"""
         for child in table.get_children():
             if child.name in DCTERMS:
                 if child.name == "creator":
@@ -226,9 +225,7 @@ class MetadataClass(gtk.Widget):
 
 
     def edit_date(self,element,event):
-        """
-        Filter a Rigth button double click, show calendar and update date
-        """
+        """Filter a Rigth button double click, show calendar and update date"""
       
         if event.type == gtk.gdk._2BUTTON_PRESS and event.button==1:
             text= element.get_text()
@@ -321,7 +318,7 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
             return True
 
     def sorting(self, treemodel, iter1, iter2, NO_ID = None):
-
+        """Sorting algorithm, placing first default series and no series"""
         if treemodel[iter1][0] == NO_ID:
             return False
         if treemodel[iter2][0] == NO_ID:
