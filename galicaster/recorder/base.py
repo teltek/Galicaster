@@ -10,9 +10,9 @@
 # this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
+
 from os import path
 import re
-import gst
 
 FLAVOR = ['presenter', 'presentation', 'other']
 
@@ -66,8 +66,8 @@ class Base(object):
         #            self.options['name'],self.options['device']))
 
         for k,v in self.gc_parameters.iteritems():            
-            if v['type'] is 'integer':
-                if type(self.options[k]) is not int:             
+            if v['type'] == 'integer':
+                if type(self.options[k]) != int: 
                     if not re.search('[^0-9]',self.options[k]):
                         self.options[k] = int(self.options[k])
                     else:
@@ -80,7 +80,7 @@ class Base(object):
                         'Parameter "{0}" on {1} out of range. {2}.'.format(
                             k,type(self).__name__,v['range']))
 
-            if v['type'] is 'float':
+            if v['type'] == 'float':
                 try:
                     self.options[k] = float(self.options[k])
                     if self.options[k] < v['range'][0] or self.options[k] > v['range'][1]:
@@ -92,7 +92,7 @@ class Base(object):
                         'Parameter "{0}" on {1} must be {2}.'.format(
                             k,type(self).__name__,v['type']))
 
-            if v['type'] is 'boolean':
+            if v['type'] == 'boolean':
                 parse = self.options[k].lower()
                 if parse in [True, 'true', 'yes', 1, '1']:
                     self.options[k] = True
@@ -102,7 +102,7 @@ class Base(object):
                     raise SystemError(
                         'Parameter "{0}" on {1} must be an accepted {2}.\n{3}. Boolean parser ignores case"'.format(k,type(self).__name__,v['type'],'true, yes, 1, false, no, 0')) 
 
-            if v['type'] is 'flavor' and self.options[k] not in FLAVOR:
+            if v['type'] == 'flavor' and self.options[k] not in FLAVOR:
                  raise SystemError('{0} is not a valid {1}.\nValid flavors are {2}.'.format(
                          self.options[k],v['type'],FLAVOR)) #
 

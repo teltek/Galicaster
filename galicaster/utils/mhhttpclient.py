@@ -11,8 +11,6 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-
-import re
 import json
 import logging
 import urllib
@@ -20,7 +18,6 @@ import socket
 #IDEA use cStringIO to improve performance
 from StringIO import StringIO
 import pycurl
-import json
 
 INIT_ENDPOINT = '/welcome.html'
 ME_ENDPOINT = '/info/me.json'

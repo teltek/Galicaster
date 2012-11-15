@@ -13,12 +13,8 @@
 
 
 import os
-import sys
-import shutil
 import logging
 import ConfigParser
-import collections
-import exceptions
 import socket
 
 logger = logging.getLogger()
@@ -190,10 +186,6 @@ class Conf(object): # TODO list get and other ops arround profile
       return profile
 
 
-   def set_default_profile_as_current(self):
-      self.__current_profile = self.__default_profile
-
-
    def get_permission(self,permit):
       try: 
          return self.__conf.getboolean('allows',permit)
@@ -271,11 +263,6 @@ class Conf(object): # TODO list get and other ops arround profile
       return self.__default_profile
 
 
-   def get_all_default_tracks(self):
-      profile=Profile()
-      profile.import_from_conf(False)                                     
-
-   
    def __get_free_number(self):
       for i in range(100):
          if not self.__conf.has_section('track'+unicode(i)):
@@ -298,7 +285,7 @@ class Conf(object): # TODO list get and other ops arround profile
 
 
    def get_palette(self, old_style = True):
-      none = self.get('color','none')
+      undefined = self.get('color','none')
       nightly = self.get('color','nightly')
       pending = self.get('color','pending')
       processing = self.get('color','processing')
@@ -306,9 +293,9 @@ class Conf(object): # TODO list get and other ops arround profile
       failed = self.get('color','failed')
 
       if not old_style:
-         return [none, none, none, none, none, none] 
+         return [undefined, undefined, undefined, undefined, undefined, undefined] 
       else:
-         return [none, nightly, pending,processing, done, failed]
+         return [undefined, nightly, pending,processing, done, failed]
 
 
 class Profile(object):
@@ -318,7 +305,7 @@ class Profile(object):
    Tracks can be created
    Other features are reordering tracks
    """
-   def __init__(self, name='New Profile', path=None, current=False):
+   def __init__(self, name='New Profile', path=None):
       self.name = name
       self.tracks = []
       self.path = path

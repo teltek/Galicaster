@@ -40,7 +40,7 @@ PIN= 4
 
 class Main():
     def __init__(self):
-        service = DBusService(self)
+        DBusService(self)
         self.conf = context.get_conf()
         self.state = context.get_state()
         self.dispatcher = context.get_dispatcher()
@@ -90,7 +90,7 @@ class Main():
 
         self.window.start()
 
-        if 'recorder' and 'media_manager' in self.modules:            
+        if 'media_manager' in self.modules:            
             self.window.set_current_page(DIS)
         else:
             self.window.set_current_page(REC)
@@ -111,7 +111,7 @@ class Main():
         self.dispatcher.emit('galicaster-status', old_page, page)
 
 
-    def play_mp(self,origin, mediapackage): 
+    def play_mp(self, origin, mediapackage): 
         """
         Plays a mediapackage
         """

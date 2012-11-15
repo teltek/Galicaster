@@ -186,7 +186,7 @@ class Recorder(object):
         log.info('eos')
         self.stop_preview()  # FIXME pipeline set to NULL twice (bf and in the function)
 
-        if self.restart == True:
+        if self.restart:
             self.restart = False
             log.debug("EMITTING restart preview")
             self.dispatcher.emit("restart-preview")
@@ -246,16 +246,6 @@ class Recorder(object):
             except TypeError:
                 log.error('players[%r]: need a %r; got a %r: %r' % (
                         name, gtk.DrawingArea, type(gtk_player), gtk_player))
-
-    def __shift_screens(self):  # NOT TESTED NEITHER CONNECTED
-        player1, player2 = self.players.values()  # both drawing areas
-        gtk.gdk.threads_enter()
-        gtk.gdk.display_get_default().sync()        
-        # check how to shift
-        self.source[0].set_xwindow_id(player1.window.xid)
-        self.source[1].set_xwindow_id(player2.window.xid)
-        gtk.gdk.threads_leave()
-        return True
         
     def __on_message_element(self, bus, message):
         if message.structure.get_name() == 'level':

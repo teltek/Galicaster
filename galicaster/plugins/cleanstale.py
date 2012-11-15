@@ -23,7 +23,7 @@ def init():
     dispatcher.connect('galicaster-notify-nightly', clear_job)
 
     try:
-        days = int(conf.get('cleanstale','maxarchivaldays'))
+        days = int(conf.get('cleanstale', 'maxarchivaldays'))
     except ValueError:
         #log or set default value
         pass
@@ -34,7 +34,7 @@ def clear_job(sender=None):
     repo = context.get_repository()
 
     try:
-        days = int(conf.get('cleanstale','maxarchivaldays'))
+        days = int(conf.get('cleanstale', 'maxarchivaldays'))
     except ValueError:
         #log
         return

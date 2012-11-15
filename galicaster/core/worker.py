@@ -11,8 +11,6 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import sys
-
 import os
 import logging
 import threading
@@ -113,7 +111,7 @@ class Worker(object):
             return False
         f(mp)
 
-    def do_job(self, name, mp, nigthly=False):     
+    def do_job(self, name, mp):
         f = getattr(self, name)
         f(mp)
 

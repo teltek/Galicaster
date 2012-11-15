@@ -14,10 +14,8 @@
 import logging
 
 import datetime
-import tempfile
 from os import path
-from threading import Timer
-from threading import _Timer
+from threading import Timer, _Timer
 
 from galicaster.utils import ical
 from galicaster.mediapackage import mediapackage
@@ -92,8 +90,8 @@ class Scheduler(object):
     def set_state(self):
         logger.info('Set status %s to server', self.ca_status)
         try:
-            res = self.client.setstate(self.ca_status)
-            res = self.client.setconfiguration(self.conf.get_tracks_in_mh_dict()) 
+            self.client.setstate(self.ca_status)
+            self.client.setconfiguration(self.conf.get_tracks_in_mh_dict()) 
             self.net = True
             self.dispatcher.emit('net-up')
         except:
@@ -171,7 +169,7 @@ class Scheduler(object):
             self.dispatcher.emit('start-record', mp.getIdentifier())
 
             try:
-                res = self.client.setrecordingstate(key, 'capturing')
+                self.client.setrecordingstate(key, 'capturing')
             except:
                 logger.warning('Problems to connect to matterhorn server ')
 
@@ -188,10 +186,11 @@ class Scheduler(object):
         if mp.status == mediapackage.RECORDING:
             self.dispatcher.emit('stop-record', key)
             try:
-                res = self.client.setrecordingstate(key, 'capture_finished')
+                self.client.setrecordingstate(key, 'capture_finished')
             except:
                 logger.warning('Problems to connect to matterhorn server ')
-                self. __stop_timers()
+                self.net = False
+                self.dispatcher.emit('net-down')
             
         self.t_stop = None
 
