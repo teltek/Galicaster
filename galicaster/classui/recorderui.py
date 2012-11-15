@@ -109,7 +109,6 @@ class RecorderClassUI(gtk.Box):
         self.scheduled_recording = False
         self.focus_is_active = False
         self.net_activity = None
-        self.streaming = False
 
         self.error_id = None
         self.error_text = None
@@ -958,9 +957,7 @@ class RecorderClassUI(gtk.Box):
         relabel(l2,k1*20,False)
         relabel(l3,k1*20,False)
 
-        for name  in ["recbutton","pausebutton","stopbutton","helpbutton", 
-                      "cutbutton","streambutton"
-                      ]:
+        for name  in ["recbutton","pausebutton","stopbutton","helpbutton"]:
             button = self.gui.get_object(name)
             button.set_property("width-request", int(k1*100) )
             button.set_property("height-request", int(k1*100) )

@@ -284,7 +284,7 @@ class PlayerClassUI(ManagerUI):
         return self.zip(key)
 
     def on_question(self,button):
-    """Pops up a dialog with the available operations"""
+        """Pops up a dialog with the available operations"""
         package = self.mediapackage
         self.ingest_question(package)      
 
