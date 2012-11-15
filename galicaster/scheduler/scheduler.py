@@ -70,6 +70,8 @@ class Scheduler(object):
     def do_timers_long(self, sender):
         if self.net:
             self.proccess_ical()
+        for mp in self.repo.get_next_mediapackages():
+            self.__create_new_timer(mp)
 
     
     def init_client(self):
@@ -140,10 +142,7 @@ class Scheduler(object):
             if self.start_timers.has_key(mp.getIdentifier()) and mp.status == mediapackage.SCHEDULED:
                 self.start_timers[mp.getIdentifier()].cancel()
                 del self.start_timers[mp.getIdentifier()]
-                self.__create_new_timer(mp)                
-
-        for mp in self.repo.get_next_mediapackages():
-            self.__create_new_timer(mp)
+                self.__create_new_timer(mp)
                 
         self.last_events = events
 
