@@ -38,7 +38,7 @@ class TestFunctions(TestCase):
         workflow_parameters_2 = 'uno:uno;dos:dos'
 
         client = MHHTTPClient(server, user, password)
-        self.assertEqual(client.hostname, 'GC-' + socket.gethostname())
+        self.assertEqual(client.hostname, 'galicaster')
         self.assertEqual(client.address, socket.gethostbyname(socket.gethostname()))
 
         client = MHHTTPClient(server, user, password, hostname)
