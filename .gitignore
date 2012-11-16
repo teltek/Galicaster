@@ -27,3 +27,4 @@ pip-log.txt
 .tox
 tests/resources/attach/
 tests/resources/repository/attach/
+tests/resources/profile/
