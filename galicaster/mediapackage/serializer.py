@@ -19,6 +19,7 @@ import sys
 import traceback
 import logging
 import zipfile
+from datetime import datetime
 from os import path,system
 from xml.dom import minidom
 
@@ -260,7 +261,12 @@ def set_episode(mp):
         try:
             if not mp.metadata_episode[name]:
                 continue
-            if type(mp.metadata_episode[name]) is not list:
+            if type(mp.metadata_episode[name]) is datetime:
+                created = doc.createElement("dcterms:" + name)
+                text = doc.createTextNode(mp.metadata_episode[name].isoformat())
+                created.appendChild(text)
+                xml.appendChild(created)
+            elif type(mp.metadata_episode[name]) is not list:
                 created = doc.createElement("dcterms:" + name)
                 text = doc.createTextNode(unicode(mp.metadata_episode[name]))
                 created.appendChild(text)
