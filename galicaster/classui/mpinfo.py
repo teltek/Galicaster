@@ -16,7 +16,6 @@ Pop Up with exhaustive information of a Mediapackage
 
 import gtk
 from os import path
-import gobject
 import pango
 
 import galicaster.mediapackage.mediapackage as mediapackage
@@ -121,8 +120,8 @@ class MPinfo(gtk.Window):
         self.buttons = gtk.HButtonBox()
         self.buttons.set_layout(gtk.BUTTONBOX_SPREAD)
 
-        close = self.add_button("Close", self.close)
-        openf = self.add_button("Open Folder", self.openfolder, mp.getURI())
+        self.add_button("Close", self.close)
+        self.add_button("Open Folder", self.openfolder, mp.getURI())
         box.pack_end(self.buttons, False, False, int(self.hprop*10))
         self.show_all()
 		    

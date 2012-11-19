@@ -12,14 +12,8 @@
 # San Francisco, California, 94105, USA.
 
 
-import sys
-import os
-from os import path
-
-import pygtk
 import gtk
 import gobject
-import datetime
 import pango
 import logging
 
@@ -175,7 +169,8 @@ class ListingClassUI(ManagerUI):
 		vbar.set_update_policy(gtk.UPDATE_DELAYED)
 		
 		# Create each column
-		columna5 = gtk.TreeViewColumn("Id",render5,text = 0, background= 8) # column5 wont be append to the treeview
+		#columna5 = gtk.TreeViewColumn("Id",render5,text = 0, background= 8) 
+		# column5 wont be append to the treeview
 		columna1 = gtk.TreeViewColumn("Name",render1,text = 1, background= 8)
 		columna6 = gtk.TreeViewColumn("Presenter", render6, text = 2, background= 8)
 		columna7 = gtk.TreeViewColumn("Series", render7, text = 3, background= 8)
@@ -379,12 +374,6 @@ class ListingClassUI(ManagerUI):
 	def on_double_click(self,treeview,reference,column):
 		"""Set the player for previewing if double click"""
 		self.on_play(treeview.get_model(),reference,treeview.get_model().get_iter(reference))
-
-
-	def zip(self,store, zip_path, iterator):
-		"""Triges zip operation over a mediapackage"""
-		key = store[iterator][0]
-		return super.zip(package)
 
 	def on_ingest_question(self,store,reference,iterator):
 		"""Launchs ingest dialog and refresh row afterwards."""

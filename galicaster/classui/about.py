@@ -61,8 +61,6 @@ class GCAboutDialog(gtk.AboutDialog):
              self.set_transient_for(parent)
          
          size=context.get_mainwindow().get_size()
-         a=0.3*size[0]
-         b=0.5*size[1]
          k = size[0]/1920.0
          self.set_resizable(True)
          self.set_default_size(int(0.3*size[0]),int(0.4*size[1]))

@@ -14,11 +14,6 @@
 UI for the Media Manager and Player area
 """
 
-import sys
-import os
-from os import path
-
-import pygtk
 import gtk
 import gobject
 import datetime
@@ -320,9 +315,9 @@ class ManagerUI(gtk.Box):
 		    "main" : "This recording can't be played",
 		    }
 	    buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
-	    warning = message.PopUp(message.WARNING, text, 
-                                    context.get_mainwindow(),
-				    buttons)
+	    message.PopUp(message.WARNING, text, 
+                          context.get_mainwindow(),
+                          buttons)
 	return True
 
 
@@ -342,13 +337,13 @@ class ManagerUI(gtk.Box):
         """Pop ups the Metadata Editor"""
 	logger.info("Edit: "+str(key))
 	selected_mp = self.repository.get(key)
-	meta = Metadata(selected_mp)
+	Metadata(selected_mp)
 	self.repository.update(selected_mp)
 
     def info(self,key):
         """Pops up de MP info dialog"""
         logger.info("Info: "+str(key))
-        dialog = MPinfo(key)
+        MPinfo(key)
 
     def do_resize(self, buttonlist, secondlist=[]): 
         """Force a resize on the Media Manager"""
@@ -415,16 +410,6 @@ class ManagerUI(gtk.Box):
 
     def network_status(self, signal, status):
         """Updates the signal status from a received signal"""
-        self.network = status
-            
+        self.network = status           
 
 gobject.type_register(ManagerUI)
-
-def main(args):
-    """Launcher for debugging purposes"""
-    v = listing()
-    gtk.main()
-    return 0
-
-if __name__ == '__main__':
-    sys.exit(main(sys.argv)) 

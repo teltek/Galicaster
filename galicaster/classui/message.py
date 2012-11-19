@@ -9,6 +9,7 @@
 Basic Dialog Messag UI
 """
 
+import sys
 import gtk
 import pango
 from os import path
@@ -49,7 +50,7 @@ class PopUp(gtk.Widget):
             elif message == INFO:
                 buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK ) 
             elif message == QUESTION:
-                buttons = ( gtk.STOCK_ACCEPT, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,)
+                buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,)
             elif message == ERROR:
                 buttons = ( gtk.STOCK_CLOSE, gtk.RESPONSE_CLOSE )
 
@@ -105,9 +106,6 @@ class PopUp(gtk.Widget):
             dialog.set_property('width-request',int(self.size[0]/2.2))
         if another:
              dialog.set_property('width-request',int(self.size[0]/1.5)) 
-         
-
-        wprop = self.wprop
 
         dialog.vbox.set_property('spacing',int(self.hprop*20)) # vertical
             
@@ -169,7 +167,6 @@ class PopUp(gtk.Widget):
         dialog = gtk.Dialog(text.get("title","Galicaster"),parent,0)
         self.dialog = dialog
         dialog.set_property('width-request',int(self.size[0]/1.8)) # relative to screen size       
-        wprop = self.wprop
 
         dialog.vbox.set_property('spacing',int(self.hprop*20)) # vertical
             
@@ -350,7 +347,7 @@ gobject.type_register(PopUp)
 def main(args):
     """Launcher for debugging purposes"""
     print "Running Main Message PopUp"
-    v = PopUp()
+    PopUp()
     gtk.main()
     return 0
 

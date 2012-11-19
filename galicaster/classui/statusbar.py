@@ -17,7 +17,6 @@ Widget holding multiple information about video status
 import gtk
 import gobject
 import os
-from os import path
 import datetime
 import pango
 
@@ -74,12 +73,12 @@ class StatusBarClass(gtk.Box):
         """Empties the timer"""
         self.timer.set_text("")
 
-    def SetVideo(self,element,value):
+    def SetVideo(self, element, value = None):
         if value != None:
             self.video.set_text(value)
             self.video.set_property("tooltip-text",value)
 
-    def SetPresenter(self,element,value):
+    def SetPresenter(self,element, value):
         if type(value) != str:
             text=", ".join(value)
         else:
@@ -94,16 +93,16 @@ class StatusBarClass(gtk.Box):
         Run this function everytime we make a major change or connect it with signals such as play, pause, notebook->change_page ...
         """
 
-        self.SetStatus(status)
+        self.SetStatus(None,status)
         self.SetTimer(time)
-        self.SetVideo(video)
-        self.SetPresenter(presenter)
+        self.SetVideo(None, video)
+        self.SetPresenter(None, presenter)
 
     def time_readable(self,seconds):
         """ Generates date hour:minute:seconds from seconds """		
 
         iso = int(seconds)
-        dur = datetime.time(iso/3600,(iso%3600)/60,iso%60)		
+        dur = datetime.time(int(iso/3600),(iso%3600)/60,iso%60)		
         novo = dur.strftime("%H:%M:%S")
         return novo
 
@@ -126,10 +125,8 @@ class StatusBarClass(gtk.Box):
 
     def resize(self,size): 
         """Adapts GUI elements to the screen size"""
-        altura = size[1]
-        anchura = size[0]
         
-        k = anchura / 1920.0 
+        k = size[0] / 1920.0 # width / maximum
         self.proportion = k
         
         def relabel(label,size,bold):           

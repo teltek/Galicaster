@@ -14,9 +14,6 @@
 
 import gtk
 import gobject
-import os
-from os import path
-import math
 
 from galicaster.core import context
 from galicaster.classui import get_ui_path
@@ -84,19 +81,9 @@ class AudioBarClass(gtk.Box):
 
 
     def resize(self,size):
-        altura = size[1]
-        anchura = size[0]
-
-        k = anchura / 1920.0
+        k = size[0] / 1920.0
         self.proportion = k
         
-        def relabel(label,size,bold):           
-            if bold:
-                modification = "bold "+str(size)
-            else:
-                modification = str(size)
-            label.modify_font(pango.FontDescription(modification))
-
         if self.vertical:
             self.vumeter.set_property("width-request",int(k*50))
        

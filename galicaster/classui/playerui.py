@@ -157,7 +157,7 @@ class PlayerClassUI(ManagerUI):
 
 #------------------------- PLAYER ACTIONS ------------------------
 
-    def on_play_clicked(self,button):
+    def on_play_clicked(self, button):
         """Starts the reproduction"""
         self.player.play()
         self.init_timer()
@@ -187,7 +187,7 @@ class PlayerClassUI(ManagerUI):
         self.change_state(GC_STOP)
         return True
 
-    def on_quit_clicked(self,button):
+    def on_quit_clicked(self, button):
         """Stops the preview and close the player"""
         gui = gtk.Builder()
         gui.add_from_file(get_ui_path("quit.glade"))
@@ -203,12 +203,12 @@ class PlayerClassUI(ManagerUI):
             dialog.destroy()
         return True
 
-    def focus_out(self,button,event):
+    def focus_out(self, button, event):
         """Stop the player when focus is lost"""
         self.player.pause()
         self.change_state(GC_STOP)
 
-    def on_seek(self,button,scroll_type,new_value):
+    def on_seek(self, button, scroll_type, new_value):
         """Move to the new position"""
         if new_value>100:
             new_value=100;
@@ -240,8 +240,8 @@ class PlayerClassUI(ManagerUI):
 
     def on_volume(self, button, scroll_type, new_value):
         """Changes the player value"""
-        new_value = 120 if new_value > 120 else 0 if new_value < 0 else new_value
-        self.player.set_volume(new_value/100.0)
+        value = 120 if new_value > 120 else 0 if new_value < 0 else new_value
+        self.player.set_volume(value/100.0)
 
     def on_volume2(self, button, new_value):
         self.player.set_volume(new_value*2.0)
@@ -277,11 +277,6 @@ class PlayerClassUI(ManagerUI):
         self.statusbar.SetVideo(None, self.mediapackage.title)
         self.statusbar.SetPresenter(None, self.mediapackage.getCreators())
         return True
-
-    def on_zip(self,button):
-        """Performs a zip operation over a MP"""
-        key = self.mediapackage.identifier
-        return self.zip(key)
 
     def on_question(self,button):
         """Pops up a dialog with the available operations"""
@@ -325,7 +320,7 @@ class PlayerClassUI(ManagerUI):
                     timer=(actual_time-self.initial_time)/gst.SECOND
                 else:
                     try:
-                        actual_time, format =self.player.get_position()
+                        actual_time, format_type =self.player.get_position()
                     except:
                             actual_time = 0                        
                             log.warning("Query position failed")

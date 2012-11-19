@@ -34,7 +34,6 @@ class StripUI(gtk.Box):
         """
         gtk.Box.__init__(self)
 
-        dispatcher = context.get_dispatcher()
         builder = gtk.Builder()
         builder.add_from_file(get_ui_path('strip.glade'))
         self.builder = builder
@@ -53,12 +52,11 @@ class StripUI(gtk.Box):
         
     def show_about_dialog(self, origin, button):
         """Pop up the About Dialog"""
-        dialog=GCAboutDialog()
+        GCAboutDialog()
 
     def resize(self): 
         """Adapts GUI elements to the screen size"""
         size = context.get_mainwindow().get_size()
-        altura = size[1]
         anchura = size[0]
         k = anchura / 1920.0
 

@@ -234,13 +234,13 @@ class ListProfileBox(ProfileDialog):
     def __init__(self, parent, size, tester = False):
         ProfileDialog.__init__(self, parent, size)
 
-        select = self.add_button("Select",self.change_selected_profile)
+        self.add_button("Select",self.change_selected_profile)
         if tester:
-            edit = self.add_button("Edit",self.show_tracks)        
-            new = self.add_button("New", self.new_profile)                                         
-            duplicate = self.add_button("Duplicate", self.duplicate_profile)
-            delete = self.add_button("Delete", self.delete_profile)
-        close=self.add_button("Close",self.close, True)
+            self.add_button("Edit",self.show_tracks)        
+            self.add_button("New", self.new_profile)                                         
+            self.add_button("Duplicate", self.duplicate_profile)
+            self.add_button("Delete", self.delete_profile)
+        self.add_button("Close",self.close, True)
 
         self.append_profiles()
         self.select_current_profile()
@@ -252,7 +252,7 @@ class ListProfileBox(ProfileDialog):
         while iterator != None:
             if self.list[iterator][1] == context.get_conf().get_current_profile().name:
                 self.view.get_selection().select_iter(iterator)                
-                text=self.list[iterator][1]               
+                #text=self.list[iterator][1]               
                 break
             iterator = self.list.iter_next(iterator)
 
@@ -394,11 +394,11 @@ class ProfileBox(ProfileDialog):
         """
         ProfileDialog.__init__(self, parent)
         self.profile = profile
-        new = self.add_button("Save", self.save_profile)        
-        edit = self.add_button("Edit", self.edit_track)        
-        new = self.add_button("New track", self.new_track)  
-        delete = self.add_button("Delete track",self.delete_track) 
-        close = self.add_button("Cancel", self.close, True)    
+        self.add_button("Save", self.save_profile)        
+        self.add_button("Edit", self.edit_track)        
+        self.add_button("New track", self.new_track)  
+        self.add_button("Delete track",self.delete_track) 
+        self.add_button("Cancel", self.close, True)    
 
         self.append_tracks(profile)
         self.profile_name = gtk.Entry()
@@ -494,9 +494,9 @@ class TrackBox(gtk.HBox):
         self.buttons.set_layout(gtk.BUTTONBOX_START)
         self.buttons.set_spacing(5)
 
-        save = self.add_button("Save", self.retrieve_data)        
-        #test = self.add_button("Test", self.test_track, True)      
-        cancel = self.add_button("Cancel", self.close, True)  
+        self.add_button("Save", self.retrieve_data)        
+        #self.add_button("Test", self.test_track, True)      
+        self.add_button("Cancel", self.close, True)  
 
         self.table = None
         self.model = None

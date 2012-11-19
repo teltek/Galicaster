@@ -260,6 +260,7 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
         liststore.set_sort_func(0,self.sorting,text) # Put text=NO_SERIES first
         liststore.set_sort_column_id(0,gtk.SORT_ASCENDING)
 
+        self.liststore = liststore # CHECK
 
         # Filter
         combofilter = liststore.filter_new()
