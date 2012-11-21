@@ -28,6 +28,9 @@ from datetime import datetime
 from xml.dom import minidom
 from galicaster.mediapackage.utils import _checknget, read_ini
 
+DCTERMS = ['title', 'creator', 'isPartOf', 'description', 'subject', 
+           'language', 'identifier', 'contributor', 'created', 'temporal']
+
 # Mediapackage Status
 NEW = 0
 UNSCHEDULED = 1
@@ -81,8 +84,6 @@ TYPE_OTHER = 'Other'
 
 ELEMENT_TYPES = frozenset([TYPE_TRACK, TYPE_CATALOG, TYPE_ATTACHMENT, TYPE_OTHER])
 MANIFEST_TAGS = { TYPE_TRACK: 'track', TYPE_CATALOG: 'catalog', TYPE_ATTACHMENT: 'attachment', TYPE_OTHER: 'other' }
-DCTERMS = ['title', 'creator', 'ispartof', 'description', 'subject', 'language', 'identifier', 'contributor', 'created', 'temporal']
-
 
 class IllegalStateError(Exception):
     pass
@@ -291,6 +292,8 @@ class Mediapackage(object):
         elif name == "created":
             return self.startTime
         elif name == "ispartof":
+            return self.series_title # TODO return series ID somewhere
+        elif name == "isPartOf":
             return self.series_title
         else:
             return None
@@ -704,6 +707,10 @@ class Mediapackage(object):
                         creat = _checknget(dom, "dcterms:" + name) # FIXME check Nones and empty string somewhere
                         if creat and creat not in self.metadata_episode[name]:
                             self.metadata_episode[name].append(creat)
+                    elif name == 'isPartOf': 
+                        new = _checknget(dom, "dcterms:"+name)
+                        old = _checknget(dom, "dcterms:"+name.lower() )
+                        self.metadata_episode[name] = new if new != None else old
                     else:
                         self.metadata_episode[name] = _checknget(dom, "dcterms:" + name)                     
             elif i.getFlavor() == "dublincore/series": # FIXME cover series data and create files if dont exist

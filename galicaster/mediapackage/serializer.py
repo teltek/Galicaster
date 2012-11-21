@@ -259,9 +259,14 @@ def set_episode(mp):
     doc.appendChild(xml)
     for name in mediapackage.DCTERMS: #FIXME *33
         try:
-            if not mp.metadata_episode[name]:
+            if name == "isPartOf" and mp.series !=None: # to ensure compatibility on old MP
+                created = doc.createElement("dcterms:" + name)
+                text = doc.createTextNode(unicode(mp.series))
+                created.appendChild(text)
+                xml.appendChild(created)
+            elif not mp.metadata_episode[name]:
                 continue
-            if type(mp.metadata_episode[name]) is datetime:
+            elif type(mp.metadata_episode[name]) is datetime:
                 created = doc.createElement("dcterms:" + name)
                 text = doc.createTextNode(mp.metadata_episode[name].isoformat())
                 created.appendChild(text)
@@ -272,7 +277,7 @@ def set_episode(mp):
                 created.appendChild(text)
                 xml.appendChild(created)
             else:
-                if  len(mp.metadata_episode[name]):
+                if len(mp.metadata_episode[name]):
                     for element in mp.metadata_episode[name]:
                         created = doc.createElement("dcterms:" + name)
                         text = doc.createTextNode(element)

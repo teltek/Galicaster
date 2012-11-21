@@ -22,31 +22,7 @@ from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 from galicaster.classui import get_ui_path
 
-
 logger = logging.getLogger()
-
-dcterms = ["title", "creator", "ispartof", "description", "subject", "language", "identifier", "contributor", "created"]
-metadata ={"title": "Title:", "creator": "Presenter:", "ispartof": "Course/Series:", "description": "Description:", 
-           "subject": "Subject:", "language": "Language:", "identifier": "Identifier:", "contributor": "Contributor:", 
-           "created":"Start Time:", "Title:":"title", "Presenter:":"creator", "Course/Series:":"ispartof", 
-           "Description:":"description", "Subject:":"subject", "Language:":"language", "Identifier:":"identifier", 
-           "Contributor:":"contributor", "Start Time:":"created"}
-
-#color = {0: "#FFFFA0", # Iddle
-#	 1: "#C8FFC8", # Nightly
-#	 2: "#C8FFC8", # Pending
-#	 3: "#FF9955", # Processing
-#	 4: "#77FF77", # Done
-#	 5: "#FFABAB", # Failed
-#	 }
-
-color = {0: "#FFFFA0", # Iddle
-	 1: "#FFFFA0", # Nightly
-	 2: "#FFFFA0", # Pending
-	 3: "#FFFFA0", # Processing
-	 4: "#FFFFA0", # Done
-	 5: "#FFFFA0", # Failed
-	 }
 
 rcstring = """
 style "big-scroll" {
@@ -57,20 +33,6 @@ style "big-scroll" {
 class "GtkRange" style "big-scroll"
 
 """
-
-
-#style "big-scroll" {        
-#        GtkRange::stepper-size = 25
-#        GtkRange::stepper-spacing = 10
-#        GtkRange::arrow-scaling = 0.1
-#        GtkRange::slider-width = 50
-#        GtkRange::trough-border = 2
-#        GtkRange::width-request = 100
-#        GtkRange::height-request = 100
-#        GtkRange::scroll-arrow-vlength = 50
-#	}
-
-#class "GtkRange" style "big-scroll"
 
 gtk.rc_parse_string(rcstring)
 #gtk.rc_reset_styles(self.main_window.get_settings())

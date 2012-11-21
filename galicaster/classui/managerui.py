@@ -29,23 +29,8 @@ from galicaster.utils import readable
 from galicaster.utils.resize import relabel
 from galicaster.classui.strip import StripUI
 from galicaster.classui.mpinfo import MPinfo
-
  
 logger = logging.getLogger()
-
-ONE_MB = 1024*1024
-dcterms = ["title", "creator", "ispartof", "description", "subject", "language", "identifier", "contributor", "created"]
-metadata ={
-    "title": "Title:", "creator": "Presenter:", "ispartof": "Course/Series:", 
-    "description": "Description:", "subject": "Subject:", 
-    "language": "Language:", "identifier": "Identifier:", 
-    "contributor": "Contributor:", "created":"Start Time:", 
-    "Title:":"title", "Presenter:":"creator", "Course/Series:":"ispartof", 
-    "Description:":"description", "Subject:":"subject", 
-    "Language:":"language", "Identifier:":"identifier", 
-    "Contributor:":"contributor", "Start Time:":"created",
-}
-
 
 class ManagerUI(gtk.Box):
     """
