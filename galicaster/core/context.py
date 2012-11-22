@@ -119,11 +119,14 @@ def get_worker():
     Get Galicaster Worker from the App Context
     """
     if 'worker' not in __galicaster_context:
+        namespace = True if get_conf().get_boolean('basic', 'legacy') is [None, False] else False
         __galicaster_context['worker'] = Worker(get_dispatcher(),
                                                 get_repository(),
                                                 get_mhclient(),
                                                 get_conf().get('basic', 'export'),
-                                                get_conf().get('basic', 'tmp'))
+                                                get_conf().get('basic', 'tmp'),
+                                                namespace
+                                                )
 
     return __galicaster_context['worker']
 

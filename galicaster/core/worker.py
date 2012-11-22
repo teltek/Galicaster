@@ -50,7 +50,7 @@ class Worker(object):
                 self.queue.task_done()
     
 
-    def __init__(self, dispatcher, repo, mh_client=None, export_path=None, tmp_path=None):
+    def __init__(self, dispatcher, repo, mh_client=None, export_path=None, tmp_path=None, use_namespace=True):
         """
         Arguments:
 
@@ -64,6 +64,7 @@ class Worker(object):
         self.mh_client = mh_client
         self.export_path = export_path or os.path.expanduser('~')
         self.tmp_path = tmp_path or tempfile.gettempdir()
+        self.use_namespace = use_namespace
         self.dispatcher = dispatcher
         
         for dir_path in (self.export_path, self.tmp_path):
@@ -188,10 +189,10 @@ class Worker(object):
     def export_to_zip(self, mp, location=None):
         logger.info('Creating ExportToZIP Job for MP {0}'.format(mp.getIdentifier()))
         mp.setOpStatus('exporttozip',mediapackage.OP_PENDING)
-        self.jobs.put((self._export_to_zip, (mp, location)))
+        self.jobs.put((self._export_to_zip, (mp, location, self.use_namespace)))
 
 
-    def _export_to_zip(self, mp, location=None, is_action=True):
+    def _export_to_zip(self, mp, location=None, is_action=True, use_namespace=True):
         if not location:
             name = datetime.now().replace(microsecond=0).isoformat()
             location = location or os.path.join(self.export_path, name + '.zip')
@@ -202,13 +203,13 @@ class Worker(object):
             self.repo.update(mp)
         else:
             logger.info("Zipping MP {0}".format(mp.getIdentifier()))
-        if True: #try:
-            serializer.save_in_zip(mp, location)
+        try:
+            serializer.save_in_zip(mp, location, use_namespace)
             if is_action:
                 mp.setOpStatus('exporttozip',mediapackage.OP_DONE)
                 self.dispatcher.emit('stop-operation', 'exporttozip', mp, True)
         
-        else: #except:
+        except:
             if is_action:
                 logger.error("Zip failed for MP {0}".format(mp.identifier))
                 mp.setOpStatus('exporttozip',mediapackage.OP_FAILED)
