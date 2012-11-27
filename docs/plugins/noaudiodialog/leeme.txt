@@ -10,3 +10,12 @@ Para activar/desactivar el aviso:
 
 [plugins]
 noaudiodialog = True
+
+Una vez activado, la configuración por defecto marca los umbrales a 0 -60 dB.
+Esta configuración es común al vumetro, por lo tanto, valores inferiores a -60 db se mostrarán como -60dB (barra al mínimo).
+
+Para configurar los umbrales añade estas lineas con los valores escogidos en los archivos de configuración, por ejemplo:
+
+[audio]
+min = -40
+max = -10
