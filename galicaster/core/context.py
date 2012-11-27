@@ -120,7 +120,6 @@ def get_worker():
     """
     if 'worker' not in __galicaster_context:
         namespace = True if get_conf().get_boolean('basic', 'legacy') is [None, False] else False
-        print "Init worker with namespace", namespace
         __galicaster_context['worker'] = Worker(get_dispatcher(),
                                                 get_repository(),
                                                 get_mhclient(),
