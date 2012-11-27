@@ -21,6 +21,7 @@ pip-log.txt
 
 #IDE
 *~
+\#*\#
 
 #Galicaster unit test / coverage reports
 .coverage
