@@ -181,7 +181,7 @@ def set_properties(mp):
 
     return doc.toxml(encoding="utf-8")
 
-def set_manifest(mp, use_namespace=True):
+def set_manifest(mp,use_namespace=True):
     """
     Crear un manifest XML 
     """

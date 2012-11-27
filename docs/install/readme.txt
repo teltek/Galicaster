@@ -39,9 +39,10 @@ Sections:
    * export:  absolute path to the export folder for operations. If not specified, exported files will be placed at the user's home will be used.
    * stopdialog: Enable/Disable a dialog requesting confirmation to stop the recording. Defaults to True. (True|False)
    * quit: Shows or hides the quit button. (True|False)
-   * admin: enables admin mode (True|False)
+   * admin: enables admin mode. (True|False)
       - False: By default, the user will only be allowed to make recordings. Galicaster will operate as a GClass
       - True: Apart from recording, the user can edit metadata, play and manage the recordings. Galicaster will behave as a GMobile
+   * legacy: activates Openacast Matterhonr 1.2 and 1.3 compatibility, excluding the namespace field on the xml files from the mediapackages. (True|False) 
 
 -- screen
    * left: Name of the video device in the track list to be shown in the left screen (None to deactivate).

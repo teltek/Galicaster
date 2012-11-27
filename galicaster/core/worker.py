@@ -60,6 +60,8 @@ class Worker(object):
         export_path -- path where galicaster exports zip and sidebyside
         tmp_path -- temporal path (need if /tmp partition is small)
         """
+
+
         self.repo = repo
         self.mh_client = mh_client
         self.export_path = export_path or os.path.expanduser('~')
@@ -146,7 +148,7 @@ class Worker(object):
         self.dispatcher.emit('refresh-row', mp.identifier)
 
         ifile = tempfile.NamedTemporaryFile(dir=self.tmp_path)
-        self._export_to_zip(mp, ifile, False)
+        self._export_to_zip(mp, ifile, is_action=False)
 
         if mp.manual:
             try:
@@ -189,10 +191,10 @@ class Worker(object):
     def export_to_zip(self, mp, location=None):
         logger.info('Creating ExportToZIP Job for MP {0}'.format(mp.getIdentifier()))
         mp.setOpStatus('exporttozip',mediapackage.OP_PENDING)
-        self.jobs.put((self._export_to_zip, (mp, location, self.use_namespace)))
+        self.jobs.put((self._export_to_zip, (mp, location)))
 
 
-    def _export_to_zip(self, mp, location=None, is_action=True, use_namespace=True):
+    def _export_to_zip(self, mp, location=None, is_action=True):
         if not location:
             name = datetime.now().replace(microsecond=0).isoformat()
             location = location or os.path.join(self.export_path, name + '.zip')
@@ -204,7 +206,7 @@ class Worker(object):
         else:
             logger.info("Zipping MP {0}".format(mp.getIdentifier()))
         try:
-            serializer.save_in_zip(mp, location, use_namespace)
+            serializer.save_in_zip(mp, location, self.use_namespace)
             if is_action:
                 mp.setOpStatus('exporttozip',mediapackage.OP_DONE)
                 self.dispatcher.emit('stop-operation', 'exporttozip', mp, True)
