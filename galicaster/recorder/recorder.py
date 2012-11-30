@@ -117,7 +117,7 @@ class Recorder(object):
                 
                 message = gst.message_new_error(
                     src, error, 
-                    str(random_bin)+"\nsystem_error: Driver not available")
+                    str(random_bin)+"\nunknown system_error")
                 self.bus.post(message)
                 #self.dispatcher.emit("recorder-error","Driver error")
                 return False
@@ -186,7 +186,7 @@ class Recorder(object):
         log.info('eos')
         self.stop_preview()  # FIXME pipeline set to NULL twice (bf and in the function)
 
-        if self.restart == True:
+        if self.restart:
             self.restart = False
             log.debug("EMITTING restart preview")
             self.dispatcher.emit("restart-preview")
@@ -237,8 +237,8 @@ class Recorder(object):
                     raise TypeError()
                 gtk.gdk.threads_enter()
                 gtk.gdk.display_get_default().sync()            
-                message.src.set_xwindow_id(gtk_player.window.xid)
                 message.src.set_property('force-aspect-ratio', True)
+                message.src.set_xwindow_id(gtk_player.window.xid)
                 gtk.gdk.threads_leave()
 
             except KeyError:
@@ -246,16 +246,6 @@ class Recorder(object):
             except TypeError:
                 log.error('players[%r]: need a %r; got a %r: %r' % (
                         name, gtk.DrawingArea, type(gtk_player), gtk_player))
-
-    def __shift_screens(self):  # NOT TESTED NEITHER CONNECTED
-        player1, player2 = self.players.values()  # both drawing areas
-        gtk.gdk.threads_enter()
-        gtk.gdk.display_get_default().sync()        
-        # check how to shift
-        self.source[0].set_xwindow_id(player1.window.xid)
-        self.source[1].set_xwindow_id(player2.window.xid)
-        gtk.gdk.threads_leave()
-        return True
         
     def __on_message_element(self, bus, message):
         if message.structure.get_name() == 'level':
@@ -278,4 +268,3 @@ class Recorder(object):
         for bin_name, bin in self.bins.iteritems():
             if bin.has_audio:
                 bin.mute_preview(value)
-                

@@ -19,10 +19,12 @@ import sys
 import traceback
 import logging
 import zipfile
+from datetime import datetime
 from os import path,system
 from xml.dom import minidom
 
-from galicaster.mediapackage import mediapackage
+DCTERMS = ['title', 'creator', 'isPartOf', 'description', 'subject', 
+           'language', 'identifier', 'contributor', 'created', 'temporal']
 
 logger = logging.getLogger()
 
@@ -59,7 +61,7 @@ def save_in_dir(mp):
     m.close()
 
 
-def save_native_zip(mp, loc):
+def save_native_zip(mp, loc, use_namespace=True):
     """
     Save in ZIP file using python module
 
@@ -71,7 +73,7 @@ def save_native_zip(mp, loc):
     # store only (DEFAULT)        
 
     # manifest
-    z.writestr('manifest.xml', set_manifest(mp))
+    z.writestr('manifest.xml', set_manifest(mp, use_namespace))
 
     # episode (fist persist episode)
     m2 = open(path.join(mp.getURI(), 'episode.xml'), 'w')
@@ -94,11 +96,11 @@ def save_native_zip(mp, loc):
     # FIXME other elements
     z.close()
 
-def save_system_zip(mp, loc):
+def save_system_zip(mp, loc, use_namespace=True):
 
     tmp_file = path.join(mp.getURI(), 'manifest.xml')
     m = open(tmp_file,'w')
-    m.write(set_manifest(mp))
+    m.write(set_manifest(mp, use_namespace))
     m.close()    
 
     # episode (fist persist episode)
@@ -179,13 +181,14 @@ def set_properties(mp):
 
     return doc.toxml(encoding="utf-8")
 
-def set_manifest(mp):
+def set_manifest(mp, use_namespace=True):
     """
     Crear un manifest XML 
     """
     doc = minidom.Document()
     xml = doc.createElement("mediapackage") 
-    #xml.setAttribute("xmlns:oc","http://mediapackage.opencastporject.org") FIXME is necesary?
+    if use_namespace:
+        xml.setAttribute("xmlns", "http://mediapackage.opencastproject.org")  
     xml.setAttribute("id", mp.getIdentifier()) 
     xml.setAttribute("start", mp.getDate().isoformat())
     if mp.getDuration() != None:
@@ -256,17 +259,27 @@ def set_episode(mp):
     xml.setAttribute("xmlns:xsi","http://www.w3.org/2001/XMLSchema-instance/")
     xml.setAttribute("xmlns:dcterms","http://purl.org/dc/terms/")
     doc.appendChild(xml)
-    for name in mediapackage.DCTERMS: #FIXME *33
+    for name in DCTERMS:
         try:
-            if not mp.metadata_episode[name]:
+            if name == "isPartOf" and mp.series !=None: 
+                created = doc.createElement("dcterms:" + name)
+                text = doc.createTextNode(unicode(mp.series))
+                created.appendChild(text)
+                xml.appendChild(created)
+            elif not mp.metadata_episode[name]:
                 continue
-            if type(mp.metadata_episode[name]) is not list:
+            elif type(mp.metadata_episode[name]) is datetime:
+                created = doc.createElement("dcterms:" + name)
+                text = doc.createTextNode(mp.metadata_episode[name].isoformat())
+                created.appendChild(text)
+                xml.appendChild(created)
+            elif type(mp.metadata_episode[name]) is not list:
                 created = doc.createElement("dcterms:" + name)
                 text = doc.createTextNode(unicode(mp.metadata_episode[name]))
                 created.appendChild(text)
                 xml.appendChild(created)
             else:
-                if  len(mp.metadata_episode[name]):
+                if len(mp.metadata_episode[name]):
                     for element in mp.metadata_episode[name]:
                         created = doc.createElement("dcterms:" + name)
                         text = doc.createTextNode(element)

@@ -87,6 +87,3 @@ gobject.signal_new('create-mock-mp', Dispatcher, gobject.SIGNAL_RUN_LAST, gobjec
 #WORKER
 gobject.signal_new('start-operation', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,gobject.TYPE_PYOBJECT,) )
 gobject.signal_new('stop-operation', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,gobject.TYPE_PYOBJECT,gobject.TYPE_PYOBJECT) )
-
-
-

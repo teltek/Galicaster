@@ -15,4 +15,3 @@
 from galicaster.mediapackage.mediapackage import Mediapackage
 from galicaster.mediapackage.repository import Repository
 from galicaster.mediapackage.deserializer import fromXML
-

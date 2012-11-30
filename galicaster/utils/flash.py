@@ -22,9 +22,6 @@ Se ha detectado un comportamiento anonimo y para que funciones bien es necesario
 llamar a XF86VidModeGetGamma despues que XF86VidModeSetGamma.
 """
 
-import time
-import thread
-
 import ctypes
 from ctypes import *
 from ctypes.util import find_library

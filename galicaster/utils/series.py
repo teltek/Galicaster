@@ -11,7 +11,6 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import os
 from os import path
 from galicaster.core import context
 import json
@@ -27,9 +26,7 @@ def get_series():
         try:
             series_json = repo.get_attach('series.json').read()
         except:
-            series_json = '{"totalCount":"0","catalogs":[]}'
-
-    
+            series_json = '{"totalCount":"0","catalogs":[]}'  
 
     series_json = json.loads(series_json)
     # convert JSON in ARRAY

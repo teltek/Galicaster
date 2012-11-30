@@ -11,8 +11,6 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-
-import re
 import json
 import logging
 import urllib
@@ -20,7 +18,6 @@ import socket
 #IDEA use cStringIO to improve performance
 from StringIO import StringIO
 import pycurl
-import json
 
 INIT_ENDPOINT = '/welcome.html'
 ME_ENDPOINT = '/info/me.json'
@@ -29,8 +26,7 @@ SETSTATE_ENDPOINT = '/capture-admin/agents/{hostname}'
 SETCONF_ENDPOINT = '/capture-admin/agents/{hostname}/configuration'
 INGEST_ENDPOINT = '/ingest/addZippedMediaPackage'
 ICAL_ENDPOINT = '/recordings/calendars?agentid={hostname}'
-#SERIES_ENDPOINT = '/series/series.json'
-SERIES_ENDPOINT = '/series/series.json?count=100'
+SERIES_ENDPOINT = '/series/series.json?count={count}'
 
 logger = logging.getLogger()
 
@@ -195,6 +191,6 @@ class MHHTTPClient(object):
 
     def getseries(self):
         """ Get all series upto 100"""
-        # TODO make a workaround to get all
-        return self.__call('GET', SERIES_ENDPOINT,100)
+        # TODO No limit, to get all
+        return self.__call('GET', SERIES_ENDPOINT, {'count': 100})
         

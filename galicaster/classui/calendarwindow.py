@@ -40,7 +40,6 @@ from os import path
 import datetime
 import time
 import gtk
-import pygtk
 
 from galicaster.classui import get_ui_path
 
@@ -108,7 +107,7 @@ class CalendarWindow:
         # return datetime.datetime(value[0], value[1]+1,value[2],hour,minute,0)
 
 def main():
-    w =  CalendarWindow() 
+    CalendarWindow() 
     #print "through the main function"
     gtk.main()
     

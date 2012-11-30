@@ -13,7 +13,6 @@
 
 
 import gtk
-import datetime
 import pango
 from os import path
 import gobject
@@ -70,7 +69,7 @@ class EventManager(gtk.Widget):
             t = self.big_label(mp.title, int(k1*30))
             t.set_width_chars(int(k1*50))
             t.set_line_wrap(True)
-            allocation = t.get_allocation()
+            # allocation = t.get_allocation()
             t.set_size_request( int(k1* 400) , -1 ) # FIXEME
             #Hack by http://tadeboro.blogspot.com/2009/05/wrapping-adn-resizing-gtklabel.html
 
@@ -115,7 +114,7 @@ class EventManager(gtk.Widget):
 
         okb.connect("button-press-event",self.destroy)
 
-        response = dialog.run()
+        dialog.run()
 
         return None
 

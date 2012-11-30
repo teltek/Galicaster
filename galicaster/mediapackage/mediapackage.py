@@ -28,6 +28,9 @@ from datetime import datetime
 from xml.dom import minidom
 from galicaster.mediapackage.utils import _checknget, read_ini
 
+DCTERMS = ['title', 'creator', 'isPartOf', 'description', 'subject', 
+           'language', 'identifier', 'contributor', 'created', 'temporal']
+
 # Mediapackage Status
 NEW = 0
 UNSCHEDULED = 1
@@ -81,8 +84,6 @@ TYPE_OTHER = 'Other'
 
 ELEMENT_TYPES = frozenset([TYPE_TRACK, TYPE_CATALOG, TYPE_ATTACHMENT, TYPE_OTHER])
 MANIFEST_TAGS = { TYPE_TRACK: 'track', TYPE_CATALOG: 'catalog', TYPE_ATTACHMENT: 'attachment', TYPE_OTHER: 'other' }
-DCTERMS = ['title', 'creator', 'ispartof', 'description', 'subject', 'language', 'identifier', 'contributor', 'created', 'temporal']
-
 
 class IllegalStateError(Exception):
     pass
@@ -239,7 +240,6 @@ class Mediapackage(object):
 
         # Main metadata 
         self.identifier = identifier
-        self.startTime = date
         self.presenter = presenter # FIXME presenter shouldnt exist, its creator
 
         # Secondary metadata
@@ -258,12 +258,11 @@ class Mediapackage(object):
         self.__duration = None
         self.__howmany = dict( (k, 0) for k in ELEMENT_TYPES )
           
-        if self.startTime == None: 
-            self.startTime = datetime.utcnow().replace(microsecond = 0) #.isoformat()
+        date = date or datetime.utcnow().replace(microsecond = 0)
         if self.identifier == None:
             self.identifier = unicode(uuid.uuid4()) 
         
-        self.metadata_episode = {"title" : title, "created" : self.startTime, "identifier" : self.identifier, 
+        self.metadata_episode = {"title" : title, "created" : date, "identifier" : self.identifier, 
                                  "creator" : self.creators, "contributor": self.contributors, "subject": self.subjects}
         self.operation = dict()
         self.properties = {'notes':'', 'origin': ''}
@@ -291,8 +290,10 @@ class Mediapackage(object):
         elif name == "subject":
             return self.subjects
         elif name == "created":
-            return self.starTime
+            return self.startTime
         elif name == "ispartof":
+            return self.series_title # TODO return series ID somewhere
+        elif name == "isPartOf":
             return self.series_title
         else:
             return None
@@ -390,22 +391,23 @@ class Mediapackage(object):
         return self.subjects    
     
     def getDate(self):
-        return self.startTime
+        return self.metadata_episode["created"]
+
+    def setDate(self, startTime):
+        #FIXME check is datetime*
+        self.metadata_episode["created"] = startTime
+
+    startTime = property(getDate, setDate)
 
     def getLocalDate(self):
         aux = time.time()
         utcdiff = datetime.utcfromtimestamp(aux) - datetime.fromtimestamp(aux)
-        return self.startTime - utcdiff
-
-    def setDate(self, startTime):
-        #FIXME check is datetime***4444
-        self.startTime = startTime
+        return self.metadata_episode["created"] - utcdiff
 
     def setLocalDate(self, startTime):
         aux = time.time()
-        utcdiff = datetime.utcfromtimestamp(aux) - datetime.fromtimestamp(aux)
-        
-        self.startTime = startTime + utcdiff
+        utcdiff = datetime.utcfromtimestamp(aux) - datetime.fromtimestamp(aux)        
+        self.metadata_episode["created"] = startTime + utcdiff
 
     def getStartDateAsString(self, isoformat=True, local=True):
         
@@ -697,10 +699,18 @@ class Mediapackage(object):
             if i.getFlavor() == "dublincore/episode":
                 dom = minidom.parse(i.getURI()) 
                 for name in DCTERMS:
-                    if name in [ "creator", "contributor", "subject"]: # FIXME do this to other metadata
+                    if name in ["created"]:
+                        creat = _checknget(dom, "dcterms:" + name)
+                        if creat:
+                            self.setDate(datetime.strptime(creat, "%Y-%m-%dT%H:%M:%S"))
+                    elif name in [ "creator", "contributor", "subject"]: # FIXME do this to other metadata
                         creat = _checknget(dom, "dcterms:" + name) # FIXME check Nones and empty string somewhere
                         if creat and creat not in self.metadata_episode[name]:
                             self.metadata_episode[name].append(creat)
+                    elif name == 'isPartOf': 
+                        new = _checknget(dom, "dcterms:"+name)
+                        old = _checknget(dom, "dcterms:"+name.lower() )
+                        self.metadata_episode[name] = new if new != None else old
                     else:
                         self.metadata_episode[name] = _checknget(dom, "dcterms:" + name)                     
             elif i.getFlavor() == "dublincore/series": # FIXME cover series data and create files if dont exist
@@ -712,7 +722,6 @@ class Mediapackage(object):
                     self.metadata_series[name] = _checknget(dom, "dcterms:" + name)
 
         #FIXME: Init set and attr
-        #self.setTitle(self.metadata_episode['title']) # NOT NECESARY TITLE IS property
         self.setCreators(self.metadata_episode['creator']) # FIXME creators could be more than one
         self.setContributors(self.metadata_episode['contributor']) # FIXME creators could be more than one
         self.setSubjects(self.metadata_episode['subject']) # FIXME creators could be more than one

@@ -12,14 +12,8 @@
 # San Francisco, California, 94105, USA.
 
 
-import sys
-import os
-from os import path
-
-import pygtk
 import gtk
 import gobject
-import datetime
 import pango
 import logging
 
@@ -28,31 +22,7 @@ from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 from galicaster.classui import get_ui_path
 
-
 logger = logging.getLogger()
-
-dcterms = ["title", "creator", "ispartof", "description", "subject", "language", "identifier", "contributor", "created"]
-metadata ={"title": "Title:", "creator": "Presenter:", "ispartof": "Course/Series:", "description": "Description:", 
-           "subject": "Subject:", "language": "Language:", "identifier": "Identifier:", "contributor": "Contributor:", 
-           "created":"Start Time:", "Title:":"title", "Presenter:":"creator", "Course/Series:":"ispartof", 
-           "Description:":"description", "Subject:":"subject", "Language:":"language", "Identifier:":"identifier", 
-           "Contributor:":"contributor", "Start Time:":"created"}
-
-#color = {0: "#FFFFA0", # Iddle
-#	 1: "#C8FFC8", # Nightly
-#	 2: "#C8FFC8", # Pending
-#	 3: "#FF9955", # Processing
-#	 4: "#77FF77", # Done
-#	 5: "#FFABAB", # Failed
-#	 }
-
-color = {0: "#FFFFA0", # Iddle
-	 1: "#FFFFA0", # Nightly
-	 2: "#FFFFA0", # Pending
-	 3: "#FFFFA0", # Processing
-	 4: "#FFFFA0", # Done
-	 5: "#FFFFA0", # Failed
-	 }
 
 rcstring = """
 style "big-scroll" {
@@ -63,20 +33,6 @@ style "big-scroll" {
 class "GtkRange" style "big-scroll"
 
 """
-
-
-#style "big-scroll" {        
-#        GtkRange::stepper-size = 25
-#        GtkRange::stepper-spacing = 10
-#        GtkRange::arrow-scaling = 0.1
-#        GtkRange::slider-width = 50
-#        GtkRange::trough-border = 2
-#        GtkRange::width-request = 100
-#        GtkRange::height-request = 100
-#        GtkRange::scroll-arrow-vlength = 50
-#	}
-
-#class "GtkRange" style "big-scroll"
 
 gtk.rc_parse_string(rcstring)
 #gtk.rc_reset_styles(self.main_window.get_settings())
@@ -123,6 +79,7 @@ class ListingClassUI(ManagerUI):
 			self.refresh()
 
 	def insert_data_in_list(self, lista, mps):
+		"""Appends the mediapackage data into the list"""
 		lista.clear()
                 for mp in mps:
 			duration = mp.getDuration() # TODO parse via function as creators
@@ -147,7 +104,7 @@ class ListingClassUI(ManagerUI):
 
 
 	def populate_treeview(self, mp):
-		# 1/2-2012 edpck@uib.no size: long -> type_int64
+		"""Establishes which values to be shown, its properties"""
 		self.lista = gtk.ListStore(str,str, str, str, long, int, str, int, str, int, int, int)
 		# gobject.TYPE_PYOBJECT
 		self.insert_data_in_list(self.lista, mp)
@@ -174,7 +131,8 @@ class ListingClassUI(ManagerUI):
 		vbar.set_update_policy(gtk.UPDATE_DELAYED)
 		
 		# Create each column
-		columna5 = gtk.TreeViewColumn("Id",render5,text = 0, background= 8) # column5 wont be append to the treeview
+		#columna5 = gtk.TreeViewColumn("Id",render5,text = 0, background= 8) 
+		# column5 wont be append to the treeview
 		columna1 = gtk.TreeViewColumn("Name",render1,text = 1, background= 8)
 		columna6 = gtk.TreeViewColumn("Presenter", render6, text = 2, background= 8)
 		columna7 = gtk.TreeViewColumn("Series", render7, text = 3, background= 8)
@@ -258,6 +216,7 @@ class ListingClassUI(ManagerUI):
 		self.lista.set_sort_column_id(6,gtk.SORT_DESCENDING)
 
 	def refresh_treeview(self):
+		"""Refresh all the values on the list"""
 		logger.info("Refreshing TreeView")
 		model, selected = self.vista.get_selection().get_selected_rows()
 		self.repository.refresh()
@@ -267,6 +226,7 @@ class ListingClassUI(ManagerUI):
 		self.vista.get_selection().select_path(s)
 
 	def refresh_row_from_mp(self, origin, identifier):
+		"""Refresh the values of a single row"""
 		# Search Iter to the liststor
 		i = None
 		for row in self.lista:
@@ -278,6 +238,7 @@ class ListingClassUI(ManagerUI):
 			self._refresh(mp,i)
 
 	def refresh_operation(self, origin, operation, package, success = None):
+		"""Refresh the status of an operation in a given row"""
 		identifier = package.identifier
 		self.refresh_row_from_mp(origin,identifier)
 
@@ -287,6 +248,7 @@ class ListingClassUI(ManagerUI):
 		self._refresh(mp,i)
 
 	def _refresh(self,mp,i):
+		"""Fills the new values of a refreshed row"""
 		self.lista.set(i,0,mp.metadata_episode['identifier'])
 		self.lista.set(i,1,mp.metadata_episode['title'])
 		self.lista.set(i,2,self.list_readable(mp.creators))
@@ -309,9 +271,7 @@ class ListingClassUI(ManagerUI):
 
 
 	def on_action(self, action):
-		"""
-		When an action its selected calls the function associated 
-		"""	
+		"""When an action its selected calls the function associated"""	
 		op=action.get_property("tooltip-text")
 		if not isinstance(op,str):
 			op=action.get_label()
@@ -342,6 +302,7 @@ class ListingClassUI(ManagerUI):
 			   
 
 	def create_menu(self):
+		"""Creates a menu to be shown on right-button-click over a MP"""
 		menu = gtk.Menu()
 		if self.conf.get_boolean('ingest', 'active'):
 			operations = ["Play", "Edit", "Operations", "Info", "Delete"]
@@ -373,23 +334,18 @@ class ListingClassUI(ManagerUI):
 
 
 	def on_double_click(self,treeview,reference,column):
-		"""
-		Set the player for previewing if double click
-		"""
+		"""Set the player for previewing if double click"""
 		self.on_play(treeview.get_model(),reference,treeview.get_model().get_iter(reference))
 
-
-	def zip(self,store, zip_path, iterator):
-		key = store[iterator][0]
-		return super.zip(package)
-
 	def on_ingest_question(self,store,reference,iterator):
+		"""Launchs ingest dialog and refresh row afterwards."""
 		package = self.repository.get(store[iterator][0])
 		self.ingest_question(package)
 		self.refresh_row(reference,iterator)
 		return True
 
 	def on_delete(self,store,iterator):
+		"""Remove a mediapackage from the view list"""
 		key = store[iterator][0]
 		response = self.delete(key)
 		if response:
@@ -398,9 +354,7 @@ class ListingClassUI(ManagerUI):
 		return True
 		
 	def on_play(self,store,reference,iterator):
-		""" 
-		Retrieve mediapackage and send videos to player
-		"""
+		""" Retrieve mediapackage and send videos to player"""
 		key = store[iterator][0]
 		self.play(key)
 		return True	
@@ -408,14 +362,18 @@ class ListingClassUI(ManagerUI):
 #--------------------------------------- Edit METADATA -----------------------------
 	
 	def on_edit(self,store,reference,iterator):
+		"""Pop ups the Metadata Editor"""
 		key = store[iterator][0]
 		self.edit(key)		
 		self.refresh_row(reference,iterator)
+
 	def on_info(self,store,reference,iterator):
+		"""Pops up de MP info dialog"""
 		key = store[iterator][0]
 		self.info(key)
 
 	def resize(self):
+		"""Adapts GUI elements to the screen size"""
 		buttonlist = ["playbutton","editbutton","ingestbutton","deletebutton"]
 		size = context.get_mainwindow().get_size()
 		wprop = size[0]/1920.0
@@ -459,10 +417,3 @@ class ListingClassUI(ManagerUI):
 
 gobject.type_register(ListingClassUI)
 
-def main(args):
-    v = listing()
-    gtk.main()
-    return 0
-
-if __name__ == '__main__':
-    sys.exit(main(sys.argv)) 

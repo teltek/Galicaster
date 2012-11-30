@@ -62,7 +62,7 @@ class DistribUI(gtk.Box):
 
     def on_profile_button(self, origin):
         parent=self.get_toplevel()
-        window = ListProfile(parent)
+        ListProfile(parent)
 
     def update_selected_profile(self, button = None):
         profile = context.get_conf().get_current_profile()
@@ -71,7 +71,6 @@ class DistribUI(gtk.Box):
             self.selected.set_text("Profile: "+profile.name)          
 
     def emit_signal(origin, button, signal, value=None):
-
         dispatcher = context.get_dispatcher()
         if value != None:
             dispatcher.emit(signal,value)
@@ -79,20 +78,19 @@ class DistribUI(gtk.Box):
             dispatcher.emit(signal)
 
     def show_about_dialog(self,origin, button):
-        dialog=GCAboutDialog()
+        GCAboutDialog()
 
     def resize(self): 
         size = context.get_mainwindow().get_size()
 
-        altura = size[1]
         anchura = size[0]
         k = anchura / 1920.0
 
         builder= self.builder
         logos = builder.get_object("logo_align")
         logos.set_padding(int(k*52),int(k*30),0,0)
-        disal = builder.get_object("dis_align")
-        #disal.set_padding(int(k*25),int(k*25),int(k*50),int(k*50))
+        # disal = builder.get_object("dis_align")
+        # disal.set_padding(int(k*25),int(k*25),int(k*50),int(k*50))
 
         l1 = builder.get_object("reclabel")
         l2 = builder.get_object("mmlabel")

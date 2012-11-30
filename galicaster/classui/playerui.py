@@ -10,6 +10,9 @@
 # this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
+"""
+UI for the player area
+"""
 
 
 from os import path
@@ -106,9 +109,7 @@ class PlayerClassUI(ManagerUI):
 
 #-------------------------- INIT PLAYER-----------------------
     def init_player(self,element,mp):
-        """
-        Send absolute file names and Drawing Areas to the player
-        """
+        """Send absolute file names and Drawing Areas to the player."""
         self.mediapackage = mp
 
         tracks = OrderedDict()
@@ -139,7 +140,7 @@ class PlayerClassUI(ManagerUI):
         #self.dispatcher.emit
 
     def play_from_list(self,package):
-
+        """Takes a MP from the listing area and plays it"""
         if self.status == GC_PAUSE:
             self.on_stop_clicked()
             self.statusbar.ClearTimer()            
@@ -148,6 +149,7 @@ class PlayerClassUI(ManagerUI):
         self.init_player(None, package)          
 
     def on_player_ready(self, origin):
+        """Auto-starts the player once ready"""
         self.dispatcher.disconnect(self.ready_id)
         self.init_timer()
         return True
@@ -155,12 +157,14 @@ class PlayerClassUI(ManagerUI):
 
 #------------------------- PLAYER ACTIONS ------------------------
 
-    def on_play_clicked(self,button):
+    def on_play_clicked(self, button):
+        """Starts the reproduction"""
         self.player.play()
         self.init_timer()
         return True
 
     def init_timer(self):
+        """Starts the thread handling the timer for visualiztion and seeking feature"""
         self.change_state(GC_PLAY)
         self.clock=self.player.get_clock()
         self.timer_thread = threading.Thread(target=self.timer_launch_thread)
@@ -169,11 +173,13 @@ class PlayerClassUI(ManagerUI):
         self.timer_thread.start()
         
     def on_pause_clicked(self, button=None):
+        """Pauses the reproduction"""
         self.player.pause()
         self.change_state(GC_PAUSE)
         return True
 
     def on_stop_clicked(self, button=None):
+        """Stops the reproduction and send the seek bar to the start"""
         self.thread_id = None
         self.player.stop()
         self.seek_bar.set_value(0)
@@ -181,7 +187,8 @@ class PlayerClassUI(ManagerUI):
         self.change_state(GC_STOP)
         return True
 
-    def on_quit_clicked(self,button):
+    def on_quit_clicked(self, button):
+        """Stops the preview and close the player"""
         gui = gtk.Builder()
         gui.add_from_file(get_ui_path("quit.glade"))
         dialog = gui.get_object("dialog")
@@ -196,11 +203,12 @@ class PlayerClassUI(ManagerUI):
             dialog.destroy()
         return True
 
-    def focus_out(self,button,event):
+    def focus_out(self, button, event):
+        """Stop the player when focus is lost"""
         self.player.pause()
         self.change_state(GC_STOP)
 
-    def on_seek(self,button,scroll_type,new_value):
+    def on_seek(self, button, scroll_type, new_value):
         """Move to the new position"""
         if new_value>100:
             new_value=100;
@@ -231,13 +239,15 @@ class PlayerClassUI(ManagerUI):
                 self.seeking= False
 
     def on_volume(self, button, scroll_type, new_value):
-        new_value = 120 if new_value > 120 else 0 if new_value < 0 else new_value
-        self.player.set_volume(new_value/100.0)
+        """Changes the player value"""
+        value = 120 if new_value > 120 else 0 if new_value < 0 else new_value
+        self.player.set_volume(value/100.0)
 
     def on_volume2(self, button, new_value):
         self.player.set_volume(new_value*2.0)
 
     def create_drawing_areas(self, source): # TODO refactorize, REC
+        """Creates the preview areas depending on the video tracks of a mediapackage"""
         main = self.main_area
 
         for child in main.get_children():
@@ -261,21 +271,21 @@ class PlayerClassUI(ManagerUI):
 #------------------------- PACKAGE ACTIONS ------------------------
 
     def on_edit_meta(self,button):
+        """Pop ups the Medatada Editor for the current Mediapackage"""
         key = self.mediapackage.identifier
         self.edit(key)
         self.statusbar.SetVideo(None, self.mediapackage.title)
         self.statusbar.SetPresenter(None, self.mediapackage.getCreators())
         return True
 
-    def on_zip(self,button):
-        key = self.mediapackage.identifier
-        return self.zip(key)
-
     def on_question(self,button):
+        """Pops up a dialog with the available operations"""
         package = self.mediapackage
         self.ingest_question(package)      
 
     def on_delete(self, button):
+        """ Pops up a dialog.
+        If response is positive the mediapackage is deleted and the focus goes to the previous area"""
         key = self.mediapackage.identifier
         response=self.delete(key)		
         if response:
@@ -293,6 +303,7 @@ class PlayerClassUI(ManagerUI):
 #-------------------------- UI ACTIONS -----------------------------
 
     def timer_launch_thread(self):
+        """Thread handling the timer, provides base time for seeking"""
         thread_id= self.thread_id
         self.initial_time=self.clock.get_time()
         self.duration = self.player.get_duration()
@@ -309,7 +320,7 @@ class PlayerClassUI(ManagerUI):
                     timer=(actual_time-self.initial_time)/gst.SECOND
                 else:
                     try:
-                        actual_time, format =self.player.get_position()
+                        actual_time, format_type =self.player.get_position()
                     except:
                             actual_time = 0                        
                             log.warning("Query position failed")
@@ -325,7 +336,7 @@ class PlayerClassUI(ManagerUI):
         return True
 
     def resize(self):
-        
+        """Adapts GUI elements to the screen size"""
         size = context.get_mainwindow().get_size()
         
         buttonlist = ["playbutton", "pausebutton", "stopbutton"]
@@ -343,14 +354,17 @@ class PlayerClassUI(ManagerUI):
         return True
 
     def event_change_mode(self, orig, old_state, new_state):
+        """Pause a recording in the event of a change of mode"""
         if old_state == 2 and self.status == GC_PLAY:
             self.on_pause_clicked()        
 
     def change_state_bypass(self,origin,state):
+        """To handles change state through signal"""
         self.change_state(state)
         return True
 
     def change_state(self,state):
+        """Activates or deactivates the buttons depending on the new state"""
         play=self.gui.get_object("playbutton")
         pause=self.gui.get_object("pausebutton")
         stop=self.gui.get_object("stopbutton")
@@ -394,6 +408,7 @@ class PlayerClassUI(ManagerUI):
             stop.set_sensitive(False)
 
     def close(self, signal):
+        """Close player UI, stopping threads and reproduction"""
         self.thread_id=None
         if self.status in [GC_PLAY, GC_PAUSE]:
             self.player.quit()

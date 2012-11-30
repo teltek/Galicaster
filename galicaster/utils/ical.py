@@ -74,7 +74,7 @@ def create_mp(repo, event):
         mp.status = mediapackage.SCHEDULED
         mp.manual = False
         mp.setIdentifier(event['UID'])
-        repo.add(mp, event['UID'])
+        repo.add(mp)
         rewrite = False
 
     mp.setTitle(event['SUMMARY'])

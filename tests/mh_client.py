@@ -19,6 +19,7 @@ Disble by default. You can enable it to test MatterHorn HTTP Client.
 """
 import socket
 import pycurl
+import json
 from xml.dom.minidom import parseString
 from unittest import TestCase
 
@@ -37,7 +38,7 @@ class TestFunctions(TestCase):
         workflow_parameters_2 = 'uno:uno;dos:dos'
 
         client = MHHTTPClient(server, user, password)
-        self.assertEqual(client.hostname, 'GC-' + socket.gethostname())
+        self.assertEqual(client.hostname, 'galicaster')
         self.assertEqual(client.address, socket.gethostbyname(socket.gethostname()))
 
         client = MHHTTPClient(server, user, password, hostname)
@@ -130,6 +131,7 @@ class TestFunctions(TestCase):
         series = client.getseries()    
 
         self.assertTrue(isinstance(series, basestring))
+        self.assertTrue(isinstance(json.loads(series), dict))
 
 
     def no_test_setstate(self):

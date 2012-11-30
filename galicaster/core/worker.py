@@ -11,8 +11,6 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import sys
-
 import os
 import logging
 import threading
@@ -52,7 +50,7 @@ class Worker(object):
                 self.queue.task_done()
     
 
-    def __init__(self, dispatcher, repo, mh_client=None, export_path=None, tmp_path=None):
+    def __init__(self, dispatcher, repo, mh_client=None, export_path=None, tmp_path=None, use_namespace=True):
         """
         Arguments:
 
@@ -62,10 +60,13 @@ class Worker(object):
         export_path -- path where galicaster exports zip and sidebyside
         tmp_path -- temporal path (need if /tmp partition is small)
         """
+
+
         self.repo = repo
         self.mh_client = mh_client
         self.export_path = export_path or os.path.expanduser('~')
         self.tmp_path = tmp_path or tempfile.gettempdir()
+        self.use_namespace = use_namespace
         self.dispatcher = dispatcher
         
         for dir_path in (self.export_path, self.tmp_path):
@@ -113,7 +114,7 @@ class Worker(object):
             return False
         f(mp)
 
-    def do_job(self, name, mp, nigthly=False):     
+    def do_job(self, name, mp):
         f = getattr(self, name)
         f(mp)
 
@@ -147,7 +148,7 @@ class Worker(object):
         self.dispatcher.emit('refresh-row', mp.identifier)
 
         ifile = tempfile.NamedTemporaryFile(dir=self.tmp_path)
-        self._export_to_zip(mp, ifile, False)
+        self._export_to_zip(mp, ifile, is_action=False)
 
         if mp.manual:
             try:
@@ -189,14 +190,14 @@ class Worker(object):
 
     def export_to_zip(self, mp, location=None):
         logger.info('Creating ExportToZIP Job for MP {0}'.format(mp.getIdentifier()))
-        if not location:
-            name = datetime.now().replace(microsecond=0).isoformat()
-            location = location or os.path.join(self.export_path, name + '.zip')
         mp.setOpStatus('exporttozip',mediapackage.OP_PENDING)
         self.jobs.put((self._export_to_zip, (mp, location)))
 
 
-    def _export_to_zip(self, mp, location, is_action=True):
+    def _export_to_zip(self, mp, location=None, is_action=True):
+        if not location:
+            name = datetime.now().replace(microsecond=0).isoformat()
+            location = location or os.path.join(self.export_path, name + '.zip')
         if is_action:
             logger.info("Executing ExportToZIP for MP {0}".format(mp.getIdentifier()))
             mp.setOpStatus('exporttozip',mediapackage.OP_PROCESSING)
@@ -204,13 +205,13 @@ class Worker(object):
             self.repo.update(mp)
         else:
             logger.info("Zipping MP {0}".format(mp.getIdentifier()))
-        if True: #try:
-            serializer.save_in_zip(mp, location)
+        try:
+            serializer.save_in_zip(mp, location, self.use_namespace)
             if is_action:
                 mp.setOpStatus('exporttozip',mediapackage.OP_DONE)
                 self.dispatcher.emit('stop-operation', 'exporttozip', mp, True)
         
-        else: #except:
+        except:
             if is_action:
                 logger.error("Zip failed for MP {0}".format(mp.identifier))
                 mp.setOpStatus('exporttozip',mediapackage.OP_FAILED)
@@ -222,17 +223,16 @@ class Worker(object):
 
     def side_by_side(self, mp, location=None):
         logger.info('Creating SideBySide Job for MP {0}'.format(mp.getIdentifier()))
-        if not location:
-            name = datetime.now().replace(microsecond=0).isoformat()
-            location = location or os.path.join(self.export_path, name + '.mp4')
-
         mp.setOpStatus('sidebyside',mediapackage.OP_PENDING)
         self.jobs.put((self._side_by_side, (mp, location)))
 
 
-    def _side_by_side(self, mp, location):
+    def _side_by_side(self, mp, location=None):
         logger.info('Executing SideBySide for MP {0}'.format(mp.getIdentifier()))
         mp.setOpStatus('sidebyside',mediapackage.OP_PROCESSING)
+        if not location:
+            name = datetime.now().replace(microsecond=0).isoformat()
+            location = location or os.path.join(self.export_path, name + '.mp4')
         self.repo.update(mp)
         self.dispatcher.emit('start-operation', 'sidebyside', mp)
 

@@ -10,7 +10,9 @@
 # this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
-
+"""
+UI for a Metadata Editor Pop UP
+"""
 
 import gtk
 import datetime
@@ -24,32 +26,32 @@ from galicaster.core import context
 from galicaster.utils import series as listseries
 from galicaster.classui import get_ui_path
 
-#DCTERMS = ["title", "creator", "ispartof", "description", "subject", "language", "identifier", "contributor", "created"] # FIXME take out contributor creator
-DCTERMS = ["title", "creator", "description", "language", "ispartof"]
-metadata ={"title": "Title:", "creator": "Presenter:", "ispartof": "Course/Series:", "description": "Description:", 
-           "subject": "Subject:", "language": "Language:", "identifier": "Identifier:", "contributor": "Contributor:", 
-           "created":"Start Time:", "Title:":"title", "Presenter:":"creator",  "Course/Series:":"ispartof", 
-           "Description:":"description", "Subject:":"subject", "Language:":"language", "Identifier:":"identifier", 
-           "Contributor:":"contributor", "Start Time:":"created"}
-
 NO_SERIES  = "NO SERIES ASSIGNED"
 DEFAULT_SERIES = "DEFAULT SERIES"
+
+DCTERMS = ["title", "creator", "description", "language", "isPartOf"]
+metadata = { "title": "Title:", "Title:":"title",
+             "creator": "Presenter:", "Presenter:":"creator", 
+             "isPartOf": "Course/Series:", "Course/Series:":"isPartOf",
+             "description": "Description:", "Description:":"description", 
+             "subject": "Subject:", "Subject:":"subject", 
+             "language": "Language:", "Language:":"language", 
+             "identifier": "Identifier:", "Identifier:":"identifier", 
+             "contributor": "Contributor:","Contributor:":"contributor", 
+             "created":"Start Time:", "Start Time:":"created"}  
 
 class MetadataClass(gtk.Widget):
     """
     Handle a pop up metadata editor, updating it if necessary
     """
     __gtype_name__ = 'MetadataClass'
-    
 
-
-    def __init__(self,package = None, parent = None): 
+    def __init__(self,package = None, parent = None):
 
         parent = context.get_mainwindow()
         size = parent.get_size()
             
         self.par = parent
-
         altura = size[1]
         anchura = size[0]        
         k1 = anchura / 1920.0                                      
@@ -118,7 +120,7 @@ class MetadataClass(gtk.Widget):
                     else:
                         d.set_text("")  
 
-                elif meta == "ispartof":
+                elif meta in ["ispartof", "isPartOf"]:
                     d = ComboBoxEntryExt(self.par,listseries.get_series(),
                                          NO_SERIES)
                     d.set_name(meta)
@@ -135,7 +137,7 @@ class MetadataClass(gtk.Widget):
                 else: 
                     d.set_text(mp.metadata_episode[meta])
             except (TypeError, KeyError):                
-                if meta == "ispartof":
+                if meta in ["ispartof", "isPartOf"]:
                     d = ComboBoxEntryExt(self.par,listseries.get_series(), 
                                          NO_SERIES)
                     if mp.series_title not in [None, ""]:
@@ -157,12 +159,11 @@ class MetadataClass(gtk.Widget):
             row=row+1
 
     def strip_spaces(self,value):
+        """Remove spaces before and after a value"""
         return value.strip()
 
     def update_metadata(self,table,mp):
-        """
-        Write data back to the mediapackage
-        """
+        """Write data back to the mediapackage"""
         for child in table.get_children():
             if child.name in DCTERMS:
                 if child.name == "creator":
@@ -186,7 +187,7 @@ class MetadataClass(gtk.Widget):
                         mp.setSubjects(splitted)
                     else:
                         mp.setSubjects(list())
-                elif child.name == "ispartof":
+                elif child.name == "ispartof" or child.name == "isPartOf":
                     result=child.get_active_text()
                     model = child.get_model()
                     iterator = model.get_iter_first()
@@ -218,7 +219,7 @@ class MetadataClass(gtk.Widget):
                 else:
                     mp.metadata_episode[child.name]=child.get_text()
 
-        mp.setTitle(mp.metadata_episode['title'])
+        #mp.setTitle(mp.metadata_episode['title']) # WARNING title is a property
         mp.setLanguage(mp.metadata_episode['language'])
         mp.metadata_episode['creator']=mp.creators
         mp.metadata_episode['contributor']=mp.contributors
@@ -226,9 +227,7 @@ class MetadataClass(gtk.Widget):
 
 
     def edit_date(self,element,event):
-        """
-        Filter a Rigth button double click, show calendar and update date
-        """
+        """Filter a Rigth button double click, show calendar and update date"""
       
         if event.type == gtk.gdk._2BUTTON_PRESS and event.button==1:
             text= element.get_text()
@@ -263,6 +262,7 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
         liststore.set_sort_func(0,self.sorting,text) # Put text=NO_SERIES first
         liststore.set_sort_column_id(0,gtk.SORT_ASCENDING)
 
+        self.liststore = liststore # CHECK
 
         # Filter
         combofilter = liststore.filter_new()
@@ -321,7 +321,7 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
             return True
 
     def sorting(self, treemodel, iter1, iter2, NO_ID = None):
-
+        """Sorting algorithm, placing first default series and no series"""
         if treemodel[iter1][0] == NO_ID:
             return False
         if treemodel[iter2][0] == NO_ID:

@@ -13,12 +13,8 @@
 
 
 import os
-import sys
-import shutil
 import logging
 import ConfigParser
-import collections
-import exceptions
 import socket
 
 logger = logging.getLogger()
@@ -39,7 +35,7 @@ class Conf(object): # TODO list get and other ops arround profile
       # FIXME when using 2.7 dict_type=collections.OrderedDict)
 
       self.conf_file = conf_file if os.path.isfile(conf_file) else os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'conf.ini'))
-      self.conf_dist_file = conf_dist_file if os.path.isfile(conf_dist_file) else os.path.join(os.path.dirname(self.conf_file), 'conf-dist.ini')
+      self.conf_dist_file = conf_dist_file if os.path.isfile(conf_dist_file) else os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','conf-dist.ini'))
       self.profile_folder = profile_folder if os.path.isdir(profile_folder) else os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'profiles'))
          
       self.reload()
@@ -190,10 +186,6 @@ class Conf(object): # TODO list get and other ops arround profile
       return profile
 
 
-   def set_default_profile_as_current(self):
-      self.__current_profile = self.__default_profile
-
-
    def get_permission(self,permit):
       try: 
          return self.__conf.getboolean('allows',permit)
@@ -271,11 +263,6 @@ class Conf(object): # TODO list get and other ops arround profile
       return self.__default_profile
 
 
-   def get_all_default_tracks(self):
-      profile=Profile()
-      profile.import_from_conf(False)                                     
-
-   
    def __get_free_number(self):
       for i in range(100):
          if not self.__conf.has_section('track'+unicode(i)):
@@ -298,7 +285,7 @@ class Conf(object): # TODO list get and other ops arround profile
 
 
    def get_palette(self, old_style = True):
-      none = self.get('color','none')
+      undefined = self.get('color','none')
       nightly = self.get('color','nightly')
       pending = self.get('color','pending')
       processing = self.get('color','processing')
@@ -306,9 +293,9 @@ class Conf(object): # TODO list get and other ops arround profile
       failed = self.get('color','failed')
 
       if not old_style:
-         return [none, none, none, none, none, none] 
+         return [undefined, undefined, undefined, undefined, undefined, undefined] 
       else:
-         return [none, nightly, pending,processing, done, failed]
+         return [undefined, nightly, pending,processing, done, failed]
 
 
 class Profile(object):
@@ -318,7 +305,7 @@ class Profile(object):
    Tracks can be created
    Other features are reordering tracks
    """
-   def __init__(self, name='New Profile', path=None, current=False):
+   def __init__(self, name='New Profile', path=None):
       self.name = name
       self.tracks = []
       self.path = path

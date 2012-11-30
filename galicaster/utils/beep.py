@@ -15,10 +15,6 @@
 """
 Se genera un pitido usando gstreamer
 """
-
-import logging
-
-import gtk
 import gst
 
 

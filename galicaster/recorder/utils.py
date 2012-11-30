@@ -69,7 +69,7 @@ class Switcher(gst.Bin):
 
         # CAPS
         filtre = gst.caps_from_string("video/x-raw-yuv,format=\(fourcc\)YUY2,width=800,height=600,framerate=(fraction)25/1") 
-        filtre2 = gst.caps_from_string("video/x-raw-yuv,format=\(fourcc\)YUY2,width=1024,height=786,framerate=(fraction)25/1")
+        #filtre2 = gst.caps_from_string("video/x-raw-yuv,format=\(fourcc\)YUY2,width=1024,height=786,framerate=(fraction)25/1")
 
         caps.set_property('caps', filtre)
         caps2.set_property('caps', filtre)
@@ -122,8 +122,8 @@ class Switcher(gst.Bin):
         pipe.set_state(gst.STATE_PAUSED)
         pipe.set_state(gst.STATE_PLAYING)
         state = pipe.get_state()
+        pipe.set_state(gst.STATE_NULL)
         if state[0] != gst.STATE_CHANGE_FAILURE:
-            pipe.set_state(gst.STATE_NULL)
             return True
         return False
 
@@ -138,7 +138,7 @@ class Switcher(gst.Bin):
         device.link(sink)
         bucle = 0
         while thread_id == self.thread_id:
-            if self.removing == True:
+            if self.removing:
                 self.removing = False
                 self.device.set_state(gst.STATE_NULL)
                 self.remove(self.device)
@@ -178,7 +178,7 @@ class Switcher(gst.Bin):
 
     def switch(self, padname):
         log.debug("Switching to: "+padname)
-        stop_time = self.selector.emit('block')
+        self.selector.emit('block')
         newpad = self.selector.get_static_pad(padname)
         # start_time = newpad.get_property('running-time')
         self.selector.emit('switch', newpad, -1, -1)

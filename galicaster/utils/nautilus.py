@@ -12,14 +12,10 @@
 # San Francisco, California, 94105, USA.
 
 import logging
-import subprocess
 import os
 
 logger = logging.getLogger()
 
-
 def open_folder(path):
     logger.info("Opening folder {0}".format(path))
-    #subprocess.check_call(['nautilus', path])
-    #subprocess.call(['nautilus', path])
     os.system('xdg-open '+path)

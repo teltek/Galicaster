@@ -22,12 +22,8 @@ import logging
 import gtk
 import gst
 import os
-from gst.extend.discoverer import Discoverer
+from gst.pbutils import Discoverer
 from galicaster.core import context
-
-import time
-import sys
-import threading
 
 log = logging.getLogger()
 
@@ -58,7 +54,7 @@ class Player(object):
         self.duration = 0
         self.decoded_pads = 0
 
-        self.get_duration_and_run()
+        self.__get_duration_and_run()
 
     def run_pipeline(self):
 
@@ -67,7 +63,7 @@ class Player(object):
         self.has_audio = False
         self.audio_sink = None
 
-  # Create bus and connect several handlers
+        # Create bus and connect several handlers
         self.bus.add_signal_watch()
         self.bus.enable_sync_message_emission()
         self.bus.connect('message::eos', self.__on_eos)
@@ -276,34 +272,22 @@ class Player(object):
             self.audio_sink.set_property('volume', volume)
 
 
-    def discover(self,filepath):
-        discoverer = Discoverer(filepath)
-        discoverer.connect('discovered', self.on_discovered, filepath)
-        discoverer.discover()
-        return False # Don't repeat idle call
-
-
-    def on_discovered(self, discoverer, ismedia, infile):
-        if discoverer.is_audio:
-            self.duration = discoverer.audiolength / 1000000000            
-        else:
-            self.duration = discoverer.videolength / 1000000000   
-
-        log.info("Duration ON_DISCOVERED: "+str(self.duration))
-
+    def __discover(self,filepath):
+        discoverer = Discoverer(1*gst.SECOND)
+        info = discoverer.discover_uri('file://'+filepath)
+        self.duration = info.get_duration() / 1000000000
+        log.info("Duration ON_DISCOVERED: "+str(self.duration))        
         self.run_pipeline()
+        return True
 
-    def get_duration_and_run(self):
+
+    def __get_duration_and_run(self):
         # choose lighter file
         size = None
-        name = None
         location = None
         for key,value in self.files.iteritems():
             new = os.path.getsize(value)
             if not size or new>size:
-                name = key
                 location = value
-        self.discover(location)
-
-        return None
+        return self.__discover(location)
 	
