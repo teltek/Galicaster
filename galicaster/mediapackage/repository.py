@@ -29,6 +29,8 @@ logger = logging.getLogger()
 
 class Repository(object):
     attach_dir = 'attach'
+    rectemp_dir = 'rectemp'
+    repo_dirs = (attach_dir, rectemp_dir)
 
     def __init__(self, root=None, hostname='', 
                  folder_template='gc_{hostname}_{year}-{month}-{day}T{hour}h{minute}m{second}'):
@@ -51,9 +53,10 @@ class Repository(object):
     def create_repo(self, hostname):
         if not os.path.isdir(self.root):
             os.mkdir(self.root)
-            
-        if not os.path.isdir(os.path.join(self.root, self.attach_dir)):
-            os.mkdir(os.path.join(self.root, self.attach_dir))
+           
+        for repo_dir in self.repo_dirs:
+            if not os.path.isdir(os.path.join(self.root, repo_dir)):
+                os.mkdir(os.path.join(self.root, repo_dir))
 
         info_repo_file = os.path.join(self.root, self.attach_dir, 'info.ini')
         if not os.path.isfile(info_repo_file):
@@ -69,7 +72,7 @@ class Repository(object):
         self.__list.clear()
         if self.root != None:
             for folder in os.listdir(self.root):
-                if folder == self.attach_dir:
+                if folder in self.repo_dirs:
                     continue
                 try:
                     manifest = os.path.join(self.root, folder, "manifest.xml")
@@ -267,6 +270,13 @@ class Repository(object):
             return os.path.join(self.root, self.attach_dir, name)
         else:
             return os.path.join(self.root, self.attach_dir)
+
+
+    def get_rectemp_path(self, name=None):
+        if name:
+            return os.path.join(self.root, self.rectemp_dir, name)
+        else:
+            return os.path.join(self.root, self.rectemp_dir)
 
 
     def __get_folder_name(self, mp):

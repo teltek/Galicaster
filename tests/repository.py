@@ -146,7 +146,7 @@ class TestFunctions(TestCase):
 
         repo.delete(mp)
         self.assertEqual(repo.size(), 0)
-        self.assertEqual(len(os.listdir(self.tmppath)), 1) #attach
+        self.assertEqual(len(os.listdir(self.tmppath)), 2) #attach and rectemp
 
 
     def test_bad_delete(self):

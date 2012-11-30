@@ -205,7 +205,7 @@ class RecorderClassUI(gtk.Box):
         bins = current_profile.tracks
 
         for objectbin in bins:
-            objectbin['path']=self.repo.get_attach_path()
+            objectbin['path']=self.repo.get_rectemp_path()
         devices = current_profile.get_video_areas()
         areas = self.create_drawing_areas(devices)    
         
@@ -860,7 +860,7 @@ class RecorderClassUI(gtk.Box):
         # s3 = self.gui.get_object("status3")
         s4 = self.gui.get_object("status4")
  
-        freespace,text_space=status_bar.GetFreeSpace(self.repo.get_attach_path())
+        freespace,text_space=status_bar.GetFreeSpace(self.repo.get_rectemp_path())
         s1.set_text(text_space)
         four_gb = 4000000000.0
         hours = int(freespace/four_gb)
