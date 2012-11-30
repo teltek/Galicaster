@@ -42,6 +42,7 @@ class TestFunctions(TestCase):
                                             mimetype = "text/xml")
         self.tmppath = mkdtemp()
 
+
     def tearDown(self):
         rmtree(self.tmppath)
 
@@ -309,14 +310,23 @@ class TestFunctions(TestCase):
             f = open(repo.get_rectemp_path(file_name), 'w')
             f.write("DATA" * 1000)
             f.close()
+
+        open(repo.get_rectemp_path("None.avi"), 'w').close()
         
         # After crash. Create a new repo
         repo = repository.Repository(self.tmppath, 'test', 'test')
-        num_file = 0
+        num_files = num_backup_files = 0
         for name in os.listdir(repo.get_rectemp_path()):
-            if os.path.isfile(os.path.join(repo.get_rectemp_path(), name)):
-                num_file += 1
-        self.assertEqual(num_file, 0)
+            full_path = os.path.join(repo.get_rectemp_path(), name)
+            if os.path.isfile(full_path) and os.path.getsize(full_path):
+                num_files += 1
+            if os.path.isdir(full_path):
+                num_backup_files = len(os.listdir(full_path))
+
+        self.assertEqual(num_files, 0)
+        self.assertEqual(num_backup_files, 2)
+
+        
 
         
         

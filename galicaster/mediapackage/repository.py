@@ -70,7 +70,13 @@ class Repository(object):
         
 
     def save_crash_recordings(self):
-        pass
+        backup_dir = self.get_rectemp_path(datetime.datetime.now().replace(microsecond=0).isoformat())
+        for temp_file in os.listdir(self.get_rectemp_path()):
+            full_path = os.path.join(self.get_rectemp_path(), temp_file)
+            if os.path.isfile(full_path) and os.path.getsize(full_path):
+                if not os.path.isdir(backup_dir):
+                    os.mkdir(backup_dir)
+                os.rename(full_path, os.path.join(backup_dir, temp_file))
 
 
     def refresh(self, check_inconsistencies=False):
