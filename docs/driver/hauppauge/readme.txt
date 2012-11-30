@@ -54,3 +54,46 @@ You may apply additional settings to your card with the v4l2-ctl tool. Just type
 * Making settings permanent
 
 The settings applied with this tool will disappear between reboots. You can, however, write a script file with the appropriate commands and set it to run when the system starts.
+
+
+* Force 'cardtype' parameter in the 'ivtv' module (advanced)
+
+The list of cards supported by this module can be obtained with the command "modinfo ivtv":
+
+ 1 = WinTV PVR 250
+ 2 = WinTV PVR 350
+ 3 = WinTV PVR-150 or PVR-500
+ 4 = AVerMedia M179
+ 5 = YUAN MPG600/Kuroutoshikou iTVC16-STVLP
+ 6 = YUAN MPG160/Kuroutoshikou iTVC15-STVLP
+ 7 = YUAN PG600/DIAMONDMM PVR-550 (CX Falcon 2)
+ 8 = Adaptec AVC-2410
+ 9 = Adaptec AVC-2010
+ 10 = NAGASE TRANSGEAR 5000TV
+ 11 = AOpen VA2000MAX-STN6
+ 12 = YUAN MPG600GR/Kuroutoshikou CX23416GYC-STVLP
+ 13 = I/O Data GV-MVP/RX
+ 14 = I/O Data GV-MVP/RX2E
+ 15 = GOTVIEW PCI DVD
+ 16 = GOTVIEW PCI DVD2 Deluxe
+ 17 = Yuan MPC622
+ 18 = Digital Cowboy DCT-MTVP1
+ 19 = Yuan PG600V2/GotView PCI DVD Lite
+ 20 = Club3D ZAP-TV1x01
+ 21 = AverTV MCE 116 Plus
+ 22 = ASUS Falcon2
+ 23 = AverMedia PVR-150 Plus
+ 24 = AverMedia EZMaker PCI Deluxe
+ 25 = AverMedia M104 (not yet working)
+ 26 = Buffalo PC-MV5L/PCI
+ 27 = AVerMedia UltraTV 1500 MCE
+ 28 = Sony VAIO Giga Pocket (ENX Kikyou)
+ 0 = Autodetect (default)
+ -1 = Ignore this card
+
+The 'cardtype' parameter indicates which type of card is expected by the driver. It defaults to 0 (detect card type automatically), but if this detection fails there is a way to force which card type will be used. The following instructions (need to be the superuser) configure the driver to work with a specific card type:
+
+echo options ivtv cardtype=XX > /etc/modprobe.d/hauppauge.conf
+depmod -a
+
+, where XX is the card type, as specified in the list above.

@@ -44,11 +44,8 @@ class AudioBarClass(gtk.Box):
             self.volume = gtk.VolumeButton()
             self.volume.set_value(0.5)
             box.pack_end(self.volume,False,True,0)
-        #self.add(self.bar)  # FIXME configure box
         builder.connect_signals(self)
         self.vumeter=builder.get_object("vumeter")
-        
-
 
     def GetVumeter(self):
         return self.vumeter.get_fraction()
@@ -56,6 +53,9 @@ class AudioBarClass(gtk.Box):
     def SetVumeter(self,element,data):
         value = self.scale_vumeter(data)
         self.vumeter.set_fraction(value)
+
+    def ClearVumeter(self):
+        self.vumeter.set_fraction(0)
 
     def scale_vumeter(self,data):
         conf = context.get_conf()
@@ -83,11 +83,11 @@ class AudioBarClass(gtk.Box):
         return valor
 
 
-    def resize(self,size): # FIXME change alignments and 
+    def resize(self,size):
         altura = size[1]
         anchura = size[0]
 
-        k = anchura / 1920.0 # we assume 16:9 or 4:3?
+        k = anchura / 1920.0
         self.proportion = k
         
         def relabel(label,size,bold):           

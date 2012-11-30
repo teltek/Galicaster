@@ -16,7 +16,7 @@ from os import path
 from datetime import datetime
 from xml.dom import minidom
 from galicaster.mediapackage import mediapackage
-from galicaster.mediapackage.utils import _checknget
+from galicaster.mediapackage.utils import _checknget, _checkget
 from galicaster.mediapackage.utils import _getElementAbsPath
 
                     
@@ -41,8 +41,17 @@ def fromXML(xml):
     try:
         galicaster = minidom.parse(path.join(mp.getURI(), 'galicaster.xml'))
         mp.status = int(_checknget(galicaster, "status"))
-        mp.notes = _checknget(galicaster, "notes")
+        for i in galicaster.getElementsByTagName("operation"):
+            op = unicode(i.getAttribute("key"))
+            status = _checknget(i, "status")
+            mp.setOpStatus(op, int(status))
+        for i in galicaster.getElementsByTagName("property"):
+            op = unicode(i.getAttribute("name"))
+            value = _checkget(i)
+            mp.properties[op] = unicode(value)
+                
     except IOError:
+        print "WHITOUT galicaster.xml"
         without_galicaster = True
 
     
@@ -63,7 +72,6 @@ def fromXML(xml):
                 
             if etype == mediapackage.TYPE_TRACK and mp.status == mediapackage.NEW and without_galicaster:
                 mp.status = mediapackage.RECORDED
-
 
     mp.marshalDublincore()
     return mp        

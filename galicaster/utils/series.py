@@ -53,10 +53,11 @@ def getSeriesbyId(seriesid):
     Generate a list with the series value name, shortname and id
     """
     list_series = get_series()
-    match = dict()
-    match["id"] = seriesid
-    match["name"] = list_series[seriesid]
-    return match
+    try:
+        match = {"id": seriesid, "name": list_series[seriesid]}
+        return match
+    except KeyError:
+        return None
 
 def getSeriesbyName(seriesid):
     """
@@ -64,10 +65,11 @@ def getSeriesbyName(seriesid):
     """
     list_series = get_series()
     inv_map = dict(zip(list_series.values(), list_series.keys()))
-    match = dict()
-    match["id"] = inv_map[seriesid]
-    match["name"] = seriesid
-    return match                                  
+    try:
+        match = {"id": inv_map[seriesid], "name": seriesid}
+        return match
+    except KeyError:
+        return None
 
 def serialize_series(series_list, series_path):
     in_json = json.dumps(series_list)

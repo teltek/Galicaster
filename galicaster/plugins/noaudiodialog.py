@@ -31,12 +31,16 @@ def init():
     dispatcher = context.get_dispatcher()
     conf = context.get_conf()
 
-    if conf.get('basic','admin') == 'True':
-        focus_is_active = False
+    focus_is_active = not conf.get_boolean('basic','admin')
 
     dispatcher.connect('audio-mute', warning_audio)
     dispatcher.connect('audio-recovered', warning_audio_destroy)
     dispatcher.connect('galicaster-status', event_change_mode)
+    dispatcher.connect('reload-profile', reload_profile)
+
+
+def reload_profile(element=None):
+    warning_audio_destroy()
 
 
 def warning_audio(element=None): # TODO make it generic
@@ -49,6 +53,7 @@ def warning_audio(element=None): # TODO make it generic
         gui = gtk.Builder()
         gui.add_from_file(get_ui_path('warning.glade'))
         no_audio_dialog = gui.get_object('dialog')
+        no_audio_dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DIALOG)
         no_audio_dialog.set_transient_for(context.get_mainwindow().get_toplevel())
         no_audio_dialog.show() 
     return True

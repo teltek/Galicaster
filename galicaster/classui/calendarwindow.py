@@ -55,7 +55,7 @@ class CalendarWindow:
     #
 
     def __init__(self, initial_value=0, parent_window=None):
-        print "Running CalendarWindow"
+        #print "Running CalendarWindow"
         self.gi = gtk.Builder()
         self.gi.add_from_file(get_ui_path('datetime.glade'))
         self.gi.connect_signals(self)   
@@ -82,23 +82,24 @@ class CalendarWindow:
         return result
 
     def do_hide_calendar(self, calendarwindow):
-        print "Hiding calendar"
+        pass
+        #print "Hiding calendar"
         # self.w.hide()
         
     def do_select_current(self, button):        
-        print "Current date choosen"
+        #print "Current date choosen"
         self.date = datetime.datetime.now().replace(microsecond=0)
         self.w.hide()
         # return datetime.datetime.now().replace(microsecond=0)
                 
     def do_select_none(self, button):
-        print "No date selected"
+        #print "No date selected"
         self.date = None
         self.w.hide()
         # return 2
 
     def do_select_day(self, calendar):
-        print "Selecting day"
+        #print "Selecting day"
         value = self.gi.get_object("calendar1").get_date()
         hour = self.gi.get_object("hours").get_value_as_int()
         minute = self.gi.get_object("minutes").get_value_as_int()
@@ -108,7 +109,7 @@ class CalendarWindow:
 
 def main():
     w =  CalendarWindow() 
-    print "through the main function"
+    #print "through the main function"
     gtk.main()
     
 

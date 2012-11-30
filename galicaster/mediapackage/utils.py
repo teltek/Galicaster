@@ -45,12 +45,22 @@ def _getElementAbsPath(name, base_path):
         return path.join(base_path, name)
         
 
+def _checkget(element): 
+    try:
+        sout = element.firstChild.wholeText.strip().strip("\n")
+    except AttributeError:
+        sout = ''
+    return sout
+
+
 def _checknget(archive, name): 
     if archive.getElementsByTagName(name).length != 0:
         try:
-            sout = archive.getElementsByTagName(name)[0].firstChild.wholeText.strip().strip("\n")
+            sout = _checkget(archive.getElementsByTagName(name)[0])
         except AttributeError:
             sout = ''
         return sout
+
+
 
 

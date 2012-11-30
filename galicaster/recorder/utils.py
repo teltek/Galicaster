@@ -156,7 +156,7 @@ class Switcher(gst.Bin):
             bucle += 1
 
 
-    def probe(self, pad, event):       
+    def probe(self, pad, event):        
         if not self.let_pass:
             if event.type == gst.EVENT_EOS and not self.eph_error:
                 log.debug("EOS Received")

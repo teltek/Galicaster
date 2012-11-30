@@ -17,10 +17,10 @@ Proporciona un sistema global de manejo de eventos a Galicaster. Esta basado en 
 Las señales existentes estan difinidas en este modulo.
 
 To connect to a signal: 
-dispatcher.connect("signal-name", callback)
+dispatcher.connect('signal-name', callback)
 
 To emit a signal:
-dispatcher.emit("signal-name", parameters)
+dispatcher.emit('signal-name', parameters)
 """
 
 import gobject
@@ -37,37 +37,56 @@ class Dispatcher(gobject.GObject):
 
 
 gobject.type_register(Dispatcher)
-gobject.signal_new("pr", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+gobject.signal_new('galicaster-init', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+gobject.signal_new('pr', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 #REC
-gobject.signal_new("upcoming-recording", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
-gobject.signal_new("start-record", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) ) #FIXME define where and wich signals emit on scheduled/manual record
-gobject.signal_new("starting-record", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () ) 
-gobject.signal_new("stop-record", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
-gobject.signal_new("restart-preview", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
-gobject.signal_new("update-rec-vumeter", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+gobject.signal_new('upcoming-recording', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+gobject.signal_new('start-record', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) ) #FIXME define where and wich signals emit on scheduled/manual record
+gobject.signal_new('starting-record', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+gobject.signal_new('stop-record', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+gobject.signal_new('restart-preview', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+gobject.signal_new('update-rec-vumeter', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+# NEW ON 1.2
+gobject.signal_new('recorder-error', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+gobject.signal_new('reload-profile', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+gobject.signal_new('start-preview', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+
 #AUDIO
-gobject.signal_new("audio-mute", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
-gobject.signal_new("audio-recovered", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+gobject.signal_new('audio-mute', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+gobject.signal_new('audio-recovered', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
 #PLAYER
-gobject.signal_new("update-play-vumeter", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
-gobject.signal_new("play-stopped", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
-gobject.signal_new("play-list", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+gobject.signal_new('update-play-vumeter', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+gobject.signal_new('play-stopped', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+gobject.signal_new('play-list', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+#NEW on 1.2.1
+gobject.signal_new('player-ready', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+
 #MEDIAMANAGER
-gobject.signal_new("refresh-row", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+gobject.signal_new('refresh-row', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 #STATUS
-gobject.signal_new("update-play-status", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
-gobject.signal_new("update-rec-status", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
-gobject.signal_new("update-video", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
-gobject.signal_new("start-before", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+gobject.signal_new('update-play-status', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+gobject.signal_new('update-rec-status', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+gobject.signal_new('update-video', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+gobject.signal_new('start-before', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 #DISTRIBUTION
-gobject.signal_new("change-mode", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
-gobject.signal_new("galicaster-status", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, gobject.TYPE_PYOBJECT) )
-gobject.signal_new("galicaster-quit", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
-gobject.signal_new("galicaster-notify-quit", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+gobject.signal_new('change-mode', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+gobject.signal_new('galicaster-status', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, gobject.TYPE_PYOBJECT) )
+gobject.signal_new('galicaster-quit', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+gobject.signal_new('galicaster-notify-quit', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+# TIMER
+gobject.signal_new('galicaster-notify-nightly', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+gobject.signal_new('galicaster-notify-timer-short', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+gobject.signal_new('galicaster-notify-timer-long', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
 #NET
-gobject.signal_new("net-up", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
-gobject.signal_new("net-down", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+gobject.signal_new('net-up', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+gobject.signal_new('net-down', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
 #ABOUT
-gobject.signal_new("show-about", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+gobject.signal_new('show-about', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
 #PROVISIONAL
-gobject.signal_new("create-mock-mp", Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+gobject.signal_new('create-mock-mp', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+#WORKER
+gobject.signal_new('start-operation', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,gobject.TYPE_PYOBJECT,) )
+gobject.signal_new('stop-operation', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,gobject.TYPE_PYOBJECT,gobject.TYPE_PYOBJECT) )
+
+
+

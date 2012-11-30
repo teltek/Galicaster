@@ -14,14 +14,20 @@
 
 # TODO:
 # * metadata dict in mediapackage *33
-
+import os
+import sys
+import traceback
+import logging
 import zipfile
-from os import path
+from os import path,system
 from xml.dom import minidom
+
 from galicaster.mediapackage import mediapackage
 
-SERIES_FILE="series.xml"
+logger = logging.getLogger()
 
+SERIES_FILE="series.xml"
+ziptype = "system" # system,native
 
 def save_in_dir(mp):
     assert path.isdir(mp.getURI())
@@ -42,7 +48,6 @@ def save_in_dir(mp):
 
     # Series
     if mp.series not in [None, "", "[]"]:
-
         # Create or modify file
         m3 = open(path.join(mp.getURI(), SERIES_FILE), 'w')
         m3.write(set_series(mp)) #FIXME
@@ -54,15 +59,16 @@ def save_in_dir(mp):
     m.close()
 
 
-
-def save_in_zip(mp, file):
+def save_native_zip(mp, loc):
     """
-    Save in ZIP file
+    Save in ZIP file using python module
 
     @param mp Mediapackage to save in ZIP.
     @param file can be either a path to a file (a string) or a file-like object.
     """
-    z = zipfile.ZipFile(file, 'w', zipfile.ZIP_STORED, True) # store only (DEFAULT)
+
+    z= zipfile.ZipFile(loc,'w',zipfile.ZIP_STORED,True)
+    # store only (DEFAULT)        
 
     # manifest
     z.writestr('manifest.xml', set_manifest(mp))
@@ -71,7 +77,7 @@ def save_in_zip(mp, file):
     m2 = open(path.join(mp.getURI(), 'episode.xml'), 'w')
     m2.write(set_episode(mp))
     m2.close()
-
+        
     for catalog in mp.getCatalogs():
         if path.isfile(catalog.getURI()):
             z.write(catalog.getURI(), path.basename(catalog.getURI()))
@@ -88,6 +94,56 @@ def save_in_zip(mp, file):
     # FIXME other elements
     z.close()
 
+def save_system_zip(mp, loc):
+
+    tmp_file = path.join(mp.getURI(), 'manifest.xml')
+    m = open(tmp_file,'w')
+    m.write(set_manifest(mp))
+    m.close()    
+
+    # episode (fist persist episode)
+    m2 = open(path.join(mp.getURI(), 'episode.xml'), 'w')
+    m2.write(set_episode(mp))
+    m2.close()
+
+    files = [tmp_file]
+
+    #catalogs
+    for catalog in mp.getCatalogs():
+        if path.isfile(catalog.getURI()):
+            files += [catalog.getURI()]
+
+    # tracks    
+    for track in mp.getTracks():
+        if path.isfile(track.getURI()):
+            files += [track.getURI()]
+
+    for attach in mp.getAttachments():
+        if path.isfile(attach.getURI()):
+            files += [attach.getURI()]
+    
+    # FIXME other elements
+    
+    try:
+        loc = loc if type(loc) in [str,unicode] else loc.name
+        system('zip -j0 "'+loc + '" "'+'" "'.join(files) + '" >/dev/null')
+        if os.path.isfile(loc+".zip"): # WORKARROUND to eliminate automatic extension .zip
+            os.rename(loc+".zip",loc)
+        
+        #FNULL = open('/dev/null', 'w')
+        #subprocess.check_call(['zip','-j0',loc]+files,stdout=FNULL)
+    except Exception:
+        logger.error("Zip failed: "+str(sys.exc_info()[0]))
+    loc = None
+    os.remove(tmp_file)
+
+if ziptype == "system":
+    logger.debug("Ussing System Zip")
+    save_in_zip = save_system_zip
+else: 
+    logger.debug("Ussing Native Zip")
+    save_in_zip = save_native_zip
+
 
 def set_properties(mp):
     """
@@ -100,12 +156,28 @@ def set_properties(mp):
     stext = doc.createTextNode(unicode(mp.status))
     status.appendChild(stext)
     galicaster.appendChild(status)
-    notes = doc.createElement("notes")
-    ntext = doc.createTextNode(mp.notes)
-    notes.appendChild(ntext)
-    galicaster.appendChild(notes)
-    return doc.toxml(encoding="utf-8")
 
+    operations = doc.createElement("operations")
+    galicaster.appendChild(operations)
+    for (op_name, op_value) in mp.operation.iteritems():
+        operation = doc.createElement("operation")
+        operation.setAttribute("key", op_name) 
+        status = doc.createElement("status")
+        text = doc.createTextNode(unicode(op_value))
+        status.appendChild(text)
+        operation.appendChild(status)
+        operations.appendChild(operation)        
+
+    properties = doc.createElement("properties")
+    galicaster.appendChild(properties)
+    for (prop_name, prop_value) in mp.properties.iteritems():
+        prop = doc.createElement("property")
+        prop.setAttribute("name", prop_name) 
+        text = doc.createTextNode(unicode(prop_value))
+        prop.appendChild(text)
+        properties.appendChild(prop)
+
+    return doc.toxml(encoding="utf-8")
 
 def set_manifest(mp):
     """

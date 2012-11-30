@@ -36,15 +36,12 @@ class StatusBarClass(gtk.Box):
 	builder = gtk.Builder()
         builder.add_from_file(get_ui_path('statusbar.glade'))
         self.bar = builder.get_object("statusbar")
-        #self.add(self.bar)  # FIXME configure box
         builder.connect_signals(self)
 
         self.status=builder.get_object("status")
         self.timer=builder.get_object("timer")
         self.video=builder.get_object("video")
         self.presenter=builder.get_object("presenter")
-        # self.video.
-
 
     def GetStatus(self):
         return self.status.get_text()    
@@ -110,12 +107,21 @@ class StatusBarClass(gtk.Box):
         timing = t1+" / "+t2        
         return timing
 
+    def make_human_readable(self,num):
+        """Generates human readable string for a number.
+        Returns: A string form of the number using size abbreviations (KB, MB, etc.) """
+        i = 0
+        while i+1 < len(EXP_STRINGS) and num >= (2 ** EXP_STRINGS[i+1][0]):
+            i += 1
+            rounded_val = round(float(num) / 2 ** EXP_STRINGS[i][0], 2)
+        return '%s %s' % (rounded_val, EXP_STRINGS[i][1])
 
-    def resize(self,size): # FIXME change alignments and 
+
+    def resize(self,size): 
         altura = size[1]
         anchura = size[0]
         
-        k = anchura / 1920.0 # we assume 16:9 or 4:3?
+        k = anchura / 1920.0 
         self.proportion = k
         
         def relabel(label,size,bold):           
@@ -132,5 +138,18 @@ class StatusBarClass(gtk.Box):
        
         return True
 
+def GetFreeSpace(directorio): # SEND TO UTILS
+        stats = os.statvfs(directorio)
+        freespace=(stats.f_bsize * stats.f_bavail)
+        return freespace,make_human_readable(freespace)
+
+def make_human_readable(num):
+        """Generates human readable string for a number.
+        Returns: A string form of the number using size abbreviations (KB, MB, etc.) """
+        i = 0
+        while i+1 < len(EXP_STRINGS) and num >= (2 ** EXP_STRINGS[i+1][0]):
+            i += 1
+            rounded_val = round(float(num) / 2 ** EXP_STRINGS[i][0], 2)
+        return '%s %s' % (rounded_val, EXP_STRINGS[i][1])
 
 gobject.type_register(StatusBarClass)

@@ -11,8 +11,6 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-
-
 """
 Unit tests for `galicaster.mediapackage` module.
 """
@@ -165,7 +163,7 @@ class TestFunctions(TestCase):
         self.assertEqual(mp.title, "Opening a folder...")
         self.assertEqual(mp.getIdentifier(), "dae91194-2114-481b-8908-8a8962baf8dc")
         self.assertEqual(mp.status, 0)
-        self.assertEqual(mp.notes, u"Nota de Prueba <?php Caracteres ñ I'm raros >")
+        self.assertEqual(mp.properties['notes'], u"Nota de Prueba <?php Caracteres ñ I'm raros >")
 
 
     def test_mediapackage_size(self):
@@ -193,3 +191,16 @@ class TestFunctions(TestCase):
                           u'event.title': 'Clase 2',
                           u'event.location': 'GC-Etna',
                           u'org.opencastproject.workflow.config.captionHold': 'false'})
+
+
+    def test_mp_and_operations(self):
+        xml = path.join(self.baseDir, 'manifest.xml')
+        mp = fromXML(xml)
+        self.assertEqual(0, len(mp.operation))
+
+
+    def test_properties(self):
+        mp = mediapackage.Mediapackage()
+        mp.title = 'title'
+        self.assertEqual(mp.title, 'title')
+        self.assertEqual(mp.metadata_episode['title'], 'title')

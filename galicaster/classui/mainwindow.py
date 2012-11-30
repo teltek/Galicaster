@@ -12,13 +12,12 @@
 # San Francisco, California, 94105, USA.
 
 
-from os import path
 import gtk
-import gst
 import logging
 
 from galicaster import __version__
 from galicaster.classui import message
+from galicaster.classui import get_image_path
 
 log = logging.getLogger()
 
@@ -29,45 +28,105 @@ class GCWindow(gtk.Window):
     __gtype_name__ = 'GCWindow'
     __def_win_size__ = (1024, 768)
 
-    def __init__(self, dispatcher=None ):  
+    def __init__(self, dispatcher=None, state=None):  
         gtk.Window.__init__(self,gtk.WINDOW_TOPLEVEL)
         self.set_size_request(*self.__def_win_size__) #FIXME make it unchangable
-        self.set_title("GaliCASTER " + __version__ );        
-        self.connect('delete_event', lambda *x: self.on_delete_event())    
+        self.full_size = self.discover_size()
+        self.set_title("GaliCASTER " + __version__ );    
+        self.set_decorated(False)
+        self.set_position(gtk.WIN_POS_CENTER)
+        self.is_fullscreen = True
+
+        #pixbuf = gtk.gdk.pixbuf_new_from_file(get_image_path('galicaster.svg'))
+        pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(get_image_path('galicaster.svg'),48,48)        
+        pixbuf = pixbuf.scale_simple(128, 128, gtk.gdk.INTERP_BILINEAR)
+        self.set_icon(pixbuf)
+        self.connect('delete_event', lambda *x: self.__on_delete_event())    
         self.dispatcher = dispatcher
         if self.dispatcher:
             self.dispatcher.connect('galicaster-quit',self.close)
-        
+
+        self.nbox = gtk.Notebook()
+        self.nbox.set_show_tabs(False)
+        self.add(self.nbox)
+
 
     def start(self):
+        
         self.fullscreen()
-        self.is_fullscreen = True
+        self.resize_childs()
         self.show_all()
+        
+    def toggle_fullscreen(self, other = None):
+        if self.is_fullscreen:
+            self.is_fullscreen = False
+            self.unfullscreen()
+        else:
+            self.is_fullscreen = True
+            self.fullscreen()
+        self.resize_childs()
+
+    def resize_childs(self):
+        nbook = self.get_child()
+        current = nbook.get_nth_page(self.get_current_page())
+        current.resize()
+
+        for child in nbook.get_children():
+            if child is current:
+                continue
+            child.resize()            
+
+    def get_size(self):
+        if self.is_fullscreen:
+            return self.full_size
+        else:
+            return self.__def_win_size__
+
+    def discover_size(self):
+        size = (1920,1080)
+        try:
+            root = gtk.gdk.get_default_root_window()
+            w = root.get_screen().get_width()
+            h = root.get_screen().get_height()
+            size = (w,h)
+        except:
+            print "Error getting screen size, set to defaul 1080p"
+            log.error("Unable to get root screen size")
+            
+        return size
+        
+
+    def insert_page(self, page, label, cod):
+        self.nbox.insert_page(page, gtk.Label(label), cod) 
+
+        
+    def set_current_page(self, cod):
+        self.nbox.set_current_page(cod)
 
 
-    def on_delete_event(self):
+    def get_current_page(self):
+        return self.nbox.get_current_page()
+
+
+    def __on_delete_event(self):
         log.debug("Delete Event Received")
         if self.dispatcher:
             self.dispatcher.emit('galicaster-quit')
 
 
-    def close(self, signal ):
+    def close(self, signal):
         text = {"title" : "Galicaster",
                 "main" : "Are you sure you want to QUIT? ", 
                 }
 
         buttons = ( gtk.STOCK_QUIT, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
-        size = [ self.get_screen().get_width(), self.get_screen().get_height() ]
-        warning = message.PopUp(message.WARNING, text, size, 
-                                     self, buttons)
+        warning = message.PopUp(message.WARNING, text,
+                                self, buttons)
 
         if warning.response in message.POSITIVE:
             log.info("Quit Galicaster")
             if self.dispatcher:
                 self.dispatcher.emit('galicaster-notify-quit')
-            gst.info("Quit Galicaster")
             gtk.main_quit()
         else:
             log.info("Cancel Quit")
-
-

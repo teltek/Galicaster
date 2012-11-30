@@ -13,7 +13,6 @@
 
 
 import gtk
-import gtk
 import datetime
 from os import path
 import gobject
@@ -33,7 +32,6 @@ metadata ={"title": "Title:", "creator": "Presenter:", "ispartof": "Course/Serie
            "Description:":"description", "Subject:":"subject", "Language:":"language", "Identifier:":"identifier", 
            "Contributor:":"contributor", "Start Time:":"created"}
 
-RESOLUTION = [1920, 1080]
 NO_SERIES  = "NO SERIES ASSIGNED"
 DEFAULT_SERIES = "DEFAULT SERIES"
 
@@ -46,31 +44,24 @@ class MetadataClass(gtk.Widget):
 
 
     def __init__(self,package = None, parent = None): 
-        # FIXME include parent on GClass
 
-        size = RESOLUTION
+        parent = context.get_mainwindow()
+        size = parent.get_size()
+            
         self.par = parent
-        if parent != None:
-            screen=parent.get_toplevel().get_screen()
-            size = [screen.get_width(), screen.get_height()]
 
         altura = size[1]
-        anchura = size[0]
-        
+        anchura = size[0]        
         k1 = anchura / 1920.0                                      
         k2 = altura / 1080.0
-
         self.wprop = k1
         self.hprop = k2
 
-
         gui = gtk.Builder()
         gui.add_from_file(get_ui_path('metadata.glade'))
-        #self.gui=gui
 
         dialog = gui.get_object("metadatadialog")
         dialog.set_property("width-request",int(anchura/2.2))
-        #dialog.set_property("height-request",int(altura/3.0))
         dialog.set_property("border-width",int(anchura/50.0))
 
         if parent != None:
@@ -84,21 +75,18 @@ class MetadataClass(gtk.Widget):
 
         modification = "bold "+str(int(k2*25))+"px"        
         title.modify_font(pango.FontDescription(modification))
-        talign.set_padding(int(k2*40.0),int(k2*40.0),0,0)
+        talign.set_padding(int(k2*40),int(k2*40),0,0)
         mod2 = str(int(k1*35))+"px"        
         sl.modify_font(pango.FontDescription(mod2))
         cl.modify_font(pango.FontDescription(mod2))
 
-        #b1 = gui.get_object('savebutton')
-        #b2 = gui.get_object('noeditbutton')
-        #b1.set_property("width-request",int(k2*30))
-        #b2.set_property("width-request",int(k2*30))
-
 
         self.fill_metadata(table, package)
+
+
+
         
         # Close Metadata dialog and update
-        #gtk.RESPOSE_OK = -8
         if dialog.run() == -8:
             self.update_metadata(table,package)
 
@@ -117,9 +105,9 @@ class MetadataClass(gtk.Widget):
             t=gtk.Label(metadata[meta])
             t.set_justify(gtk.JUSTIFY_LEFT)
             t.set_alignment(0,0)
-            t.set_width_chars(int(self.wprop*15))
             modification = str(int(self.hprop*16))+"px"        
             t.modify_font(pango.FontDescription(modification))
+            t.set_width_chars(15)
             
             d=gtk.Entry()
             d.set_name(meta)
@@ -200,41 +188,37 @@ class MetadataClass(gtk.Widget):
                         mp.setSubjects(list())
                 elif child.name == "ispartof":
                     result=child.get_active_text()
+                    model = child.get_model()
+                    iterator = model.get_iter_first()
+                    while iterator != None:
+                        if model[iterator][0] == result:
+                            break
+                        iterator = model.iter_next(iterator)                        
+                    identifier = model[iterator][1]
                     series = None
                     if result != NO_SERIES:
-                        series = listseries.getSeriesbyName(result)
+                        series = listseries.getSeriesbyId(identifier)
 
                     if series != None:
-                        mp.metadata_series["identifier"]=series["id"]
-                        mp.metadata_series["title"]=series["name"]
-                        mp.series=series["id"]
-                        mp.series_title=series["name"]
+                        mp.series = series["id"]
+                        mp.series_title = series["name"]
 
-                        series = False
-                        for catalog in mp.getCatalogs():
-                            if catalog.flavor ==  "dublincore/series":
-                                series = True
-                        if not series:
+                        if not mp.getCatalogs("dublincore/series") and mp.getURI():
                             new_series = mediapackage.Catalog(path.join(mp.getURI(),"series.xml"),mimetype="text/xml",flavor="dublincore/series")
                             mp.add(new_series)
 
-                    else:
-                        mp.metadata_series["identifier"]=None
-                        mp.metadata_series["title"]=None
-                        mp.series=None
-                        mp.series_title=None
+                    else: 
+                        mp.series = None
+                        mp.series_title = None
 
-                        for catalog in mp.getCatalogs():
-                            if catalog.flavor ==  "dublincore/series":
-                                mp.remove(catalog)
-                                break
+                        catalog= mp.getCatalogs("dublincore/series")
+                        if catalog:
+                            mp.remove(catalog[0])
 
                 else:
                     mp.metadata_episode[child.name]=child.get_text()
 
-        # TODO do this internally
         mp.setTitle(mp.metadata_episode['title'])
-        #mp.setIdentifier(mp.metadata_episode['identifier'])
         mp.setLanguage(mp.metadata_episode['language'])
         mp.metadata_episode['creator']=mp.creators
         mp.metadata_episode['contributor']=mp.contributors
@@ -275,7 +259,6 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
         if listing != None:
             for n, m in listing.iteritems():
                 liststore.append([m,n]) # NAME ID
-
   
         liststore.set_sort_func(0,self.sorting,text) # Put text=NO_SERIES first
         liststore.set_sort_column_id(0,gtk.SORT_ASCENDING)

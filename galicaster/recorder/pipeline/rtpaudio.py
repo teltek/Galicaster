@@ -16,7 +16,9 @@ import logging
 import gobject
 import gst
 from os import path
-import galicaster
+
+from galicaster.recorder import base
+from galicaster.recorder import module_register
 
 log = logging.getLogger()
 
@@ -28,13 +30,76 @@ pipestr = ("rtspsrc debug=false name=gc-rtp-audio-src ! "
            "volume name=gc-rtp-audio-volume ! fakesink name=gc-rtp-audio-preview "
            "tee-aud. ! queue ! valve drop=false name=gc-rtp-audio-valve ! "
            "audioconvert ! audioamplify name=gc-rtp-audio-amplify amplification=1 ! "
-           "faac ! mp4mux ! "
+           "lame ! "
            "filesink name=gc-rtp-audio-sink async=false ")
 
-class GCrtpaudio(gst.Bin):
+class GCrtpaudio(gst.Bin, base.Base):
 
+    order = ["name", "flavor", "location", "file", 
+             "vumeter", "player","amplification",
+             "volume", "pattern", "frequency",
+             ]
+    
     gc_parameters = {
         # http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-good-plugins/html/gst-plugins-good-plugins-rtspsrc.html
+        "name": {
+            "type": "text",
+            "default": "IP-audio",
+            "description": "Name assigned to the device",
+            },
+        "flavor": {
+            "type": "flavor",
+            "default": "presenter",
+            "description": "Matterhorn flavor associated to the track",
+            },
+        "location": {
+            "type": "device",
+            "default": "rtsp://viewer:opencastZen@129.177.9.29:554/axis-media/media.amp?resolution=160x120",
+            "description": "Device's mount point of the MPEG output",
+            },
+        "file": {
+            "type": "text",
+            "default": "sound.mp3",
+            "description": "The file name where the track will be recorded.",
+            },
+        "vumeter": {
+            "type": "boolean",
+            "default": True,
+            "description": "Activate Level message",
+            },
+        "player": {
+            "type": "boolean",
+            "default": True,
+            "description": "Enable sound play",
+            },
+        "amplification": {
+            "type": "float",
+            "default": 1.0,
+            "range": (0,10),
+            "description": "Audio amplification",
+            },
+        "volume": {
+            "type": "float",
+            "default": 0.5,
+            "range": (0,1),
+            "description": "Audio volume",
+            },
+        "pattern": {
+            "type": "select",
+            "default": "pink-noise",
+            "options": ["sine", "square", "saw", "triangle",
+                        "white-noise", "pink-noise", "sine-table"
+                        "ticks", "gaussian-noise", "red-noise"
+                        "blue-noise", "violet-noise"
+                        ],                                  
+            "description" : "Premade samples to test audio",
+            },                      
+        "frequency":  {
+            "type": "integer",
+            "default" : 440,
+            "range" : (0, 20000),
+            "description": "Reference frequency of the sample, 0-20000 Hz"
+            },
         }
 
     __gstdetails__ = (
@@ -43,56 +108,59 @@ class GCrtpaudio(gst.Bin):
         "Add descripcion",
         "UiB"
         )
+    is_pausable = True
+    has_audio = True
+    has_video = False
 
-    def __init__(self, name = None, devicesrc = None, filesink = None, options = {}): 
+    def __init__(self, options={}):
+        base.Base.__init__(self, options)
+        gst.Bin.__init__(self, self.options['name'])
+        
         global pipestr
 
-        if name == None:
-            name = "rtp-audio"
+        if self.options['name'] == None:
+            self.options['name'] = "rtp"
 
         # 2/3-2012 edpck@uib.no use pipestr from conf.ini if it exists
-        if "pipestr" in options:
-            pipestr = options["pipestr"].replace("\n", " ")
+        if "pipestr" in self.options:
+           pipestr = self.options["pipestr"].replace("\n", " ")
+        
+        gst.Bin.__init__(self, self.options['name'])
 
-        gst.Bin.__init__(self, name)
+        aux = pipestr.replace("gc-rtp-audio-preview", "sink-" + self.options['name'])
 
-        bin = gst.parse_bin_from_description(pipestr.replace("gc-rtp-audio-preview", "sink-" + name), False)
+        bin = gst.parse_bin_from_description(aux, False)
         self.add(bin)
 
-        if devicesrc != None:
-            sink = self.get_by_name('gc-rtp-audio-src')
-            sink.set_property('location', devicesrc)
+        self.set_value_in_pipeline(self.options['location'], 'gc-rtp-audio-src', 'location')
+        self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-rtp-audio-sink', 'location')
+        
+        for opt in ['debug', 'protocols', 'retry', 'timeout', 'latency', 'tcp-timeout', 'connection-speed', 'nat-method', 'do-rtcp', 'proxy', 'rtp-blocksize', 'user-id', 'user-pw', 'buffer-mode', 'port-range', 'udp-buffer-size']:
+            if opt in options:
+                self.set_value_in_pipeline(self.options[opt], 'gc-rtp-audio-src', opt)
 
-            for opt in ['debug', 'protocols', 'retry', 'timeout', 'latency', 'tcp-timeout', 'connection-speed', 'nat-method', 'do-rtcp', 'proxy', 'rtp-blocksize', 'user-id', 'user-pw', 'buffer-mode', 'port-range', 'udp-buffer-size']:
-                if opt in options:
-                    sink.set_property(opt, options[opt])
+        if "vumeter" in self.options and self.options["vumeter"] == "False":
+            self.get_by_name("gc-rtp-audio-level").set_property("message", False) 
 
-        if filesink != None:
-            sink = self.get_by_name("gc-rtp-audio-sink")
-            sink.set_property("location", filesink)
-
-        if "vumeter" in options:
-            level = self.get_by_name("gc-rtp-audio-level")
-            if options["vumeter"] == "False":
-                level.set_property("message", False ) 
-
-        if "amplification" in options:
-            ampli = self.get_by_name("gc-rtp-audio-amplify")
-            ampli.set_property("amplification", float(options["amplification"]))
+        if "amplification" in self.options:
+            self.get_by_name("gc-rtp-audio-amplify").set_property("amplification", float(self.options["amplification"]))
+    
+    def changeValve(self, value):
+        self.get_by_name('gc-rtp-audio-valve').set_property('drop', value)
 
     def getValve(self):
         return self.get_by_name("gc-rtp-audio-valve")
 
     def getVideoSink(self):
         return self.get_by_name("gc-rtp-audio-preview")
+       
 
     def send_event_to_src(self, event):
-        src = self.get_by_name("gc-rtp-audio-src")
-        src.send_event(event)        
+        self.get_by_name("gc-rtp-audio-src").send_event(event)        
 
     def mute_preview(self, value):
-        element = self.get_by_name("gc-rtp-audio-volume")
-        element.set_property("mute", value)
+        self.get_by_name("gc-rtp-audio-volume").set_property("mute", value)
 
 gobject.type_register(GCrtpaudio)
 gst.element_register(GCrtpaudio, "gc-rtp-audio-bin")
+module_register(GCrtpaudio, 'rtpaudio')

@@ -20,6 +20,7 @@ import socket
 #IDEA use cStringIO to improve performance
 from StringIO import StringIO
 import pycurl
+import json
 
 INIT_ENDPOINT = '/welcome.html'
 ME_ENDPOINT = '/info/me.json'
@@ -28,13 +29,14 @@ SETSTATE_ENDPOINT = '/capture-admin/agents/{hostname}'
 SETCONF_ENDPOINT = '/capture-admin/agents/{hostname}/configuration'
 INGEST_ENDPOINT = '/ingest/addZippedMediaPackage'
 ICAL_ENDPOINT = '/recordings/calendars?agentid={hostname}'
-SERIES_ENDPOINT = '/series/series.json'
+#SERIES_ENDPOINT = '/series/series.json'
+SERIES_ENDPOINT = '/series/series.json?count=100'
 
-log = logging.getLogger()
+logger = logging.getLogger()
 
 class MHHTTPClient(object):
     
-    def __init__(self, server, user, password, hostname=None, address=None, 
+    def __init__(self, server, user, password, hostname='galicaster', address=None, 
                  workflow='full', workflow_parameters={'trimHold':'true'}):
         """
         Arguments:
@@ -50,7 +52,7 @@ class MHHTTPClient(object):
         self.server = server
         self.user = user
         self.password = password
-        self.hostname = hostname or ('GC-' + socket.gethostname())
+        self.hostname = hostname
         self.address = address or socket.gethostbyname(socket.gethostname())
         self.workflow = workflow
         if isinstance(workflow_parameters, basestring):
@@ -59,7 +61,7 @@ class MHHTTPClient(object):
             self.workflow_parameters = workflow_parameters
 
 
-    def __call(self, method, endpoint, params={}, postfield={}, urlencode=True):
+    def __call(self, method, endpoint, params={}, postfield={}, urlencode=True, timeout=True):
         c = pycurl.Curl()
         b = StringIO()
 
@@ -68,6 +70,10 @@ class MHHTTPClient(object):
 
         c.setopt(pycurl.URL, self.server + endpoint.format(**params))
         c.setopt(pycurl.FOLLOWLOCATION, False)
+        c.setopt(pycurl.CONNECTTIMEOUT, 2)
+        if timeout: 
+            c.setopt(pycurl.TIMEOUT, 2)
+        c.setopt(pycurl.NOSIGNAL, 1)
         c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_DIGEST)
         c.setopt(pycurl.USERPWD, self.user + ':' + self.password)
         c.setopt(pycurl.HTTPHEADER, ['X-Requested-Auth: Digest'])
@@ -79,11 +85,14 @@ class MHHTTPClient(object):
                 c.setopt(pycurl.HTTPPOST, postfield)
         c.setopt(pycurl.WRITEFUNCTION, b.write)
         #c.setopt(pycurl.VERBOSE, True)
-        c.perform()
+        try:
+            c.perform()
+        except:
+            raise RuntimeError, 'connect timed out!'
         status_code = c.getinfo(pycurl.HTTP_CODE)
         c.close() 
         if status_code != 200:
-            log.error('call error in %s, status code {%r}', 
+            logger.error('call error in %s, status code {%r}', 
                       self.server + endpoint.format(**params), status_code)
             raise IOError, 'Error in Matterhorn client'
         return b.getvalue()
@@ -101,6 +110,9 @@ class MHHTTPClient(object):
 
 
     def setstate(self, state):
+        """
+        Los posibles estados son: shutting_down, capturing, uploading, unknown, idle
+        """
         return self.__call('POST', SETSTATE_ENDPOINT, {'hostname': self.hostname}, 
                            {'address': self.address, 'state': state})
 
@@ -178,8 +190,11 @@ class MHHTTPClient(object):
 
     def ingest(self, mp_file, workflow=None, workflow_instance=None, workflow_parameters=None):
         postdict = self._prepare_ingest(mp_file, workflow, workflow_instance, workflow_parameters)
-        return self.__call('POST', INGEST_ENDPOINT, {}, postdict.items(), False)
+        return self.__call('POST', INGEST_ENDPOINT, {}, postdict.items(), False, False)
 
 
     def getseries(self):
-        return self.__call('GET', SERIES_ENDPOINT)
+        """ Get all series upto 100"""
+        # TODO make a workaround to get all
+        return self.__call('GET', SERIES_ENDPOINT,100)
+        

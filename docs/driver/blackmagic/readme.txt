@@ -60,3 +60,9 @@ You will receive messages like:
 $ 02:00.0 Multimedia video controller: Blackmagic Design Device a11b
 $ blackmagic 2082944 1
 $ /dev/blackmagic/card0
+
+URL's
+-----------------------------------
+http://blackmagic-design.com/media/3913819/Blackmagic_Desktop_Video_Linux_9.5.tar.gz
+http://blackmagic-design.com/media/3397912/Blackmagic_Desktop_Video_Linux_9.2.tar.gz
+http://blackmagic-design.com/media/2432845/Blackmagic_Desktop_Video_Linux_9.0.tar.gz
