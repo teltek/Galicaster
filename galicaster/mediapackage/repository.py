@@ -45,6 +45,7 @@ class Repository(object):
         self.folder_template = folder_template
 
         self.create_repo(hostname)
+        self.save_crash_recordings()
 
         self.__list = dict()
         self.refresh(True)
@@ -67,6 +68,10 @@ class Repository(object):
                 conf.set('repository', 'hostname', hostname)
                 conf.write(configfile)
         
+
+    def save_crash_recordings(self):
+        pass
+
 
     def refresh(self, check_inconsistencies=False):
         self.__list.clear()

@@ -301,3 +301,22 @@ class TestFunctions(TestCase):
         repo.add(mp3)
         self.assertEqual(mp3.getURI(), os.path.join(repo.root, 'test_3'))
 
+
+    def test_save_temprec_on_crash(self):
+        repo = repository.Repository(self.tmppath, 'test', 'test')
+        
+        for file_name in ('CAMERA.avi', 'SCREEN.avi'):
+            f = open(repo.get_rectemp_path(file_name), 'w')
+            f.write("DATA" * 1000)
+            f.close()
+        
+        # After crash. Create a new repo
+        repo = repository.Repository(self.tmppath, 'test', 'test')
+        num_file = 0
+        for name in os.listdir(repo.get_rectemp_path()):
+            if os.path.isfile(os.path.join(repo.get_rectemp_path(), name)):
+                num_file += 1
+        self.assertEqual(num_file, 0)
+
+        
+        
