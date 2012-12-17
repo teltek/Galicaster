@@ -68,9 +68,9 @@ class GCfirewire(gst.Bin, base.Base):
             "type": "select",
             "default": "dv1394src",
             "options": {
-                "dv1394src": "dv",
-                "hdv1394src": "hdv",
-                "dc1394src": "iidc",
+                "dv" : "dv1394src",
+                "hdv" : "hdv1394src",
+                "iidc" : "dc1394src",
                 },
             "description": "Select video format",
             },
