@@ -38,9 +38,15 @@ Ahora debe instalar el driver propio de la tarjeta. Para hacerlo, primero descar
 http://blackmagic-design.com/support/
 Choose 'Linux', your 'card series' and 'your model' and press 'Search'. Download the latest 'Desktop Video for Linux'.
 
+Para borrar versiones viejas:
+
+$ apt-get --purge remove  mediaexpress
+$ apt-get --purge remove  desktopvideo
+
 Para instalarlo ejectute:
 
-$ dpkg -i <name_of_driver_package.deb>
+$ dpkg -i desktopvideo-9.6.9-amd64.deb
+$ dpkg -i mediaexpress-3.2-amd64.deb
 $ modprobe blackmagic
 
 Existe una guía más completa sobre como instalar el driver e información de interés en:
@@ -67,4 +73,4 @@ URL's
 http://blackmagic-design.com/media/3913819/Blackmagic_Desktop_Video_Linux_9.5.tar.gz
 http://blackmagic-design.com/media/3397912/Blackmagic_Desktop_Video_Linux_9.2.tar.gz
 http://blackmagic-design.com/media/2432845/Blackmagic_Desktop_Video_Linux_9.0.tar.gz
-
+http://software.blackmagicdesign.com/DesktopVideo/Blackmagic_Desktop_Video_Linux_9.6.9.tar.gz
