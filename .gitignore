@@ -32,3 +32,4 @@ tests/resources/profile/folder/
 
 conf/
 uib-conf-dist/
+conf-dist.ini
