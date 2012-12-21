@@ -2,8 +2,8 @@
 
 # kill galicaster
 echo "" >> /tmp/restart-galicaster.log
-echo "----Running restart script----"  >> /tmp/restart-galicaster.log
-date >> /tmp/restart-galicaster.log
+echo "----Running restart script----> `date`"  >> /tmp/restart-galicaster.log
+date
 echo "Killing Galicaster"
 pkill -u $USER python
 
@@ -12,4 +12,4 @@ sleep 20
 
 # start galicaster again
 echo "Restarting Galicaster"
-/opt/galicaster/run_galicaster.py &
+/opt/galicaster/run_galicaster.py >> /tmp/restart-galicaster.log &
