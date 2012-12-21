@@ -29,6 +29,11 @@ gst-launch-0.10 -v v4l2src device=/dev/video2 ! video/x-raw-yuv, width=704, heig
 #TEST H264 352x288
 gst-launch-0.10 -v filesrc location=/dev/video3 ! h264parse ! ffdec_h264 ! ffmpegcolorspace ! xvimagesink
 
+#TEST H264 704x576
+v4l2-ctl -d /dev/video3 -v width=704,height=576,pixelformat=MPEG
+gst-launch-0.10 -v filesrc location=/dev/video3 ! h264parse ! ffdec_h264 ! ffmpegcolorspace ! xvimagesink
+
+
 
 URL'S
 --------------------------------------
