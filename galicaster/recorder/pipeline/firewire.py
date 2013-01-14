@@ -21,7 +21,7 @@ from os import path
 
 from galicaster.recorder import base
 
-pipestr = ( ' dv1394src name=gc-firewire-src ! tee name=gc-firewire-maintee ! '
+pipestr = ( ' dv1394src use-avc=false name=gc-firewire-src ! tee name=gc-firewire-maintee ! '
             ' queue ! dvdemux name=gc-firewire-demuxer ! '
             ' level name=gc-firewire-level message=true interval=100000000 ! '
             ' volume name=gc-firewire-volume ! alsasink sync=false name=gc-firewire-audio-sink '
