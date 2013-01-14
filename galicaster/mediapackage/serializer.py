@@ -270,7 +270,7 @@ def set_episode(mp):
                 continue
             elif type(mp.metadata_episode[name]) is datetime:
                 created = doc.createElement("dcterms:" + name)
-                text = doc.createTextNode(mp.metadata_episode[name].isoformat())
+                text = doc.createTextNode(mp.metadata_episode[name].isoformat() + "Z")
                 created.appendChild(text)
                 xml.appendChild(created)
             elif type(mp.metadata_episode[name]) is not list:

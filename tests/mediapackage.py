@@ -169,7 +169,7 @@ class TestFunctions(TestCase):
     def test_mediapackage_size(self):
         xml = path.join(self.baseDir, 'manifest.xml')
         mp = fromXML(xml)
-        self.assertEqual(mp.getSize(), 597)
+        self.assertEqual(mp.getSize(), 598)
 
 
     def test_mediapackage_get_oc_capture_agent_property(self):

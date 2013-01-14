@@ -628,7 +628,7 @@ class RecorderClassUI(gtk.Box):
                     self.current_mediapackage = None
                     status.set_text("")
                 else:
-                    status.set_text("Stopping on "+self.time_readable(dif+one_second))
+                    status.set_text("Stopping in "+self.time_readable(dif+one_second))
                     if event_type.get_text() != CURRENT_TEXT:
                         event_type.set_text(CURRENT_TEXT) 
                     if title.get_text() != self.current.title:
@@ -652,7 +652,7 @@ class RecorderClassUI(gtk.Box):
                     event_type.set_text(NEXT_TEXT)
                 if title.get_text() != self.next.title:
                     title.set_text(self.next.title)
-                status.set_text("Starting on " + self.time_readable(dif))
+                status.set_text("Starting in " + self.time_readable(dif))
 
                 if dif < datetime.timedelta(0,TIME_RED_START):
                     if not changed:
