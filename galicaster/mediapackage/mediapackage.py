@@ -29,7 +29,7 @@ from xml.dom import minidom
 from galicaster.mediapackage.utils import _checknget, read_ini
 
 DCTERMS = ['title', 'creator', 'isPartOf', 'description', 'subject', 
-           'language', 'identifier', 'contributor', 'created', 'temporal']
+           'language', 'contributor', 'created', 'temporal']
 
 # Mediapackage Status
 NEW = 0

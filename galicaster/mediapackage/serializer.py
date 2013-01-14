@@ -24,7 +24,7 @@ from os import path,system
 from xml.dom import minidom
 
 DCTERMS = ['title', 'creator', 'isPartOf', 'description', 'subject', 
-           'language', 'identifier', 'contributor', 'created', 'temporal']
+           'language', 'contributor', 'created', 'temporal']
 
 logger = logging.getLogger()
 
