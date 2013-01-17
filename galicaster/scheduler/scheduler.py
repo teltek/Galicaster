@@ -68,6 +68,7 @@ class Scheduler(object):
     def do_timers_long(self, sender):
         if self.net:
             self.proccess_ical()
+            self.dispatcher.emit('after-process-ical')
         for mp in self.repo.get_next_mediapackages():
             self.__create_new_timer(mp)
 
