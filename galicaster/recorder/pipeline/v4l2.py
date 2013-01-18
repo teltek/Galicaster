@@ -27,9 +27,7 @@ pipestr = (' v4l2src name=gc-v4l2-src ! capsfilter name=gc-v4l2-filter ! gc-v4l2
            ' videorate ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! '
            ' tee name=tee-cam2  ! queue !  xvimagesink async=false qos=false name=gc-v4l2-preview'
            ' tee-cam2. ! queue ! valve drop=false name=gc-v4l2-valve ! ffmpegcolorspace ! queue ! '
-           #' xvidenc bitrate=50000000 ! queue ! avimux ! '
-           #' x264enc pass=5 quantizer=22 speed-preset=4 profile=1 ! queue ! avimux ! '
-           ' ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000 ! queue ! avimux ! '
+           ' gc-v4l2-enc ! queue ! gc-v4l2-mux ! '
            ' queue ! filesink name=gc-v4l2-sink async=false')
 
 
@@ -37,7 +35,8 @@ class GCv4l2(gst.Bin, base.Base):
 
 
     order = ["name","flavor","location","file","caps", 
-             "videocrop-left","videocrop-right", "videocrop-top", "videocrop-bottom"]
+             "videocrop-left","videocrop-right", "videocrop-top", "videocrop-bottom"
+             "encoder", "muxer"]
     gc_parameters = {
         "name": {
             "type": "text",
@@ -88,6 +87,17 @@ class GCv4l2(gst.Bin, base.Base):
             "range": (0,200),
             "description": "Bottom  Cropping",
             },
+        "encoder": {
+            "type": "text",
+            "default": "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000",
+            #Other examples: "xvidenc bitrate=50000000" or "x264enc pass=5 quantizer=22 speed-preset=4 profile=1"
+            "description": "Gstreamer encoder element used in the bin",
+            },
+        "muxer": {
+            "type": "text",
+            "default": "avimux",
+            "description": "Gstreamer encoder muxer used in the bin",
+            },
         }
     
     is_pausable = True
@@ -105,7 +115,10 @@ class GCv4l2(gst.Bin, base.Base):
         base.Base.__init__(self, options)
         gst.Bin.__init__(self, self.options['name'])
 
-        aux = pipestr.replace('gc-v4l2-preview', 'sink-' + self.options['name'])
+        aux = (pipestr.replace('gc-v4l2-preview', 'sink-' + self.options['name'])
+                      .replace('gc-v4l2-enc', self.options['encoder'])
+                      .replace('gc-v4l2-mux', self.options['muxer']))
+
         if 'image/jpeg' in self.options['caps']:
             aux = aux.replace('gc-v4l2-dec', 'jpegdec ! queue !')
         else:

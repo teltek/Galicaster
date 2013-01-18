@@ -27,9 +27,7 @@ videostr = ( ' decklinksrc connection=sdi mode=12 name=gc-blackmagic-src ! '
              ' tee name=tee-cam2  ! queue ! ffmpegcolorspace ! xvimagesink async=false sync=false qos=false name=gc-blackmagic-preview'
              #REC VIDEO
              ' tee-cam2. ! queue ! valve drop=false name=gc-blackmagic-valve ! ffmpegcolorspace ! '
-             #' xvidenc bitrate=50000000 ! queue ! avimux name=gc-blackmagic-muxer ! '
-             ' x264enc quantizer=22 speed-preset=2 profile=1 ! queue ! avimux name=gc-blackmagic-muxer ! '
-             #' ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000 ! queue ! avimux name=gc-blackmagic-muxer ! '
+             ' gc-blackmagic-enc ! queue ! gc-blackmagic-mux name=gc-blackmagic-muxer ! '
              ' queue ! identity name=gc-blackmagic-idend ! filesink name=gc-blackmagic-sink async=false' 
              )
 audiostr= (
@@ -40,7 +38,7 @@ audiostr= (
             ' volume name=gc-blackmagic-volume ! alsasink sync=false name=gc-blackmagic-audio-preview '
             # REC AUDIO
             ' gc-blackmagic-audiotee. ! queue ! valve drop=false name=gc-blackmagic-audio-valve ! '
-            ' audioconvert ! lamemp3enc target=1 bitrate=192 cbr=true ! queue ! gc-blackmagic-muxer. '
+            ' audioconvert ! gc-blackmagic-audioenc ! queue ! gc-blackmagic-muxer. '
             )
 
 
@@ -48,7 +46,8 @@ audiostr= (
 class GCblackmagic(gst.Bin, base.Base):
 
   order = ["name","flavor","location","file",
-           "input-mode","input","audio-input","subdevice"]
+           "input-mode","input","audio-input","subdevice"
+           "videoencoder", "audioencoder", "muxer"]
 
   gc_parameters = {
     "name": {
@@ -148,7 +147,22 @@ class GCblackmagic(gst.Bin, base.Base):
       "range": (0,10),
       "description": "Audio amplification",
       },
-   
+    "videoencoder": {
+      "type": "text",
+      "default": "x264enc quantizer=22 speed-preset=2 profile=1",
+      #Other examples: "xvidenc bitrate=50000000" or "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000"
+      "description": "Gstreamer encoder element used in the bin",
+      },
+    "audioencoder": {
+      "type": "text",
+      "default": "lamemp3enc target=1 bitrate=192 cbr=true",
+      "description": "Gstreamer encoder element used in the bin",
+      },
+    "muxer": {
+      "type": "text",
+      "default": "avimux",
+      "description": "Gstreamer muxer element used in the bin, NOT USE NAME ATTR",
+      },
     }
     
     
@@ -167,12 +181,20 @@ class GCblackmagic(gst.Bin, base.Base):
         base.Base.__init__(self, options)
         gst.Bin.__init__(self, self.options['name'])
 
-        audio_activated = False  if self.options["audio-input"] == "none" else True
-        pipestr = videostr+audiostr if audio_activated else videostr
-        self.has_audio = audio_activated
+        if self.options["audio-input"] == "none":
+          self.has_audio = False
+          pipestr = videostr
+        else:
+          self.has_audio = True
+          pipestr = videostr + audiostr
 
-        aux = pipestr.replace('gc-blackmagic-preview', 'sink-' + self.options['name'])
-        self.pipestr=aux
+        aux = (pipestr.replace('gc-blackmagic-preview', 'sink-' + self.options['name'])
+                      .replace('gc-blackmagic-enc', self.options['videoencoder'])
+                      .replace('gc-blackmagic-mux', self.options['muxer']))
+
+        if self.has_audio:
+          aux = aux.replace('gc-blackmagic-audioenc', self.options['audioencoder'])
+
         bin = gst.parse_bin_from_description(aux, False)
         self.add(bin)
 
@@ -192,7 +214,7 @@ class GCblackmagic(gst.Bin, base.Base):
             mode = self.options['input-mode']                                
         element.set_property('mode', mode)
 
-        if audio_activated:
+        if self.has_audio:
           try:
             audio = int(self.options['audio-input'])
           except ValueError:
@@ -207,7 +229,7 @@ class GCblackmagic(gst.Bin, base.Base):
           subdevice = self.options['subdevice']                                
         element.set_property('subdevice', subdevice)
 
-        if audio_activated:
+        if self.has_audio:
           if "player" in self.options and self.options["player"] == False:
             self.mute = True
             element = self.get_by_name("gc-blackmagic-volume")

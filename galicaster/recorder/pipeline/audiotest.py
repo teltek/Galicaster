@@ -25,13 +25,13 @@ pipestr = (" audiotestsrc name=gc-audiotest-src is-live=true freq=440 volume=0.8
            " level name=gc-audiotest-level message=true interval=100000000 ! "
            " volume name=gc-audiotest-volume ! alsasink name=gc-audiotest-preview  sync=false "
            " tee-aud. ! queue ! valve drop=false name=gc-audiotest-valve ! "
-           " audioconvert ! lamemp3enc target=1 bitrate=192 cbr=true !  queue ! filesink name=gc-audiotest-sink async=false ")
+           " audioconvert ! gc-audiotest-enc !  queue ! filesink name=gc-audiotest-sink async=false ")
 
 class GCaudiotest(gst.Bin, base.Base):
 
     order = ["name", "flavor", "location", "file", 
              "vumeter", "player","amplification",
-             "volume", "pattern", "frequency",
+             "volume", "pattern", "frequency", "encoder"
              ]
 
     gc_parameters = {
@@ -93,6 +93,11 @@ class GCaudiotest(gst.Bin, base.Base):
             "range" : (0, 20000),
             "description": "Reference frequency of the sample, 0-20000 Hz"
             },
+        "encoder": {
+            "type": "text",
+            "default": "lamemp3enc target=1 bitrate=192 cbr=true",
+            "description": "Gstreamer encoder element used in the bin",
+            },
         }
 
     is_pausable = True
@@ -110,7 +115,10 @@ class GCaudiotest(gst.Bin, base.Base):
         base.Base.__init__(self, options)
         gst.Bin.__init__(self, self.options["name"])
 
-        bin = gst.parse_bin_from_description(pipestr.replace("gc-audiotest-preview", "sink-" + self.options["name"]), True)
+        aux = (pipestr.replace("gc-audiotest-preview", "sink-" + self.options["name"])
+                      .replace("gc-audiotest-enc", self.options["encoder"]))
+
+        bin = gst.parse_bin_from_description(aux, True)
 
         self.add(bin)
 
