@@ -47,7 +47,7 @@ def check_repository(self):
 
 		scheduler = context.get_scheduler()
 		try:
-                    scheduler._Scheduler__create_new_timer(mp)
+                    scheduler.create_new_timer(mp)
 		except ValueError:
                     #log or set default value
                     pass
