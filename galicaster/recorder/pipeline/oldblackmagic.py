@@ -11,6 +11,10 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
+"""
+The 'oldblackmagic' bin is preserved to keep the support to Blackmagic capture cards with the Ubuntu version 10.10. For new versions, please use the 'blackmagic' bin.
+"""
+
 import logging
 
 import gobject
