@@ -241,8 +241,7 @@ class RecorderClassUI(gtk.Box):
         self.select_devices()
 
     def init_recorder(self):
-        self.recorder = Recorder(self.bins, self.areas) 
-        self.recorder.mute_preview(not self.focus_is_active)   
+        #self.dispatcher.disconnect(self.start_id)
         ok =self.recorder.preview()
         if ok :
             if  self.mediapackage.manual:
@@ -266,7 +265,6 @@ class RecorderClassUI(gtk.Box):
         self.select_devices()
         self.restarting = False
         return True
-
     def on_rec(self,button=None): 
         """Manual Recording """
         logger.info("Recording")
