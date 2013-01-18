@@ -90,6 +90,8 @@ class Main():
 
         self.window.start()
 
+        self.recorder.go_ahead() # allows record area to load devices and show preview
+
         if 'media_manager' in self.modules:            
             self.window.set_current_page(DIS)
         else:

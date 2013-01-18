@@ -112,12 +112,11 @@ class RecorderClassUI(gtk.Box):
         self.error_id = None
         self.error_text = None
         self.error_dialog = None
-        self.start_id = None
+        self.ok_to_show = False
 
         # BUILD
         self.recorderui = builder.get_object("recorderbox")
         self.main_area = builder.get_object("videobox")
-        self.areas=None
         self.vubox = builder.get_object("vubox")
         self.gui = builder
 
@@ -207,7 +206,10 @@ class RecorderClassUI(gtk.Box):
         for objectbin in bins:
             objectbin['path']=self.repo.get_rectemp_path()
         devices = current_profile.get_video_areas()
-        areas = self.create_drawing_areas(devices)    
+        areas = self.create_drawing_areas(devices)  
+
+        self.bins = bins
+        self.areas = areas
         
         self.error_text = None
         self.error_dialog = None
@@ -217,9 +219,10 @@ class RecorderClassUI(gtk.Box):
             "recorder-error",
             self.handle_pipeline_error)
         self.audiobar.ClearVumeter()
-        self.record = Recorder(bins, areas) 
-        self.record.mute_preview(not self.focus_is_active)   
+        if self.ok_to_show:
+            self. init_recorder()
         return True
+
 
 
     #  ------------------------- PLAYER ACTIONS ------------------------
@@ -229,38 +232,39 @@ class RecorderClassUI(gtk.Box):
         """Preview at start - Galicaster initialization"""
         logger.info("Starting Preview")
         self.conf.reload()
-
-        #self.start_id = self.dispatcher.connect("start-preview", self.on_start_button)
-        self.on_start_button()
+        self.select_devices()
         return True
 
     def on_start_button(self, button=None):
         """Triggers bin loading and start preview"""
         self.select_devices()
-        #self.dispatcher.disconnect(self.start_id)
-        #self.start_id = None
-        ok = self.record.preview()
-        if ok:
-            if self.mediapackage.manual:
+
+    def init_recorder(self):
+        self.record = Recorder(self.bins, self.areas) 
+        self.record.mute_preview(not self.focus_is_active)   
+        ok =self.record.preview()
+        if ok :
+            if  self.mediapackage.manual:
                 self.mediapackage.setTitle("Recording started at "+ datetime.datetime.now().replace(microsecond = 0).isoformat())
                 self.change_state(GC_PREVIEW)
-            else:
-                self.change_state(GC_ERROR)
+        else:
+            if self.restarting:
+                logger.error("Restarting Preview Failed")
+            self.change_state(GC_ERROR)
+
+    def go_ahead(self):
+        """Continue Recorder init create Record module and start_preview"""
+        if not self.ok_to_show:
+            self.init_recorder()
+        self.ok_to_show = True
 
     def on_restart_preview(self, button=None, element=None): 
         """Restarting preview, commanded by record""" 
         logger.info("Restarting Preview")
         self.conf.reload()
-        ok=self.select_devices()
-        if ok:
-            self.record.preview()
-            self.change_state(GC_PREVIEW)
-        else:
-            logger.error("Restarting Preview Failed")
-            self.change_state(GC_ERROR)
+        self.select_devices()
         self.restarting = False
         return True
-
 
     def on_rec(self,button=None): 
         """Manual Recording """
