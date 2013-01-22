@@ -91,11 +91,20 @@ class GCWindow(gtk.Window):
 
     def discover_size(self):
         """Retrieves the current size of the window where the application will be shown"""
-        size = (1920,1080)
+        w_def=1280
+        h_def=720
+        size = (w_def,h_def)
+        
         try:
             root = gtk.gdk.get_default_root_window()
             w = root.get_screen().get_width()
             h = root.get_screen().get_height()
+            if w> w_def:
+                w=w_def
+      
+            if h> h_def:
+                h=h_def
+                
             size = (w,h)
         except:
             print "Error getting screen size, set to defaul 1080p"
