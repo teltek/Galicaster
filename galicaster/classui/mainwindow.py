@@ -56,7 +56,7 @@ class GCWindow(gtk.Window):
 
     def start(self):
         """Shifts to fullscreen mode and triggers content resizing and drawing"""
-        self.fullscreen()
+        #self.fullscreen()
         self.resize_childs()
         self.show_all()
         
