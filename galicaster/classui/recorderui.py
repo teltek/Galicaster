@@ -318,7 +318,7 @@ class RecorderClassUI(gtk.Box):
     def on_stop(self,button):
         """Stops preview or recording and closes the Mediapakage"""
         if self.conf.get_boolean("basic", "stopdialog"):
-            text = {"title" : "Stop",
+            text = {"title" : "Recorder",
                     "main" : "Are you sure you want to\nstop the recording?",
             }
             buttons = ( "Stop", gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)

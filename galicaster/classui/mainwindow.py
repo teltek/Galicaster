@@ -128,7 +128,7 @@ class GCWindow(gtk.Window):
 
     def close(self, signal):
         """Pops up a dialog asking to quit"""
-        text = {"title" : "Galicaster",
+        text = {"title" : "Quit",
                 "main" : "Are you sure you want to QUIT? ", 
                 }
 

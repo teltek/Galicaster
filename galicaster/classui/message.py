@@ -14,6 +14,8 @@ import gtk
 import pango
 from os import path
 import gobject
+from galicaster.classui import get_image_path
+from galicaster.classui.elements.message_header import Header
 
 TEXT = {'title': None, 'main': None, 'text': None}
 INFO = gtk.STOCK_DIALOG_INFO
@@ -80,7 +82,7 @@ class PopUp(gtk.Widget):
                 secondary_area.pack_start(button,True,True)                
                 button.connect("clicked",self.force_response,response)
 
-        self.resize_buttons(secondary_area, 35)            
+        self.resize_buttons(secondary_area, 25)            
 
         dialog = self.create_ui(buttons,text, message, parent, message == ERROR, True)  
 
@@ -96,8 +98,18 @@ class PopUp(gtk.Widget):
     def create_ui(self, buttons, text, icon, parent, modifier = None, another = False):
         """Creates the dialog window and sets its configuration"""
   
-        #dialog        
-        dialog = gtk.Dialog(text.get("title","Galicaster"),parent,0,buttons)
+        #dialog                
+        dialog = gtk.Dialog(text.get("title","Galicaster"), parent, 0, buttons)
+        dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_SPLASHSCREEN)
+        dialog.set_skip_taskbar_hint(True)
+        dialog.set_modal(True)
+
+        dialog.set_keep_above(True)
+        #Taskbar
+        strip = Header(size=self.size, title=text.get("title","Galicaster"))
+        dialog.vbox.pack_start(strip, True, True, 0)
+        strip.show()
+
 
         self.dialog = dialog
         dialog.set_property('width-request',int(self.size[0]/2.5)) 
@@ -107,32 +119,39 @@ class PopUp(gtk.Widget):
         if another:
              dialog.set_property('width-request',int(self.size[0]/1.5)) 
 
-        dialog.vbox.set_property('spacing',int(self.hprop*20)) # vertical
-            
-        dialog.set_property('border-width',30) # full
+        # dialog.vbox.set_property('spacing',int(self.hprop*20)) # vertical            
+        # dialog.set_property('border-width',30) # full
         if parent != None:
-            dialog.set_position(gtk.WIN_POS_CENTER_ON_PARENT)
-            
+            dialog.set_position(gtk.WIN_POS_CENTER_ON_PARENT)    
+            dialog.set_transient_for(parent)
+            dialog.set_destroy_with_parent(True)
         else:
             dialog.set_position(gtk.WIN_POS_CENTER_ALWAYS)
         dialog.set_resizable(False)
+        
 
-        #Content
-        box = gtk.HBox(spacing=int(self.wprop*30)) # between image and text
-
+        # Content and spacing
+        bigbox = gtk.VBox(0)
+        box = gtk.HBox(spacing=int(self.wprop*10)) # between image and text
+        bigbox.pack_start(box, True, True, 
+                          int(self.hprop*10))
+                          #0)
+        bigbox.set_border_width(int(self.wprop*10))
+        dialog.vbox.set_child_packing(dialog.action_area, True, True, int(self.hprop*25), gtk.PACK_END)
+      
+        # Primary Text and icon
         label = gtk.Label(text["main"])
         font=self.set_font(str(int(self.hprop*30))+"px")
         label.set_attributes(font)
         label.set_alignment(0,0.5)
-
 
         image = gtk.Image()
         image.set_from_icon_name(icon, gtk.ICON_SIZE_DIALOG)
         image.set_pixel_size(int(self.wprop*80))
         box.pack_start(image,True,True,0)
         box.pack_start(label,True,True,0)  
-        dialog.vbox.pack_start(box, True , True ,0)
-   
+        
+        # Secondary text
         if text.has_key("text"):
             if text["text"] != None:
                 stext= gtk.Label(text["text"])
@@ -144,8 +163,11 @@ class PopUp(gtk.Widget):
                 else:
                     stext.set_alignment(0,0.5)                
                     stext.set_line_wrap(True)
-                dialog.vbox.pack_start(stext)
-                stext.show()
+                bigbox.pack_start(stext)
+
+        
+        dialog.vbox.pack_start(bigbox, True , True ,int(self.hprop*10))
+        bigbox.show_all()
 
         # Action Area
         dialog.action_area.set_layout(gtk.BUTTONBOX_SPREAD)
@@ -162,26 +184,40 @@ class PopUp(gtk.Widget):
 
         return dialog
 
-    def create_framed_lines(self, buttons, text, icon, parent):
+    def create_framed_lines(self, buttons, text, icon, parent): # TODO get commom code with create_ui
         """Creates frames arround groups of buttons"""
         dialog = gtk.Dialog(text.get("title","Galicaster"),parent,0)
+        dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_SPLASHSCREEN)
+        dialog.set_skip_taskbar_hint(True)
+        dialog.set_modal(True)
+
+        #Taskbar
+        strip = Header(size=self.size, title=text.get("title","Galicaster"))
+        dialog.vbox.pack_start(strip, True, True, 0)
+        strip.show()
+
         self.dialog = dialog
         dialog.set_property('width-request',int(self.size[0]/1.8)) # relative to screen size       
-
-        dialog.vbox.set_property('spacing',int(self.hprop*20)) # vertical
-            
-        dialog.set_property('border-width',30) # full
+                    
         if parent != None:
             dialog.set_position(gtk.WIN_POS_CENTER_ON_PARENT)
-            #dialog.set_transient_for(parent)
-            #dialog.set_destroy_with_parent(True)
-            
+            dialog.set_transient_for(parent)
+            dialog.set_destroy_with_parent(True)
         else:
             dialog.set_position(gtk.WIN_POS_CENTER_ALWAYS)
         dialog.set_resizable(False)
 
-        #Content
-        box = gtk.HBox(spacing=int(self.wprop*30)) # between image and text
+        # SPACING
+        # dialog.vbox.set_property('spacing',int(self.hprop*10)) # vertical
+
+        #Content and spacing
+        bigbox = gtk.VBox(0)
+        box = gtk.HBox(spacing=int(self.wprop*10)) # between image and text
+        bigbox.pack_start(box, True, True, 
+                          int(self.hprop*10))
+                          #0)
+        bigbox.set_border_width(int(self.wprop*10))
+        dialog.vbox.set_child_packing(dialog.action_area, True, True, int(self.hprop*15), gtk.PACK_END)
 
         label = gtk.Label(text["main"])
         font=self.set_font(str(int(self.hprop*30))+"px")
@@ -194,7 +230,6 @@ class PopUp(gtk.Widget):
         image.set_pixel_size(int(self.wprop*80))
         box.pack_start(image,True,True,0)
         box.pack_start(label,True,True,0)  
-        dialog.vbox.pack_start(box, True , True ,0)
    
         if text.has_key("text"):
             if text["text"] != None:
@@ -203,15 +238,12 @@ class PopUp(gtk.Widget):
                 stext.set_attributes(font)
                 stext.set_alignment(0.5,0.5)                
                 stext.set_line_wrap(True)
-                dialog.vbox.pack_start(stext)
-                stext.show()
+                bigbox.pack_start(stext)
 
  
         # Show
-                        
-        image.show()
-        label.show()        
-        box.show()
+        dialog.vbox.pack_start(bigbox, True , True ,int(self.hprop*10))
+        bigbox.show_all()
 
         options = gtk.HBox()
 
@@ -225,13 +257,16 @@ class PopUp(gtk.Widget):
             ingest = gtk.Frame("Ingest")
             ingest.set_label_align(0.5,0.5)
             ing_align = gtk.Alignment(0.5,0.5,0.6,0.6)
+            ing_align.set_padding(0,0,int(self.wprop*10),int(self.wprop*10))
             ing_buttons =  gtk.VButtonBox()
             ing_buttons.set_layout(gtk.BUTTONBOX_SPREAD)
-            ingest.add(ing_align)
             ing_align.add(ing_buttons)
+            ingest.add(ing_align)
+
 
         export = gtk.Frame("Export")
         exp_align = gtk.Alignment(0.5,0.5,0.7,0.7)
+        exp_align.set_padding(0,0,int(self.wprop*10),int(self.wprop*10))
         export.set_label_align(0.5,0.5)
         export_box = gtk.Table(2,2,homogeneous=True)       
         exp_align.add(export_box)
@@ -240,8 +275,8 @@ class PopUp(gtk.Widget):
         cancel_frame = gtk.Frame(" ")
         cancel_align = gtk.Alignment(0.5,0.5,0.7,0.7)
         cancel_buttons = gtk.VButtonBox()
-        cancel_frame.add(cancel_align)
         cancel_align.add(cancel_buttons)
+        cancel_frame.add(cancel_align)
         cancel_frame.set_shadow_type(gtk.SHADOW_NONE)
 
         index_down=0
@@ -270,26 +305,15 @@ class PopUp(gtk.Widget):
                         export_box.attach(button,index_up,index_up+1,0,1,gtk.EXPAND|gtk.FILL,0,
                                           int(self.wprop*5),int(self.hprop*5))
                         index_up+=1
-                button.show()
 
         if has_ingest:
-            options.pack_start(ingest)
-            ing_buttons.show()
-            ing_align.show()
-            ingest.show()
+            options.pack_start(ingest, True, False, 0)
 
-        options.pack_start(export)
-        options.pack_start(cancel_frame)
+        options.pack_start(export, True, False, 0)
+        options.pack_start(cancel_frame, True, False,  0)
 
-        cancel_buttons.show()
-        exp_align.show()
-        export_box.show()
-        cancel_align.show()
-        cancel_buttons.show()
-        export.show()
-        cancel_frame.show()
-        options.show()
-        dialog.vbox.pack_start(options, True, True)
+        dialog.vbox.pack_start(options, False, False , 0)
+        options.show_all()
 
         self.resize_buttons(options, 22, True)
         return dialog
