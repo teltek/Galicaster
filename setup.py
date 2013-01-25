@@ -112,6 +112,7 @@ setup(
         'galicaster.scheduler',
         'galicaster.core',
         'galicaster.classui',
+        'galicaster.classui.elements',
         'galicaster.mediapackage',
         'galicaster.utils',
         'galicaster.plugins',
