@@ -14,7 +14,7 @@
 
 import logging
 
-__version__ = 'gc_dev_svn'
+__version__ = '1.2.2'
 
 
 format = [
@@ -25,9 +25,9 @@ format = [
     ]
 
 logging.basicConfig(
-    filename = '/tmp/galicaster.log',
+    filename = '/var/log/galicaster/galicaster.log',
     filemode = 'a',
-    level = logging.DEBUG,
+    level = logging.INFO,
     format='\t'.join(format),
 
 )
