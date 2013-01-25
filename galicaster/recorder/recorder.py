@@ -56,7 +56,7 @@ class Recorder(object):
         self.pipeline_name = "galicaster_recorder"  
         self.pipeline = gst.Pipeline(self.pipeline_name)
         self.bus = self.pipeline.get_bus()
-
+        
         self.bins = dict()
         self.callback = None
 
@@ -70,21 +70,27 @@ class Recorder(object):
         self.bus.connect('sync-message::element', self.__on_sync_message)
 
         for bin in bins:
-            name = bin['name']
+            self.init_bin (bin)
+            
+            
+    def init_bin(self, bin):
+        
+        log.info("gst init"+ str(bin))
+        name = bin['name']
 
-            try:
-                mod_name = 'galicaster.recorder.pipeline.' + bin['device']
-                __import__(mod_name)
-                mod = sys.modules[mod_name]
-                Klass = getattr(mod, "GC" + bin['device'])
-            except:
-                raise NameError(
-                    'Invalid track type %s for %s track' % (mod_name, name)
-                    )
+        try:
+            mod_name = 'galicaster.recorder.pipeline.' + bin['device']
+            __import__(mod_name)
+            mod = sys.modules[mod_name]
+            Klass = getattr(mod, "GC" + bin['device'])
+        except:
+            raise NameError(
+                'Invalid track type %s for %s track' % (mod_name, name)
+                )
 
-            log.debug("Init bin %s %s", name, mod_name)
-            self.bins[name] = Klass(bin)
-            self.pipeline.add(self.bins[name])
+        log.debug("Init bin %s %s", name, mod_name)
+        self.bins[name] = Klass(bin)
+        self.pipeline.add(self.bins[name])
 
     def get_status(self):
         return self.pipeline.get_state()
@@ -114,7 +120,7 @@ class Recorder(object):
                 src = random_bin
                 error = gst.GError(gst.RESOURCE_ERROR,
                                    gst.RESOURCE_ERROR_FAILED, text)
-                
+                log.error("recorder bin error "+ str(error) )
                 message = gst.message_new_error(
                     src, error, 
                     str(random_bin)+"\nunknown system_error")
@@ -133,7 +139,7 @@ class Recorder(object):
     def record(self):
         if self.pipeline.get_state()[1] == gst.STATE_PLAYING:
             for bin_name, bin in self.bins.iteritems():
-                valve = bin.changeValve(False)                
+                valve = bin.changeValve(False)
             # Get clock
 
     def stop_record(self):                
