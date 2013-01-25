@@ -212,6 +212,7 @@ class RecorderClassUI(gtk.Box):
         self.error_text = None
         self.error_dialog = None
         if self.error_id:
+            logger.info("Error in select devices "+str(self.error_id))
             self.dispatcher.disconnect(self.error_id)
         self.error_id = self.dispatcher.connect(
             "recorder-error",
@@ -474,8 +475,9 @@ class RecorderClassUI(gtk.Box):
             "title" : "Recorder",
             "main" : " Please review your configuration \nor load another profile",                
             "text" : error_message
-			}
+            }
         buttons = None
+        logger.error("ERROR: "+ error_message)
         self.error_dialog = message.PopUp(message.ERROR, text, 
                                 context.get_mainwindow(), buttons)
         
@@ -507,7 +509,7 @@ class RecorderClassUI(gtk.Box):
             logger.debug("Won't recover from this status")
 
         else:
-            logger.error("Profile changed on the middle of a recording")
+            logger.error("Profile changed on the middle of a recording (or something)")
 
 
     def on_quit(self,button=None): 
