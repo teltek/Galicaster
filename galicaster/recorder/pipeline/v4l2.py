@@ -29,7 +29,7 @@ pipestr = (' v4l2src name=gc-v4l2-src ! capsfilter name=gc-v4l2-filter ! gc-v4l2
            ' tee-cam2. ! queue ! valve drop=false name=gc-v4l2-valve ! ffmpegcolorspace ! queue ! '
            #' xvidenc bitrate=50000000 ! queue ! avimux ! '
            #' x264enc pass=5 quantizer=22 speed-preset=4 profile=1 ! queue ! avimux ! '
-           ' ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000 ! queue ! avimux ! '
+           ' x264enc quantizer=4 ! queue ! mp4mux ! '
            ' queue ! filesink name=gc-v4l2-sink async=false')
 
 
