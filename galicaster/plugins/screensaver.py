@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       galicaster/plugins/cursor
+#       galicaster/plugins/screensaver
 #
 # Copyright (c) 2012, Teltek Video Research <galicaster@teltek.es>
 #
@@ -12,38 +12,68 @@
 # San Francisco, California, 94105, USA.
 
 """
-TODO Add description
+Plugin to handle the Ubuntu 12 gnome-screensaver.
+
+The screensaver will be disabled a TIME before the start of a scheduled recording, and as long as there is an active recording. The TIME is defined by classui.recorderui TIME_UPCOMING
+
+In order for this to work correctly, any other screensaver tool must be disabled (i.e. power management, dpms, gnome-screensaver, etc.)
+
+The screensaver will darken the screen after a given period of inactivity. This period can be configured using the 'screensaver' parameter in the conf.ini file, indicating the seconds of inactivity. By default 60 seconds.
 """
 
 import os
+import dbus
+from dbus.mainloop.glib import DBusGMainLoop
 from galicaster.core import context
 
-inactivity = '60'
+inactivity = '60' # seconds
 
 def init():
+    global inactivity
     dispatcher = context.get_dispatcher()
     inactivity = context.get_conf().get('screensaver', 'inactivity')
-        
-    dispatcher.connect('upcoming-recording', deactivate_screensaver)
-    dispatcher.connect('starting-record', deactivate_screensaver)
-    dispatcher.connect('restart-preview', activate_screensaver)
-    activate_screensaver()
+    dispatcher.connect('upcoming-recording', deactivate_and_poke)
+    dispatcher.connect('starting-record', deactivate_and_poke)
+    dispatcher.connect('restart-preview', configure)
+    dispatcher.connect('galicaster-notify-quit', configure_quit)
+    default_configuration()
 
-
-def deactivate_screensaver(origin=None):
-    os.system('xset s off')
-    poke_screen()
-            
+def get_screensaver_method(method):
+    dbus_loop = DBusGMainLoop()
+    session = dbus.SessionBus(mainloop=dbus_loop)
+    bus_name = "org.gnome.ScreenSaver"
+    object_path = "/org/gnome/ScreenSaver"
+    screen_saver = session.get_object(bus_name, object_path)
+    return screen_saver.get_dbus_method(method)
 
 def activate_screensaver(signal=None):
-    os.system('xset s ' + inactivity)
-    set_default_configuration()
+    configure()
 
+def deactivate_screensaver(signal=None):
+    os.system('xset s off')
 
-def poke_screen(signal=None):
-    os.system('dbus-send --session --dest=org.gnome.ScreenSaver --type=method_call  /org/gnome/ScreenSaver org.gnome.ScreenSaver.SimulateUserActivity')
+def deactivate_and_poke(signal=None):
+    deactivate_screensaver()
+    poke_screen()
 
+def configure(signal=None):
+    global inactivity
+    os.system('xset s on')
+    os.system('xset s '+inactivity)
 
-def set_default_configuration():
+def configure_quit(signal=None):
+    os.system('xset s off')
+    
+def default_configuration():
+    configure()
     os.system('xset s blank')
     os.system('xset s expose')
+
+def poke_screen(signal=None):
+    poke = get_screensaver_method('SimulateUserActivity')
+    a = poke(
+        reply_handler=replying,
+        error_handler=replying) 
+
+def replying(data=None):
+    pass
