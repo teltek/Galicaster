@@ -7,8 +7,11 @@ date
 echo "Killing Galicaster"
 pkill -u $USER python
 
-echo "Waiting 20 sec for network to be established"
-sleep 20
+echo "Checking if rtsp2v4l2 is running"
+/opt/galicaster/rtsp_keeprunning.sh
+
+echo "Waiting 10 sec for network to be established"
+sleep 10
 
 # start galicaster again
 echo "Restarting Galicaster"
