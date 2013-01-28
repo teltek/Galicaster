@@ -69,9 +69,9 @@ class ProfileUI(gtk.Window):
         self.notebook.set_show_tabs(False)
 
         box = gtk.VBox()
-        box.pack_start(strip, False, False, int(hprop*10))
+        box.pack_start(strip, False, False, int(0))
         strip.show()
-        box.pack_start(self.notebook, True, True,0)
+        box.pack_start(self.notebook, True, True, 0)
         self.add(box)        
         self.list=ListProfileBox(self, size, tester)
         self.profile=None
