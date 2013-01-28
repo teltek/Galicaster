@@ -3,7 +3,14 @@ Dialogo avisando de que el audio es bajo
 
 Con este plugin activado, se mostrará un diálogo avisando que el nivel de audio es muy bajo. Este diálogo solo se muestra en la pantalla de grabación. Es útil para que los ponentes se den cuenta del estado de Galicaster de forma fácil, o para que éstos reciban un aviso si hay problemas con el micrófono.
 
-Cuando se recupera el audio, el diálogo desaparece. Si es necesario, también se puede cerrar el aviso manualmente.
+Cuando se recupera el audio, el diálogo desaparece.  Se considera que se recupera cuando el nivel supera el umbral mínimo.
+
+Ocultar
+La función 'ocultar' ocultará el diálgo hasta que el nível de audio descienda bajo el umbral mínimo de nuevo. Esta función es útil para vaciar la interfaz
+
+Mantener oculto
+La función 'mantener oculto' ocultará el diálogo permanentemente durante una grabación. Esta función se desactivará cuando empiece una grabación, cuando termine o cuando se cargue un perfil.
+Se la función se activa en 'Preview', se desactivará cuando se empiece a grabar.
 
 
 Para activar/desactivar el aviso:
@@ -12,7 +19,7 @@ Para activar/desactivar el aviso:
 noaudiodialog = True
 
 Una vez activado, la configuración por defecto marca los umbrales a 0 -60 dB.
-Esta configuración es común al vumetro, por lo tanto, valores inferiores a -60 db se mostrarán como -60dB (barra al mínimo).
+Esta configuración es común al vumetro, por lo tanto, valores inferiores a -60 db se mostrarán con la barra al mínimo.
 
 Para configurar los umbrales añade estas lineas con los valores escogidos en los archivos de configuración, por ejemplo:
 
