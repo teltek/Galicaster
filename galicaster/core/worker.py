@@ -131,6 +131,7 @@ class Worker(object):
     def ingest(self, mp):
         logger.info('Creating Ingest Job for MP {0}'.format(mp.getIdentifier()))
         mp.setOpStatus('ingest',mediapackage.OP_PENDING)
+        self.repo.update(mp)
         self.jobs.put((self._ingest, (mp,)))
 
     def _ingest(self, mp):
@@ -191,6 +192,7 @@ class Worker(object):
     def export_to_zip(self, mp, location=None):
         logger.info('Creating ExportToZIP Job for MP {0}'.format(mp.getIdentifier()))
         mp.setOpStatus('exporttozip',mediapackage.OP_PENDING)
+        self.repo.update(mp)
         self.jobs.put((self._export_to_zip, (mp, location)))
 
 
@@ -224,6 +226,7 @@ class Worker(object):
     def side_by_side(self, mp, location=None):
         logger.info('Creating SideBySide Job for MP {0}'.format(mp.getIdentifier()))
         mp.setOpStatus('sidebyside',mediapackage.OP_PENDING)
+        self.repo.update(mp)
         self.jobs.put((self._side_by_side, (mp, location)))
 
 
