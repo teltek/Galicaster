@@ -24,9 +24,9 @@ from galicaster.recorder import module_register
 
 videostr = ( ' decklinksrc connection=sdi mode=12 name=gc-blackmagic-src ! '
              ' identity name=gc-blackmagic-idvideo ! queue ! videorate ! videocrop name=gc-blackmagic-crop !'
-             ' tee name=tee-cam2  ! queue ! ffmpegcolorspace ! xvimagesink async=false sync=false qos=false name=gc-blackmagic-preview'
+             ' tee name=gc-blackmagic-tee  ! queue ! ffmpegcolorspace ! xvimagesink async=false sync=false qos=false name=gc-blackmagic-preview'
              #REC VIDEO
-             ' tee-cam2. ! queue ! valve drop=false name=gc-blackmagic-valve ! ffmpegcolorspace ! '
+             ' gc-blackmagic-tee. ! queue ! valve drop=false name=gc-blackmagic-valve ! ffmpegcolorspace ! '
              ' gc-blackmagic-enc ! queue ! gc-blackmagic-mux name=gc-blackmagic-muxer ! '
              ' queue ! identity name=gc-blackmagic-idend ! filesink name=gc-blackmagic-sink async=false' 
              )
