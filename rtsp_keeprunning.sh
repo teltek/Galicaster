@@ -9,7 +9,7 @@ makerun="/opt/galicaster/rtsp2v4l2"
 
 if ps ax | grep -v grep | grep $process > /dev/null
 then
-	echo "OK is running"
+#	echo "OK is running"
  	exit
 else
 	echo "NOK trying to start room $room"		
