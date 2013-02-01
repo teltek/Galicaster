@@ -348,7 +348,8 @@ class RecorderClassUI(gtk.Box):
 
         self.mediapackage.status = mediapackage.RECORDED
         self.mediapackage.properties['origin'] = self.conf.hostname
-        self.repo.add_after_rec(self.mediapackage, self.record.bins_desc, close_duration)
+        self.repo.add_after_rec(self.mediapackage, self.record.bins_desc, 
+                                close_duration, self.mediapackage.manual)
         
         code = 'manual' if self.mediapackage.manual else 'scheduled'
         if self.conf.get_lower('ingest', code) == 'immediately':
