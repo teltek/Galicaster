@@ -291,7 +291,7 @@ class Repository(object):
 
 
     def __get_folder_name(self, mp):
-        utcdate = mp.getDate
+        utcdate = mp.getDate()
         date = mp.getLocalDate()
 
         mappings = {
