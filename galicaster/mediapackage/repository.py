@@ -291,19 +291,28 @@ class Repository(object):
 
 
     def __get_folder_name(self, mp):
+        utcdate = mp.getDate
+        date = mp.getLocalDate()
+
         mappings = {
-            'id'       : mp.identifier,
-            'title'    : mp.title, 
-            'series'   : mp.series_title, 
-            'hostname' : self.hostname, 
-            'type'     : 'M' if mp.manual else 'S',
-            'longtype' : 'manual' if mp.manual else 'scheduled',
-            'year'     : mp.getDate().strftime('%Y'),
-            'month'    : mp.getDate().strftime('%m'),
-            'day'      : mp.getDate().strftime('%d'),
-            'hour'     : mp.getDate().strftime('%H'),
-            'minute'   : mp.getDate().strftime('%M'),
-            'second'   : mp.getDate().strftime('%S')}
+            'id'          : mp.identifier,
+            'title'       : mp.title, 
+            'series'      : mp.series_title, 
+            'hostname'    : self.hostname, 
+            'type'        : 'M' if mp.manual else 'S',
+            'longtype'    : 'manual' if mp.manual else 'scheduled',
+            'year'        : date.strftime('%Y'),
+            'month'       : date.strftime('%m'),
+            'day'         : date.strftime('%d'),
+            'hour'        : date.strftime('%H'),
+            'minute'      : date.strftime('%M'),
+            'second'      : date.strftime('%S'),
+            'utcyear'     : utcdate.strftime('%Y'),
+            'utcmonth'    : utcdate.strftime('%m'),
+            'utcday'      : utcdate.strftime('%d'),
+            'utchour'     : utcdate.strftime('%H'),
+            'utcminute'   : utcdate.strftime('%M'),
+            'utcsecond'   : utcdate.strftime('%S')}
         
         base = folder_name = re.sub(r'\W+', '', self.folder_template.format(**mappings))
         
