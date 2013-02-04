@@ -166,7 +166,6 @@ class PlayerClassUI(ManagerUI):
     def init_timer(self):
         """Starts the thread handling the timer for visualiztion and seeking feature"""
         self.change_state(GC_PLAY)
-        self.clock=self.player.get_clock()
         self.timer_thread = threading.Thread(target=self.timer_launch_thread)
         self.thread_id = 1
         self.timer_thread.daemon = True
@@ -305,7 +304,7 @@ class PlayerClassUI(ManagerUI):
     def timer_launch_thread(self):
         """Thread handling the timer, provides base time for seeking"""
         thread_id= self.thread_id
-        self.initial_time=self.clock.get_time()
+        self.initial_time=self.player.get_time()
         self.duration = self.player.get_duration()
         gtk.gdk.threads_enter()
         self.statusbar.SetTimer2(0,self.duration)
@@ -316,7 +315,7 @@ class PlayerClassUI(ManagerUI):
         while thread_id == self.thread_id:
             if not self.seeking :
                 if not self.duration:
-                    actual_time=self.clock.get_time()  
+                    actual_time=self.player.get_time()  
                     timer=(actual_time-self.initial_time)/gst.SECOND
                 else:
                     try:

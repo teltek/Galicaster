@@ -89,8 +89,8 @@ class Recorder(object):
     def get_status(self):
         return self.pipeline.get_state()
 
-    def get_clock(self):
-        return self.pipeline.get_clock()
+    def get_time(self):
+        return self.pipeline.get_clock().get_time()
 
     def preview(self):
         log.debug("recorder preview")

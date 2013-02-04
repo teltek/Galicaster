@@ -103,11 +103,11 @@ class Player(object):
         return (self.pipeline.get_state()[1] == gst.STATE_PLAYING)
 
 
-    def get_clock(self):
+    def get_time(self):
         """
-        Get the player clock
+        Get the player current time.
         """
-        return self.pipeline.get_clock()
+        return self.pipeline.get_clock().get_time()
 
 
     def play(self):

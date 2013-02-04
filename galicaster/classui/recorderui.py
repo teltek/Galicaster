@@ -273,7 +273,6 @@ class RecorderClassUI(gtk.Box):
         self.recorder.record()
         self.mediapackage.status=mediapackage.RECORDING
         self.mediapackage.setDate(datetime.datetime.utcnow().replace(microsecond = 0))
-        self.clock=self.recorder.get_clock()
         self.timer_thread_id = 1
         self.timer_thread = thread(target=self.timer_launch_thread) 
         self.timer_thread.daemon = True
@@ -338,7 +337,7 @@ class RecorderClassUI(gtk.Box):
 
     def close_recording(self):
         """Set the final data on the mediapackage, stop the record and restart the preview"""
-        close_duration = (self.clock.get_time()-self.initial_time)*1000/gst.SECOND  
+        close_duration = (self.recorder.get_time()-self.initial_time)*1000/gst.SECOND  
         # To avoid error messages on stopping pipelines
         if self.error_dialog:
             self.error_dialog.destroy()
@@ -548,7 +547,7 @@ class RecorderClassUI(gtk.Box):
         # Based on: http://pygstdocs.berlios.de/pygst-tutorial/seeking.html
         
         thread_id= self.timer_thread_id
-        self.initial_time=self.clock.get_time()
+        self.initial_time=self.recorder.get_time()
         self.initial_datetime=datetime.datetime.utcnow().replace(microsecond = 0)
         gtk.gdk.threads_enter()
         self.statusbar.SetTimer(0)
@@ -559,7 +558,7 @@ class RecorderClassUI(gtk.Box):
               
         while thread_id == self.timer_thread_id:            
         #while True:
-            actual_time=self.clock.get_time()               
+            actual_time=self.recorder.get_time()               
             timer=(actual_time-self.initial_time)/gst.SECOND
             dif = datetime.datetime.utcnow() - self.initial_datetime
 
