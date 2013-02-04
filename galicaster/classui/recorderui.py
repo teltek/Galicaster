@@ -272,6 +272,7 @@ class RecorderClassUI(gtk.Box):
         self.recorder.record()
         self.mediapackage.status=mediapackage.RECORDING
         self.mediapackage.setDate(datetime.datetime.utcnow().replace(microsecond = 0))
+        self.clock=self.record.get_clock()
         self.timer_thread_id = 1
         self.timer_thread = thread(target=self.timer_launch_thread) 
         self.timer_thread.daemon = True
