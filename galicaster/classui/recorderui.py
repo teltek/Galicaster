@@ -99,7 +99,7 @@ class RecorderClassUI(gtk.Box):
         self.repo = context.get_repository()
         self.dispatcher = context.get_dispatcher()
         self.worker = context.get_worker()
-        self.record = None
+        self.recorder = None
         self.current_mediapackage = None
         self.current = None
         self.next = None
@@ -240,9 +240,9 @@ class RecorderClassUI(gtk.Box):
         self.select_devices()
 
     def init_recorder(self):
-        self.record = Recorder(self.bins, self.areas) 
-        self.record.mute_preview(not self.focus_is_active)   
-        ok =self.record.preview()
+        self.recorder = Recorder(self.bins, self.areas) 
+        self.recorder.mute_preview(not self.focus_is_active)   
+        ok =self.recorder.preview()
         if ok :
             if  self.mediapackage.manual:
                 self.mediapackage.setTitle("Recording started at "+ datetime.datetime.now().replace(microsecond = 0).isoformat())
@@ -270,10 +270,10 @@ class RecorderClassUI(gtk.Box):
         """Manual Recording """
         logger.info("Recording")
         self.dispatcher.emit("starting-record")
-        self.record.record()
+        self.recorder.record()
         self.mediapackage.status=mediapackage.RECORDING
         self.mediapackage.setDate(datetime.datetime.utcnow().replace(microsecond = 0))
-        self.clock=self.record.get_clock()
+        self.clock=self.recorder.get_clock()
         self.timer_thread_id = 1
         self.timer_thread = thread(target=self.timer_launch_thread) 
         self.timer_thread.daemon = True
@@ -296,11 +296,11 @@ class RecorderClassUI(gtk.Box):
         if self.status == GC_PAUSED:
             logger.debug("Resuming Recording")
             self.change_state(GC_RECORDING)
-            self.record.resume()
+            self.recorder.resume()
         elif self.status == GC_RECORDING:
             logger.debug("Pausing Recording")
             self.change_state(GC_PAUSED)
-            self.record.pause()
+            self.recorder.pause()
             gui = gtk.Builder()
             gui.add_from_file(get_ui_path("paused.glade"))
             dialog = gui.get_object("dialog") 
@@ -343,12 +343,12 @@ class RecorderClassUI(gtk.Box):
         if self.error_dialog:
             self.error_dialog.destroy()
             self.error_dialog = None
-        self.record.stop_record_and_restart_preview()        
+        self.recorder.stop_record_and_restart_preview()        
         self.change_state(GC_STOP)
 
         self.mediapackage.status = mediapackage.RECORDED
         self.mediapackage.properties['origin'] = self.conf.hostname
-        self.repo.add_after_rec(self.mediapackage, self.record.bins_desc, 
+        self.repo.add_after_rec(self.mediapackage, self.recorder.bins_desc, 
                                 close_duration, self.mediapackage.manual)
         
         code = 'manual' if self.mediapackage.manual else 'scheduled'
@@ -398,7 +398,7 @@ class RecorderClassUI(gtk.Box):
                       
         elif self.status == GC_INIT:  # Start Preview and Record
             self.on_start_button()
-            while self.record.get_status() != gst.STATE_PLAYING:
+            while self.recorder.get_status() != gst.STATE_PLAYING:
                 time.sleep(0.2)
                 if self.start_thread_id == None:
                     return
@@ -454,7 +454,7 @@ class RecorderClassUI(gtk.Box):
             
         elif self.status == GC_PREVIEW:
             self.change_state(GC_STOP)
-            self.record.just_restart_preview()
+            self.recorder.just_restart_preview()
         else:
             logger.warning("Restart preview called while Recording")
 
@@ -497,7 +497,7 @@ class RecorderClassUI(gtk.Box):
 
         elif self.status in [GC_PREVIEW, GC_PRE2]:
             #self.restart()
-            self.record.stop_preview()
+            self.recorder.stop_preview()
             self.dispatcher.disconnect(self.error_id)
             self.error_id = None
             self.change_state(GC_STOP)
@@ -526,7 +526,7 @@ class RecorderClassUI(gtk.Box):
         if response == gtk.RESPONSE_OK:   
             dialog.destroy()
             if self.status >= GC_PREVIEW:
-                self.record.stop_preview()
+                self.recorder.stop_preview()
 
             self.change_state(GC_EXIT)
             logger.info("Closing Clock and Scheduler")
@@ -799,8 +799,8 @@ class RecorderClassUI(gtk.Box):
         """Handles the focus or the Rercording Area, launching messages when focus is recoverde"""
         if new_state == 0: 
             self.focus_is_active = True
-            if self.record:
-                self.record.mute_preview(False)
+            if self.recorder:
+                self.recorder.mute_preview(False)
             if self.error_text:            
                 if self.status != GC_ERROR:
                     self.change_state(GC_ERROR)
@@ -808,8 +808,8 @@ class RecorderClassUI(gtk.Box):
 
         if old_state == 0:
             self.focus_is_active = False
-            if self.record:
-                self.record.mute_preview(True)
+            if self.recorder:
+                self.recorder.mute_preview(True)
 
     def change_mode(self, button):
         """Launch the signal to change to another area"""
@@ -1033,7 +1033,7 @@ class RecorderClassUI(gtk.Box):
 
         elif state == GC_RECORDING:
             record.set_sensitive(False)
-            pause.set_sensitive(self.allow_pause and self.record.is_pausable()) 
+            pause.set_sensitive(self.allow_pause and self.recorder.is_pausable()) 
             stop.set_sensitive( (self.allow_stop or self.allow_manual) )
             helpb.set_sensitive(True)
             prevb.set_sensitive(False)
@@ -1108,7 +1108,7 @@ class RecorderClassUI(gtk.Box):
         self.clock_thread_id = None
         self.start_thread_id = None
         if self.status in [GC_PREVIEW]:
-            self.record.stop_preview()        
+            self.recorder.stop_preview()        
         return True        
 
 
