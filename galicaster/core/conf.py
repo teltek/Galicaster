@@ -159,7 +159,7 @@ class Conf(object): # TODO list get and other ops arround profile
       if self.is_mobile(): 
          return {'capture.device.names': 'defaults'}
       # Galicaster Class
-      logger.info('Be careful using profiles and matterhorn scheduler')
+      logger.debug('Be careful using profiles and matterhorn scheduler')
       default  = self.get_current_profile()
       names = []
       tracks = {}

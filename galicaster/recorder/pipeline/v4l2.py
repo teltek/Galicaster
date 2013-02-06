@@ -26,11 +26,11 @@ from galicaster.recorder import module_register
 pipestr = (' v4l2src name=gc-v4l2-src ! capsfilter name=gc-v4l2-filter ! gc-v4l2-dec '
            ' videorate ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! '
            ' tee name=tee-cam2  ! queue !  xvimagesink async=false qos=false name=gc-v4l2-preview'
-           ' tee-cam2. ! queue ! valve drop=false name=gc-v4l2-valve ! ffmpegcolorspace ! queue ! '
+           ' tee-cam2. ! queue ! valve drop=false name=gc-v4l2-valve ! queue ! '
            #' xvidenc bitrate=50000000 ! queue ! avimux ! '
-           #' x264enc pass=5 quantizer=22 speed-preset=4 profile=1 ! queue ! avimux ! '
-           ' ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000 ! queue ! avimux ! '
-           ' queue ! filesink name=gc-v4l2-sink async=false')
+           ' x264enc pass=5 quantizer=4 speed-preset=4 profile=1 ! queue ! avimux ! '
+           #' x264enc quantizer=4 ! queue ! mp4mux ! '
+           ' filesink name=gc-v4l2-sink async=false')
 
 
 class GCv4l2(gst.Bin, base.Base):
