@@ -4,7 +4,7 @@
 echo "----Running restart script----> `date`"  >> /var/log/galicaster/restart-galicaster.log
 date
 echo "Killing Galicaster"
-pkill -u $USER python
+pkill  -9 -u $USER python
 
 echo "Waiting 10 sec for network to be established"
 sleep 10
