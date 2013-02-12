@@ -251,7 +251,7 @@ class Worker(object):
                 if track.getFlavor()[0:12] == 'presentation':
                     screen = track.getURI()
         try:
-            sidebyside.create_sbs(location, screen, camera, audio, self.sbs_layout)
+            sidebyside.create_sbs(location, camera, screen, audio, self.sbs_layout)
             mp.setOpStatus('sidebyside',mediapackage.OP_DONE)
             self.dispatcher.emit('stop-operation', 'sidebyside', mp, True)
         except:
