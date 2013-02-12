@@ -50,7 +50,7 @@ class Worker(object):
                 self.queue.task_done()
     
 
-    def __init__(self, dispatcher, repo, mh_client=None, export_path=None, tmp_path=None, use_namespace=True):
+    def __init__(self, dispatcher, repo, mh_client=None, export_path=None, tmp_path=None, use_namespace=True, sbs_layout='sbs'):
         """
         Arguments:
 
@@ -67,6 +67,7 @@ class Worker(object):
         self.export_path = export_path or os.path.expanduser('~')
         self.tmp_path = tmp_path or tempfile.gettempdir()
         self.use_namespace = use_namespace
+        self.sbs_layout = sbs_layout
         self.dispatcher = dispatcher
         
         for dir_path in (self.export_path, self.tmp_path):
@@ -250,7 +251,7 @@ class Worker(object):
                 if track.getFlavor()[0:12] == 'presentation':
                     screen = track.getURI()
         try:
-            sidebyside.create_sbs(location, screen, camera, audio)
+            sidebyside.create_sbs(location, screen, camera, audio, self.sbs_layout)
             mp.setOpStatus('sidebyside',mediapackage.OP_DONE)
             self.dispatcher.emit('stop-operation', 'sidebyside', mp, True)
         except:

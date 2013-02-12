@@ -124,7 +124,8 @@ def get_worker():
                                                 get_mhclient(),
                                                 get_conf().get('basic', 'export'),
                                                 get_conf().get('basic', 'tmp'),
-                                                not get_conf().get_boolean('basic', 'legacy')
+                                                not get_conf().get_boolean('basic', 'legacy'),
+                                                get_conf().get('sidebyside', 'layout'),
                                                 )
 
     return __galicaster_context['worker']
