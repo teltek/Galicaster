@@ -73,10 +73,11 @@ gobject.signal_new('change-mode', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.T
 gobject.signal_new('galicaster-status', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, gobject.TYPE_PYOBJECT) )
 gobject.signal_new('galicaster-quit', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
 gobject.signal_new('galicaster-notify-quit', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
-# TIMER
+#TIMER
 gobject.signal_new('galicaster-notify-nightly', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
 gobject.signal_new('galicaster-notify-timer-short', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
 gobject.signal_new('galicaster-notify-timer-long', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
+gobject.signal_new('after-process-ical', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
 #NET
 gobject.signal_new('net-up', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
 gobject.signal_new('net-down', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )

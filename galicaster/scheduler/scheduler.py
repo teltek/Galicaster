@@ -68,8 +68,9 @@ class Scheduler(object):
     def do_timers_long(self, sender):
         if self.net:
             self.proccess_ical()
+            self.dispatcher.emit('after-process-ical')
         for mp in self.repo.get_next_mediapackages():
-            self.__create_new_timer(mp)
+            self.create_new_timer(mp)
 
     
     def init_client(self):
@@ -140,12 +141,12 @@ class Scheduler(object):
             if self.start_timers.has_key(mp.getIdentifier()) and mp.status == mediapackage.SCHEDULED:
                 self.start_timers[mp.getIdentifier()].cancel()
                 del self.start_timers[mp.getIdentifier()]
-                self.__create_new_timer(mp)
+                self.create_new_timer(mp)
                 
         self.last_events = events
 
 
-    def __create_new_timer(self, mp):
+    def create_new_timer(self, mp):
         diff = (mp.getDate() - datetime.datetime.utcnow())
         if diff < datetime.timedelta(minutes=30) and mp.getIdentifier() != self.mp_rec and not self.start_timers.has_key(mp.getIdentifier()): 
             ti = Timer(diff.seconds, self.start_record, [mp.getIdentifier()]) 

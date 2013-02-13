@@ -90,7 +90,9 @@ class Main():
 
         self.window.start()
 
-        if 'recorder' and 'media_manager' in self.modules:            
+        self.recorder.go_ahead() # allows record area to load devices and show preview
+
+        if 'media_manager' in self.modules:            
             self.window.set_current_page(DIS)
         else:
             self.window.set_current_page(REC)
@@ -111,7 +113,7 @@ class Main():
         self.dispatcher.emit('galicaster-status', old_page, page)
 
 
-    def play_mp(self,origin, mediapackage): 
+    def play_mp(self, origin, mediapackage): 
         """
         Plays a mediapackage
         """

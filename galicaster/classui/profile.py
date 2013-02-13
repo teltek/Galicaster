@@ -22,6 +22,7 @@ import pango
 from galicaster.core import context
 from galicaster.core import conf
 from galicaster.recorder import get_modules
+from galicaster.classui.elements.message_header import Header
 
 from galicaster.recorder.pipeline import v4l2
 from galicaster.recorder.pipeline import vga2usb
@@ -52,20 +53,28 @@ class ProfileUI(gtk.Window):
         size = context.get_mainwindow().get_size()
         width = int(size[0]/2.2)
         height = int(size[1]/2.0)
+        hprop = size[1]/1080.0
         gtk.Window.__init__(self)
         self.set_title(" ")
         self.set_position(gtk.WIN_POS_CENTER_ALWAYS)
         self.set_default_size(width,height)
         self.set_modal(True)
+
         if parent:
-            self.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DIALOG)
+            self.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_SPLASHSCREEN)
             self.set_transient_for(parent)
             self.set_destroy_with_parent(True)
 
+        strip = Header(size=size,title="Profile Selector")
+
         self.notebook = gtk.Notebook()
         self.notebook.set_show_tabs(False)
-        self.add(self.notebook)
-        
+
+        box = gtk.VBox()
+        box.pack_start(strip, False, False, int(0))
+        strip.show()
+        box.pack_start(self.notebook, True, True, 0)
+        self.add(box)        
         self.list=ListProfileBox(self, size, tester)
         self.profile=None
         self.track=None       

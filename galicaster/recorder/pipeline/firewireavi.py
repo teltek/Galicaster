@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       galicaster/recorder/pipeline/firewire
+#       galicaster/recorder/pipeline/firewireavi
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
@@ -11,6 +11,9 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
+"""
+Experimental bin which re-multiplexes the DV video to an AVI container so that it can be used in Windows operating systems.
+"""
 
 import logging
 
@@ -21,20 +24,23 @@ from os import path
 
 from galicaster.recorder import base
 
-pipestr = ( ' dv1394src use-avc=false name=gc-firewire-src ! tee name=gc-firewire-maintee ! '
-            ' queue ! dvdemux name=gc-firewire-demuxer ! '
-            ' level name=gc-firewire-level message=true interval=100000000 ! '
-            ' volume name=gc-firewire-volume ! alsasink sync=false name=gc-firewire-audio-sink '
-            ' gc-firewire-demuxer. ! queue ! ffdec_dvvideo ! ffmpegcolorspace ! xvimagesink qos=false async=false sync=false name=gc-firewire-preview '
-            ' gc-firewire-maintee. ! queue ! valve drop=false name=gc-firewire-valve ! filesink name=gc-firewire-sink async=false '
-            )
+pipestr = (' dv1394src name=gc-firewireavi-src ! '
+           ' queue ! dvdemux name=gc-firewireavi-demuxer ! '
+           ' level name=gc-firewireavi-level message=true interval=100000000 ! '
+           ' tee name=gc-firewireavi-audiotee ! '
+           ' queue ! volume name=gc-firewireavi-volume ! alsasink sync=false name=gc-firewireavi-audio-sink '
+           ' gc-firewireavi-demuxer. ! queue ! tee name=gc-firewireavi-videotee ! '
+           ' queue ! ffdec_dvvideo ! ffmpegcolorspace ! xvimagesink qos=false async=false sync=false name=gc-firewireavi-preview '
+           ' gc-firewireavi-audiotee. ! queue ! valve drop=false name=gc-firewireavi-audio-valve ! audio/x-raw-int ! avimux name=gc-firewireavi-mux ! '
+           ' queue ! filesink name=gc-firewireavi-sink async=false '
+           ' gc-firewireavi-videotee. ! queue ! valve drop=false name=gc-firewireavi-video-valve ! video/x-dv ! gc-firewireavi-mux.  '
+           )
 
-
-class GCfirewire(gst.Bin, base.Base):
+class GCfirewireavi(gst.Bin, base.Base):
     gc_parameters = {
         "name": {
             "type": "text",
-            "default": "Firewire",
+            "default": "Firewireavi",
             "description": "Name assigned to the device",
             },
         "flavor": {
@@ -81,7 +87,7 @@ class GCfirewire(gst.Bin, base.Base):
     has_video   = True
     
     __gstdetails__ = (
-        "Galicaster Firewire BIN",
+        "Galicaster Firewireavi BIN",
         "Generic/Video",
         "Add descripcion",
         "Teltek Video Research"
@@ -91,41 +97,43 @@ class GCfirewire(gst.Bin, base.Base):
         base.Base.__init__(self, options)
         gst.Bin.__init__(self, self.options["name"])
 
-        bin = gst.parse_bin_from_description(pipestr.replace("gc-firewire-preview", "sink-" + self.options["name"]), False)
+        bin = gst.parse_bin_from_description(pipestr.replace("gc-firewireavi-preview", "sink-" + self.options["name"]), False)
 
         self.add(bin)
 
-        sink = self.get_by_name("gc-firewire-sink")
+        sink = self.get_by_name("gc-firewireavi-sink")
         sink.set_property('location', path.join(self.options['path'], self.options['file']))
 
         if self.options["vumeter"] == False:
-            level = self.get_by_name("gc-firewire-level")
+            level = self.get_by_name("gc-firewireavi-level")
             level.set_property("message", False) 
 
         if self.options["player"] == False:
             self.mute = True
-            element = self.get_by_name("gc-firewire-volume")
+            element = self.get_by_name("gc-firewireavi-volume")
             element.set_property("mute", True)        
         else:
             self.mute = False
 
     def changeValve(self, value):
-        valve1=self.get_by_name('gc-firewire-valve')
+        valve1=self.get_by_name('gc-firewireavi-video-valve')
+        valve2=self.get_by_name('gc-firewireavi-audio-valve')
         valve1.set_property('drop', value)
+        valve2.set_property('drop', value)
 
     def getVideoSink(self):
-        return self.get_by_name("gc-firewire-preview")
+        return self.get_by_name("gc-firewireavi-preview")
 
     def getSource(self):
-        return self.get_by_name("gc-firewire-src")
+        return self.get_by_name("gc-firewireavi-src")
   
     def send_event_to_src(self,event):
-        src1 = self.get_by_name("gc-firewire-src")
+        src1 = self.get_by_name("gc-firewireavi-src")
         src1.send_event(event)
 
     def mute_preview(self, value):
         if not self.mute:
-            element = self.get_by_name("gc-firewire-volume")
+            element = self.get_by_name("gc-firewireavi-volume")
             element.set_property("mute", value)
 
     def configure(self):
@@ -135,5 +143,5 @@ class GCfirewire(gst.Bin, base.Base):
         pass
      
 
-gobject.type_register(GCfirewire)
-gst.element_register(GCfirewire, "gc-firewire-bin")
+gobject.type_register(GCfirewireavi)
+gst.element_register(GCfirewireavi, "gc-firewireavi-bin")

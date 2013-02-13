@@ -24,14 +24,14 @@ pipestr = (" pulsesrc name=gc-audio-src  !   audioamplify name=gc-audio-amplify 
            " tee name=tee-aud  ! queue ! level name=gc-audio-level message=true interval=100000000 ! "
            " volume name=gc-audio-volume ! alsasink sync=false name=gc-audio-preview  "
            " tee-aud. ! queue ! valve drop=false name=gc-audio-valve ! "
-           " audioconvert ! lamemp3enc target=1 bitrate=192 cbr=true ! "
+           " audioconvert ! gc-audio-enc ! "
            " queue ! filesink name=gc-audio-sink async=false " )
 
 
 class GCpulse(gst.Bin, base.Base):
     
     order = ["name", "flavor", "location", "file", "vumeter", "player",
-             "amplification"]
+             "amplification", "encoder"]
 
     gc_parameters = {
         "name": {
@@ -70,6 +70,11 @@ class GCpulse(gst.Bin, base.Base):
             "range": (0,10),
             "description": "Audio amplification",
             },
+        "encoder": {
+            "type": "text",
+            "default": "lamemp3enc target=1 bitrate=192 cbr=true",
+            "description": "Gstreamer encoder element used in the bin",
+            },
         }
 
     is_pausable = True
@@ -93,8 +98,10 @@ class GCpulse(gst.Bin, base.Base):
         base.Base.__init__(self, options)
         gst.Bin.__init__(self, self.options["name"])
 
-        bin = gst.parse_bin_from_description(pipestr.replace("gc-audio-preview", "sink-" + self.options["name"]), True)
+        aux = (pipestr.replace("gc-audio-preview", "sink-" + self.options["name"])
+                      .replace("gc-audio-enc", self.options["encoder"]))
 
+        bin = gst.parse_bin_from_description(aux, True)
         self.add(bin)
 
         if self.options['location'] != "default":

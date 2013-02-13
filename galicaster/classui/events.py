@@ -21,6 +21,8 @@ import datetime
 from galicaster.mediapackage import mediapackage
 from galicaster.core import context
 from galicaster.classui import get_ui_path
+from galicaster.classui.elements.message_header import Header
+
 
 HOW_MANY=5
 
@@ -51,6 +53,21 @@ class EventManager(gtk.Widget):
         title = gui.get_object("titlelabel")
         okl = gui.get_object("oklabel")
         okb = gui.get_object("okbutton")
+
+        width = int(size[0]/2.5)
+        dialog.set_default_size(width,-1)
+        dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_SPLASHSCREEN)
+        dialog.set_skip_taskbar_hint(True)
+        dialog.set_modal(True)
+        dialog.set_keep_above(True)
+
+        strip = Header(size=size, title="Next Recordings")
+        title.hide()
+
+        dialog.vbox.pack_start(strip, False, True, 0)
+        dialog.vbox.reorder_child(strip,0)
+        strip.show()
+
 
         modification = "bold "+str(int(k2*30))+"px"        
         title.modify_font(pango.FontDescription(modification))

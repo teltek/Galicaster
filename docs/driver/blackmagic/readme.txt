@@ -38,9 +38,15 @@ Now you should proceed with the card driver. To install their driver you should 
 http://blackmagic-design.com/support/
 Choose Linux, your card series and your Model and press Search. Download the latest Desktop Video for Linux.
 
+To delete old version:
+
+$ apt-get --purge remove  mediaexpress
+$ apt-get --purge remove  desktopvideo
+
 To install it:
 
-$ dpkg -i <name_of_driver_package.deb>
+$ dpkg -i desktopvideo-<version>-amd64.deb
+$ dpkg -i mediaexpress-<version>-amd64.deb
 $ modprobe blackmagic
 
 There is a full guide on how to install the driver and other information on:
@@ -66,3 +72,4 @@ URL's
 http://blackmagic-design.com/media/3913819/Blackmagic_Desktop_Video_Linux_9.5.tar.gz
 http://blackmagic-design.com/media/3397912/Blackmagic_Desktop_Video_Linux_9.2.tar.gz
 http://blackmagic-design.com/media/2432845/Blackmagic_Desktop_Video_Linux_9.0.tar.gz
+http://software.blackmagicdesign.com/DesktopVideo/Blackmagic_Desktop_Video_Linux_9.6.9.tar.gz

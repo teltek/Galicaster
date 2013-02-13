@@ -29,7 +29,7 @@ from xml.dom import minidom
 from galicaster.mediapackage.utils import _checknget, read_ini
 
 DCTERMS = ['title', 'creator', 'isPartOf', 'description', 'subject', 
-           'language', 'identifier', 'contributor', 'created', 'temporal']
+           'language', 'contributor', 'created', 'temporal']
 
 # Mediapackage Status
 NEW = 0
@@ -702,7 +702,10 @@ class Mediapackage(object):
                     if name in ["created"]:
                         creat = _checknget(dom, "dcterms:" + name)
                         if creat:
-                            self.setDate(datetime.strptime(creat, "%Y-%m-%dT%H:%M:%S"))
+                            if creat[-1] == "Z":
+                                self.setDate(datetime.strptime(creat, "%Y-%m-%dT%H:%M:%SZ"))
+                            else:
+                                self.setDate(datetime.strptime(creat, "%Y-%m-%dT%H:%M:%S"))
                     elif name in [ "creator", "contributor", "subject"]: # FIXME do this to other metadata
                         creat = _checknget(dom, "dcterms:" + name) # FIXME check Nones and empty string somewhere
                         if creat and creat not in self.metadata_episode[name]:

@@ -25,6 +25,9 @@ import galicaster.mediapackage.mediapackage as mediapackage
 from galicaster.core import context
 from galicaster.utils import series as listseries
 from galicaster.classui import get_ui_path
+from galicaster.classui.elements.message_header import Header
+
+
 
 NO_SERIES  = "NO SERIES ASSIGNED"
 DEFAULT_SERIES = "DEFAULT SERIES"
@@ -64,12 +67,21 @@ class MetadataClass(gtk.Widget):
 
         dialog = gui.get_object("metadatadialog")
         dialog.set_property("width-request",int(anchura/2.2))
-        dialog.set_property("border-width",int(anchura/50.0))
+        dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_SPLASHSCREEN)
+        dialog.set_keep_above(True)
+
+        #NEW HEADER
+        strip = Header(size=size, title="Edit Metadata")
+        dialog.vbox.pack_start(strip, True, True, 0)
+        dialog.vbox.reorder_child(strip,0)
+        strip.show()
 
         if parent != None:
             dialog.set_transient_for(parent.get_toplevel())
 
+        
         table = gui.get_object('infobox')
+        dialog.vbox.set_child_packing(table, True, True, int(self.hprop*25), gtk.PACK_END)    
         title = gui.get_object('title')
         sl = gui.get_object('slabel')
         cl = gui.get_object('clabel')
@@ -77,6 +89,7 @@ class MetadataClass(gtk.Widget):
 
         modification = "bold "+str(int(k2*25))+"px"        
         title.modify_font(pango.FontDescription(modification))
+        title.hide()
         talign.set_padding(int(k2*40),int(k2*40),0,0)
         mod2 = str(int(k1*35))+"px"        
         sl.modify_font(pango.FontDescription(mod2))
@@ -84,10 +97,9 @@ class MetadataClass(gtk.Widget):
 
 
         self.fill_metadata(table, package)
+        talign.set_padding(int(self.hprop*25), int(self.hprop*10), int(self.hprop*25), int(self.hprop*25))
+        dialog.vbox.set_child_packing(dialog.action_area, True, True, int(self.hprop*25), gtk.PACK_END)   
 
-
-
-        
         # Close Metadata dialog and update
         if dialog.run() == -8:
             self.update_metadata(table,package)

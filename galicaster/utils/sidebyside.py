@@ -12,7 +12,7 @@
 # San Francisco, California, 94105, USA.
 
 # TODO:
-#  - SideBySide Dos tracks audio y video: Usarlo para mux.
+#  - Add background picture to mixer.
 
 from os import path
 
@@ -21,7 +21,20 @@ import logging
 
 logger = logging.getLogger()
 
-def create_sbs(out, camera, screen, audio=None):
+layouts = {'sbs': 
+           {'screen_width': 640, 'screen_height': 480, 'screen_aspect': '4/3', 'screen_xpos': 640,'screen_ypos': 120, 'screen_zorder': 0, 
+            'camera_width': 640, 'camera_height': 480, 'camera_aspect': '4/3', 'camera_xpos': 0, 'camera_ypos': 120, 'camera_zorder': 0, 
+            'out_width': 1280, 'out_height': 720},
+           'pip_screen': 
+           {'screen_width': 160, 'screen_height': 120, 'screen_aspect': '4/3', 'screen_xpos': 640,'screen_ypos': 480, 'screen_zorder': 1, 
+            'camera_width': 800, 'camera_height': 600, 'camera_aspect': '4/3', 'camera_xpos': 0, 'camera_ypos': 0, 'camera_zorder': 0, 
+            'out_width': 800, 'out_height': 600},
+           'pip_camera': 
+           {'screen_width': 800, 'screen_height': 600, 'screen_aspect': '4/3', 'screen_xpos': 0,'screen_ypos': 0, 'screen_zorder': 0, 
+            'camera_width': 160, 'camera_height': 120, 'camera_aspect': '4/3', 'camera_xpos': 640, 'camera_ypos': 480, 'camera_zorder': 1, 
+            'out_width': 800, 'out_height': 600},}
+
+def create_sbs(out, camera, screen, audio=None, layout='sbs'):
     """
     Side By Side creator
     
@@ -33,23 +46,23 @@ def create_sbs(out, camera, screen, audio=None):
 
     pipestr = """
     videomixer2 name=mix background=1 
-      sink_0::xpos=0 sink_0::ypos=120 sink_0::zorder=0 
-      sink_1::xpos=640 sink_1::ypos=120 sink_1::zorder=0 !
+      sink_0::xpos={screen_xpos} sink_0::ypos={screen_ypos} sink_0::zorder={screen_zorder} 
+      sink_1::xpos={camera_xpos} sink_1::ypos={camera_ypos} sink_1::zorder={camera_zorder} !
     ffmpegcolorspace name=colorsp_saida ! 
-    video/x-raw-yuv, format=(fourcc)I420, width=1280, height=720, framerate=25/1 ! 
+    video/x-raw-yuv, format=(fourcc)I420, width={out_width}, height={out_height}, framerate=25/1 ! 
     x264enc quantizer=45 speed-preset=6 profile=1 ! queue ! 
     mp4mux name=mux  ! queue ! filesink location="{OUT}"
     
-    filesrc location="{SCREEN}" ! decodebin2 name=dbscreen ! 
-    aspectratiocrop aspect-ratio=4/3 ! videoscale ! videorate ! 
+    filesrc location="{SCREEN}" ! decodebin2 name=dbscreen ! deinterlace !
+    aspectratiocrop aspect-ratio={screen_aspect} ! videoscale ! videorate ! 
     ffmpegcolorspace name=colorsp_screen ! 
-    video/x-raw-yuv, format=(fourcc)AYUV, framerate=25/1, width=640, height=480 ! 
+    video/x-raw-yuv, format=(fourcc)AYUV, framerate=25/1, width={screen_width}, height={screen_height} ! 
     mix.sink_0 
     
-    filesrc location="{CAMERA}" ! decodebin2 name=dbcamera ! 
-    aspectratiocrop aspect-ratio=4/3 ! videoscale ! videorate ! 
+    filesrc location="{CAMERA}" ! decodebin2 name=dbcamera ! deinterlace !
+    aspectratiocrop aspect-ratio={camera_aspect} ! videoscale ! videorate ! 
     ffmpegcolorspace name=colorsp_camera ! 
-    video/x-raw-yuv, format=(fourcc)AYUV, framerate=25/1, width=640, height=480 ! 
+    video/x-raw-yuv, format=(fourcc)AYUV, framerate=25/1, width={camera_width}, height={camera_height} ! 
     mix.sink_1 
     """
 
@@ -73,11 +86,6 @@ def create_sbs(out, camera, screen, audio=None):
     mix.sink_1 
     """
 
-    old_caps = " video/x-raw-yuv,width=640,height=480,framerate=25/1 ! "
-    newer_caps = " video/x-raw-yuv, format=(fourcc)AYUV, framerate=25/1, width=640, height=480 ! "
-
-                                                                                                                                 
-
     pipestr_audio = """
     db{SRC}. ! audioconvert ! queue ! faac bitrate=128000 ! queue ! mux. 
     """
@@ -86,6 +94,10 @@ def create_sbs(out, camera, screen, audio=None):
     filesrc location="{AUDIO}" ! decodebin2 name=dbaudio ! 
     audioconvert ! queue ! faac bitrate=128000 ! queue ! mux.
     """
+
+    if not layout in layouts:
+        logger.error('Layout not exists')
+        raise IOError, 'Error in SideBySide proccess'
 
     if not gst.element_factory_find('videomixer2'):
         pipestr = old_pipestr    
@@ -109,6 +121,7 @@ def create_sbs(out, camera, screen, audio=None):
 
 
     parameters = {'OUT': out, 'SCREEN': screen, 'CAMERA': camera}
+    parameters.update(layouts[layout])
 
     pipeline = gst.Pipeline()
     bus = pipeline.get_bus()

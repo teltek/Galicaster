@@ -28,17 +28,16 @@ log = logging.getLogger()
 pipestr = (" identity name=\"joint\" ! tee name=gc-vga2usb-tee ! "
            " queue !  videorate silent=true ! video/x-raw-yuv,framerate=25/1 ! "
            " videoscale add-borders=true ! video/x-raw-yuv,width=800,height=600 ! "
-           " ffmpegcolorspace ! valve name=gc-vga2usb-valve drop=false ! "
-           " queue ! xvidenc bitrate=5000000 ! avimux name=mux2 ! "
-           #" x264enc pass=5 quantizer=22 speed-preset=4 profile=1 ! queue ! avimux ! "
+           " ffmpegcolorspace ! valve name=gc-vga2usb-valve drop=false ! queue ! "
+           " gc-vga2usb-enc ! queue ! gc-vga2usb-mux ! "
            " queue ! filesink name=gc-vga2usb-sink async=false "
-           " gc-vga2usb-tee. ! "
-           " queue ! ffmpegcolorspace ! identity single-segment=true ! "
+           " gc-vga2usb-tee. ! queue ! ffmpegcolorspace ! identity single-segment=true ! "
            " xvimagesink qos=false async=false sync=false name=gc-vga2usb-preview " )
 
 class GCvga2usb(gst.Bin, base.Base):
 
-    order = ["name","flavor","location","file","drivertype"]
+    order = ["name","flavor","location","file","drivertype",
+             "encoder", "muxer"]
 
     gc_parameters = {
         "name": {
@@ -74,6 +73,17 @@ class GCvga2usb(gst.Bin, base.Base):
             "default": "",
             "description": "Not implemented yet",
             },
+        "encoder": {
+            "type": "text",
+            "default": "xvidenc bitrate=5000000",
+            #Other examples: "x264enc pass=5 quantizer=22 speed-preset=4 profile=1"
+            "description": "Gstreamer encoder element used in the bin",
+            },
+        "muxer": {
+            "type": "text",
+            "default": "avimux",
+            "description": "Gstreamer encoder muxer used in the bin",
+            },
         }
     
     is_pausable = True
@@ -102,7 +112,12 @@ class GCvga2usb(gst.Bin, base.Base):
         else:
             driver_type = "v4l2src"
 
-        bin_end = gst.parse_bin_from_description(pipestr.replace("gc-vga2usb-preview", "sink-" + self.options['name']), True)
+        aux = (pipestr.replace("gc-vga2usb-preview", "sink-" + self.options['name'])
+                      .replace('gc-vga2usb-enc', self.options['encoder'])
+                      .replace('gc-vga2usb-mux', self.options['muxer']))
+
+
+        bin_end = gst.parse_bin_from_description(aux, True)
         log.info("Setting background for Epiphan: %s", background)
         bin_start = Switcher("canguro", self.options['location'], background, driver_type)
         self.bin_start=bin_start            

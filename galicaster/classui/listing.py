@@ -87,8 +87,8 @@ class ListingClassUI(ManagerUI):
 				duration = 0
 
 			if mp.status != mediapackage.SCHEDULED:
-				lista.append([mp.metadata_episode['identifier'], 
-					      mp.metadata_episode['title'], 
+				lista.append([mp.getIdentifier(), 
+					      mp.getTitle(), 
 					      self.list_readable(mp.creators), 
 					      mp.series_title, 
 					      long(mp.getSize()),
@@ -249,8 +249,8 @@ class ListingClassUI(ManagerUI):
 
 	def _refresh(self,mp,i):
 		"""Fills the new values of a refreshed row"""
-		self.lista.set(i,0,mp.metadata_episode['identifier'])
-		self.lista.set(i,1,mp.metadata_episode['title'])
+		self.lista.set(i,0,mp.getIdentifier())
+		self.lista.set(i,1,mp.getTitle())
 		self.lista.set(i,2,self.list_readable(mp.creators))
 		self.lista.set(i,3,mp.series_title)
 		self.lista.set(i,4,long(mp.getSize()))

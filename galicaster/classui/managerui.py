@@ -377,7 +377,7 @@ class ManagerUI(gtk.Box):
 	package = self.repository.get(key)
 	t1 = "This action will remove the recording from the hard disk."
 	t2 = 'Recording:  "'+package.getTitle()+'"'
-	text = {"title" : "Delete",
+	text = {"title" : "Media Manager",
 		"main" : "Are you sure you want to delete?",
 		"text" : t1+"\n\n"+t2
 		    }
