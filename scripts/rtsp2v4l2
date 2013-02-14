@@ -1,7 +1,0 @@
-#!/bin/bash
-pwd=`cat /opt/galicaster/usrpwd`
-
-#echo "room $1 $pwd"
-
-gst-launch rtspsrc timeout=30000000 location=rtsp://$pwd@grab-$1.mh.uib.no:554/vga.sdp ! decodebin ! v4l2sink device=/dev/video0
-
