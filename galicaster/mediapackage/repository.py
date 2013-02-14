@@ -29,8 +29,6 @@ logger = logging.getLogger()
 
 class Repository(object):
     attach_dir = 'attach'
-    rectemp_dir = 'rectemp'
-    repo_dirs = (attach_dir, rectemp_dir)
 
     def __init__(self, root=None, hostname='', 
                  folder_template='gc_{hostname}_{year}-{month}-{day}T{hour}h{minute}m{second}'):
@@ -45,7 +43,6 @@ class Repository(object):
         self.folder_template = folder_template
 
         self.create_repo(hostname)
-        self.save_crash_recordings()
 
         self.__list = dict()
         self.refresh(True)
@@ -54,10 +51,9 @@ class Repository(object):
     def create_repo(self, hostname):
         if not os.path.isdir(self.root):
             os.mkdir(self.root)
-           
-        for repo_dir in self.repo_dirs:
-            if not os.path.isdir(os.path.join(self.root, repo_dir)):
-                os.mkdir(os.path.join(self.root, repo_dir))
+            
+        if not os.path.isdir(os.path.join(self.root, self.attach_dir)):
+            os.mkdir(os.path.join(self.root, self.attach_dir))
 
         info_repo_file = os.path.join(self.root, self.attach_dir, 'info.ini')
         if not os.path.isfile(info_repo_file):
@@ -69,21 +65,11 @@ class Repository(object):
                 conf.write(configfile)
         
 
-    def save_crash_recordings(self):
-        backup_dir = self.get_rectemp_path(datetime.datetime.now().replace(microsecond=0).isoformat())
-        for temp_file in os.listdir(self.get_rectemp_path()):
-            full_path = os.path.join(self.get_rectemp_path(), temp_file)
-            if os.path.isfile(full_path) and os.path.getsize(full_path):
-                if not os.path.isdir(backup_dir):
-                    os.mkdir(backup_dir)
-                os.rename(full_path, os.path.join(backup_dir, temp_file))
-
-
     def refresh(self, check_inconsistencies=False):
         self.__list.clear()
         if self.root != None:
             for folder in os.listdir(self.root):
-                if folder in self.repo_dirs:
+                if folder == self.attach_dir:
                     continue
                 try:
                     manifest = os.path.join(self.root, folder, "manifest.xml")
@@ -236,7 +222,7 @@ class Repository(object):
                 filename = os.path.join(bin['path'], bin['file'])
                 dest = os.path.join(mp.getURI(), os.path.basename(filename))
                 os.rename(filename, dest)
-                etype = 'audio/mp3' if bin['device'] in ['pulse','audiotest'] else 'video/' + dest.split('.')[1].lower()
+                etype = 'audio/mp3' if bin['device'] in ['pulse','audiotest','rtpaudio'] else 'video/' + dest.split('.')[1].lower()
                 flavour = bin['flavor'] + '/source'
                 mp.add(dest, mediapackage.TYPE_TRACK, flavour, etype, duration) # FIXME MIMETYPE
         mp.forceDuration(duration)
@@ -283,36 +269,20 @@ class Repository(object):
             return os.path.join(self.root, self.attach_dir)
 
 
-    def get_rectemp_path(self, name=None):
-        if name:
-            return os.path.join(self.root, self.rectemp_dir, name)
-        else:
-            return os.path.join(self.root, self.rectemp_dir)
-
-
     def __get_folder_name(self, mp):
-        utcdate = mp.getDate()
-        date = mp.getLocalDate()
-
         mappings = {
-            'id'          : mp.identifier,
-            'title'       : mp.title, 
-            'series'      : mp.series_title, 
-            'hostname'    : self.hostname, 
-            'type'        : 'M' if mp.manual else 'S',
-            'longtype'    : 'manual' if mp.manual else 'scheduled',
-            'year'        : date.strftime('%Y'),
-            'month'       : date.strftime('%m'),
-            'day'         : date.strftime('%d'),
-            'hour'        : date.strftime('%H'),
-            'minute'      : date.strftime('%M'),
-            'second'      : date.strftime('%S'),
-            'utcyear'     : utcdate.strftime('%Y'),
-            'utcmonth'    : utcdate.strftime('%m'),
-            'utcday'      : utcdate.strftime('%d'),
-            'utchour'     : utcdate.strftime('%H'),
-            'utcminute'   : utcdate.strftime('%M'),
-            'utcsecond'   : utcdate.strftime('%S')}
+            'id'       : mp.identifier,
+            'title'    : mp.title, 
+            'series'   : mp.series_title, 
+            'hostname' : self.hostname, 
+            'type'     : 'M' if mp.manual else 'S',
+            'longtype' : 'manual' if mp.manual else 'scheduled',
+            'year'     : mp.getDate().strftime('%Y'),
+            'month'    : mp.getDate().strftime('%m'),
+            'day'      : mp.getDate().strftime('%d'),
+            'hour'     : mp.getDate().strftime('%H'),
+            'minute'   : mp.getDate().strftime('%M'),
+            'second'   : mp.getDate().strftime('%S')}
         
         base = folder_name = re.sub(r'\W+', '', self.folder_template.format(**mappings))
         
