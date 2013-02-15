@@ -32,6 +32,7 @@ from galicaster.recorder.pipeline import blackmagic
 from galicaster.recorder.pipeline import videotest
 from galicaster.recorder.pipeline import audiotest
 from galicaster.recorder.pipeline import oldblackmagic
+from galicaster.recorder.pipeline import rtpvideo
 
 FLAVORS = ["presentation","presenter","other"]
 
