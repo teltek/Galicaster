@@ -20,7 +20,6 @@ import gobject
 import gtk
 import gst
 import time
-import logging
 import threading
 
 try:
@@ -46,7 +45,7 @@ GC_PAUSE=3
 GC_STOP=4
 GC_BLOCKED=5
 
-log = logging.getLogger()
+log = context.get_logger()
 
 class PlayerClassUI(ManagerUI):
     """

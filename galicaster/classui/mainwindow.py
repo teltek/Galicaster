@@ -13,16 +13,11 @@
 """
 UI for the welcoming page
 """
-
-
 import gtk
-import logging
 
 from galicaster import __version__
 from galicaster.classui import message
 from galicaster.classui import get_image_path
-
-log = logging.getLogger()
 
 class GCWindow(gtk.Window):
     """
@@ -31,7 +26,7 @@ class GCWindow(gtk.Window):
     __gtype_name__ = 'GCWindow'
     __def_win_size__ = (1024, 768)
 
-    def __init__(self, dispatcher=None, state=None):  
+    def __init__(self, dispatcher=None, state=None, logger=None):  
         gtk.Window.__init__(self,gtk.WINDOW_TOPLEVEL)
         self.set_size_request(*self.__def_win_size__) #FIXME make it unchangable
         self.full_size = self.discover_size()
@@ -39,6 +34,7 @@ class GCWindow(gtk.Window):
         self.set_decorated(False)
         self.set_position(gtk.WIN_POS_CENTER)
         self.is_fullscreen = True
+        self.logger = logger
 
         #pixbuf = gtk.gdk.pixbuf_new_from_file(get_image_path('galicaster.svg'))
         pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(get_image_path('galicaster.svg'),48,48)        
@@ -98,8 +94,8 @@ class GCWindow(gtk.Window):
             h = root.get_screen().get_height()
             size = (w,h)
         except:
-            print "Error getting screen size, set to defaul 1080p"
-            log.error("Unable to get root screen size")
+            if self.logger:
+                self.logger.error("Unable to get root screen size")
             
         return size
         
@@ -121,7 +117,8 @@ class GCWindow(gtk.Window):
 
     def __on_delete_event(self):
         """Emits the quit signal to its childs"""
-        log.debug("Delete Event Received")
+        if self.logger:
+            self.logger.debug("Delete Event Received")
         if self.dispatcher:
             self.dispatcher.emit('galicaster-quit')
 
@@ -137,9 +134,11 @@ class GCWindow(gtk.Window):
                                 self, buttons)
 
         if warning.response in message.POSITIVE:
-            log.info("Quit Galicaster")
+            if self.logger:
+                self.logger.info("Quit Galicaster")
             if self.dispatcher:
                 self.dispatcher.emit('galicaster-notify-quit')
             gtk.main_quit()
         else:
-            log.info("Cancel Quit")
+            if self.logger:
+                self.logger.info("Cancel Quit")

@@ -16,12 +16,9 @@
 #  - In cameratype mpeg4 dont use decodebin2
 #
 
-import logging
-
 import gobject
 import gst
 import re
-
 
 from os import path
 

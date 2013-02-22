@@ -11,8 +11,6 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
-import logging
-
 import gtk
 import gst
 import os
@@ -21,7 +19,7 @@ import sys
 from galicaster.core import context
 from galicaster.utils.gstreamer import WeakMethod
 
-log = logging.getLogger()
+logger = context.get_logger()
 
 
 class Recorder(object):
@@ -83,7 +81,7 @@ class Recorder(object):
                     'Invalid track type %s for %s track' % (mod_name, name)
                     )
 
-            log.debug("Init bin %s %s", name, mod_name)
+            logger.debug("Init bin %s %s", name, mod_name)
             self.bins[name] = Klass(bin)
             self.pipeline.add(self.bins[name])
 
@@ -94,7 +92,7 @@ class Recorder(object):
         return self.pipeline.get_clock().get_time()
 
     def preview(self):
-        log.debug("recorder preview")
+        logger.debug("recorder preview")
         if not len(self.bins):
             self.dispatcher.emit("recorder-error","No tracks on profile")
             return False
@@ -147,7 +145,7 @@ class Recorder(object):
         return True
 
     def stop_record_and_restart_preview(self):
-        log.debug("Stopping Recording and Restarting Preview")
+        logger.debug("Stopping Recording and Restarting Preview")
         a = gst.structure_from_string('letpass')
         event = gst.event_new_custom(gst.EVENT_EOS, a)
         for bin_name, bin in self.bins.iteritems():
@@ -161,20 +159,20 @@ class Recorder(object):
         return True
 
     def just_restart_preview(self):
-        log.debug("Stopping Preview and Restarting")
+        logger.debug("Stopping Preview and Restarting")
         self.stop_preview()
-        log.debug("EMITTING restart preview")
+        logger.debug("EMITTING restart preview")
         self.dispatcher.emit("restart-preview")
         return True
 
     def pause(self):
-        log.debug("recorder paused")
+        logger.debug("recorder paused")
         self.pipeline.set_state(gst.STATE_PAUSED)
         self.pipeline.get_state()
         return True
 
     def resume(self):
-        log.debug("resume paused")
+        logger.debug("resume paused")
         self.pipeline.set_state(gst.STATE_PLAYING)
         self.pipeline.get_state()
         return None
@@ -184,18 +182,18 @@ class Recorder(object):
             print "DEBUG ", msg
 
     def _on_eos(self, bus, msg):
-        log.info('eos')
+        logger.info('eos')
         self.stop_preview()  # FIXME pipeline set to NULL twice (bf and in the function)
 
         if self.restart:
             self.restart = False
-            log.debug("EMITTING restart preview")
+            logger.debug("EMITTING restart preview")
             self.dispatcher.emit("restart-preview")
 
     def _on_error(self, bus, msg):
         error, debug = msg.parse_error()
         error_info = "%s (%s)" % (error, debug)
-        log.error(error_info)
+        logger.error(error_info)
         if not debug.count('canguro'):
             self.stop_elements()
             gtk.gdk.threads_enter()
@@ -230,7 +228,7 @@ class Recorder(object):
             return
         if message.structure.get_name() == 'prepare-xwindow-id':
             name = message.src.get_property('name')[5:]
-            log.debug("on sync message 'prepare-xwindow-id' %r", name)
+            logger.debug("on sync message 'prepare-xwindow-id' %r", name)
 
             try:
                 gtk_player = self.players[name]
@@ -245,7 +243,7 @@ class Recorder(object):
             except KeyError:
                 pass
             except TypeError:
-                log.error('players[%r]: need a %r; got a %r: %r' % (
+                logger.error('players[%r]: need a %r; got a %r: %r' % (
                         name, gtk.DrawingArea, type(gtk_player), gtk_player))
         
     def _on_message_element(self, bus, message):

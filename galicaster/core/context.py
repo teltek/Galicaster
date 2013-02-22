@@ -15,6 +15,7 @@
 from galicaster.mediapackage.repository import Repository
 from galicaster.utils.mhhttpclient import MHHTTPClient
 from galicaster.core.conf import Conf
+from galicaster.core.logger import Logger
 from galicaster.core.worker import Worker
 from galicaster.core.dispatcher import Dispatcher
 from galicaster.core.state import State
@@ -61,6 +62,21 @@ def get_conf():
         __galicaster_context['conf'] = Conf()
 
     return __galicaster_context['conf']
+
+
+def get_logger():
+    """
+    Get the Logger class from the App Context
+    """
+    if 'logger' not in __galicaster_context:
+        conf = get_conf()
+        logger = Logger(conf.get('logger', 'path'),
+                        conf.get('logger', 'level').upper(),
+                        conf.get_boolean('logger', 'rotate'))
+        __galicaster_context['logger'] = logger
+        conf.logger = logger
+
+    return __galicaster_context['logger']
 
 
 def get_mhclient():
@@ -121,12 +137,12 @@ def get_worker():
     if 'worker' not in __galicaster_context:
         __galicaster_context['worker'] = Worker(get_dispatcher(),
                                                 get_repository(),
+                                                get_logger(),
                                                 get_mhclient(),
                                                 get_conf().get('basic', 'export'),
                                                 get_conf().get('basic', 'tmp'),
                                                 not get_conf().get_boolean('basic', 'legacy'),
-                                                get_conf().get('sidebyside', 'layout'),
-                                                )
+                                                get_conf().get('sidebyside', 'layout'))
 
     return __galicaster_context['worker']
 
@@ -150,7 +166,8 @@ def get_heartbeat():
         heartbeat = Heartbeat(get_dispatcher(), 
                       get_conf().get_int('heartbeat', 'short'),
                       get_conf().get_int('heartbeat', 'long'),                      
-                      get_conf().get('heartbeat', 'night'))
+                      get_conf().get('heartbeat', 'night'),
+                      get_logger())
         __galicaster_context['heartbeat'] = heartbeat
 
     return __galicaster_context['heartbeat']
@@ -162,7 +179,8 @@ def get_scheduler():
     """
     if 'scheduler' not in __galicaster_context:
         if get_conf().get_boolean("ingest", "active"):
-            sch = Scheduler(get_repository(), get_conf(), get_dispatcher(), get_mhclient())
+            sch = Scheduler(get_repository(), get_conf(), get_dispatcher(), 
+                            get_mhclient(), get_logger())
         else:
             sch = None
         __galicaster_context['scheduler'] = sch

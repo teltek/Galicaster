@@ -17,9 +17,6 @@
 from os import path
 
 import gst
-import logging
-
-logger = logging.getLogger()
 
 layouts = {'sbs': 
            {'screen_width': 640, 'screen_height': 480, 'screen_aspect': '4/3', 'screen_xpos': 640,'screen_ypos': 120, 'screen_zorder': 0, 
@@ -34,7 +31,7 @@ layouts = {'sbs':
             'camera_width': 160, 'camera_height': 120, 'camera_aspect': '4/3', 'camera_xpos': 640, 'camera_ypos': 480, 'camera_zorder': 1, 
             'out_width': 800, 'out_height': 600},}
 
-def create_sbs(out, camera, screen, audio=None, layout='sbs'):
+def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
     """
     Side By Side creator
     
@@ -96,29 +93,33 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs'):
     """
 
     if not layout in layouts:
-        logger.error('Layout not exists')
+        if logger:
+            logger.error('Layout not exists')
         raise IOError, 'Error in SideBySide proccess'
 
     if not gst.element_factory_find('videomixer2'):
         pipestr = old_pipestr    
 
     if not camera or not screen:
-        logger.error('SideBySide Error: Two videos needed')
+        if logger:
+            logger.error('SideBySide Error: Two videos needed')
         raise IOError, 'Error in SideBySide proccess'
 
     for track in [camera, screen, audio]:    
         if track and not path.isfile(camera):
-            logger.error('SideBySide Error: Not  a valid file %s', track)
+            if logger:
+                logger.error('SideBySide Error: Not  a valid file %s', track)
             raise IOError, 'Error in SideBySide proccess'
 
     embeded = False
     if audio:
         pipestr = "".join((pipestr, pipestr_audio_file.format(AUDIO=audio)))
-        logger.debug('Audio track detected: %s', audio)
+        if logger:
+            logger.debug('Audio track detected: %s', audio)
     else:
-        logger.debug('Audio embeded')
-        embeded = True        
-
+        if logger:
+            logger.debug('Audio embeded')
+        embeded = True
 
     parameters = {'OUT': out, 'SCREEN': screen, 'CAMERA': camera}
     parameters.update(layouts[layout])
@@ -144,7 +145,8 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs'):
 
     if msg.type == gst.MESSAGE_ERROR:
         err, debug = msg.parse_error()
-        logger.error('SideBySide Error: %s', err)
+        if logger:
+            logger.error('SideBySide Error: %s', err)
         raise IOError, 'Error in SideBySide proccess'
 
     return True
@@ -162,7 +164,8 @@ def on_audio_decoded(element, pad, bin, muxer):
 
     if name.startswith('audio/x-raw') and pending:
         # db%. audioconvert ! queue ! faac bitrate = 12800 ! queue ! mux.
-        logger.debug('Audio decoded pad: %r in %s', name, element_name)
+        if logger:
+            logger.debug('Audio decoded pad: %r in %s', name, element_name)
 
         convert = gst.element_factory_make('audioconvert', 'sbs-audio-convert')
         q1 = gst.element_factory_make('queue','sbs-audio-queue1')

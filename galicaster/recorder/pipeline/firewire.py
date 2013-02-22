@@ -12,8 +12,6 @@
 # San Francisco, California, 94105, USA.
 
 
-import logging
-
 import gobject
 import gst
 

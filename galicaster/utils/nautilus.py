@@ -11,10 +11,11 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import logging
 import os
 
-logger = logging.getLogger()
+from galicaster.core import context
+
+logger = context.get_logger()
 
 def open_folder(path):
     logger.info("Opening folder {0}".format(path))

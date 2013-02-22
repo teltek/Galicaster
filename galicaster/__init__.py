@@ -11,25 +11,8 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-
-import logging
-
 __version__ = '1.2.3'
 
-
-format = [
-    '%(asctime)s',
-    '%(levelname)s',
-    '%(module)s',
-    '%(message)s',
-    ]
-
-logging.basicConfig(
-    filename = '/tmp/galicaster.log',
-    filemode = 'a',
-    level = logging.DEBUG,
-    format='\t'.join(format),
-
-)
-logging.info('galicaster.__version__: %r', __version__)
-logging.info('galicaster.__file__: %r', __file__)
+#TODO
+#logging.info('galicaster.__version__: %r', __version__)
+#logging.info('galicaster.__file__: %r', __file__)

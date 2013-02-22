@@ -12,10 +12,9 @@
 # San Francisco, California, 94105, USA.
 
 import sys
-import logging
 from galicaster.core import context
 
-logger = logging.getLogger()
+logger = context.get_logger()
 
 def init():
     conf = context.get_conf()

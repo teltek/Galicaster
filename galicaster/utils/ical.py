@@ -14,15 +14,12 @@
 
 from os import path
 import base64
-import logging
 
 from datetime import datetime
 from xml.dom import minidom
 
 from icalendar import Calendar
 from galicaster.mediapackage import mediapackage
-
-logger = logging.getLogger()
 
 def get_events_from_string_ical(ical_data):
     # See https://github.com/collective/icalendar#api-change
@@ -90,7 +87,9 @@ def create_mp(repo, event):
         elif attach_enc.params['X-APPLE-FILENAME'] == ca_properties_name:
             mp.addAttachmentAsString(attach, ca_properties_name, rewrite, ca_properties_name)
         else:
-            logger.error('call error parse ical attachs %s', attach_enc.params['X-APPLE-FILENAME']) 
+            pass
+            # TODO logger
+            #logger.error('call error parse ical attachs %s', attach_enc.params['X-APPLE-FILENAME']) 
                          
     mp.marshalDublincore()
     repo.update(mp)

@@ -11,18 +11,16 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-
 import gtk
 import gobject
 import pango
-import logging
 
 from galicaster.classui.managerui import ManagerUI
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 from galicaster.classui import get_ui_path
 
-logger = logging.getLogger()
+logger = context.get_logger()
 
 rcstring = """
 style "big-scroll" {

@@ -23,7 +23,6 @@ import pango
 import re
 import time
 import datetime
-import logging
 from threading import Thread as thread
 
 from galicaster.core import context
@@ -41,8 +40,8 @@ from galicaster.classui import get_ui_path, get_image_path
 from galicaster.utils.resize import relabel, relabel_updating_font
 
 gtk.gdk.threads_init()
-logger = logging.getLogger()
 
+logger = context.get_logger()
 
 #ESTADOS
 GC_EXIT = -1

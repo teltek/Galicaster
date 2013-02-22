@@ -15,8 +15,6 @@
 Experimental bin which re-multiplexes the DV video to an AVI container so that it can be used in Windows operating systems.
 """
 
-import logging
-
 import gobject
 import gst
 

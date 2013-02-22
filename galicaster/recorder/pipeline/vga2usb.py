@@ -11,19 +11,17 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import logging
-
 import gobject
 import gst
 from os import path
 import galicaster
 
+from galicaster.core import context
 from galicaster.recorder.utils import Switcher
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
-
-log = logging.getLogger()
+logger = context.get_logger()
 
 pipestr = (" identity name=\"joint\" ! tee name=gc-vga2usb-tee ! "
            " queue !  videorate silent=true ! video/x-raw-yuv,framerate=25/1 ! "
@@ -118,7 +116,7 @@ class GCvga2usb(gst.Bin, base.Base):
 
 
         bin_end = gst.parse_bin_from_description(aux, True)
-        log.info("Setting background for Epiphan: %s", background)
+        logger.info("Setting background for Epiphan: %s", background)
         bin_start = Switcher("canguro", self.options['location'], background, driver_type)
         self.bin_start=bin_start            
 

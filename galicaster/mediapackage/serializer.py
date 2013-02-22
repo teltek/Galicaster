@@ -17,7 +17,6 @@
 import os
 import sys
 import traceback
-import logging
 import zipfile
 from datetime import datetime
 from os import path,system
@@ -25,8 +24,6 @@ from xml.dom import minidom
 
 DCTERMS = ['title', 'creator', 'isPartOf', 'description', 'subject', 
            'language', 'contributor', 'created', 'temporal']
-
-logger = logging.getLogger()
 
 SERIES_FILE="series.xml"
 ziptype = "system" # system,native
@@ -126,24 +123,23 @@ def save_system_zip(mp, loc, use_namespace=True):
     
     # FIXME other elements
     
-    try:
-        loc = loc if type(loc) in [str,unicode] else loc.name
-        system('zip -j0 "'+loc + '" "'+'" "'.join(files) + '" >/dev/null')
-        if os.path.isfile(loc+".zip"): # WORKARROUND to eliminate automatic extension .zip
-            os.rename(loc+".zip",loc)
+    loc = loc if type(loc) in [str,unicode] else loc.name
+    system('zip -j0 "'+loc + '" "'+'" "'.join(files) + '" >/dev/null')
+    if os.path.isfile(loc+".zip"): # WORKARROUND to eliminate automatic extension .zip
+        os.rename(loc+".zip",loc)
         
-        #FNULL = open('/dev/null', 'w')
-        #subprocess.check_call(['zip','-j0',loc]+files,stdout=FNULL)
-    except Exception:
-        logger.error("Zip failed: "+str(sys.exc_info()[0]))
+    #FNULL = open('/dev/null', 'w')
+    #subprocess.check_call(['zip','-j0',loc]+files,stdout=FNULL)
     loc = None
     os.remove(tmp_file)
 
 if ziptype == "system":
-    logger.debug("Ussing System Zip")
+    # TODO logger
+    #logger.debug("Ussing System Zip")
     save_in_zip = save_system_zip
 else: 
-    logger.debug("Ussing Native Zip")
+    # TODO logger
+    #logger.debug("Ussing Native Zip")
     save_in_zip = save_native_zip
 
 
