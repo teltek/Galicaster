@@ -19,7 +19,7 @@ import os
 import sys
 
 from galicaster.core import context
-from galicaster.recorder.utils import WeakMethod
+from galicaster.utils.gstreamer import WeakMethod
 
 log = logging.getLogger()
 

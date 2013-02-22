@@ -23,7 +23,9 @@ import gtk
 import gst
 import os
 from gst.pbutils import Discoverer
+
 from galicaster.core import context
+from galicaster.utils.gstreamer import WeakMethod
 
 log = logging.getLogger()
 
@@ -66,10 +68,10 @@ class Player(object):
         # Create bus and connect several handlers
         self.bus.add_signal_watch()
         self.bus.enable_sync_message_emission()
-        self.bus.connect('message::eos', self.__on_eos)
-        self.bus.connect('message::error', self.__on_error)        
-        self.bus.connect('message::element', self.__on_message_element)
-        self.bus.connect('sync-message::element', self.__on_sync_message)
+        self.bus.connect('message::eos', WeakMethod(self, '_on_eos'))
+        self.bus.connect('message::error', WeakMethod(self, '_on_error'))
+        self.bus.connect('message::element', WeakMethod(self, '_on_message_element'))
+        self.bus.connect('sync-message::element', WeakMethod(self, '_on_sync_message'))
 
         # Create elements
         for name, location in self.files.iteritems():
@@ -79,7 +81,7 @@ class Player(object):
             dec = gst.element_factory_make('decodebin2', 'decode-' + name)
             
             # Connect handler for 'new-decoded-pad' signal
-            dec.connect('new-decoded-pad', self.__on_new_decoded_pad)
+            dec.connect('new-decoded-pad', WeakMethod(self, '_on_new_decoded_pad'))
             
             # Link elements
             self.pipeline.add(src, dec)
@@ -171,7 +173,7 @@ class Player(object):
     def get_duration(self):       
         return self.duration
 
-    def __on_new_decoded_pad(self, element, pad, last):
+    def _on_new_decoded_pad(self, element, pad, last):
 
         # if all pads decoded send signal 
         self.decoded_pads+=1
@@ -207,19 +209,19 @@ class Player(object):
         return sink
 
 
-    def __on_eos(self, bus, msg):
+    def _on_eos(self, bus, msg):
         log.info('Player EOS')
         self.stop()
         self.dispatcher.emit("play-stopped")
 
 
-    def __on_error(self, bus, msg):
+    def _on_error(self, bus, msg):
         error = msg.parse_error()[1]
         log.error(error)
         self.stop()
 
 
-    def __on_sync_message(self, bus, message):
+    def _on_sync_message(self, bus, message):
         if message.structure is None:
             return
         if message.structure.get_name() == 'prepare-xwindow-id':
@@ -244,7 +246,7 @@ class Player(object):
                 pass
 
 
-    def __on_message_element(self, bus, message):
+    def _on_message_element(self, bus, message):
         if message.structure.get_name() == 'level':
             self.__set_vumeter(message)
 

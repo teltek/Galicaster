@@ -16,26 +16,8 @@ import gst
 import time
 import thread
 import logging
-import weakref
 
 logger = logging.getLogger()
-
-class WeakMethod:
-
-    def __init__(self, inst, method_name):
-        if not callable(getattr(inst, method_name)):
-            raise TypeError(
-                '{!r} attribute is not callable'.format(method_name)
-            )
-        self.proxy = weakref.proxy(inst)
-        self.method_name = method_name
-
-    def __call__(self, *args):
-        try:
-            method = getattr(self.proxy, self.method_name)
-        except ReferenceError:
-            return
-        return method(*args)
 
 class Switcher(gst.Bin):
 
