@@ -19,6 +19,7 @@ import os
 import sys
 
 from galicaster.core import context
+from galicaster.recorder.utils import WeakMethod
 
 log = logging.getLogger()
 
@@ -62,12 +63,12 @@ class Recorder(object):
 
         self.bus.add_signal_watch()
         self.bus.enable_sync_message_emission()
-        #self.bus.connect('message', self.__debug) # TO DEBUG
-        self.bus.connect('message::eos', self.__on_eos)
-        self.bus.connect('message::error', self.__on_error)        
-        self.bus.connect('message::element', self.__on_message_element)
-        self.bus.connect('message::state-changed', self.__on_state_changed)
-        self.bus.connect('sync-message::element', self.__on_sync_message)
+        #self.bus.connect('message', WeakMethod(self, '_debug')) # TO DEBUG
+        self.bus.connect('message::eos', WeakMethod(self, '_on_eos'))
+        self.bus.connect('message::error', WeakMethod(self, '_on_error'))        
+        self.bus.connect('message::element', WeakMethod(self, '_on_message_element'))
+        self.bus.connect('message::state-changed', WeakMethod(self, '_on_state_changed'))
+        self.bus.connect('sync-message::element', WeakMethod(self, '_on_sync_message'))
 
         for bin in bins:
             name = bin['name']
@@ -178,11 +179,11 @@ class Recorder(object):
         self.pipeline.get_state()
         return None
 
-    def __debug(self, bus, msg):       
+    def _debug(self, bus, msg):       
         if msg.type != gst.MESSAGE_ELEMENT or msg.structure.get_name() != 'level':
             print "DEBUG ", msg
 
-    def __on_eos(self, bus, msg):
+    def _on_eos(self, bus, msg):
         log.info('eos')
         self.stop_preview()  # FIXME pipeline set to NULL twice (bf and in the function)
 
@@ -191,7 +192,7 @@ class Recorder(object):
             log.debug("EMITTING restart preview")
             self.dispatcher.emit("restart-preview")
 
-    def __on_error(self, bus, msg):
+    def _on_error(self, bus, msg):
         error, debug = msg.parse_error()
         error_info = "%s (%s)" % (error, debug)
         log.error(error_info)
@@ -216,7 +217,7 @@ class Recorder(object):
         self.pipeline.get_state()
         #return True
 
-    def __on_state_changed(self, bus, message):
+    def _on_state_changed(self, bus, message):
         old, new, pending = message.parse_state_changed()
         if (isinstance(message.src, gst.Pipeline) and 
             (old, new) == (gst.STATE_READY, gst.STATE_PAUSED) ):
@@ -224,7 +225,7 @@ class Recorder(object):
                 valve = bin.changeValve(True) 
             self.pipeline.set_state(gst.STATE_PLAYING)
 
-    def __on_sync_message(self, bus, message):
+    def _on_sync_message(self, bus, message):
         if message.structure is None:
             return
         if message.structure.get_name() == 'prepare-xwindow-id':
@@ -247,7 +248,7 @@ class Recorder(object):
                 log.error('players[%r]: need a %r; got a %r: %r' % (
                         name, gtk.DrawingArea, type(gtk_player), gtk_player))
         
-    def __on_message_element(self, bus, message):
+    def _on_message_element(self, bus, message):
         if message.structure.get_name() == 'level':
             self.__set_vumeter(message)
 

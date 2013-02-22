@@ -12,15 +12,30 @@
 # San Francisco, California, 94105, USA.
 
 
-import logging
-
 import gst
 import time
 import thread
+import logging
+import weakref
 
+logger = logging.getLogger()
 
+class WeakMethod:
 
-log = logging.getLogger()
+    def __init__(self, inst, method_name):
+        if not callable(getattr(inst, method_name)):
+            raise TypeError(
+                '{!r} attribute is not callable'.format(method_name)
+            )
+        self.proxy = weakref.proxy(inst)
+        self.method_name = method_name
+
+    def __call__(self, *args):
+        try:
+            method = getattr(self.proxy, self.method_name)
+        except ReferenceError:
+            return
+        return method(*args)
 
 class Switcher(gst.Bin):
 
@@ -128,7 +143,7 @@ class Switcher(gst.Bin):
         return False
 
     def polling_thread(self):
-        log.debug("Initializing polling")
+        logger.debug("Initializing polling")
         thread_id = self.thread_id
         pipe = gst.Pipeline('poll')
         device = gst.element_factory_make(self.driver_type, 'polling-device')
@@ -146,7 +161,7 @@ class Switcher(gst.Bin):
             pipe.set_state(gst.STATE_PLAYING)
             state = pipe.get_state()
             if state[0] != gst.STATE_CHANGE_FAILURE:
-                log.debug("VGA active again")
+                logger.debug("VGA active again")
                 pipe.set_state(gst.STATE_NULL)
                 self.thread_id = None
                 self.reset_vga()
@@ -159,25 +174,25 @@ class Switcher(gst.Bin):
     def probe(self, pad, event):        
         if not self.let_pass:
             if event.type == gst.EVENT_EOS and not self.eph_error:
-                log.debug("EOS Received")
+                logger.debug("EOS Received")
                 self.switch("sink0")
                 self.eph_error = True
                 # self.device.set_state(gst.STATE_NULL)
                 self.thread_id = thread.start_new_thread(self.polling_thread,())
-                log.debug("Epiphan BROKEN: Switching Epiphan to Background")
+                logger.debug("Epiphan BROKEN: Switching Epiphan to Background")
                 return False
             if event.type == gst.EVENT_NEWSEGMENT and self.eph_error:
-                log.debug("NEW SEGMENT Received")
+                logger.debug("NEW SEGMENT Received")
                 
                 self.switch("sink1")
                 self.eph_error = False
-                log.debug('Epiphan RECOVERED: Switching back to Epiphan')
+                logger.debug('Epiphan RECOVERED: Switching back to Epiphan')
                 return False # Sure about this?
         else:
             return True # the eos keeps going till the sink
 
     def switch(self, padname):
-        log.debug("Switching to: "+padname)
+        logger.debug("Switching to: "+padname)
         self.selector.emit('block')
         newpad = self.selector.get_static_pad(padname)
         # start_time = newpad.get_property('running-time')
@@ -195,7 +210,7 @@ class Switcher(gst.Bin):
         self.selector.emit('switch', newpad, -1, -1)
 
     def reset_vga(self):
-        log.debug("Resetting Epiphan")
+        logger.debug("Resetting Epiphan")
         
         if self.get_by_name('device') != None :
             self.device.set_state(gst.STATE_NULL) 
