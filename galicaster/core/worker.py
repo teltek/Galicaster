@@ -12,7 +12,6 @@
 # San Francisco, California, 94105, USA.
 
 import os
-import logging
 import threading
 import tempfile
 import Queue
@@ -21,8 +20,6 @@ from datetime import datetime
 from galicaster.mediapackage import serializer
 from galicaster.mediapackage import mediapackage
 from galicaster.utils import sidebyside
-
-logger = logging.getLogger()
 
 INGEST = 'Ingest'
 ZIPPING = 'Export to Zip'
@@ -50,7 +47,8 @@ class Worker(object):
                 self.queue.task_done()
     
 
-    def __init__(self, dispatcher, repo, mh_client=None, export_path=None, tmp_path=None, use_namespace=True, sbs_layout='sbs'):
+    def __init__(self, dispatcher, repo, logger, mh_client=None, export_path=None, tmp_path=None, 
+                 use_namespace=True, sbs_layout='sbs'):
         """
         Arguments:
 
@@ -69,6 +67,7 @@ class Worker(object):
         self.use_namespace = use_namespace
         self.sbs_layout = sbs_layout
         self.dispatcher = dispatcher
+        self.logger = logger
         
         for dir_path in (self.export_path, self.tmp_path):
             if not os.path.isdir(dir_path):
@@ -111,7 +110,7 @@ class Worker(object):
             mp = self.repo[mp_id]
             f = f_operation[name]
         except:
-            logger.error("Fail get MP with id {0} or operation with name {1}".format(mp_id, name))
+            self.logger.error("Fail get MP with id {0} or operation with name {1}".format(mp_id, name))
             return False
         f(mp)
 
@@ -130,7 +129,7 @@ class Worker(object):
         self.operation_nightly(mp, INGEST_CODE)
 
     def ingest(self, mp):
-        logger.info('Creating Ingest Job for MP {0}'.format(mp.getIdentifier()))
+        self.logger.info('Creating Ingest Job for MP {0}'.format(mp.getIdentifier()))
         mp.setOpStatus('ingest',mediapackage.OP_PENDING)
         self.repo.update(mp)
         self.jobs.put((self._ingest, (mp,)))
@@ -142,7 +141,7 @@ class Worker(object):
             self.repo.update(mp)
             return
             
-        logger.info('Executing Ingest for MP {0}'.format(mp.getIdentifier()))
+        self.logger.info('Executing Ingest for MP {0}'.format(mp.getIdentifier()))
         mp.setOpStatus('ingest',mediapackage.OP_PROCESSING)
         self.repo.update(mp)
 
@@ -155,11 +154,11 @@ class Worker(object):
         if mp.manual:
             try:
                 self.mh_client.ingest(ifile.name)
-                logger.info("Finalized Ingest for MP {0}".format(mp.getIdentifier()))
+                self.logger.info("Finalized Ingest for MP {0}".format(mp.getIdentifier()))
                 mp.setOpStatus('ingest',mediapackage.OP_DONE)
                 self.dispatcher.emit('stop-operation', 'ingest', mp, True)
             except:
-                logger.error("Failed Ingest for MP {0}".format(mp.getIdentifier()))
+                self.logger.error("Failed Ingest for MP {0}".format(mp.getIdentifier()))
                 mp.setOpStatus("ingest",mediapackage.OP_FAILED)
                 self.dispatcher.emit('stop-operation', 'ingest', mp, False)
         else:
@@ -176,11 +175,11 @@ class Worker(object):
                     workflow_parameters[k[36:]] = v
             try:
                 self.mh_client.ingest(ifile.name, workflow, mp.getIdentifier(), workflow_parameters)
-                logger.info("Finalized Ingest for MP {0}".format(mp.getIdentifier()))
+                self.logger.info("Finalized Ingest for MP {0}".format(mp.getIdentifier()))
                 mp.setOpStatus("ingest",mediapackage.OP_DONE)
                 self.dispatcher.emit('stop-operation', 'ingest', mp, True)
             except:
-                logger.error("Failed Ingest for MP {0}".format(mp.getIdentifier()))
+                self.logger.error("Failed Ingest for MP {0}".format(mp.getIdentifier()))
                 mp.setOpStatus("ingest",mediapackage.OP_FAILED)
                 self.dispatcher.emit('stop-operation', 'ingest', mp, False)
             
@@ -191,7 +190,7 @@ class Worker(object):
 
 
     def export_to_zip(self, mp, location=None):
-        logger.info('Creating ExportToZIP Job for MP {0}'.format(mp.getIdentifier()))
+        self.logger.info('Creating ExportToZIP Job for MP {0}'.format(mp.getIdentifier()))
         mp.setOpStatus('exporttozip',mediapackage.OP_PENDING)
         self.repo.update(mp)
         self.jobs.put((self._export_to_zip, (mp, location)))
@@ -202,12 +201,12 @@ class Worker(object):
             name = datetime.now().replace(microsecond=0).isoformat()
             location = location or os.path.join(self.export_path, name + '.zip')
         if is_action:
-            logger.info("Executing ExportToZIP for MP {0}".format(mp.getIdentifier()))
+            self.logger.info("Executing ExportToZIP for MP {0}".format(mp.getIdentifier()))
             mp.setOpStatus('exporttozip',mediapackage.OP_PROCESSING)
             self.dispatcher.emit('start-operation', 'exporttozip', mp)
             self.repo.update(mp)
         else:
-            logger.info("Zipping MP {0}".format(mp.getIdentifier()))
+            self.logger.info("Zipping MP {0}".format(mp.getIdentifier()))
         try:
             serializer.save_in_zip(mp, location, self.use_namespace)
             if is_action:
@@ -216,7 +215,7 @@ class Worker(object):
         
         except:
             if is_action:
-                logger.error("Zip failed for MP {0}".format(mp.identifier))
+                self.logger.error("Zip failed for MP {0}".format(mp.identifier))
                 mp.setOpStatus('exporttozip',mediapackage.OP_FAILED)
                 self.dispatcher.emit('stop-operation', 'exporttozip', mp, False)
             else:
@@ -225,14 +224,14 @@ class Worker(object):
 
 
     def side_by_side(self, mp, location=None):
-        logger.info('Creating SideBySide Job for MP {0}'.format(mp.getIdentifier()))
+        self.logger.info('Creating SideBySide Job for MP {0}'.format(mp.getIdentifier()))
         mp.setOpStatus('sidebyside',mediapackage.OP_PENDING)
         self.repo.update(mp)
         self.jobs.put((self._side_by_side, (mp, location)))
 
 
     def _side_by_side(self, mp, location=None):
-        logger.info('Executing SideBySide for MP {0}'.format(mp.getIdentifier()))
+        self.logger.info('Executing SideBySide for MP {0}'.format(mp.getIdentifier()))
         mp.setOpStatus('sidebyside',mediapackage.OP_PROCESSING)
         if not location:
             name = datetime.now().replace(microsecond=0).isoformat()
@@ -255,7 +254,7 @@ class Worker(object):
             mp.setOpStatus('sidebyside',mediapackage.OP_DONE)
             self.dispatcher.emit('stop-operation', 'sidebyside', mp, True)
         except:
-            logger.error("Failed SideBySide for MP {0}".format(mp.getIdentifier()))
+            self.logger.error("Failed SideBySide for MP {0}".format(mp.getIdentifier()))
             mp.setOpStatus('sidebyside', mediapackage.OP_FAILED)
             self.dispatcher.emit('stop-operation', 'sidebyside', mp, False)
         self.repo.update(mp)
@@ -274,7 +273,7 @@ class Worker(object):
     
 
     def exec_nightly(self, sender=None): 
-        logger.info('Executing nightly process')
+        self.logger.info('Executing nightly process')
         for mp in self.repo.values():
             for (op_name, op_status) in mp.operation.iteritems():
                 if op_status == mediapackage.OP_NIGHTLY:

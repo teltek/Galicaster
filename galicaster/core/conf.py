@@ -38,8 +38,10 @@ class Conf(object): # TODO list get and other ops arround profile
       self.conf_dist_file = conf_dist_file if os.path.isfile(conf_dist_file) else os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','conf-dist.ini'))
       self.profile_folder = profile_folder if os.path.isdir(profile_folder) else os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'profiles'))
          
-      self.reload()
       self.hostname = self.get_hostname()
+      self.logger = None
+
+      self.reload()
 
 
    def reload(self):
@@ -159,7 +161,8 @@ class Conf(object): # TODO list get and other ops arround profile
       if self.is_mobile(): 
          return {'capture.device.names': 'defaults'}
       # Galicaster Class
-      logger.debug('Be careful using profiles and matterhorn scheduler')
+      if self.logger:
+         self.logger.info('Be careful using profiles and matterhorn scheduler')
       default  = self.get_current_profile()
       names = []
       tracks = {}
@@ -190,7 +193,8 @@ class Conf(object): # TODO list get and other ops arround profile
       try: 
          return self.__conf.getboolean('allows',permit)
       except:
-         logger.error('Unknow permission')
+         if self.logger:
+            self.logger.error('Unknow permission')
          return None
 
 
@@ -214,7 +218,8 @@ class Conf(object): # TODO list get and other ops arround profile
       try:
          self.__current_profile = profile_list[current]
       except:
-         logger.error("Forcing default profile since current doesn't exits")
+         if self.logger:
+            self.logger.error("Forcing default profile since current doesn't exits")
          self.__current_profile = self.__default_profile
 
       return profile_list

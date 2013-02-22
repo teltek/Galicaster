@@ -15,8 +15,6 @@
 The 'oldblackmagic' bin is preserved to keep the support to Blackmagic capture cards with the Ubuntu version 10.10. For new versions, please use the 'blackmagic' bin.
 """
 
-import logging
-
 import gobject
 import gst
 import re

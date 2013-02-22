@@ -12,8 +12,6 @@
 # San Francisco, California, 94105, USA.
 
 
-import logging
-
 import glib
 import gtk
 glib.threads_init()
@@ -29,7 +27,7 @@ from galicaster.core import context
 from galicaster import plugins
 
 
-logger = logging.getLogger()
+logger = context.get_logger()
 
 REC= 0
 PLA= 2

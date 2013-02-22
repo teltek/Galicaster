@@ -12,7 +12,6 @@
 # San Francisco, California, 94105, USA.
 
 import json
-import logging
 import urllib
 import socket
 #IDEA use cStringIO to improve performance
@@ -28,12 +27,10 @@ INGEST_ENDPOINT = '/ingest/addZippedMediaPackage'
 ICAL_ENDPOINT = '/recordings/calendars?agentid={hostname}'
 SERIES_ENDPOINT = '/series/series.json?count={count}'
 
-logger = logging.getLogger()
-
 class MHHTTPClient(object):
     
     def __init__(self, server, user, password, hostname='galicaster', address=None, 
-                 workflow='full', workflow_parameters={'trimHold':'true'}):
+                 workflow='full', workflow_parameters={'trimHold':'true'}, logger=None):
         """
         Arguments:
 
@@ -51,6 +48,7 @@ class MHHTTPClient(object):
         self.hostname = hostname
         self.address = address or socket.gethostbyname(socket.gethostname())
         self.workflow = workflow
+        self.logger = logger
         if isinstance(workflow_parameters, basestring):
             self.workflow_parameters = dict(item.split(":") for item in workflow_parameters.split(";"))
         else:
@@ -88,8 +86,9 @@ class MHHTTPClient(object):
         status_code = c.getinfo(pycurl.HTTP_CODE)
         c.close() 
         if status_code != 200:
-            logger.error('call error in %s, status code {%r}', 
-                      self.server + endpoint.format(**params), status_code)
+            if self.logger:
+                self.logger.error('call error in %s, status code {%r}', 
+                                  self.server + endpoint.format(**params), status_code)
             raise IOError, 'Error in Matterhorn client'
         return b.getvalue()
 

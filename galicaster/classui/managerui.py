@@ -18,7 +18,6 @@ import gtk
 import gobject
 import datetime
 import pango
-import logging
 
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
@@ -30,7 +29,7 @@ from galicaster.utils.resize import relabel
 from galicaster.classui.strip import StripUI
 from galicaster.classui.mpinfo import MPinfo
  
-logger = logging.getLogger()
+logger = context.get_logger()
 
 class ManagerUI(gtk.Box):
     """

@@ -10,28 +10,30 @@
 # this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
-
-import logging
+# 
+# TODO:
+#  - Change mux. Dont use flvmux
+#  - In cameratype mpeg4 dont use decodebin2
+#
 
 import gobject
 import gst
+import re
+
 from os import path
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
-log = logging.getLogger()
+pipe_config = {'mpeg4':
+                   {'depay': 'rtpmp4vdepay', 'videoparse': 'mpeg4videoparse', 'dec': 'decodebin2'},
+               'h264':
+                   {'depay': 'rtph264depay', 'videoparse': 'h264parse', 'dec': 'ffdec_h264'}} 
 
-# default pipestr, override in conf.ini
-pipestr = ("rtspsrc debug=false name=gc-rtp-src ! "
-           "identity single-segment=true ! "
-           "rtph264depay ! ffdec_h264 ! ffmpegcolorspace ! "
-           "tee name=gc-rtp-tee ! queue leaky=1 ! "
-           "xvimagesink async=false sync=false qos=false name=gc-rtp-preview "
-           "gc-rtp-tee. ! queue ! valve drop=false name=gc-rtp-valve ! "
-           "videorate skip-to-first=true ! "
-           "x264enc quantizer=22 speed-preset=2 profile=1 ! queue ! avimux ! "
-           "filesink name=gc-rtp-sink async=false ")
+pipestr = (' rtspsrc name=gc-rtpvideo-src ! gc-rtpvideo-depay ! gc-rtpvideo-videoparse ! '
+           ' tee name=gc-rtpvideo-tee  ! queue ! gc-rtpvideo-dec  ! xvimagesink async=false qos=false name=gc-rtpvideo-preview'
+           ' gc-rtpvideo-tee. ! queue ! valve drop=false name=gc-rtpvideo-valve ! '
+           ' queue ! gc-rtpvideo-mux ! filesink name=gc-rtpvideo-sink async=false')
 
 class GCrtpvideo(gst.Bin, base.Base):
 

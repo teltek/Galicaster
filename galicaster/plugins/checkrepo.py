@@ -15,13 +15,11 @@
 """
 
 import datetime
-import logging
-
-logger = logging.getLogger()
-
 
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
+
+logger = context.get_logger()
 
 def init():	
     try:

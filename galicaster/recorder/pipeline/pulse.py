@@ -11,8 +11,6 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import logging
-
 import gobject
 import gst
 from os import path

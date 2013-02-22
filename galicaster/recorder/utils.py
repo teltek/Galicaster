@@ -11,13 +11,13 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-
 import gst
 import time
 import thread
-import logging
 
-logger = logging.getLogger()
+from galicaster.core import context
+
+logger = context.get_logger()
 
 class Switcher(gst.Bin):
 

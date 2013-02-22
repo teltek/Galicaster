@@ -11,7 +11,6 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import logging
 import os
 import datetime
 import re
@@ -24,16 +23,14 @@ from galicaster.mediapackage import mediapackage
 from galicaster.mediapackage import serializer
 from galicaster.mediapackage import deserializer
 
-logger = logging.getLogger()
-
-
 class Repository(object):
     attach_dir = 'attach'
     rectemp_dir = 'rectemp'
     repo_dirs = (attach_dir, rectemp_dir)
 
     def __init__(self, root=None, hostname='', 
-                 folder_template='gc_{hostname}_{year}-{month}-{day}T{hour}h{minute}m{second}'):
+                 folder_template='gc_{hostname}_{year}-{month}-{day}T{hour}h{minute}m{second}',
+                 logger=None):
         """
         param: root: absolute path to the working folder. ~/Repository use if is None
         param: hostname: galicaster name use in folder prefix
@@ -46,6 +43,8 @@ class Repository(object):
 
         self.create_repo(hostname)
         self.save_crash_recordings()
+        
+        self.logger = logger
 
         self.__list = dict()
         self.refresh(True)
@@ -92,7 +91,8 @@ class Repository(object):
                         self.__list[new_mp.getIdentifier()] = new_mp
                         if check_inconsistencies: self.repair_inconsistencies(new_mp)
                 except:
-                    logger.error('Error in deserializer {0}'.format(folder))
+                    if self.logger:
+                        self.logger.error('Error in deserializer {0}'.format(folder))
 
 
     def repair_inconsistencies(self, mp):

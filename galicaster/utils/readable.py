@@ -11,9 +11,11 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import logging
 import datetime
-logger = logging.getLogger()
+
+from galicaster.core import context
+
+logger = context.get_logger()
 
 EXP_STRINGS = [ (0, 'B'), (10, 'KB'),(20, 'MB'),(30, 'GB'),(40, 'TB'), (50, 'PB')]
 

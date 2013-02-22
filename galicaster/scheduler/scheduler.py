@@ -11,8 +11,6 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import logging
-
 import datetime
 from os import path
 from threading import Timer, _Timer
@@ -20,11 +18,10 @@ from threading import Timer, _Timer
 from galicaster.utils import ical
 from galicaster.mediapackage import mediapackage
 
-logger = logging.getLogger()
 
 class Scheduler(object):
 
-    def __init__(self, repo, conf, disp, mhclient):
+    def __init__(self, repo, conf, disp, mhclient, logger):
         """
         Arguments:
         repo -- the galicaster mediapackage repository
@@ -34,10 +31,11 @@ class Scheduler(object):
         """
         self.ca_status = 'idle'
 
-        self.conf = conf
-        self.repo = repo
+        self.conf       = conf
+        self.repo       = repo
         self.dispatcher = disp
-        self.client = mhclient
+        self.client     = mhclient
+        self.logger     = logger
 
         self.dispatcher.connect('galicaster-notify-timer-short', self.do_timers_short)
         self.dispatcher.connect('galicaster-notify-timer-long',  self.do_timers_long)
@@ -74,12 +72,12 @@ class Scheduler(object):
 
     
     def init_client(self):
-        logger.info('Init matterhorn client')
+        self.logger.info('Init matterhorn client')
 
         try:
             self.client.welcome()
         except:
-            logger.warning('Unable to connect to matterhorn server')
+            self.logger.warning('Unable to connect to matterhorn server')
             self.net = False
             self.dispatcher.emit('net-down')
         else:
@@ -89,25 +87,25 @@ class Scheduler(object):
 
 
     def set_state(self):
-        logger.info('Set status %s to server', self.ca_status)
+        self.logger.info('Set status %s to server', self.ca_status)
         try:
             self.client.setstate(self.ca_status)
             self.client.setconfiguration(self.conf.get_tracks_in_mh_dict()) 
             self.net = True
             self.dispatcher.emit('net-up')
         except:
-            logger.warning('Problems to connect to matterhorn server ')
+            self.logger.warning('Problems to connect to matterhorn server ')
             self.net = False
             self.dispatcher.emit('net-down')
             return
 
 
     def proccess_ical(self):
-        logger.info('Proccess ical')
+        self.logger.info('Proccess ical')
         try:
             ical_data = self.client.ical()
         except:
-            logger.warning('Problems to connect to matterhorn server ')
+            self.logger.warning('Problems to connect to matterhorn server ')
             self.net = False
             self.dispatcher.emit('net-down')
             return
@@ -117,17 +115,17 @@ class Scheduler(object):
             delete_events = ical.get_delete_events(self.last_events, events)
             update_events = ical.get_update_events(self.last_events, events)
         except:
-            logger.error('Error proccessing ical')
+            self.logger.error('Error proccessing ical')
             return
 
         self.repo.save_attach('calendar.ical', ical_data)
         
         for event in events:
-            logger.info('Creating MP with UID {0} from ical'.format(event['UID']))
+            self.logger.info('Creating MP with UID {0} from ical'.format(event['UID']))
             ical.create_mp(self.repo, event)
         
         for event in delete_events:
-            logger.info('Deleting MP with UID {0} from ical'.format(event['UID']))
+            self.logger.info('Deleting MP with UID {0} from ical'.format(event['UID']))
             mp = self.repo.get(event['UID'])
             if mp.status == mediapackage.SCHEDULED:
                 self.repo.delete(mp)
@@ -136,7 +134,7 @@ class Scheduler(object):
                 del self.start_timers[mp.getIdentifier()]
 
         for event in update_events:
-            logger.info('Updating MP with UID {0} from ical'.format(event['UID']))
+            self.logger.info('Updating MP with UID {0} from ical'.format(event['UID']))
             mp = self.repo.get(event['UID'])
             if self.start_timers.has_key(mp.getIdentifier()) and mp.status == mediapackage.SCHEDULED:
                 self.start_timers[mp.getIdentifier()].cancel()
@@ -163,7 +161,7 @@ class Scheduler(object):
             
             mp = self.repo.get(key)      
             
-            logger.info('Start record %s, duration %s ms', mp.getIdentifier(), mp.getDuration())
+            self.logger.info('Start record %s, duration %s ms', mp.getIdentifier(), mp.getDuration())
 
             self.t_stop = Timer(mp.getDuration()/1000, self.stop_record, [mp.getIdentifier()])
             self.t_stop.start()
@@ -172,7 +170,7 @@ class Scheduler(object):
             try:
                 self.client.setrecordingstate(key, 'capturing')
             except:
-                logger.warning('Problems to connect to matterhorn server ')
+                self.logger.warning('Problems to connect to matterhorn server ')
 
 
         del self.start_timers[mp.getIdentifier()]
@@ -181,7 +179,7 @@ class Scheduler(object):
     def stop_record(self, key):
         self.ca_status = 'idle'
         self.mp_rec = None
-        logger.info('Stop record %s', key)
+        self.logger.info('Stop record %s', key)
 
         mp = self.repo.get(key)
         if mp.status == mediapackage.RECORDING:
@@ -189,7 +187,7 @@ class Scheduler(object):
             try:
                 self.client.setrecordingstate(key, 'capture_finished')
             except:
-                logger.warning('Problems to connect to matterhorn server ')
+                self.logger.warning('Problems to connect to matterhorn server ')
                 self.net = False
                 self.dispatcher.emit('net-down')
             

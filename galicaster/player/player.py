@@ -18,7 +18,6 @@
 #
 
 
-import logging
 import gtk
 import gst
 import os
@@ -27,7 +26,7 @@ from gst.pbutils import Discoverer
 from galicaster.core import context
 from galicaster.utils.gstreamer import WeakMethod
 
-log = logging.getLogger()
+logger = context.get_logger()
 
 class Player(object):
 
@@ -75,7 +74,7 @@ class Player(object):
 
         # Create elements
         for name, location in self.files.iteritems():
-            log.info('playing %r', location)
+            logger.info('playing %r', location)
             src = gst.element_factory_make('filesrc', 'src-' + name)
             src.set_property('location', location)
             dec = gst.element_factory_make('decodebin2', 'decode-' + name)
@@ -116,7 +115,7 @@ class Player(object):
         """
         Start to play
         """
-        log.debug("player playing")
+        logger.debug("player playing")
         self.pipeline.set_state(gst.STATE_PLAYING)
         # self.mainloop.run() # FIXME  **2
         return None
@@ -126,7 +125,7 @@ class Player(object):
         """
         Pause the player
         """
-        log.debug("player paused")
+        logger.debug("player paused")
         self.pipeline.set_state(gst.STATE_PAUSED)
         self.pipeline.get_state()
 
@@ -137,7 +136,7 @@ class Player(object):
 
         Pause the reproduction and seek to begin
         """
-        log.debug("player stoped")
+        logger.debug("player stoped")
         self.pipeline.set_state(gst.STATE_PAUSED)
         self.seek(0) 
         self.pipeline.get_state()
@@ -149,7 +148,7 @@ class Player(object):
         """
         Close the pipeline
         """
-        log.debug("player deleted")
+        logger.debug("player deleted")
         self.pipeline.set_state(gst.STATE_NULL)
         self.pipeline.get_state()
         # self.mainloop.quit() #FIXME **2
@@ -182,7 +181,7 @@ class Player(object):
          
         name = pad.get_caps()[0].get_name()
         element_name = element.get_name()[7:]
-        log.debug('new decoded pad: %r in %r', name, element_name)
+        logger.debug('new decoded pad: %r in %r', name, element_name)
         sink = None
 
         if name.startswith('audio/'):
@@ -210,14 +209,14 @@ class Player(object):
 
 
     def _on_eos(self, bus, msg):
-        log.info('Player EOS')
+        logger.info('Player EOS')
         self.stop()
         self.dispatcher.emit("play-stopped")
 
 
     def _on_error(self, bus, msg):
         error = msg.parse_error()[1]
-        log.error(error)
+        logger.error(error)
         self.stop()
 
 
@@ -227,7 +226,7 @@ class Player(object):
         if message.structure.get_name() == 'prepare-xwindow-id':
             name = message.src.get_property('name')[5:]
 
-            log.debug("on sync message 'prepare-xwindow-id' %r", name)
+            logger.debug("on sync message 'prepare-xwindow-id' %r", name)
 
             try:
                 gtk_player = self.players[name]
@@ -240,7 +239,7 @@ class Player(object):
                 gtk.gdk.threads_leave()
 
             except TypeError:
-                log.error('players[%r]: need a %r; got a %r: %r' % (
+                logger.error('players[%r]: need a %r; got a %r: %r' % (
                         name, gtk.DrawingArea, type(gtk_player), gtk_player))
             except KeyError:
                 pass
@@ -278,7 +277,7 @@ class Player(object):
         discoverer = Discoverer(1*gst.SECOND)
         info = discoverer.discover_uri('file://'+filepath)
         self.duration = info.get_duration() / 1000000000
-        log.info("Duration ON_DISCOVERED: "+str(self.duration))        
+        logger.info("Duration ON_DISCOVERED: "+str(self.duration))        
         self.run_pipeline()
         return True
 
