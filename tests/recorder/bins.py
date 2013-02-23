@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       tests/bins
+#       tests/recorder/bins
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #

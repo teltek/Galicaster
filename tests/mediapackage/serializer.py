@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       tests/serializer
+#       tests/mediapackage/serializer
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
@@ -24,7 +24,7 @@ from xml.dom.minidom import parseString
 from xml.parsers.expat import ExpatError
 from unittest import TestCase
 
-
+from tests import get_resource
 from galicaster.mediapackage import repository
 from galicaster.mediapackage import mediapackage
 from galicaster.mediapackage import serializer
@@ -32,7 +32,7 @@ from galicaster.mediapackage import serializer
 
 class TestFunctions(TestCase):
     
-    baseDir = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'mediapackage')
+    baseDir = get_resource('mediapackage')
     path_track1 = path.join(baseDir, 'SCREEN.mpeg')
     path_track2 = path.join(baseDir, 'CAMERA.mpeg')
     path_catalog = path.join(baseDir, 'episode.xml') 

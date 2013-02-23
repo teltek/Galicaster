@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       tests/sidebyside
+#       tests/utils/sidebyside
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
@@ -20,13 +20,14 @@ from os import path
 import tempfile
 import glib
 
+from tests import get_resource
 from galicaster.utils import sidebyside
 
 glib.threads_init()
 
 class TestFunctions(TestCase):
     
-    base_dir = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'sbs')
+    base_dir = get_resource('sbs')
     
     def test_sbs_with_embeded_audio(self):   
         out = tempfile.NamedTemporaryFile()

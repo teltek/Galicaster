@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       tests/profile
+#       tests/core/profile
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
@@ -15,6 +15,7 @@ import os
 from os import path
 from unittest import TestCase
 
+from tests import get_resource
 from galicaster.core.conf import Conf
 from galicaster.core.conf import Profile
 from galicaster.core.conf import Track
@@ -22,10 +23,9 @@ from galicaster.core.conf import Track
 class TestFunctions(TestCase):
 
     def setUp(self):
-        conf_file = path.join(path.dirname(path.abspath(__file__)), 'resources', 'profile', 'conf_good.ini')
-        conf_dist_file = path.join(path.dirname(path.abspath(__file__)), 'resources', 'profile', 'conf-dist.ini')
-        folder_path = path.join(path.dirname(path.abspath(__file__)),
-                                'resources', 'profile', 'folder')
+        conf_file = get_resource('profile/conf_good.ini')
+        conf_dist_file = get_resource('profile/conf-dist.ini')
+        folder_path = get_resource('profile/folder')
 
         self.conf = Conf(conf_file,conf_dist_file, folder_path)
 

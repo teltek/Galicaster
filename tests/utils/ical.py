@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       tests/ical
+#       tests/utils/ical
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
@@ -21,13 +21,13 @@ from tempfile import mkdtemp
 from unittest import TestCase
 from datetime import datetime
 
-
+from tests import get_resource
 from galicaster.mediapackage import repository
 from galicaster.utils import ical
 
 class TestFunctions(TestCase):
     
-    base_dir = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'ical')
+    base_dir = get_resource('ical')
 
     def setUp(self):
         self.tmppath = mkdtemp()

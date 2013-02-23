@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       tests/conf
+#       tests/core/conf
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
@@ -21,6 +21,7 @@ from xml.dom.minidom import parseString
 from xml.parsers.expat import ExpatError
 from unittest import TestCase
 
+from tests import get_resource
 from galicaster.core.conf import Conf
 from galicaster.core.conf import Profile
 from galicaster.core.conf import Track
@@ -29,8 +30,8 @@ from galicaster.core.conf import Track
 class TestFunctions(TestCase):
         
     def setUp(self):
-        conf_file = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'conf', 'conf.ini')
-        dist_file = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'conf', 'conf-dist.ini')
+        conf_file = get_resource('conf/conf.ini')
+        dist_file = get_resource('conf/conf-dist.ini')
         self.conf = Conf(conf_file,dist_file)
 
 
@@ -51,7 +52,7 @@ class TestFunctions(TestCase):
                           conf.conf_dist_file) 
 
     def test_init_no_dist_file(self):
-        conf_file = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'conf', 'conf.ini')
+        conf_file = get_resource('conf/conf.ini')
         primary_dist = path.join('/usr/share/galicaster/',  'conf-dist.ini')
         secondary_dist = path.abspath(path.join(path.dirname(__file__), '..', '..', 'conf-dist.ini'))
         #conf load custom conf and default dist
@@ -61,8 +62,8 @@ class TestFunctions(TestCase):
                           conf.conf_dist_file) 
 
     def test_init_all_files(self):
-        conf_file = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'conf', 'conf.ini')
-        conf_dist_file = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'conf', 'conf-dist.ini')
+        conf_file = get_resource('conf/conf.ini')
+        conf_dist_file = get_resource('conf/conf-dist.ini')
         conf = Conf(conf_file, conf_dist_file)
         self.assertEqual(conf_file, conf.conf_file)
         self.assertEqual(conf_dist_file, conf.conf_dist_file)
@@ -95,9 +96,9 @@ class TestFunctions(TestCase):
         self.assertEqual(conf['capture.device.track2.src'], '/dev/null')
 
     def test_profile_with_no_profiles_in_files(self):
-        conf_file = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'conf', 'conf.ini')
-        conf_dist_file = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'conf', 'conf_dist.ini')
-        profiles_dir = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'conf', 'profiles')
+        conf_file = get_resource('conf/conf.ini')
+        conf_dist_file = get_resource('conf/conf_dist.ini')
+        profiles_dir = get_resource('conf/profiles')
         conf = Conf(conf_file, conf_dist_file, profiles_dir)
 
         self.assertEqual(len(conf.get_profiles()), 1)
