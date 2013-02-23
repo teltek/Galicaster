@@ -27,6 +27,7 @@ from galicaster.core import worker
 from galicaster.mediapackage import mediapackage
 from galicaster.mediapackage.repository import Repository
 from galicaster.core.dispatcher import Dispatcher
+from galicaster.core.logger import Logger
 
 
 class TestFunctions(TestCase):
@@ -59,14 +60,15 @@ class TestFunctions(TestCase):
         repo = self.RepoMock()
         client = self.MHHTTPClientMock()
         dispatcher = self.DispatcherMock()
-        w = worker.Worker(dispatcher, repo, client)
+        logger = Logger(None)
+        w = worker.Worker(dispatcher, repo, logger, client)
         self.assertEqual(w.export_path, os.path.expanduser('~'))
         self.assertEqual(w.tmp_path, tempfile.gettempdir())
 
         #self.assertRaises(OSError, worker.Worker, repo, client, '/a/b/c', None)
         #self.assertRaises(OSError, worker.Worker, repo, client, None, '/a/b/c')
 
-        w = worker.Worker(dispatcher, repo, client, '/tmp/galicaster_tdd/a/b/c', '/tmp/galicaster_tdd/1/2/3')
+        w = worker.Worker(dispatcher, repo, logger, client, '/tmp/galicaster_tdd/a/b/c', '/tmp/galicaster_tdd/1/2/3')
         self.assertEqual(w.export_path, '/tmp/galicaster_tdd/a/b/c')
         self.assertEqual(w.tmp_path, '/tmp/galicaster_tdd/1/2/3')
 
@@ -80,7 +82,8 @@ class TestFunctions(TestCase):
         repo = self.RepoMock()
         client = self.MHHTTPClientMock()
         dispatcher = self.DispatcherMock()
-        w = worker.Worker(dispatcher, repo, client)
+        logger = Logger(None)
+        w = worker.Worker(dispatcher, repo, logger, client)
 
         mp = mediapackage.Mediapackage(uri='/tmp')
         mp.manual = True
@@ -95,7 +98,8 @@ class TestFunctions(TestCase):
         repo = self.RepoMock()
         client = self.MHHTTPClientMock()
         dispatcher = self.DispatcherMock()
-        w = worker.Worker(dispatcher, repo, client)
+        logger = Logger(None)
+        w = worker.Worker(dispatcher, repo, logger, client)
 
         mp = mediapackage.Mediapackage(identifier='1', uri='/tmp')
         mp.add(self.path_capture_agent_properties, mediapackage.TYPE_ATTACHMENT, identifier='org.opencastproject.capture.agent.properties')
@@ -111,7 +115,8 @@ class TestFunctions(TestCase):
         repo = self.RepoMock()
         client = self.MHHTTPClientMock()
         dispatcher = self.DispatcherMock()
-        w = worker.Worker(dispatcher, repo, client)
+        logger = Logger(None)
+        w = worker.Worker(dispatcher, repo, logger, client)
 
         mp = mediapackage.Mediapackage(identifier='1', uri='/tmp')
         mp.addAttachmentAsString('org.opencastproject.workflow.definition=mini-full', 
@@ -128,7 +133,8 @@ class TestFunctions(TestCase):
         repo = Repository('/tmp/repo_night')
         client = self.MHHTTPClientMock()
         dispatcher = Dispatcher()
-        w = worker.Worker(dispatcher, repo, client)
+        logger = Logger(None)
+        w = worker.Worker(dispatcher, repo, logger, client)
 
         mp = mediapackage.Mediapackage()
         mp.setOpStatus(worker.INGEST_CODE, mediapackage.OP_NIGHTLY)

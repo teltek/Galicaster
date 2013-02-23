@@ -18,9 +18,11 @@ Unit tests for `galicaster.mediapackage` module.
 from unittest import TestCase
 from os import path
 import tempfile
-
+import glib
 
 from galicaster.utils import sidebyside
+
+glib.threads_init()
 
 class TestFunctions(TestCase):
     
