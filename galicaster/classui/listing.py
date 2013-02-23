@@ -351,7 +351,19 @@ class ListingClassUI(ManagerUI):
     def on_play(self,store,reference,iterator):
         """ Retrieve mediapackage and send videos to player"""
 	key = store[iterator][0]
-	self.play(key)
+	logger.info("Play: " + str(key))
+	package = self.repository.get(key)
+
+	if package.status == mediapackage.RECORDED:
+	    self.dispatcher.emit("play-list", package)
+	else:			
+	    text = {"title" : "Media Manager",
+		    "main" : "This recording can't be played",
+		    }
+	    buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
+	    message.PopUp(message.WARNING, text, 
+                          context.get_mainwindow(),
+                          buttons)
 	return True	
 
 #--------------------------------------- Edit METADATA -----------------------------

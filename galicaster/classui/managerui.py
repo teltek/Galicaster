@@ -282,33 +282,6 @@ class ManagerUI(gtk.Box):
             return True
 
 
-    def play(self,key):
-	"""Retrieves mediapackage and send videos to player."""
-	logger.info("Play: "+str(key))
-	package = self.repository.get(key)
-
-	if package.status == mediapackage.RECORDED:
-	    self.dispatcher.emit("play-list", package)
-	else:			
-	    text = {"title" : "Media Manager",
-		    "main" : "This recording can't be played",
-		    }
-	    buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
-	    message.PopUp(message.WARNING, text, 
-                          context.get_mainwindow(),
-                          buttons)
-	return True
-
-
-    def change_mode(self,button):
-        """Handles a change mode"""
-	text=button.get_children()[0].get_text()
-        
-	if text == "Recorder":
-	    self.dispatcher.emit("change-mode", 0)
-	else:
-	    self.dispatcher.emit("change-mode", 2)
-
 
 #--------------------------------------- METADATA -----------------------------
 
