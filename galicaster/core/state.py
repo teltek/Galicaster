@@ -21,13 +21,11 @@ Galicaster state:
  - state.area = 0 | 1 | 2 | 3 | 4
 """
 
-
 REC= 0
 PLA= 2
 MMA= 1
 DIS= 3
 PIN= 4 
-
 
 class State(object):
     def __init__(self, hostname="Galicaster"):
@@ -36,6 +34,7 @@ class State(object):
         self.is_recording = False
         self.mp = None
         self.area = REC
+        self.profile = None
         
     def start_record(self, mp):
         self.is_recording = mp

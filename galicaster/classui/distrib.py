@@ -48,8 +48,8 @@ class DistribUI(gtk.Box):
         #Connect signals
         dispatcher = context.get_dispatcher()
         dispatcher.connect("reload-profile", self.update_selected_profile)
-        recorder.connect("clicked", self.emit_signal, "change_mode",0 )
-        manager.connect("clicked", self.emit_signal, "change_mode",1 )
+        recorder.connect("clicked", self.emit_signal, "change_mode", 0)
+        manager.connect("clicked", self.emit_signal, "change_mode", 1)
         quit_button.connect("clicked", self.emit_signal, "galicaster-quit")
         profile_button.connect("clicked", self.on_profile_button)
         
@@ -58,10 +58,10 @@ class DistribUI(gtk.Box):
 
         conf = context.get_conf()
         quit_button.set_visible(conf.get_boolean("basic", "quit"))
-        self.pack_start(dbox,True,True,0)
+        self.pack_start(dbox, True, True, 0)
 
     def on_profile_button(self, origin):
-        parent=self.get_toplevel()
+        parent = self.get_toplevel()
         ListProfile(parent)
 
     def update_selected_profile(self, button = None):
@@ -73,7 +73,7 @@ class DistribUI(gtk.Box):
     def emit_signal(origin, button, signal, value=None):
         dispatcher = context.get_dispatcher()
         if value != None:
-            dispatcher.emit(signal,value)
+            dispatcher.emit(signal, value)
         else:
             dispatcher.emit(signal)
 
