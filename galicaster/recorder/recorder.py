@@ -72,7 +72,7 @@ class Recorder(object):
             name = bin['name']
 
             try:
-                mod_name = 'galicaster.recorder.pipeline.' + bin['device']
+                mod_name = 'galicaster.recorder.bins.' + bin['device']
                 __import__(mod_name)
                 mod = sys.modules[mod_name]
                 Klass = getattr(mod, "GC" + bin['device'])

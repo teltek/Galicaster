@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       galicaster/recorder/pipeline/vga2usb
+#       galicaster/recorder/bins/vga2usb
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #

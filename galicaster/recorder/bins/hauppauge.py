@@ -1,7 +1,7 @@
 1# -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       galicaster/recorder/pipeline/hauppauge
+#       galicaster/recorder/bins/hauppauge
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
