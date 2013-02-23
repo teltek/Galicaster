@@ -58,8 +58,7 @@ class Player(object):
         self.__get_duration_and_run()
 
     def run_pipeline(self):
-
-        self.pipeline = gst.Pipeline()
+        self.pipeline = gst.Pipeline("galicaster_player")
         self.bus = self.pipeline.get_bus()
         self.has_audio = False
         self.audio_sink = None
