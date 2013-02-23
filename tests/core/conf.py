@@ -29,8 +29,8 @@ from galicaster.core.conf import Track
 class TestFunctions(TestCase):
         
     def setUp(self):
-        conf_file = path.join(path.dirname(path.abspath(__file__)), 'resources', 'conf', 'conf.ini')
-        dist_file = path.join(path.dirname(path.abspath(__file__)), 'resources', 'conf', 'conf-dist.ini')
+        conf_file = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'conf', 'conf.ini')
+        dist_file = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'conf', 'conf-dist.ini')
         self.conf = Conf(conf_file,dist_file)
 
 
@@ -40,9 +40,9 @@ class TestFunctions(TestCase):
     
     def test_init_no_file(self):
         primary_conf = path.join('/etc/galicaster','conf.ini')
-        secondary_conf = path.abspath(path.join(path.dirname(__file__), '..', 'conf.ini'))
+        secondary_conf = path.abspath(path.join(path.dirname(__file__), '..', '..', 'conf.ini'))
         primary_dist = path.join('/usr/share/galicaster/',  'conf-dist.ini')
-        secondary_dist = path.abspath(path.join(path.dirname(__file__), '..', 'conf-dist.ini'))
+        secondary_dist = path.abspath(path.join(path.dirname(__file__), '..', '..', 'conf-dist.ini'))
         # Conf loads default conf and conf-dist
         conf = Conf()
         self.assertEqual( primary_conf if path.isfile(primary_conf) else secondary_conf,
@@ -51,9 +51,9 @@ class TestFunctions(TestCase):
                           conf.conf_dist_file) 
 
     def test_init_no_dist_file(self):
-        conf_file = path.join(path.dirname(path.abspath(__file__)), 'resources', 'conf', 'conf.ini')
+        conf_file = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'conf', 'conf.ini')
         primary_dist = path.join('/usr/share/galicaster/',  'conf-dist.ini')
-        secondary_dist = path.abspath(path.join(path.dirname(__file__), '..', 'conf-dist.ini'))
+        secondary_dist = path.abspath(path.join(path.dirname(__file__), '..', '..', 'conf-dist.ini'))
         #conf load custom conf and default dist
         conf = Conf(conf_file)
         self.assertEqual(conf_file, conf.conf_file)
@@ -61,8 +61,8 @@ class TestFunctions(TestCase):
                           conf.conf_dist_file) 
 
     def test_init_all_files(self):
-        conf_file = path.join(path.dirname(path.abspath(__file__)), 'resources', 'conf', 'conf.ini')
-        conf_dist_file = path.join(path.dirname(path.abspath(__file__)), 'resources', 'conf', 'conf-dist.ini')
+        conf_file = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'conf', 'conf.ini')
+        conf_dist_file = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'conf', 'conf-dist.ini')
         conf = Conf(conf_file, conf_dist_file)
         self.assertEqual(conf_file, conf.conf_file)
         self.assertEqual(conf_dist_file, conf.conf_dist_file)
@@ -95,9 +95,9 @@ class TestFunctions(TestCase):
         self.assertEqual(conf['capture.device.track2.src'], '/dev/null')
 
     def test_profile_with_no_profiles_in_files(self):
-        conf_file = path.join(path.dirname(path.abspath(__file__)), 'resources', 'conf', 'conf.ini')
-        conf_dist_file = path.join(path.dirname(path.abspath(__file__)), 'resources', 'conf', 'conf_dist.ini')
-        profiles_dir = path.join(path.dirname(path.abspath(__file__)), 'resources', 'conf', 'profiles')
+        conf_file = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'conf', 'conf.ini')
+        conf_dist_file = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'conf', 'conf_dist.ini')
+        profiles_dir = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'conf', 'profiles')
         conf = Conf(conf_file, conf_dist_file, profiles_dir)
 
         self.assertEqual(len(conf.get_profiles()), 1)

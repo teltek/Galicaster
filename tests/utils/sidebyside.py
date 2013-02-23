@@ -26,7 +26,7 @@ glib.threads_init()
 
 class TestFunctions(TestCase):
     
-    base_dir = path.join(path.dirname(path.abspath(__file__)), 'resources', 'sbs')
+    base_dir = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'sbs')
     
     def test_sbs_with_embeded_audio(self):   
         out = tempfile.NamedTemporaryFile()

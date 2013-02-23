@@ -32,7 +32,7 @@ from galicaster.mediapackage import serializer
 
 class TestFunctions(TestCase):
     
-    baseDir = path.join(path.dirname(path.abspath(__file__)), 'resources', 'mediapackage')
+    baseDir = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'mediapackage')
     path_track1 = path.join(baseDir, 'SCREEN.mpeg')
     path_track2 = path.join(baseDir, 'CAMERA.mpeg')
     path_catalog = path.join(baseDir, 'episode.xml') 
