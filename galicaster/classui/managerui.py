@@ -16,16 +16,12 @@ UI for the Media Manager and Player area
 
 import gtk
 import gobject
-import datetime
-import pango
 
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
-from galicaster.classui import get_ui_path
 from galicaster.classui import message
 from galicaster.classui.metadata import MetadataClass as Metadata
 from galicaster.utils import readable
-from galicaster.utils.resize import relabel
 from galicaster.classui.strip import StripUI
 from galicaster.classui.mpinfo import MPinfo
  
@@ -42,7 +38,6 @@ class ManagerUI(gtk.Box):
         gtk.Box.__init__(self)
         self.strip = StripUI(element)
         
-
 	self.conf = context.get_conf()
 	self.dispatcher = context.get_dispatcher() 
 	self.repository = context.get_repository()

@@ -16,27 +16,25 @@ import glib
 import gtk
 import os
 glib.threads_init()
-gtk.gdk.threads_init() 
+gtk.gdk.threads_init()
 
 from galicaster import __version__
+from galicaster.core import context
+from galicaster import plugins
+
 from galicaster.utils.dbusservice import DBusService
 from galicaster.classui.recorderui import RecorderClassUI
 from galicaster.classui.listing import ListingClassUI
 from galicaster.classui.playerui import PlayerClassUI
 from galicaster.classui.distrib import DistribUI
 
-from galicaster.core import context
-from galicaster import plugins
-
-
 logger = context.get_logger()
 
-REC= 0
-PLA= 2
-MMA= 1
-DIS= 3
-PIN= 4 
-
+REC = 0
+PLA = 2
+MMA = 1
+DIS = 3
+PIN = 4 
 
 class Main():
     def __init__(self):
@@ -119,6 +117,7 @@ class Main():
         self.dispatcher.emit('galicaster-status', old_page, page)
 
 
+    ### RR Delete
     def play_mp(self, origin, mediapackage): 
         """
         Plays a mediapackage
@@ -132,6 +131,7 @@ class Main():
 
     def reload_profile(self, origin):
         profile = self.conf.get_current_profile()
+        self.state.profile = profile
         if profile.execute:
             out = os.system(profile.execute)
             logger.info("Executing {0} with out {1}".format(profile.execute, out))
