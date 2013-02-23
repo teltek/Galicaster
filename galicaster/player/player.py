@@ -57,7 +57,7 @@ class Player(object):
 
         self.__get_duration_and_run()
 
-    def run_pipeline(self):
+    def create_pipeline(self):
         self.pipeline = gst.Pipeline("galicaster_player")
         self.bus = self.pipeline.get_bus()
         self.has_audio = False
@@ -85,7 +85,6 @@ class Player(object):
             self.pipeline.add(src, dec)
             src.link(dec)
 
-        self.play()
         return None
 
 
@@ -171,13 +170,7 @@ class Player(object):
     def get_duration(self):       
         return self.duration
 
-    def _on_new_decoded_pad(self, element, pad, last):
-
-        # if all pads decoded send signal 
-        self.decoded_pads+=1
-        if self.decoded_pads == len(self.files):
-            self.dispatcher.emit("player-ready")
-         
+    def _on_new_decoded_pad(self, element, pad, last):         
         name = pad.get_caps()[0].get_name()
         element_name = element.get_name()[7:]
         logger.debug('new decoded pad: %r in %r', name, element_name)
@@ -277,7 +270,7 @@ class Player(object):
         info = discoverer.discover_uri('file://'+filepath)
         self.duration = info.get_duration() / 1000000000
         logger.info("Duration ON_DISCOVERED: "+str(self.duration))        
-        self.run_pipeline()
+        self.create_pipeline()
         return True
 
 

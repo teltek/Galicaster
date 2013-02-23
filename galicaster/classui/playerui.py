@@ -27,13 +27,15 @@ try:
 except ImportError:
     OrderedDict = dict
 
-from galicaster.classui.managerui import ManagerUI
+
 from galicaster.player import Player
 from galicaster.core import context
+from galicaster.mediapackage import mediapackage
+from galicaster.classui.managerui import ManagerUI
 from galicaster.classui.statusbar import StatusBarClass
 from galicaster.classui.audiobar import AudioBarClass
 from galicaster.classui import get_ui_path
-from galicaster.mediapackage import mediapackage
+
 
 gtk.gdk.threads_init()
 
@@ -108,65 +110,59 @@ class PlayerClassUI(ManagerUI):
 
 
 #-------------------------- INIT PLAYER-----------------------
-    def init_player(self,element,mp):
+    def init_player(self, element, mp):
         """Send absolute file names and Drawing Areas to the player."""
-        self.mediapackage = mp
+        if (self.mediapackage != mp):
+            if self.status == GC_PAUSE:
+                self.on_stop_clicked()
+                self.statusbar.ClearTimer()            
 
-        tracks = OrderedDict()
-        videos = OrderedDict()
+            self.mediapackage = mp
 
-        index = 0
+            tracks = OrderedDict()
+            videos = OrderedDict()
+
+            index = 0
     
-        for t in mp.getTracks(): 
-            if not t.getFlavor().count('other'):
-                tracks[t.getIdentifier()] = t.getURI()
+            for t in mp.getTracks(): 
+                if not t.getFlavor().count('other'):
+                    tracks[t.getIdentifier()] = t.getURI()
 
-            if (t.getMimeType().count("video") and not t.getFlavor().count('other')):
-                index+=1
-                videos[t.getIdentifier()] = index
+                    if (t.getMimeType().count("video") and not t.getFlavor().count('other')):
+                        index+=1
+                        videos[t.getIdentifier()] = index
 
-
-        areas = self.create_drawing_areas(videos)
+            areas = self.create_drawing_areas(videos)
         
-        self.seek_bar.set_value(0)
-        if self.player:
-            self.player.quit()
+            self.seek_bar.set_value(0)
+            if self.player:
+                self.player.quit()
                   
-        self.player = Player(tracks, areas)
-        self.change_state(GC_READY)
+            self.player = Player(tracks, areas)
+            self.change_state(GC_READY)
 
-        self.statusbar.SetVideo(None, self.mediapackage.title)
-        self.statusbar.SetPresenter(None, self.mediapackage.getCreators())
-        #self.dispatcher.emit
+            self.statusbar.SetVideo(None, self.mediapackage.title)
+            self.statusbar.SetPresenter(None, self.mediapackage.getCreators())
+
+        self.on_play_clicked(None)
 
     def play_from_list(self, origin, package):
         """Takes a MP from the listing area and plays it"""
         self.dispatcher.emit("change-mode", 2)
-        if self.status == GC_PAUSE:
-            self.on_stop_clicked()
-            self.statusbar.ClearTimer()            
-
-        self.ready_id = self.dispatcher.connect('player-ready',self.on_player_ready)     
         self.init_player(None, package)          
 
-    def on_player_ready(self, origin):
-        """Auto-starts the player once ready"""
-        self.dispatcher.disconnect(self.ready_id)
-        self.init_timer()
-        return True
-        
 
 #------------------------- PLAYER ACTIONS ------------------------
 
     def on_play_clicked(self, button):
         """Starts the reproduction"""
+        self.change_state(GC_PLAY)
         self.player.play()
         self.init_timer()
         return True
 
     def init_timer(self):
         """Starts the thread handling the timer for visualiztion and seeking feature"""
-        self.change_state(GC_PLAY)
         self.timer_thread = threading.Thread(target=self.timer_launch_thread)
         self.thread_id = 1
         self.timer_thread.daemon = True

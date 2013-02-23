@@ -58,8 +58,6 @@ gobject.signal_new('audio-recovered', Dispatcher, gobject.SIGNAL_RUN_LAST, gobje
 gobject.signal_new('update-play-vumeter', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 gobject.signal_new('play-stopped', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
 gobject.signal_new('play-list', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
-#NEW on 1.2.1
-gobject.signal_new('player-ready', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
 
 #MEDIAMANAGER
 gobject.signal_new('refresh-row', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
