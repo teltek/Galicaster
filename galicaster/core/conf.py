@@ -33,10 +33,12 @@ class Conf(object): # TODO list get and other ops arround profile
       self.__current_profile = None
       
       # FIXME when using 2.7 dict_type=collections.OrderedDict)
-
-      self.conf_file = conf_file if os.path.isfile(conf_file) else os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'conf.ini'))
-      self.conf_dist_file = conf_dist_file if os.path.isfile(conf_dist_file) else os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','conf-dist.ini'))
-      self.profile_folder = profile_folder if os.path.isdir(profile_folder) else os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'profiles'))
+      self.conf_file = (conf_file if os.path.isfile(conf_file) else 
+                        os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'conf.ini')))
+      self.conf_dist_file = (conf_dist_file if os.path.isfile(conf_dist_file) else 
+                             os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','conf-dist.ini')))
+      self.profile_folder = (profile_folder if os.path.isdir(profile_folder) else 
+                             os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'profiles')))
          
       self.hostname = self.get_hostname()
       self.logger = None
@@ -314,6 +316,7 @@ class Profile(object):
       self.name = name
       self.tracks = []
       self.path = path
+      self.execute = None
       self.to_delete = False
       
    def new_track(self, options):
@@ -350,7 +353,9 @@ class Profile(object):
    def import_from_file(self, filepath):
       parser = ConfigParser.ConfigParser()
       parser.read(filepath)
-      self.name = parser.get('data','name')
+      self.name = parser.get('data', 'name')
+      if parser.has_option('data', 'execute'):
+         self.execute = parser.get('data', 'execute')
       self.path = filepath
       self.import_tracks_from_parser(parser)
 
@@ -360,7 +365,9 @@ class Profile(object):
                
       parser = ConfigParser.ConfigParser()
       parser.add_section('data')
-      parser.set('data','name',self.name)
+      parser.set('data','name', self.name)
+      if self.execute:
+         parser.set('data','execute', self.execute)
       index = 1
       for track in self.tracks:
          section = 'track'+str(index)
