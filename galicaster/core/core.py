@@ -14,6 +14,7 @@
 
 import glib
 import gtk
+import os
 glib.threads_init()
 gtk.gdk.threads_init() 
 
@@ -61,9 +62,11 @@ class Main():
         if self.conf.get_boolean('basic', 'pin'):
             self.modules.append('pin')
 
+        self.reload_profile(None)
         self.load_modules()
         self.dispatcher.connect('net-up', self.check_net, True)
         self.dispatcher.connect('net-down', self.check_net, False)
+        self.dispatcher.connect("reload-profile", self.reload_profile)
 
     def load_modules(self):
         self.window = context.get_mainwindow()
@@ -125,4 +128,11 @@ class Main():
 
 
     def check_net(self, origin, data):
-        context.get_state().net = data
+        self.state.net = data
+
+    def reload_profile(self, origin):
+        profile = self.conf.get_current_profile()
+        if profile.execute:
+            out = os.system(profile.execute)
+            logger.info("Executing {0} with out {1}".format(profile.execute, out))
+

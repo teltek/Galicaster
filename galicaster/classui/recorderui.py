@@ -162,7 +162,7 @@ class RecorderClassUI(gtk.Box):
         self.previous = None
         self.change_state(GC_INIT)
 
-        self.dispatcher.connect("reload_profile", self.on_recover_from_error)
+        self.dispatcher.connect("reload-profile", self.on_recover_from_error)
 
         # PERMISSIONS
         self.conf = context.get_conf()
@@ -219,7 +219,7 @@ class RecorderClassUI(gtk.Box):
             self.handle_pipeline_error)
         self.audiobar.ClearVumeter()
         if self.ok_to_show:
-            self. init_recorder()
+            self.init_recorder()
         return True
 
 
