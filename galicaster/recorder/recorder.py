@@ -52,8 +52,7 @@ class Recorder(object):
         self.mute = False
         self.error = False
 
-        self.pipeline_name = "galicaster_recorder"  
-        self.pipeline = gst.Pipeline(self.pipeline_name)
+        self.pipeline = gst.Pipeline("galicaster_recorder")
         self.bus = self.pipeline.get_bus()
 
         self.bins = dict()

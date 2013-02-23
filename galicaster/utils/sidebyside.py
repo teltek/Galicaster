@@ -124,7 +124,7 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
     parameters = {'OUT': out, 'SCREEN': screen, 'CAMERA': camera}
     parameters.update(layouts[layout])
 
-    pipeline = gst.Pipeline()
+    pipeline = gst.Pipeline("galicaster_sidebyside")
     bus = pipeline.get_bus()
 
     gst_bin = gst.parse_bin_from_description(pipestr.format(**parameters), False)
