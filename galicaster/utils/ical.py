@@ -84,12 +84,9 @@ def create_mp(repo, event):
             mp.addDublincoreAsString(attach, 'episode.xml', rewrite)
         elif attach_enc.params['X-APPLE-FILENAME'] == 'series.xml':
             mp.addSeriesDublincoreAsString(attach, 'series.xml', rewrite)
-        elif attach_enc.params['X-APPLE-FILENAME'] == ca_properties_name:
-            mp.addAttachmentAsString(attach, ca_properties_name, rewrite, ca_properties_name)
         else:
-            pass
-            # TODO logger
-            #logger.error('call error parse ical attachs %s', attach_enc.params['X-APPLE-FILENAME']) 
+            mp.addAttachmentAsString(attach, attach_enc.params['X-APPLE-FILENAME'], 
+                                     rewrite, attach_enc.params['X-APPLE-FILENAME'])
                          
     mp.marshalDublincore()
     repo.update(mp)

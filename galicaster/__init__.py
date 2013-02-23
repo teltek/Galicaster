@@ -12,7 +12,3 @@
 # San Francisco, California, 94105, USA.
 
 __version__ = '1.2.3'
-
-#TODO
-#logging.info('galicaster.__version__: %r', __version__)
-#logging.info('galicaster.__file__: %r', __file__)

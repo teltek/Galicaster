@@ -17,6 +17,7 @@ import gtk
 glib.threads_init()
 gtk.gdk.threads_init() 
 
+from galicaster import __version__
 from galicaster.utils.dbusservice import DBusService
 from galicaster.classui.recorderui import RecorderClassUI
 from galicaster.classui.listing import ListingClassUI
@@ -39,6 +40,10 @@ PIN= 4
 class Main():
     def __init__(self):
         DBusService(self)
+
+        logger.info('galicaster.__version__: %r', __version__)
+        logger.info('galicaster.__file__: %r', __file__)
+
         self.conf = context.get_conf()
         self.state = context.get_state()
         self.dispatcher = context.get_dispatcher()
