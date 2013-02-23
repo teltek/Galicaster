@@ -78,7 +78,6 @@ class Main():
 
         if 'media_manager' in self.modules:
             self.dispatcher.connect('change-mode', self.change_mode)
-            self.dispatcher.connect('play-list', self.play_mp)
 
             # Distribution
             self.distribution = DistribUI()
@@ -117,17 +116,9 @@ class Main():
         self.dispatcher.emit('galicaster-status', old_page, page)
 
 
-    ### RR Delete
-    def play_mp(self, origin, mediapackage): 
-        """
-        Plays a mediapackage
-        """
-        self.change_mode(None, PLA)
-        self.player.play_from_list(mediapackage)
-
-
     def check_net(self, origin, data):
         self.state.net = data
+
 
     def reload_profile(self, origin):
         profile = self.conf.get_current_profile()

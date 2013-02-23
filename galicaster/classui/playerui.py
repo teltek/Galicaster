@@ -102,6 +102,7 @@ class PlayerClassUI(ManagerUI):
 
         self.dispatcher.connect("update-play-vumeter", self.audiobar.SetVumeter)
         self.dispatcher.connect("play-stopped", self.change_state_bypass, GC_READY)
+        self.dispatcher.connect('play-list', self.play_from_list)
         self.dispatcher.connect("galicaster-status", self.event_change_mode)
         self.dispatcher.connect("galicaster-notify-quit", self.close)
 
@@ -138,8 +139,9 @@ class PlayerClassUI(ManagerUI):
         self.statusbar.SetPresenter(None, self.mediapackage.getCreators())
         #self.dispatcher.emit
 
-    def play_from_list(self,package):
+    def play_from_list(self, origin, package):
         """Takes a MP from the listing area and plays it"""
+        self.dispatcher.emit("change-mode", 2)
         if self.status == GC_PAUSE:
             self.on_stop_clicked()
             self.statusbar.ClearTimer()            
