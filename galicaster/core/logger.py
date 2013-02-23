@@ -25,7 +25,7 @@ class Logger(logging.Logger):
             loghandler = logging.NullHandler()
         elif rotate:
             from logging.handlers import TimedRotatingFileHandler
-            loghandler = TimedRotatingFileHandler(log_path, "M")
+            loghandler = TimedRotatingFileHandler(log_path, "midnight")
         else:
             loghandler = logging.FileHandler(log_path, "a")
 
