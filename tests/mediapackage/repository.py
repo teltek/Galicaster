@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       tests/repository
+#       tests/mediapackage/repository
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
@@ -20,13 +20,14 @@ from shutil import rmtree
 from tempfile import mkdtemp, mkstemp
 from unittest import TestCase
 
+from tests import get_resource
 from galicaster.mediapackage import repository
 from galicaster.mediapackage import mediapackage
 from galicaster.utils.mhhttpclient import MHHTTPClient
 
 class TestFunctions(TestCase):
 
-    baseDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'resources', 'mediapackage')
+    baseDir = get_resource('mediapackage')
     path_track1 = os.path.join(baseDir, 'SCREEN.mpeg')
     path_track2 = os.path.join(baseDir, 'CAMERA.mpeg')
     path_catalog = os.path.join(baseDir, 'episode.xml') 

@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       tests/mediapackage
+#       tests/mediapackage/mediapackage
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
@@ -17,13 +17,14 @@ Unit tests for `galicaster.mediapackage` module.
 from os import path
 from unittest import TestCase
 
+from tests import get_resource
 from galicaster.mediapackage import mediapackage
 from galicaster.mediapackage import fromXML
 
 
 class TestFunctions(TestCase):
     
-    baseDir = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'mediapackage')
+    baseDir = get_resource('mediapackage')
     path_track1 = path.join(baseDir, 'SCREEN.mpeg')
     path_track2 = path.join(baseDir, 'CAMERA.mpeg')
     path_catalog = path.join(baseDir, 'episode.xml') 

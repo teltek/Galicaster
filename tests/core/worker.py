@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       tests/worker
+#       tests/core/worker
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
@@ -23,6 +23,7 @@ import tempfile
 import time
 from shutil import rmtree
 
+from tests import get_resource
 from galicaster.core import worker
 from galicaster.mediapackage import mediapackage
 from galicaster.mediapackage.repository import Repository
@@ -32,7 +33,7 @@ from galicaster.core.logger import Logger
 
 class TestFunctions(TestCase):
 
-    baseDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'resources', 'mediapackage')
+    baseDir = get_resource('mediapackage')
     path_capture_agent_properties = os.path.join(baseDir, 'org.opencastproject.capture.agent.properties')
 
     class RepoMock(object):

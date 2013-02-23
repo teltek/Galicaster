@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       tests/mh_client
+#       tests/utils/mh_client
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
