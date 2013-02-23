@@ -53,23 +53,23 @@ class Player(object):
         self.files = files
         self.players = players
         self.duration = 0
-        self.decoded_pads = 0
-
-        self.__get_duration_and_run()
-
-    def create_pipeline(self):
-        self.pipeline = gst.Pipeline("galicaster_player")
-        self.bus = self.pipeline.get_bus()
         self.has_audio = False
         self.audio_sink = None
 
+        self.__get_duration_and_run()
+
+
+    def create_pipeline(self):
+        self.pipeline = gst.Pipeline("galicaster_player")
+        bus = self.pipeline.get_bus()
+
         # Create bus and connect several handlers
-        self.bus.add_signal_watch()
-        self.bus.enable_sync_message_emission()
-        self.bus.connect('message::eos', WeakMethod(self, '_on_eos'))
-        self.bus.connect('message::error', WeakMethod(self, '_on_error'))
-        self.bus.connect('message::element', WeakMethod(self, '_on_message_element'))
-        self.bus.connect('sync-message::element', WeakMethod(self, '_on_sync_message'))
+        bus.add_signal_watch()
+        bus.enable_sync_message_emission()
+        bus.connect('message::eos', WeakMethod(self, '_on_eos'))
+        bus.connect('message::error', WeakMethod(self, '_on_error'))
+        bus.connect('message::element', WeakMethod(self, '_on_message_element'))
+        bus.connect('sync-message::element', WeakMethod(self, '_on_sync_message'))
 
         # Create elements
         for name, location in self.files.iteritems():
@@ -115,7 +115,6 @@ class Player(object):
         """
         logger.debug("player playing")
         self.pipeline.set_state(gst.STATE_PLAYING)
-        # self.mainloop.run() # FIXME  **2
         return None
 
 
@@ -138,7 +137,6 @@ class Player(object):
         self.pipeline.set_state(gst.STATE_PAUSED)
         self.seek(0) 
         self.pipeline.get_state()
-        # self.mainloop.quit() #FIXME **2
         return None
 
 
@@ -149,7 +147,6 @@ class Player(object):
         logger.debug("player deleted")
         self.pipeline.set_state(gst.STATE_NULL)
         self.pipeline.get_state()
-        # self.mainloop.quit() #FIXME **2
         return None
 
 
@@ -167,8 +164,25 @@ class Player(object):
             self.pipeline.set_state(gst.STATE_PLAYING)
         return result
 
+
     def get_duration(self):       
         return self.duration
+
+
+    def get_position(self, format=gst.FORMAT_TIME):
+        return self.pipeline.query_position(format)
+
+
+    def get_volume(self):
+        if self.audio_sink == None:
+            return 100
+        return self.audio_sink.get_property('volume')
+
+
+    def set_volume(self, volume):
+        if self.audio_sink != None:
+            self.audio_sink.set_property('volume', volume)
+	
 
     def _on_new_decoded_pad(self, element, pad, last):         
         name = pad.get_caps()[0].get_name()
@@ -244,6 +258,7 @@ class Player(object):
 
     def __set_vumeter(self, message):
         struct = message.structure
+        
         if  struct['rms'][0] == float("-inf"):
             valor = "Inf"
         else:            
@@ -251,36 +266,20 @@ class Player(object):
         self.dispatcher.emit("update-play-vumeter", valor)
 
 
-    def get_position(self, format=gst.FORMAT_TIME):
-        return self.pipeline.query_position(format)
-
-
-    def get_volume(self):
-        if self.audio_sink == None:
-            return 100
-        return self.audio_sink.get_property('volume')
-
-    def set_volume(self, volume):
-        if self.audio_sink != None:
-            self.audio_sink.set_property('volume', volume)
-
-
     def __discover(self,filepath):
         discoverer = Discoverer(1*gst.SECOND)
         info = discoverer.discover_uri('file://'+filepath)
         self.duration = info.get_duration() / 1000000000
-        logger.info("Duration ON_DISCOVERED: "+str(self.duration))        
+        logger.info("Duration ON_DISCOVERED: " + str(self.duration))        
         self.create_pipeline()
         return True
 
 
     def __get_duration_and_run(self):
         # choose lighter file
-        size = None
-        location = None
+        size = location = None
         for key,value in self.files.iteritems():
             new = os.path.getsize(value)
-            if not size or new>size:
+            if not size or new > size:
                 location = value
         return self.__discover(location)
-	
