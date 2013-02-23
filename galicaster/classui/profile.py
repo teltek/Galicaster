@@ -24,16 +24,15 @@ from galicaster.core import conf
 from galicaster.recorder import get_modules
 from galicaster.classui.elements.message_header import Header
 
-from galicaster.recorder.pipeline import v4l2
-from galicaster.recorder.pipeline import vga2usb
-from galicaster.recorder.pipeline import hauppauge
-from galicaster.recorder.pipeline import pulse
-from galicaster.recorder.pipeline import blackmagic
-from galicaster.recorder.pipeline import videotest
-from galicaster.recorder.pipeline import audiotest
-from galicaster.recorder.pipeline import oldblackmagic
-from galicaster.recorder.pipeline import rtpvideo
-from galicaster.recorder.pipeline import rtpaudio
+from galicaster.recorder.bins import v4l2
+from galicaster.recorder.bins import vga2usb
+from galicaster.recorder.bins import hauppauge
+from galicaster.recorder.bins import pulse
+from galicaster.recorder.bins import blackmagic
+from galicaster.recorder.bins import videotest
+from galicaster.recorder.bins import audiotest
+from galicaster.recorder.bins import oldblackmagic
+from galicaster.recorder.bins import rtpvideo
 
 FLAVORS = ["presentation","presenter","other"]
 

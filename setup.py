@@ -108,7 +108,7 @@ setup(
         'galicaster',
         'galicaster.player',
         'galicaster.recorder',
-        'galicaster.recorder.pipeline',
+        'galicaster.recorder.bins',
         'galicaster.scheduler',
         'galicaster.core',
         'galicaster.classui',

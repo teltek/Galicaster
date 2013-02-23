@@ -14,13 +14,13 @@
 
 
 """
-Tests for `galicaster.recorder.pipeline` modules.
+Tests for `galicaster.recorder.bins` modules.
 """
 
 from unittest import TestCase
-from galicaster.recorder.pipeline.blackmagic import GCblackmagic
-from galicaster.recorder.pipeline.v4l2 import GCv4l2
-from galicaster.recorder.pipeline.hauppauge import GChauppauge
+from galicaster.recorder.bins.blackmagic import GCblackmagic
+from galicaster.recorder.bins.v4l2 import GCv4l2
+from galicaster.recorder.bins.hauppauge import GChauppauge
 
 class TestFunctions(TestCase):
 
