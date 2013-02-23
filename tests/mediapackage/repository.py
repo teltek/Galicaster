@@ -26,7 +26,7 @@ from galicaster.utils.mhhttpclient import MHHTTPClient
 
 class TestFunctions(TestCase):
 
-    baseDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources', 'mediapackage')
+    baseDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'resources', 'mediapackage')
     path_track1 = os.path.join(baseDir, 'SCREEN.mpeg')
     path_track2 = os.path.join(baseDir, 'CAMERA.mpeg')
     path_catalog = os.path.join(baseDir, 'episode.xml') 
@@ -60,13 +60,13 @@ class TestFunctions(TestCase):
         
 
     def test_repository(self):
-        root = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources')
+        root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'resources')
         repo = repository.Repository(root)
         self.assertEqual(repo.size(), 1)
 
 
     def test_big_repository(self):
-        root = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources', 'repository')
+        root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'resources', 'repository')
         repo = repository.Repository(root)
         self.assertEqual(len(repo), 5)
         self.assertEqual(len(repo.list_by_status(mediapackage.FAILED)), 1)

@@ -27,8 +27,7 @@ from galicaster.utils import ical
 
 class TestFunctions(TestCase):
     
-    base_dir = path.join(path.dirname(path.abspath(__file__)), 'resources', 'ical')
-
+    base_dir = path.join(path.dirname(path.abspath(__file__)), '..', 'resources', 'ical')
 
     def setUp(self):
         self.tmppath = mkdtemp()
