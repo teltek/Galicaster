@@ -20,8 +20,10 @@ import logging
 class Logger(logging.Logger):
     def __init__(self, log_path, level="DEBUG", rotate=False):
         logging.Logger.__init__(self, "galicaster", level)
-        
-        if rotate:
+
+        if log_path == None:
+            loghandler = logging.NullHandler()
+        elif rotate:
             from logging.handlers import TimedRotatingFileHandler
             loghandler = TimedRotatingFileHandler(log_path, "M")
         else:

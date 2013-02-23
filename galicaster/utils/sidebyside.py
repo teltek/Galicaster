@@ -153,7 +153,6 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
     
 
 def on_audio_decoded(element, pad, bin, muxer):
-
     name = pad.get_caps()[0].get_name()
     element_name = element.get_name()[:8]
     sink = None
@@ -164,9 +163,6 @@ def on_audio_decoded(element, pad, bin, muxer):
 
     if name.startswith('audio/x-raw') and pending:
         # db%. audioconvert ! queue ! faac bitrate = 12800 ! queue ! mux.
-        if logger:
-            logger.debug('Audio decoded pad: %r in %s', name, element_name)
-
         convert = gst.element_factory_make('audioconvert', 'sbs-audio-convert')
         q1 = gst.element_factory_make('queue','sbs-audio-queue1')
         f = gst.element_factory_make('faac','sbs-audio-encoder')
