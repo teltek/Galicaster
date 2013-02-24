@@ -164,7 +164,7 @@ def create_ui():
 
     #Labels
     label1 = gtk.Label("No Audio!!")
-    label2 = gtk.Label("Pick up the microphone\nPulse the mute button")
+    label2 = gtk.Label("Pick up the microphone\nPress the mute button")
     desc1 = "bold " + str(int(hprop*64))+"px"
     desc2 = "bold " + str(int(hprop*24))+"px"
     font1=pango.FontDescription(desc1)
