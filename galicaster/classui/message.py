@@ -132,7 +132,7 @@ class PopUp(gtk.Widget):
 
         # Content and spacing
         bigbox = gtk.VBox(0)
-        box = gtk.HBox(spacing=int(self.wprop*10)) # between image and text
+        box = gtk.HBox(spacing=int(self.wprop*40)) # between image and text
         bigbox.pack_start(box, True, True, 
                           int(self.hprop*10))
                           #0)
@@ -163,10 +163,10 @@ class PopUp(gtk.Widget):
                 else:
                     stext.set_alignment(0,0.5)                
                     stext.set_line_wrap(True)
-                bigbox.pack_start(stext)
-
+                bigbox.pack_start(stext, True, True, 0)
+                bigbox.set_border_width(int(self.wprop*40))
         
-        dialog.vbox.pack_start(bigbox, True , True ,int(self.hprop*10))
+        dialog.vbox.pack_start(bigbox, True , True , 0)
         bigbox.show_all()
 
         # Action Area
