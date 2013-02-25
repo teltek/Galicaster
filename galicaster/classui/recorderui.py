@@ -31,7 +31,7 @@ from galicaster.recorder import Recorder
 
 from galicaster.classui.metadata import MetadataClass as Metadata
 from galicaster.classui import statusbar as status_bar
-from galicaster.classui.audiobar import AudioBarClass
+from galicaster.classui.audiobar import Vumeter
 from galicaster.classui.events import EventManager
 from galicaster.classui.about import GCAboutDialog
 
@@ -136,10 +136,10 @@ class RecorderClassUI(gtk.Box):
         self.statusbar.SetTimer(0)
 
         # VUMETER
-        self.audiobar=AudioBarClass()
+        self.audiobar=Vumeter()
 
         # UI
-        self.vubox.add(self.audiobar.bar)
+        self.vubox.add(self.audiobar)
         self.pack_start(self.recorderui,True,True,0)
 
         # Event Manager
