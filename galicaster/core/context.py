@@ -11,7 +11,6 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-
 from galicaster.mediapackage.repository import Repository
 from galicaster.utils.mhhttpclient import MHHTTPClient
 from galicaster.core.conf import Conf
@@ -152,7 +151,10 @@ def get_mainwindow():
     Get Galicaster Mainwindow from the App Context
     """
     if 'mainwindow' not in __galicaster_context:
-        __galicaster_context['mainwindow'] = GCWindow(get_dispatcher(), get_state())
+        __galicaster_context['mainwindow'] = GCWindow(get_dispatcher(), 
+                                                      get_state(), 
+                                                      get_conf().get_size(), 
+                                                      get_logger())
 
     return __galicaster_context['mainwindow']
 
