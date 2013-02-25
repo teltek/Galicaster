@@ -13,6 +13,7 @@
 """
 UI for the welcoming page
 """
+import re
 import gtk
 
 from galicaster import __version__
@@ -24,19 +25,37 @@ class GCWindow(gtk.Window):
     GUI for the Welcoming - Distribution Screen
     """
     __gtype_name__ = 'GCWindow'
-    __def_win_size__ = (1024, 768)
 
-    def __init__(self, dispatcher=None, state=None, logger=None):  
+    def __init__(self, dispatcher=None, state=None, size=None, logger=None):  
+
         gtk.Window.__init__(self,gtk.WINDOW_TOPLEVEL)
-        self.set_size_request(*self.__def_win_size__) #FIXME make it unchangable
-        self.full_size = self.discover_size()
+        self.full_size = self.discover_size() # Fullscreen size
+        self.custom_size = self.full_size
+        expr='[0-9]+[\,x\:][0-9]+' # Parse custom size     
+        if re.match(expr,size): 
+            self.custom_size = [int(a) for a in size.split(re.search('[,x:]',size).group())]
+        elif size=="auto":
+            logger.info("Default resolution and fullscreen: "+str(self.full_size))
+        else:
+            logger.warning("Invalid resolution, set default. Should be 'width,height'. "+size)
+
+        if self.custom_size[0]>self.full_size[0]:
+            self.custom_size[0]=self.full_size[0]
+            logger.warning("Resolution Width is bigger than the monitor, set to monitor maximum")
+
+        if self.custom_size[1]>self.full_size[1]:
+            self.custom_size[1]=self.full_size[1]
+            logger.warning("Resolution height is bigger than the monitor, set to monitor maximum")
+
+        self.__def_win_size__=(self.custom_size[0],self.custom_size[1])
+        self.set_size_request(self.custom_size[0],self.custom_size[1])
+
         self.set_title("GaliCASTER " + __version__ );    
         self.set_decorated(False)
         self.set_position(gtk.WIN_POS_CENTER)
-        self.is_fullscreen = True
+        self.is_fullscreen = (self.custom_size == self.full_size)
         self.logger = logger
 
-        #pixbuf = gtk.gdk.pixbuf_new_from_file(get_image_path('galicaster.svg'))
         pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(get_image_path('galicaster.svg'),48,48)        
         pixbuf = pixbuf.scale_simple(128, 128, gtk.gdk.INTERP_BILINEAR)
         self.set_icon(pixbuf)
@@ -52,7 +71,8 @@ class GCWindow(gtk.Window):
 
     def start(self):
         """Shifts to fullscreen mode and triggers content resizing and drawing"""
-        #self.fullscreen()
+        if self.is_fullscreen:
+        self.fullscreen()
         self.resize_childs()
         self.show_all()
         
@@ -83,25 +103,16 @@ class GCWindow(gtk.Window):
         if self.is_fullscreen:
             return self.full_size
         else:
-            return self.__def_win_size__
+            return self.custom_size
 
     def discover_size(self):
         """Retrieves the current size of the window where the application will be shown"""
-        w_def=1280
-        h_def=720
-        size = (w_def,h_def)
-        
+        size = (1920,1080)
         try:
             root = gtk.gdk.get_default_root_window()
-            w = root.get_screen().get_width()
-            h = root.get_screen().get_height()
-            if w> w_def:
-                w=w_def
-      
-            if h> h_def:
-                h=h_def
-                
-            size = (w,h)
+            screen = root.get_screen()
+            pos1,pos2,w,h=screen.get_monitor_geometry(0)
+            size = [w,h]
         except:
             if self.logger:
                 self.logger.error("Unable to get root screen size")
