@@ -1,0 +1,10 @@
+Instalar el modulo para la Datapath VisionRGB-E1S
+=================================================
+
+Ver: 
+ * Web con drivers de Linux: http://www.datapath.co.uk/linux-driver
+ * Instruciones de instalacion: http://www.datapath.co.uk/linux-driver/item/download/571/?f=Installation.txt
+ * Driver: http://www.datapath.co.uk/filedownloader/VisionInstall.tgz
+
+Sigue las instruciones del archivo Installation.txt para completar la instalacion.
+
