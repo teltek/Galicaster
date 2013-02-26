@@ -208,7 +208,7 @@ class Worker(object):
         else:
             self.logger.info("Zipping MP {0}".format(mp.getIdentifier()))
         try:
-            serializer.save_in_zip(mp, location, self.use_namespace)
+            serializer.save_in_zip(mp, location, self.use_namespace, self.logger)
             if is_action:
                 mp.setOpStatus('exporttozip',mediapackage.OP_DONE)
                 self.dispatcher.emit('stop-operation', 'exporttozip', mp, True)

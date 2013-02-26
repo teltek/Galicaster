@@ -28,7 +28,7 @@ DCTERMS = ['title', 'creator', 'isPartOf', 'description', 'subject',
 SERIES_FILE="series.xml"
 ziptype = "system" # system,native
 
-def save_in_dir(mp):
+def save_in_dir(mp, logger=None):
     assert path.isdir(mp.getURI())
     # FIXME use catalog to decide what files to modify or create
 
@@ -49,7 +49,7 @@ def save_in_dir(mp):
     if mp.series not in [None, "", "[]"]:
         # Create or modify file
         m3 = open(path.join(mp.getURI(), SERIES_FILE), 'w')
-        m3.write(set_series(mp)) #FIXME
+        m3.write(set_series(mp,logger)) #FIXME
         m3.close()        
 
     # Manifest
@@ -58,14 +58,15 @@ def save_in_dir(mp):
     m.close()
 
 
-def save_native_zip(mp, loc, use_namespace=True):
+def save_native_zip(mp, loc, use_namespace=True, logger=None):
     """
     Save in ZIP file using python module
 
     @param mp Mediapackage to save in ZIP.
     @param file can be either a path to a file (a string) or a file-like object.
     """
-
+    if logger:
+        logger.debug("Using Native Zip")
     z= zipfile.ZipFile(loc,'w',zipfile.ZIP_STORED,True)
     # store only (DEFAULT)        
 
@@ -93,7 +94,10 @@ def save_native_zip(mp, loc, use_namespace=True):
     # FIXME other elements
     z.close()
 
-def save_system_zip(mp, loc, use_namespace=True):
+def save_system_zip(mp, loc, use_namespace=True, logger=None):
+
+    if logger:
+        logger.debug("Using System Zip")
 
     tmp_file = 'manifest.xml'
     m = open(tmp_file,'w')
@@ -134,12 +138,8 @@ def save_system_zip(mp, loc, use_namespace=True):
     os.remove(tmp_file)
 
 if ziptype == "system":
-    # TODO logger
-    #logger.debug("Ussing System Zip")
     save_in_zip = save_system_zip
 else: 
-    # TODO logger
-    #logger.debug("Ussing Native Zip")
     save_in_zip = save_native_zip
 
 
@@ -289,7 +289,7 @@ def set_episode(mp):
 
 
 
-def set_series(mp):
+def set_series(mp, logger=None):
     """
     Crear un episode XML
     """
@@ -305,6 +305,7 @@ def set_series(mp):
             created.appendChild(text)
             xml.appendChild(created)
         except KeyError:
-            print "KeyError in serializer.set_series"
+            if logger:
+                logger.debug("KeyError in serializer.set_series")
             continue
     return doc.toxml(encoding="utf-8") #without encoding

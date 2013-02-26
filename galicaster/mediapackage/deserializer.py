@@ -20,7 +20,7 @@ from galicaster.mediapackage.utils import _checknget, _checkget
 from galicaster.mediapackage.utils import _getElementAbsPath
 
                     
-def fromXML(xml):
+def fromXML(xml, logger=None):
     # FIXME: xml podria ser un file, o un string con un path.
     # Ojo si no existe.
     """
@@ -51,7 +51,8 @@ def fromXML(xml):
             mp.properties[op] = unicode(value)
                 
     except IOError:
-        print "WHITOUT galicaster.xml"
+        if logger:
+            logger.debug("Mediapackage "+mp.identifier+" without galicaster.xml")
         without_galicaster = True
 
     
