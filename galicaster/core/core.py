@@ -45,13 +45,12 @@ class Main():
         self.conf = context.get_conf()
         self.state = context.get_state()
         self.dispatcher = context.get_dispatcher()
-
         self.modules = self.conf.get_modules()
-        self.reload_profile(None) # To exec the execute to start
         self.load_modules()
         self.dispatcher.connect('net-up', self.check_net, True)
         self.dispatcher.connect('net-down', self.check_net, False)
         self.dispatcher.connect("reload-profile", self.reload_profile)
+        self.reload_profile(None) # To exec the execute to start
 
     def load_modules(self):
         self.window = context.get_mainwindow()
@@ -113,4 +112,6 @@ class Main():
         if profile.execute:
             out = os.system(profile.execute)
             logger.info("Executing {0} with out {1}".format(profile.execute, out))
+            if out:
+                self.dispatcher.emit("recorder-error", "Error executing command configuring profile")
 
