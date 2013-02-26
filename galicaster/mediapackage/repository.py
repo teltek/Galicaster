@@ -87,7 +87,7 @@ class Repository(object):
                 try:
                     manifest = os.path.join(self.root, folder, "manifest.xml")
                     if os.path.exists(manifest):
-                        new_mp = deserializer.fromXML(manifest)
+                        new_mp = deserializer.fromXML(manifest, self.logger)
                         self.__list[new_mp.getIdentifier()] = new_mp
                         if check_inconsistencies: self.repair_inconsistencies(new_mp)
                 except:
@@ -326,7 +326,7 @@ class Repository(object):
 
     def __add(self, mp):
         self.__list[mp.getIdentifier()] = mp
-        serializer.save_in_dir(mp)
+        serializer.save_in_dir(mp, self.logger)
         #FIXME escribir de nuevo los XML de metadata.xml y episode.xml y series.xml
         return mp
         
