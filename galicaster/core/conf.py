@@ -107,12 +107,28 @@ class Conf(object): # TODO list get and other ops arround profile
       prefix = 'GCMobile-' if self.is_mobile() else 'GC-'
       return self.get('ingest', 'hostname') or (prefix + socket.gethostname())
 
+
    def get_size(self):
       return self.get('basic', 'resolution') or "auto"
+
 
    def is_mobile(self):
       return self.get_boolean('basic', 'admin')
       
+   
+   def get_modules(self):
+        modules = []
+        modules.append('recorder')
+             
+        if self.get_boolean('basic', 'admin'):
+            modules.append('media_manager')
+            modules.append('player')
+
+        if self.get_boolean('ingest', 'active'):
+            modules.append('scheduler')
+
+        return modules
+
 
    def __force_set(self, conf, section, option, value):
        """
