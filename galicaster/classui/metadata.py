@@ -283,8 +283,9 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
         # Completion
         completion = gtk.EntryCompletion()
         completion.set_model(liststore)
-        completion.set_match_func(self.filtering2, completion)
+        completion.set_match_func(self.filtering_match, completion)
         completion.set_text_column(0)
+        completion.set_inline_selection(True)
         
         super(ComboBoxEntryExt, self).__init__(liststore,0)
      
@@ -294,6 +295,20 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
         # Signals   
         self.child.connect('changed',self.emit_filter,combofilter)
         self.child.connect('activate', self.activating)
+        self.child.connect('focus-out-event', self.ensure_match)
+        
+    def ensure_match(self, origin , event):
+        text = self.child.get_text()
+        model = self.get_model()
+        match = False
+        for iterator in model:
+            if not match and text in iterator[0]:
+                match = True
+                self.child.set_text(iterator[0])
+        if not match:
+            self.child.set_text(self.text)
+        return True
+                
 
     def activating(self, entry):
         text = entry.get_text()
@@ -304,15 +319,14 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
 
     def emit_filter(self, origin, cfilter):
         cfilter.refilter()
-        #combo.set_model
 
-    def filtering2(self, completion, key_string, iterator, data = None):
+    def filtering_match(self, completion, key_string, iterator, data = None):
         """Filtering completion"""
         model = completion.get_model()
         series = model.get_value(iterator,0)
         if series == self.text: # always show NO_SERIES
             return True
-        elif key_string in series: # Show coincidence
+        elif key_string.lower() in series.lower(): # Show coincidence
             return True
         elif key_string == self.text:
             return True
@@ -325,7 +339,7 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
         series =  model.get_value(iterator,0)
         if series == self.text: # always show NO_SERIES
             return True
-        elif key_string in series: # Show coincidence
+        elif key_string.lower() in series.lower(): # Show coincidence
             return True
         elif key_string == self.text:
             return True
