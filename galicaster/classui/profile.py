@@ -111,7 +111,6 @@ class ProfileUI(gtk.Window):
             self.profile.destroy()
         if self.track:
             self.track.destroy()
-        context.get_conf().update()
         self.destroy()          
 
 class ProfileDialog(gtk.HBox):
@@ -342,6 +341,7 @@ class ListProfileBox(ProfileDialog):
             
             context.get_conf().change_current_profile(profile.name)
         #self.refresh()
+        context.get_conf().update()
         context.get_dispatcher().emit("reload-profile")
         self.close()
 
