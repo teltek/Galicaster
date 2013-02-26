@@ -462,7 +462,8 @@ class RecorderClassUI(gtk.Box):
         """ Captures a pipeline error.
         If the recording are is active, shows it
         """
-        self.change_state(GC_ERROR)        
+        self.change_state(GC_ERROR)
+        self.recorder.stop_elements()
         if self.error_id:
             self.dispatcher.disconnect(self.error_id)
             self.error_id = None
