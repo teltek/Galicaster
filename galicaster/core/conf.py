@@ -152,7 +152,7 @@ class Conf(object): # TODO list get and other ops arround profile
             os.remove(profile.path)
             self.__profiles.pop(profile.name)
          elif profile.name != 'Default':
-            profile.export_to_file()  
+            profile.export_to_file()
             if profile == self.__current_profile:
                self.__conf.set('basic','profile',profile.name)
             
@@ -371,8 +371,9 @@ class Profile(object):
       for track in self.tracks:
          section = 'track'+str(index)
          parser.add_section(section)
-         for key in track.itemlist:                   
-            parser.set(section,key,track[key])
+         for key in track.itemlist:
+            if key not in ['path','active']:
+               parser.set(section,key,track[key])
          index+=1
 
       configfile = open(filepath, 'wb')
