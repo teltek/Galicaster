@@ -34,7 +34,6 @@ REC = 0
 PLA = 2
 MMA = 1
 DIS = 3
-PIN = 4 
 
 class Main():
     def __init__(self):
@@ -47,20 +46,8 @@ class Main():
         self.state = context.get_state()
         self.dispatcher = context.get_dispatcher()
 
-        self.modules = []
-        self.modules.append('recorder')
-             
-        if self.conf.get_boolean('basic', 'admin'):
-            self.modules.append('media_manager')
-            self.modules.append('player')
-
-        if self.conf.get_boolean('ingest', 'active'):
-            self.modules.append('scheduler')
-
-        if self.conf.get_boolean('basic', 'pin'):
-            self.modules.append('pin')
-
-        self.reload_profile(None)
+        self.modules = self.conf.get_modules()
+        self.reload_profile(None) # To exec the execute to start
         self.load_modules()
         self.dispatcher.connect('net-up', self.check_net, True)
         self.dispatcher.connect('net-down', self.check_net, False)
