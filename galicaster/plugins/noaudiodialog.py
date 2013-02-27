@@ -51,6 +51,7 @@ def activate_hidden(button, dialog):
     global keep_hidden
     keep_hidden = True
     dialog.hide() 
+
 def deactivate_hidden_and_check(element=None):
     """
     When a signal is recived, deactivate the keep hidden feature and shows dialog if necessary
@@ -148,13 +149,16 @@ def create_ui():
     ui.action_area.set_layout(gtk.BUTTONBOX_SPREAD)
 
     #Buttons
-    keep_button = ui.add_button("Keep Hidden",1)
-    hide_button = ui.add_button("Hide",2)
+    conf = context.get_conf()
+    keep_closed_feature = conf.get_boolean('audio','keepclosed') or False
+    if keep_closed_feature:
+        keep_button = ui.add_button("Keep Closed",1)
+        keep_button.connect("clicked",activate_hidden, ui)
+    hide_button = ui.add_button("Close",2)
     hide_button.connect("clicked",lambda l:ui.hide())
-    keep_button.connect("clicked",activate_hidden, ui)
     for child in ui.action_area.get_children():
         child.set_property("width-request", int(wprop*170) )
-        child.set_property("height-request", int(hprop*50) )
+        child.set_property("height-request", int(hprop*70) )
         child.set_can_focus(False)
 
     #Taskbar with logo
@@ -191,7 +195,7 @@ def create_ui():
     ui.vbox.pack_start(another_box, False, False, 10)
     #ui.vbox.pack_start(box, True, False, 0)
     #ui.vbox.pack_start(label2, True, False, 0)
-    resize_buttons(ui.action_area,int(wprop*22),True)
+    resize_buttons(ui.action_area,int(wprop*25),True)
     ui.vbox.set_child_packing(ui.action_area, True, True, int(hprop*25), gtk.PACK_END)
     
     label1.show()
@@ -208,7 +212,7 @@ def set_font(description):
 
 def resize_buttons(area, fsize, equal = False):    
         """Adapts buttons to the dialog size"""
-        font = set_font(str(fsize)+"px")
+        font = set_font("bold "+str(fsize)+"px")
         for button in area.get_children():
             for element in button.get_children():
                 if type(element) == gtk.Label:

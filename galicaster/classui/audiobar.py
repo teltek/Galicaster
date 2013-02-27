@@ -72,8 +72,7 @@ class Vumeter(gtk.Table):
     def scale_vumeter(self,data):
         conf = context.get_conf()
         dispatcher = context.get_dispatcher()
-        minimum= float(conf.get('audio','min'))
-        maximum= float(conf.get('audio','max'))
+        minimum= float(conf.get('audio','min') or -80)
 
         if data == "Inf":
             valor = 0
@@ -134,16 +133,15 @@ class AudioBarClass(gtk.Box):
         conf = context.get_conf()
         dispatcher = context.get_dispatcher()
         minimum= float(conf.get('audio','min'))
-        maximum= float(conf.get('audio','max'))
 
         if data == "Inf":
             valor = 0.0
         elif data < minimum:
             valor = 0.0
-        elif data > maximum:
+        elif data > 0:
             valor = 1.0
         else:
-            valor = (data-minimum)/(maximum-minimum)
+            valor = (data+100)/100
 
         if not self.vertical:
             if not self.mute:
