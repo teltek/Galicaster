@@ -67,8 +67,9 @@ class GCcustom(gst.Bin, base.Base):
         gst.Bin.__init__(self, self.options['name'])
 
         aux = self.options['pipestr'].replace('gc-custom-preview', 'sink-' + self.options['name'])
-        print aux
-        bin = gst.parse_bin_from_description(aux, False)
+
+        #bin = gst.parse_bin_from_description(aux, True)
+        bin = gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
         self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-custom-sink', 'location')

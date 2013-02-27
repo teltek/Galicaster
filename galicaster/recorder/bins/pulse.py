@@ -93,7 +93,8 @@ class GCpulse(gst.Bin, base.Base):
         aux = (pipestr.replace("gc-audio-preview", "sink-" + self.options["name"])
                       .replace("gc-audio-enc", self.options["encoder"]))
 
-        bin = gst.parse_bin_from_description(aux, True)
+        #bin = gst.parse_bin_from_description(aux, True)
+        bin = gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
         if self.options['location'] != "default":
