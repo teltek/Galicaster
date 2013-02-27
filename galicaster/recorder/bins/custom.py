@@ -68,7 +68,7 @@ class GCcustom(gst.Bin, base.Base):
 
         aux = self.options['pipestr'].replace('gc-custom-preview', 'sink-' + self.options['name'])
 
-        #bin = gst.parse_bin_from_description(aux, True)
+        #bin = gst.parse_bin_from_description(aux, False)
         bin = gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
