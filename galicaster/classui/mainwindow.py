@@ -181,7 +181,6 @@ class GCWindow(gtk.Window):
             if self.dispatcher:
                 self.dispatcher.emit('galicaster-notify-quit')
             UtilsShutdown()
-            gtk.main_quit()
         else:
             if self.logger:
                 self.logger.info("Cancel Shutdown")
