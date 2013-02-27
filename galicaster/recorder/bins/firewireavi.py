@@ -70,7 +70,7 @@ class GCfirewireavi(gst.Bin, base.Base):
 
         "format" : {
             "type": "select",
-            "default": "dv1394src",
+            "default": "dv",
             "options": {
                 "dv" : "dv1394src",
                 "hdv" : "hdv1394src",
@@ -95,7 +95,9 @@ class GCfirewireavi(gst.Bin, base.Base):
         base.Base.__init__(self, options)
         gst.Bin.__init__(self, self.options["name"])
 
-        bin = gst.parse_bin_from_description(pipestr.replace("gc-firewireavi-preview", "sink-" + self.options["name"]), False)
+        aux = pipestr.replace("gc-firewireavi-preview", "sink-" + self.options["name"])
+        #bin = gst.parse_bin_from_description(aux, False)
+        bin = gst.parse_launch("( {} )".format(aux))
 
         self.add(bin)
 
