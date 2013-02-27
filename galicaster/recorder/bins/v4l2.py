@@ -124,31 +124,23 @@ class GCv4l2(gst.Bin, base.Base):
         else:
             aux = aux.replace('gc-v4l2-dec', '')
 
-        bin = gst.parse_bin_from_description(aux, True)
+        #bin = gst.parse_bin_from_description(aux, True)
+        bin = gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
         self.set_option_in_pipeline('location', 'gc-v4l2-src', 'device')
-        #element = self.get_by_name('gc-v4l2-src')
-        #element.set_property('device', self.options['location'])
 
         self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-v4l2-sink', 'location')
-        #element = self.get_by_name('gc-v4l2-sink')
-        #element.set_property('location', path.join(self.options['path'], self.options['file']))
 
         self.set_option_in_pipeline('caps', 'gc-v4l2-filter', 'caps', gst.Caps)
-        #element = self.get_by_name('gc-v4l2-filter')
-        #element.set_property('caps', gst.Caps(self.options['caps']))
         fr = re.findall("framerate *= *[0-9]+/[0-9]+", self.options['caps'])
         if fr:
             newcaps = 'video/x-raw-yuv,' + fr[0]
             self.set_value_in_pipeline(newcaps, 'gc-v4l2-vrate', 'caps', gst.Caps)
-            #element2 = self.get_by_name('gc-v4l2-vrate')
-            #element2.set_property('caps', gst.Caps(newcaps))
 
         for pos in ['right','left','top','bottom']:
             self.set_option_in_pipeline('videocrop-'+pos, 'gc-v4l2-crop', pos, int)
-            #element = self.get_by_name('gc-v4l2-crop')
-            #element.set_property(pos, int(self.options['videocrop-' + pos]))
+
 
     def changeValve(self, value):
         valve1=self.get_by_name('gc-v4l2-valve')

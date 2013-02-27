@@ -116,7 +116,8 @@ class GCaudiotest(gst.Bin, base.Base):
         aux = (pipestr.replace("gc-audiotest-preview", "sink-" + self.options["name"])
                       .replace("gc-audiotest-enc", self.options["encoder"]))
 
-        bin = gst.parse_bin_from_description(aux, True)
+        #bin = gst.parse_bin_from_description(aux, True)
+        bin = gst.parse_launch("( {} )".format(aux))
 
         self.add(bin)
 
