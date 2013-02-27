@@ -112,7 +112,7 @@ class GCvideotest(gst.Bin, base.Base):
                       .replace('gc-videotest-enc', self.options['encoder'])
                       .replace('gc-videotest-mux', self.options['muxer']))
 
-        #bin = gst.parse_bin_from_description(aux, True)
+        #bin = gst.parse_bin_from_description(aux, False)
         bin = gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 

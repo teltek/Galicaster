@@ -193,7 +193,8 @@ class GCblackmagic(gst.Bin, base.Base):
         if self.has_audio:
           aux = aux.replace('gc-blackmagic-audioenc', self.options['audioencoder'])
 
-        bin = gst.parse_bin_from_description(aux, False)
+        #bin = gst.parse_bin_from_description(aux, False)
+        bin = gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
         sink = self.get_by_name('gc-blackmagic-sink')
