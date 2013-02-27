@@ -125,10 +125,11 @@ class GChauppauge(gst.Bin, base.Base):
     def __init__(self, options={}): 
         base.Base.__init__(self, options)
         gst.Bin.__init__(self, self.options['name'])
-        # Para usar con el gtk.DrawingArea
-        bin = gst.parse_bin_from_description(pipestr.replace("gc-hauppauge-preview", "sink-" + self.options['name']), True)
-        # bin = gst.parse_bin_from_description(pipestr.replace("gc-hauppauge-preview", "sink-" + self.options['name']), True)
 
+        aux = pipestr.replace("gc-hauppauge-preview", "sink-" + self.options['name'])
+
+        #bin = gst.parse_bin_from_description(aux, True)
+        bin = gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
         sink = self.get_by_name("gc-hauppauge-device-src")
