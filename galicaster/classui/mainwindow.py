@@ -19,6 +19,7 @@ import gtk
 from galicaster import __version__
 from galicaster.classui import message
 from galicaster.classui import get_image_path
+from galicaster.utils.shutdown import shutdown as UtilsShutdown
 
 class GCWindow(gtk.Window):
     """
@@ -63,6 +64,7 @@ class GCWindow(gtk.Window):
         self.dispatcher = dispatcher
         if self.dispatcher:
             self.dispatcher.connect('galicaster-quit',self.close)
+            self.dispatcher.connect('galicaster-shutdown',self.shutdown)
 
         self.nbox = gtk.Notebook()
         self.nbox.set_show_tabs(False)
@@ -162,3 +164,26 @@ class GCWindow(gtk.Window):
         else:
             if self.logger:
                 self.logger.info("Cancel Quit")
+
+    def shutdown(self, signal):
+        """Pops up a dialog asking to shutdown the computer"""
+        text = {"title" : "Shutdwon",
+                "main" : "Are you sure you want to SHUTDOWN? ", 
+                }
+
+        buttons = ( gtk.STOCK_QUIT, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
+        warning = message.PopUp(message.WARNING, text,
+                                self, buttons)
+
+        if warning.response in message.POSITIVE:
+            if self.logger:
+                self.logger.info("Shutdown Galicaster")
+            if self.dispatcher:
+                self.dispatcher.emit('galicaster-notify-quit')
+            UtilsShutdown()
+            gtk.main_quit()
+        else:
+            if self.logger:
+                self.logger.info("Cancel Shutdown")
+        
+        
