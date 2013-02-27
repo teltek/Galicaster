@@ -18,16 +18,8 @@ Logger Proxy class to use in galciaster.
 import logging
 
 class Logger(logging.Logger):
-    def __init__(self, log_path, level="DEBUG", rotate=False):
+    def __init__(self, log_path, level="DEBUG", rotate=False, use_syslog=False):
         logging.Logger.__init__(self, "galicaster", level)
-
-        if log_path == None:
-            loghandler = logging.NullHandler()
-        elif rotate:
-            from logging.handlers import TimedRotatingFileHandler
-            loghandler = TimedRotatingFileHandler(log_path, "midnight")
-        else:
-            loghandler = logging.FileHandler(log_path, "a")
 
         format = [
             "%(asctime)s",
@@ -35,7 +27,21 @@ class Logger(logging.Logger):
             "%(module)s",
             "%(message)s"]
 
-        formatter = logging.Formatter("\t".join(format))
-        loghandler.setFormatter(formatter)
+        if log_path == None:
+            loghandler = logging.NullHandler()
+        elif use_syslog:
+            from logging.handlers import SysLogHandler
+            loghandler = SysLogHandler(address='/dev/log')
+            format[0] = "Galicaster"
+            loghandler.setFormatter(logging.Formatter(" ".join(format)))
+        elif rotate:
+            from logging.handlers import TimedRotatingFileHandler
+            loghandler = TimedRotatingFileHandler(log_path, "midnight")
+            loghandler.setFormatter(logging.Formatter("\t".join(format)))
+        else:
+            loghandler = logging.FileHandler(log_path, "a")
+            loghandler.setFormatter(logging.Formatter("\t".join(format)))
+
+
         self.addHandler(loghandler)
 

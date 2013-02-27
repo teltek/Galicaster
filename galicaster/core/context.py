@@ -71,7 +71,8 @@ def get_logger():
         conf = get_conf()
         logger = Logger(conf.get('logger', 'path'),
                         conf.get('logger', 'level').upper(),
-                        conf.get_boolean('logger', 'rotate'))
+                        conf.get_boolean('logger', 'rotate'),
+                        conf.get_boolean('logger', 'use_syslog'))
         __galicaster_context['logger'] = logger
         conf.logger = logger
 
