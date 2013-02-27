@@ -41,6 +41,8 @@ class DistribUI(gtk.Box):
         recorder = dbuilder.get_object("button1")        
         manager = dbuilder.get_object("button2")
         quit_button =  dbuilder.get_object("button3")
+        shutdown_button =  dbuilder.get_object("button4")
+
         profile_button = dbuilder.get_object("profile_button")
         self.selected = dbuilder.get_object("selected_profile")
         self.update_selected_profile()
@@ -51,6 +53,7 @@ class DistribUI(gtk.Box):
         recorder.connect("clicked", self.emit_signal, "change_mode", 0)
         manager.connect("clicked", self.emit_signal, "change_mode", 1)
         quit_button.connect("clicked", self.emit_signal, "galicaster-quit")
+        shutdown_button.connect("clicked", self.emit_signal, "galicaster-shutdown")
         profile_button.connect("clicked", self.on_profile_button)
         
         about = dbuilder.get_object("aboutevent")
@@ -58,6 +61,7 @@ class DistribUI(gtk.Box):
 
         conf = context.get_conf()
         quit_button.set_visible(conf.get_boolean("basic", "quit"))
+        shutdown_button.set_visible(conf.get_boolean("basic", "shutdown"))
         self.pack_start(dbox, True, True, 0)
 
     def on_profile_button(self, origin):
