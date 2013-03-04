@@ -6,7 +6,7 @@ sudo apt-get install --yes gstreamer0.10-plugins-ugly
 # python-setuptools y pip
 sudo apt-get install --yes python-pip python-setuptools
 # iCalendar
-sudo pip install
+sudo pip install icalendar
 # pyCurl
 sudo apt-get install --yes python-pycurl
 # Herramientas de configuración de tarjetas capturadoras
