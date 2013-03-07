@@ -71,7 +71,7 @@ class GCAboutDialog(gtk.AboutDialog):
          self.vbox.pack_start(strip, False, True, 0)
          self.vbox.reorder_child(strip,0)
          strip.show()
-         self.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_SPLASHSCREEN)
+         self.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
          
          #self.set_decorated(True)
          self.set_position(gtk.WIN_POS_CENTER_ON_PARENT)

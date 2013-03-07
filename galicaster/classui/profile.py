@@ -54,15 +54,14 @@ class ProfileUI(gtk.Window):
         height = int(size[1]/2.0)
         hprop = size[1]/1080.0
         gtk.Window.__init__(self)
-        self.set_title(" ")
+        self.set_transient_for(parent)
+        self.set_destroy_with_parent(True)
+        self.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
+        self.set_title("Profile Selector")
         self.set_position(gtk.WIN_POS_CENTER_ALWAYS)
         self.set_default_size(width,height)
-        self.set_modal(True)
-
-        if parent:
-            self.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_SPLASHSCREEN)
-            self.set_transient_for(parent)
-            self.set_destroy_with_parent(True)
+        self.set_skip_taskbar_hint(True)
+        self.set_keep_above(True)
 
         strip = Header(size=size,title="Profile Selector")
 
@@ -81,6 +80,7 @@ class ProfileUI(gtk.Window):
         tab1 = gtk.Label("Profile Selector")
         self.append_tab(self.list,tab1)
         self.show_all()
+        
 
     def append_tab(self, widget, label):
         """Add a tab with a new edition area"""

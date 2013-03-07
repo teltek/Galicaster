@@ -128,16 +128,16 @@ def create_ui():
     """
     Creates the No Audio Dialog interface
     """
-    ui = gtk.Dialog()
+    parent =  context.get_mainwindow().get_toplevel()
+    ui = gtk.Dialog("Warning", parent)
 
     #Properties
-    ui.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_SPLASHSCREEN)
+    ui.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
     ui.set_skip_taskbar_hint(True)
     ui.set_modal(False)
     ui.set_accept_focus(False)
+    ui.set_destroy_with_parent(True)
 
-    parent =  context.get_mainwindow().get_toplevel()
-    ui.set_transient_for(context.get_mainwindow().get_toplevel())
 
     size = parent.get_size()
     ui.set_property('width-request',int(size[0]/3)) 

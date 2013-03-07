@@ -67,7 +67,7 @@ class MetadataClass(gtk.Widget):
 
         dialog = gui.get_object("metadatadialog")
         dialog.set_property("width-request",int(anchura/2.2))
-        dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_SPLASHSCREEN)
+        dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
         dialog.set_keep_above(True)
 
         #NEW HEADER

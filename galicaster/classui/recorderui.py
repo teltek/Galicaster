@@ -301,16 +301,34 @@ class RecorderClassUI(gtk.Box):
             self.recorder.pause()
             gui = gtk.Builder()
             gui.add_from_file(get_ui_path("paused.glade"))
-            dialog = gui.get_object("dialog") 
-            self.pause_dialog=dialog
-            #image = gui.get_object("image") 
-            button = gui.get_object("button") 
-            dialog.set_transient_for(self.get_toplevel())
+            dialog = self.pause_dialog(self.get_toplevel())
     
             response = dialog.run()
             if response == 1:
                 self.on_pause(None)
-            dialog.destroy()                
+            dialog.destroy()     
+
+    def pause_dialog(self, parent):
+       
+        gui = gtk.Builder()
+        gui.add_from_file(get_ui_path("paused.glade"))
+        dialog = gui.get_object("dialog") 
+        dialog.set_transient_for(parent)
+        dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
+        dialog.set_keep_above(True)
+        dialog.set_skip_taskbar_hint(True)
+        size = context.get_mainwindow().get_size()
+        k2 = size[1] / 1080.0
+        size= int(k2*150)
+        dialog.set_default_size(size,size)
+        button = gui.get_object("image")
+        pixbuf = gtk.gdk.pixbuf_new_from_file(get_image_path('gc-pause.svg'))
+        pixbuf = pixbuf.scale_simple(
+            size,
+            size,
+            gtk.gdk.INTERP_BILINEAR)
+        button.set_from_pixbuf(pixbuf)
+        return dialog
 
             
     def on_stop(self,button):
@@ -960,7 +978,7 @@ class RecorderClassUI(gtk.Box):
         relabel(l2,k1*20,False)
         relabel(l3,k1*20,False)
 
-        for name  in ["recbutton","pausebutton","stopbutton","helpbutton"]:
+        for name  in ["recbutton","pausebutton","stopbutton","editbutton","helpbutton"]:
             button = self.gui.get_object(name)
             button.set_property("width-request", int(k1*100) )
             button.set_property("height-request", int(k1*100) )
@@ -974,6 +992,16 @@ class RecorderClassUI(gtk.Box):
                         element.set_pixel_size(int(k1*46))
             else:
                 relabel(image[0],k1*28,False)
+        # change stop button
+        for name in ["pause","stop"]:
+            button = self.gui.get_object(name+"button")
+            image = button.get_children()[0]
+            pixbuf = gtk.gdk.pixbuf_new_from_file(get_image_path('gc-'+name+'.svg'))
+            pixbuf = pixbuf.scale_simple(
+                int(80*k1),
+                int(80*k1),
+                gtk.gdk.INTERP_BILINEAR)
+            image.set_from_pixbuf(pixbuf)  
 
         for name  in ["previousbutton", "morebutton"]:
             button = self.gui.get_object(name)
