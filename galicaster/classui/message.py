@@ -100,10 +100,10 @@ class PopUp(gtk.Widget):
   
         #dialog                
         dialog = gtk.Dialog(text.get("title","Galicaster"), parent, 0, buttons)
-        dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_SPLASHSCREEN)
+        dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
+        
         dialog.set_skip_taskbar_hint(True)
         dialog.set_modal(True)
-
         dialog.set_keep_above(True)
         #Taskbar
         strip = Header(size=self.size, title=text.get("title","Galicaster"))
@@ -187,7 +187,7 @@ class PopUp(gtk.Widget):
     def create_framed_lines(self, buttons, text, icon, parent): # TODO get commom code with create_ui
         """Creates frames arround groups of buttons"""
         dialog = gtk.Dialog(text.get("title","Galicaster"),parent,0)
-        dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_SPLASHSCREEN)
+        dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
         dialog.set_skip_taskbar_hint(True)
         dialog.set_modal(True)
 
