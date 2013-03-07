@@ -55,6 +55,7 @@ class GCWindow(gtk.Window):
         self.set_decorated(False)
         self.set_position(gtk.WIN_POS_CENTER)
         self.is_fullscreen = (self.custom_size == self.full_size)
+        self.is_fullscreen = false
         self.logger = logger
 
         pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(get_image_path('galicaster.svg'),48,48)        

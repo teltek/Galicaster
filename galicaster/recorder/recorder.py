@@ -73,11 +73,11 @@ class Recorder(object):
             
     def init_bin(self, bin):
         
-        log.info("gst init"+ str(bin))
+        logger.info("gst init"+ str(bin))
         name = bin['name']
 
         try:
-            mod_name = 'galicaster.recorder.pipeline.' + bin['device']
+            mod_name = 'galicaster.recorder.bins.' + bin['device']
             __import__(mod_name)
             mod = sys.modules[mod_name]
             Klass = getattr(mod, "GC" + bin['device'])
