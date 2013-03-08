@@ -110,7 +110,7 @@ class GCWindow(gtk.Window):
 
     def discover_size(self):
         """Retrieves the current size of the window where the application will be shown"""
-        size = (1920,1080)
+        size = (1000,800)
         try:
             root = gtk.gdk.get_default_root_window()
             screen = root.get_screen()
@@ -119,7 +119,7 @@ class GCWindow(gtk.Window):
         except:
             if self.logger:
                 self.logger.error("Unable to get root screen size")
-            
+        size = (1000,800)    
         return size
         
 
