@@ -55,7 +55,7 @@ class GCWindow(gtk.Window):
         self.set_decorated(False)
         self.set_position(gtk.WIN_POS_CENTER)
         self.is_fullscreen = (self.custom_size == self.full_size)
-        self.is_fullscreen = false
+        self.is_fullscreen = False
         self.logger = logger
 
         pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(get_image_path('galicaster.svg'),48,48)        
@@ -75,7 +75,7 @@ class GCWindow(gtk.Window):
     def start(self):
         """Shifts to fullscreen mode and triggers content resizing and drawing"""
         if self.is_fullscreen:
-        self.fullscreen()
+            self.fullscreen()
         self.resize_childs()
         self.show_all()
         

@@ -17,11 +17,6 @@ import logging
 import ConfigParser
 import socket
 
-<<<<<<< HEAD
-logger = logging.getLogger()
-=======
->>>>>>> ryddet etter merge
-
 YES = ['true', 'yes', 'ok', 'si', 'y']
 
 class Conf(object): # TODO list get and other ops arround profile
@@ -185,11 +180,7 @@ class Conf(object): # TODO list get and other ops arround profile
          return {'capture.device.names': 'defaults'}
       # Galicaster Class
       if self.logger:
-<<<<<<< HEAD
          self.logger.info('Be careful using profiles and matterhorn scheduler')
-=======
-        logger.info('Be careful using profiles and matterhorn scheduler')
->>>>>>> ryddet etter merge
       default  = self.get_current_profile()
       names = []
       tracks = {}

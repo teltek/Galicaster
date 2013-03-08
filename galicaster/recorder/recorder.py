@@ -86,25 +86,9 @@ class Recorder(object):
                 'Invalid track type %s for %s track' % (mod_name, name)
                 )
 
-<<<<<<< HEAD
-        log.debug("Init bin %s %s", name, mod_name)
+        logger.debug("Init bin %s %s", name, mod_name)
         self.bins[name] = Klass(bin)
         self.pipeline.add(self.bins[name])
-=======
-            try:
-                mod_name = 'galicaster.recorder.bins.' + bin['device']
-                __import__(mod_name)
-                mod = sys.modules[mod_name]
-                Klass = getattr(mod, "GC" + bin['device'])
-            except:
-                raise NameError(
-                    'Invalid track type %s for %s track' % (mod_name, name)
-                    )
-
-            logger.debug("Init bin %s %s", name, mod_name)
-            self.bins[name] = Klass(bin)
-            self.pipeline.add(self.bins[name])
->>>>>>> Do not save the logs in temporary directory (Issue #2)
 
     def get_status(self):
         return self.pipeline.get_state()

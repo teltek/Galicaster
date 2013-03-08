@@ -240,8 +240,11 @@ class RecorderClassUI(gtk.Box):
         self.select_devices()
 
     def init_recorder(self):
+        self.recorder = Recorder(self.bins, self.areas) 
+        self.recorder.mute_preview(not self.focus_is_active)
+        
         #self.dispatcher.disconnect(self.start_id)
-        ok =self.recorder.preview()
+        ok=self.recorder.preview()
         if ok :
             if  self.mediapackage.manual:
                 self.mediapackage.setTitle("Recording started at "+ datetime.datetime.now().replace(microsecond = 0).isoformat())
@@ -271,7 +274,7 @@ class RecorderClassUI(gtk.Box):
         self.recorder.record()
         self.mediapackage.status=mediapackage.RECORDING
         self.mediapackage.setDate(datetime.datetime.utcnow().replace(microsecond = 0))
-        self.clock=self.record.get_clock()
+        self.clock=self.recorder.get_clock()
         self.timer_thread_id = 1
         self.timer_thread = thread(target=self.timer_launch_thread) 
         self.timer_thread.daemon = True

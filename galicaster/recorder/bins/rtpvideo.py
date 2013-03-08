@@ -35,64 +35,90 @@ pipestr = (' rtspsrc name=gc-rtpvideo-src ! gc-rtpvideo-depay ! gc-rtpvideo-vide
            ' gc-rtpvideo-tee. ! queue ! valve drop=false name=gc-rtpvideo-valve ! '
            ' queue ! gc-rtpvideo-mux ! filesink name=gc-rtpvideo-sink async=false')
 
+
 class GCrtpvideo(gst.Bin, base.Base):
 
+
+    order = ["name", "flavor", "location", "file", "videomux", "cameratype"]
     gc_parameters = {
-        # http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-good-plugins/html/gst-plugins-good-plugins-rtspsrc.html
+        "name": {
+            "type": "text",
+            "default": "Webcam",
+            "description": "Name assigned to the device",
+            },
+        "flavor": {
+            "type": "flavor",
+            "default": "presenter",
+            "description": "Matterhorn flavor associated to the track",
+            },
+        "location": {
+            "type": "text",  #TODO add URL
+            "default": "rtsp://127.0.0.1/mpeg4/media.amp",
+            "description": "Location of the RTSP url to read",
+            },
+        "file": {
+            "type": "text",
+            "default": "CAMERA.avi",
+            "description": "The file name where the track will be recorded.",
+            },
+        "videomux": {
+            "type": "text",
+            "default": "flvmux",
+            "description": "The file name where the track will be recorded.",
+            },
+        "cameratype": {
+            "type": "select",
+            "default": "h264",
+            "options": [
+                "h264", "mpeg4"
+                ],
+            "description": "Camera type",
+            }
         }
+    
+    is_pausable = False
+    has_audio   = False
+    has_video   = True
 
     __gstdetails__ = (
-        "Galicaster RTP BIN",
+        "Galicaster RTPVIDEO Bin",
         "Generic/Video",
-        "Add descripcion",
-        "UiB"
+        "Generice bin to rtpvideo interface devices",
+        "Teltek Video Research",
         )
-
-    is_pausable = True
-    has_audio = False
-    has_video = True
 
     def __init__(self, options={}):
         base.Base.__init__(self, options)
         gst.Bin.__init__(self, self.options['name'])
-        
-        global pipestr
 
-        if self.options['name'] == None:
-            self.options['name'] = "rtp"
-
-        # 2/3-2012 edpck@uib.no use pipestr from conf.ini if it exists
-        if "pipestr" in self.options:
-           pipestr = self.options["pipestr"].replace("\n", " ")
-        
-        gst.Bin.__init__(self, self.options['name'])
-
-        aux = pipestr.replace("gc-rtp-preview", "sink-" + self.options['name'])
+        aux = (pipestr.replace('gc-rtpvideo-preview', 'sink-' + self.options['name'])
+               .replace('gc-rtpvideo-depay', pipe_config[self.options['cameratype']]['depay'])
+               .replace('gc-rtpvideo-videoparse', pipe_config[self.options['cameratype']]['videoparse'])
+               .replace('gc-rtpvideo-dec', pipe_config[self.options['cameratype']]['dec'])
+               .replace('gc-rtpvideo-mux', self.options['videomux']))
 
         bin = gst.parse_bin_from_description(aux, False)
         self.add(bin)
-      
-        self.set_value_in_pipeline(self.options['location'], 'gc-rtp-src', 'location')
-        self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-rtp-sink', 'location')
 
-        for opt in ['debug', 'protocols', 'retry', 'timeout', 'latency', 'tcp-timeout', 'connection-speed', 'nat-method', 'do-rtcp', 'proxy', 'rtp-blocksize', 'user-id', 'user-pw', 'buffer-mode', 'port-range', 'udp-buffer-size']:
-            if opt in options:
-                self.set_value_in_pipeline(self.options[opt], 'gc-rtp-src', opt)
+        self.set_option_in_pipeline('location', 'gc-rtpvideo-src', 'location')
+
+        self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-rtpvideo-sink', 'location')
 
     def changeValve(self, value):
-        valve1=self.get_by_name('gc-rtp-valve')
+        valve1=self.get_by_name('gc-rtpvideo-valve')
         valve1.set_property('drop', value)
 
-    def getValve(self):
-        return self.get_by_name("gc-rtp-valve")
-
     def getVideoSink(self):
-        return self.get_by_name("gc-rtp-preview")
+        return self.get_by_name('gc-rtpvideo-preview')
+    
+    def getSource(self):
+        return self.get_by_name('gc-rtpvideo-src') 
 
-    def send_event_to_src(self,event): # IDEA made a common for all our bins
-        src = self.get_by_name('gc-rtp-src')
-        src.send_event(event)
+    def send_event_to_src(self, event):
+        src1 = self.get_by_name('gc-rtpvideo-src')
+        src1.send_event(event)
+
 
 gobject.type_register(GCrtpvideo)
-gst.element_register(GCrtpvideo, "gc-rtp-bin")
-module_register(GCrtpvideo, "rtpvideo")
+gst.element_register(GCrtpvideo, 'gc-rtpvideo-bin')
+module_register(GCrtpvideo, 'rtpvideo')
