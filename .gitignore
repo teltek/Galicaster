@@ -30,8 +30,7 @@ tests/resources/attach/
 tests/resources/repository/attach/
 tests/resources/profile/folder/
 
-conf/
-uib-conf-dist/
+uib-conf-dist
 profiles/
 conf-dist.ini
 conf.ini
