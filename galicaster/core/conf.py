@@ -36,11 +36,10 @@ class Conf(object): # TODO list get and other ops arround profile
                              os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','conf-dist.ini')))
       self.profile_folder = (profile_folder if os.path.isdir(profile_folder) else 
                              os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'profiles')))
-         
-      self.hostname = self.get_hostname()
-      self.logger = None
 
+      self.logger = None         
       self.reload()
+      self.hostname = self.get_hostname()
 
 
    def reload(self):
