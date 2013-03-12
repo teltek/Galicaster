@@ -14,7 +14,6 @@
 
 import glib
 import gtk
-import os
 glib.threads_init()
 gtk.gdk.threads_init()
 
