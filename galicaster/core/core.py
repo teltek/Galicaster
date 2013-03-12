@@ -49,7 +49,6 @@ class Main():
         self.load_modules()
         self.dispatcher.connect('net-up', self.check_net, True)
         self.dispatcher.connect('net-down', self.check_net, False)
-        self.reload_profile(None) # To exec the execute to start
 
     def load_modules(self):
         self.window = context.get_mainwindow()
