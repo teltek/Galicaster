@@ -26,6 +26,7 @@ class GCWindow(gtk.Window):
     GUI for the Welcoming - Distribution Screen
     """
     __gtype_name__ = 'GCWindow'
+    __def_win_size__ = (1024, 768)
 
     def __init__(self, dispatcher=None, state=None, size=None, logger=None):  
 
@@ -110,7 +111,7 @@ class GCWindow(gtk.Window):
 
     def discover_size(self):
         """Retrieves the current size of the window where the application will be shown"""
-        size = (1000,800)
+        size = (1920,1080)
         try:
             root = gtk.gdk.get_default_root_window()
             screen = root.get_screen()

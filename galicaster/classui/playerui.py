@@ -78,7 +78,7 @@ class PlayerClassUI(ManagerUI):
         self.seek_bar.connect("change-value", self.on_seek) 
       
         # VUMETER
-        self.audiobar=AudioBarClass(True)
+        self.audiobar=AudioBarClass()
         self.volume_bar = self.audiobar.volume
         self.volume_bar.connect("value-changed", self.on_volume2) 
 

@@ -37,10 +37,10 @@ class MHHTTPClient(object):
         server -- Matterhorn server URL.
         user -- Account used to operate the Matterhorn REST endpoints service.
         password -- Password for the account  used to operate the Matterhorn REST endpoints service.
-        hostname -- Capture agent hostname, opcional 'GC-' + socket.gethostname() by default
-        address -- Capture agent IP address, optional socket.gethostbyname(socket.gethostname()) by default
-        workflow -- Name of the workflow used to ingest the recordings., optional `full` by default
-        workflow_parameters -- string (k1=v1;k2=v2) or dict of parameters used to ingest, opcional {'trimHold':'true'} by default
+        hostname -- Capture agent hostname, optional galicaster by default.
+        address -- Capture agent IP address, optional socket.gethostbyname(socket.gethostname()) by default.
+        workflow -- Name of the workflow used to ingest the recordings., optional `full` by default.
+        workflow_parameters -- string (k1=v1;k2=v2) or dict of parameters used to ingest, opcional {'trimHold':'true'} by default.
         """
         self.server = server
         self.user = user

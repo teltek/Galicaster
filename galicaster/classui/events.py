@@ -56,7 +56,7 @@ class EventManager(gtk.Widget):
 
         width = int(size[0]/2.5)
         dialog.set_default_size(width,-1)
-        dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_SPLASHSCREEN)
+        dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
         dialog.set_skip_taskbar_hint(True)
         dialog.set_modal(True)
         dialog.set_keep_above(True)

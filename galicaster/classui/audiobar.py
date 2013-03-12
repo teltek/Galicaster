@@ -14,6 +14,7 @@
 
 import gtk
 import gobject
+import pango
 
 from galicaster.core import context
 from galicaster.classui import get_ui_path
@@ -39,6 +40,11 @@ class Vumeter(gtk.Table):
         labels= [minimum,sixty,thirty,mark,maximum]
         for label in labels:
             label.set_justify(gtk.JUSTIFY_CENTER)
+            alist = pango.AttrList()
+            font=pango.FontDescription("bold")
+            attr=pango.AttrFontDesc(font,0,-1)
+            alist.insert(attr)
+            label.set_attributes(alist)
 
         #marks
         mark100=gtk.VSeparator()
@@ -103,19 +109,13 @@ class AudioBarClass(gtk.Box):
     def __init__(self, vertical = False):
         gtk.Box.__init__(self)
 	builder = gtk.Builder()
-        self.mute = False
-        self.vertical = vertical
-        if vertical:
-            guifile=get_ui_path('audiobarv.glade')
-        else:
-            guifile=get_ui_path('audiobar.glade')
+        guifile=get_ui_path('audiobarv.glade')
         builder.add_from_file(guifile)
         self.bar = builder.get_object("audiobar")
         box = builder.get_object("vbox")
-        if vertical:
-            self.volume = gtk.VolumeButton()
-            self.volume.set_value(0.5)
-            box.pack_end(self.volume,False,True,0)
+        self.volume = gtk.VolumeButton()
+        self.volume.set_value(0.5)
+        box.pack_end(self.volume,False,True,0)
         builder.connect_signals(self)
         self.vumeter=builder.get_object("vumeter")
 
@@ -130,37 +130,20 @@ class AudioBarClass(gtk.Box):
         self.vumeter.set_fraction(0)
 
     def scale_vumeter(self,data):
-        conf = context.get_conf()
-        dispatcher = context.get_dispatcher()
-        minimum= float(conf.get('audio','min'))
 
         if data == "Inf":
-            valor = 0.0
-        elif data < minimum:
-            valor = 0.0
+            data = -100
+        elif data < -100:
+            data = -100
         elif data > 0:
-            valor = 1.0
-        else:
-            valor = (data+100)/100
-
-        if not self.vertical:
-            if not self.mute:
-                if data == "Inf" or data < -68:
-                    dispatcher.emit("audio-mute")
-                    self.mute = True
-            if self.mute and valor > 0.0:                
-                dispatcher.emit("audio-recovered")
-                self.mute = False 
+            data = 0
+        valor = (data+100)/100
         return valor
-
 
     def resize(self,size):
         k = size[0] / 1920.0
         self.proportion = k
-        
-        if self.vertical:
-            self.vumeter.set_property("width-request",int(k*50))
-       
+        self.vumeter.set_property("width-request",int(k*50))
         return True
 
 

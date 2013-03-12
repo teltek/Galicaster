@@ -310,8 +310,8 @@ class ManagerUI(gtk.Box):
 
 	for name  in buttonlist:
 	    button = self.gui.get_object(name) 
-	    button.set_property("width-request", int(k2*100) )
-	    button.set_property("height-request", int(k2*100) )
+	    button.set_property("width-request", int(k1*100) )
+	    button.set_property("height-request", int(k1*100) )
 
 	    image = button.get_children()
 	    if type(image[0]) == gtk.Image:
@@ -323,13 +323,14 @@ class ManagerUI(gtk.Box):
 			element.set_pixel_size(int(k1*46))
 
 	for name in secondlist:
-	    button = self.gui.get_object(name) 
-	    button.set_property("width-request", int(k2*85) )
-	    button.set_property("height-request", int(k2*85) )
+	    button2 = self.gui.get_object(name) 
+	    button2.set_property("width-request", int(k2*85) )
+	    button2.set_property("height-request", int(k2*85) )
 
-	    image = button.get_children()
+	    image = button2.get_children()
 	    if type(image[0]) == gtk.Image:
-		image[0].set_pixel_size(int(k1*56))   
+		image[0].set_pixel_size(int(k1*56))
+                image[0].show()
 
 	    elif type(image[0]) == gtk.VBox:
 		for element in image[0].get_children():
