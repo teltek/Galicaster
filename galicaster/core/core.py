@@ -49,7 +49,6 @@ class Main():
         self.load_modules()
         self.dispatcher.connect('net-up', self.check_net, True)
         self.dispatcher.connect('net-down', self.check_net, False)
-        self.dispatcher.connect("reload-profile", self.reload_profile)
         self.reload_profile(None) # To exec the execute to start
 
     def load_modules(self):
@@ -101,17 +100,5 @@ class Main():
         self.state.area = page
         self.dispatcher.emit('galicaster-status', old_page, page)
 
-
     def check_net(self, origin, data):
         self.state.net = data
-
-
-    def reload_profile(self, origin):
-        profile = self.conf.get_current_profile()
-        self.state.profile = profile
-        if profile.execute:
-            out = os.system(profile.execute)
-            logger.info("Executing {0} with out {1}".format(profile.execute, out))
-            if out:
-                self.dispatcher.emit("recorder-error", "Error executing command configuring profile")
-

@@ -14,7 +14,7 @@
 Recording Area GUI
 """
 
-
+import os
 from os import path
 import gobject
 import gst
@@ -196,10 +196,11 @@ class RecorderClassUI(gtk.Box):
 
     def select_devices(self):
         """Loads the bins and creates the preview areas for the active profile, creating a new mediapacakge."""
+        self.configure_profile()
         logger.info("Setting Devices the new way")
         self.mediapackage = mediapackage.Mediapackage()
         self.mediapackage.setTitle("Recording started at "+ datetime.datetime.now().replace(microsecond = 0).isoformat())
-        current_profile = self.conf.get_current_profile()        
+        current_profile = self.conf.get_current_profile()
         bins = current_profile.tracks
 
         for objectbin in bins:
@@ -261,9 +262,20 @@ class RecorderClassUI(gtk.Box):
         """Restarting preview, commanded by record""" 
         logger.info("Restarting Preview")
         self.conf.reload()
+        #self.configure_profile()
         self.select_devices()
         self.restarting = False
         return True
+
+    def configure_profile(self):
+        profile = self.conf.get_current_profile()
+        context.get_state().profile = profile
+        if profile.execute:
+            out = os.system(profile.execute)
+            logger.info("Executing {0} with out {1}".format(profile.execute, out))
+            if out:
+                self.dispatcher.emit("recorder-error", "Error executing command configuring profile")
+
 
     def on_rec(self,button=None): 
         """Manual Recording """
@@ -359,7 +371,7 @@ class RecorderClassUI(gtk.Box):
         if self.error_dialog:
             self.error_dialog.destroy()
             self.error_dialog = None
-        self.recorder.stop_record_and_restart_preview()        
+        self.recorder.stop_record_and_restart_preview()
         self.change_state(GC_STOP)
 
         self.mediapackage.status = mediapackage.RECORDED
@@ -374,6 +386,8 @@ class RecorderClassUI(gtk.Box):
             self.worker.ingest_nightly(self.mediapackage)
 
         self.timer_thread_id = None
+
+
 
 
     def on_scheduled_start(self, source, identifier):
