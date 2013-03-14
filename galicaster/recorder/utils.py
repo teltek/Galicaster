@@ -65,8 +65,8 @@ class Switcher(gst.Bin):
         qn.set_property('max-size-buffers', 1)
 
         # CAPS
-        filtre = gst.caps_from_string("video/x-raw-yuv,format=\(fourcc\)YUY2,width=800,height=600,framerate=(fraction)25/1") 
-        #filtre2 = gst.caps_from_string("video/x-raw-yuv,format=\(fourcc\)YUY2,width=1024,height=786,framerate=(fraction)25/1")
+        filtre = gst.caps_from_string("video/x-raw-yuv,format=(fourcc)YUY2,width=800,height=600,framerate=(fraction)25/1") 
+        #filtre2 = gst.caps_from_string("video/x-raw-yuv,format=(fourcc)YUY2,width=1024,height=786,framerate=(fraction)25/1")
 
         caps.set_property('caps', filtre)
         caps2.set_property('caps', filtre)
