@@ -100,16 +100,18 @@ class Conf(object): # TODO list get and other ops arround profile
 
 
    def get_hostname(self):
-      prefix = 'GCMobile-' if self.is_mobile() else 'GC-'
+      prefix = 'GCMobile-' if self.is_admin_blocked() else 'GC-'
       return self.get('ingest', 'hostname') or (prefix + socket.gethostname())
 
 
    def get_size(self):
       return self.get('basic', 'resolution') or "auto"
 
-
-   def is_mobile(self):
-      return self.get_boolean('basic', 'admin')
+   def is_admin_blocked(self):
+      return self.get_boolean('basic', 'admin') or False
+   
+   def tracks_visible_to_matterhorn(self):
+      return self.get_boolean('basic', 'visible_tracks') or False
       
    
    def get_modules(self):
@@ -173,10 +175,10 @@ class Conf(object): # TODO list get and other ops arround profile
             
 
    def get_tracks_in_mh_dict(self):
-      # Galicaster Mobile
-      if self.is_mobile(): 
+      # Tracks blocked by Galicaster
+      if not self.tracks_visible_to_matterhorn(): 
          return {'capture.device.names': 'defaults'}
-      # Galicaster Class
+      # Tracks configurable by matterhorn
       if self.logger:
          self.logger.info('Be careful using profiles and matterhorn scheduler')
       default  = self.get_current_profile()
