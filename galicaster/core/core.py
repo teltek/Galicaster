@@ -80,17 +80,17 @@ class Main():
 
         if 'media_manager' in self.modules:            
             self.window.set_current_page(DIS)
+            self.state.area = DIS
         else:
             self.window.set_current_page(REC)
+            self.state.area = REC
             self.recorder.block()  
 
         plugins.init()
         context.get_heartbeat().init_timer()
 
-
     def emit_quit(self):
         self.dispatcher.emit('galicaster-notify-quit')
-
 
     def change_mode(self, origin, page):
         old_page = self.window.get_current_page()
