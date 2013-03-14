@@ -114,6 +114,20 @@ class Worker(object):
             return False
         f(mp)
 
+    def enqueue_job_by_name(self, name, mp_id):
+        f_operation = {
+            INGEST_CODE: self.ingest,
+            ZIPPING_CODE: self.export_to_zip,
+            SBS_CODE: self.side_by_side}
+        try:
+            mp = self.repo[mp_id]
+            f = f_operation[name]
+        except:
+            self.logger.error("Fail get MP with id {0} or operation with name {1}".format(mp_id, name))
+            return False
+        f(mp)
+
+
     def do_job(self, name, mp):
         f = getattr(self, name)
         f(mp)

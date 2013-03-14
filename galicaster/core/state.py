@@ -27,21 +27,35 @@ MMA= 1
 DIS= 3
 PIN= 4 
 
+AREA = ["Recorder", "Media Manager", "Player", "Distribution", "Authentification"]
+
 class State(object):
     def __init__(self, hostname="Galicaster"):
         self.hostname = hostname
-        self.net = False
+        self.net = True #TODO update on startup
         self.is_recording = False
-        self.mp = None
-        self.area = REC
-        self.profile = None
+        self.status = "Initialization" #Recorder status
+        self.mp = None # should be key
+        self.area = REC # TODO set to DIS if admin=True
+        self.profile = None # profile Object
         
     def start_record(self, mp):
-        self.is_recording = mp
-        self.mp = True
+        self.is_recording = True
+        self.mp = mp # Should be Key
         
     def change_area(self, area):
         self.area = area
+
+    def get_all(self):
+        "Returns all state parameters as a direct"
+        
+        return { "hostname": self.hostname,
+                 "net" : self.net,
+                 "is-recording": self.is_recording,
+                 "recorder-status" : self. status,
+                 "current-prifle" : self.profile.name,
+                 "active-area" : AREA[self.area],
+                 "current-mediapackage" : self.mp}
         
     
     

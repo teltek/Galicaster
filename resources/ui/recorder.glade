@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
+  <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkVBox" id="recorderbox">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -61,7 +62,6 @@
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkButton" id="previousbutton">
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
@@ -195,7 +195,6 @@
                         </child>
                         <child>
                           <object class="GtkButton" id="morebutton">
-                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="receives_default">True</property>
@@ -518,7 +517,6 @@
                         <property name="layout_style">spread</property>
                         <child>
                           <object class="GtkButton" id="recbutton">
-                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
@@ -542,7 +540,6 @@
                         </child>
                         <child>
                           <object class="GtkToggleButton" id="pausebutton">
-                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
@@ -567,12 +564,11 @@
                         </child>
                         <child>
                           <object class="GtkButton" id="stopbutton">
-                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="use_action_appearance">False</property>
-                            <signal name="clicked" handler="on_stop" swapped="no"/>
+                            <signal name="clicked" handler="on_ask_stop" swapped="no"/>
                             <child>
                               <object class="GtkImage" id="image3">
                                 <property name="visible">True</property>
@@ -591,7 +587,6 @@
                         </child>
                         <child>
                           <object class="GtkButton" id="editbutton">
-                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
@@ -639,7 +634,6 @@
                         </child>
                         <child>
                           <object class="GtkButton" id="helpbutton">
-                            <property name="use_action_appearance">False</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="no_show_all">True</property>

@@ -17,6 +17,7 @@ from bottle import route, run, response
 
 from galicaster.core import context
 from galicaster.mediapackage.serializer import set_manifest
+from galicaster.utils import readable
 
 """
 Description: Galicaster REST endpoint using bottle micro web-framework.
@@ -25,34 +26,95 @@ Status: Experimental
 
 repo = None
 
-
 def init():
     global repo
+    global dispatcher
+
     repo = context.get_repository()
-    restp = threading.Thread(target=run, kwargs={'host':'0.0.0.0', 'port':8080})
+    dispatcher = context.get_dispatcher(
+)
+    restp = threading.Thread(target=run,kwargs={'host':'0.0.0.0', 'port':8080,'quiet':True})
     restp.setDaemon(True)
     restp.start()
 
 
 @route('/')
 def index():
-    return "Galicaster REST endpoint plugin"
+    response.content_type = 'application/json' 
+    state = context.get_state()
+    text="Galicaster REST endpoint plugin\n\n"
+    endpoints = {
+            "/state" : "show some state values",
+            "/repository" : "list mp keys" ,
+            "/repository/:id" : "get mp manifest (XML)",
+            "/metadata/:id" : "get mp metadata (JSON)",
+            "/start" : "starts a manual recording",
+            "/stop" :  "stops current recording",
+            "/operation/ingest/:id" : "Ingest MP",
+            "/operation/sidebyside/:id"  : "Export MP to side-by-side",
+            "/operation/exporttozip/:id" : "Export MP to zip"
+        }    
+    return json.dumps(endpoints)
 
 
-@route('/list')
+@route('/state')
+def state():
+    response.content_type = 'application/json' 
+    state = context.get_state()
+    return json.dumps(state.get_all())
+
+@route('/repository')
 def list():
     global repo
     response.content_type = 'application/json'
     keys = []
     for key,value in repo.iteritems():
         keys.append(key)
-        
     return json.dumps(keys)
-    
 
-@route('/get/:id')
+@route('/repository/:id')
 def get(id):
     global repo
     response.content_type = 'text/xml'
     mp = repo.get(id)
-    return set_manifest(mp)        
+    return set_manifest(mp)
+
+@route('/metadata/:id')
+def metadata(id):
+    global repo
+    response.content_type = 'application/json'
+    mp = repo.get(id)
+    line = mp.metadata_episode.copy()
+    line["duration"] = long(mp.getDuration()/1000)
+    line["created"] = mp.getStartDateAsString()
+    for key,value in mp.metadata_series.iteritems():
+        line["series-"+key] = value
+    for key,value in line.iteritems():
+        if value in [None,[]]:
+            line[key]=''
+        json.dumps({key:value})
+    return json.dumps(line)
+
+@route('/start')
+def start():
+    global repo
+    global dispatcher
+    response.content_type = 'text/xml'
+    dispatcher.emit('start-before', None)
+    return "Signal to start recording sent"    
+
+@route('/stop')
+def stop():
+    global repo
+    global dispatcher
+    response.content_type = 'text/html'
+    dispatcher.emit('stop-record', 0)
+    return "Signal to stop recording sent"
+
+@route('/operation/:op/:mpid', method='GET')
+def operationt(op, mpid):
+    response.content_type = 'text/html'
+    worker = context.get_worker()
+    worker.enqueue_job_by_name(op, mpid)
+    return "{0} over {1}".format(op,mpid)
+ 

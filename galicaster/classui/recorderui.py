@@ -142,9 +142,9 @@ class RecorderClassUI(gtk.Box):
         self.vubox.add(self.audiobar)
         self.pack_start(self.recorderui,True,True,0)
 
-        # Event Manager
+        # Event Manager       
         self.dispatcher.connect("start-record", self.on_scheduled_start)
-        self.dispatcher.connect("stop-record", self.on_scheduled_stop)
+        self.dispatcher.connect("stop-record", self.on_stop)
         self.dispatcher.connect("start-before", self.on_start_before)
         self.dispatcher.connect("restart-preview", self.on_restart_preview)
         self.dispatcher.connect("update-rec-vumeter", self.audiobar.SetVumeter)
@@ -199,7 +199,9 @@ class RecorderClassUI(gtk.Box):
         self.configure_profile()
         logger.info("Setting Devices the new way")
         self.mediapackage = mediapackage.Mediapackage()
-        self.mediapackage.setTitle("Recording started at "+ datetime.datetime.now().replace(microsecond = 0).isoformat())
+
+        context.get_state().mp=self.mediapackage.identifier
+
         current_profile = self.conf.get_current_profile()
         bins = current_profile.tracks
 
@@ -245,7 +247,7 @@ class RecorderClassUI(gtk.Box):
         ok =self.recorder.preview()
         if ok :
             if  self.mediapackage.manual:
-                self.mediapackage.setTitle("Recording started at "+ datetime.datetime.now().replace(microsecond = 0).isoformat())
+                #self.mediapackage.setTitle("Recording started at "+ datetime.datetime.now().replace(microsecond = 0).isoformat())
                 self.change_state(GC_PREVIEW)
         else:
             if self.restarting:
@@ -283,7 +285,9 @@ class RecorderClassUI(gtk.Box):
         self.dispatcher.emit("starting-record")
         self.recorder.record()
         self.mediapackage.status=mediapackage.RECORDING
+        now= datetime.datetime.now().replace(microsecond = 0)
         self.mediapackage.setDate(datetime.datetime.utcnow().replace(microsecond = 0))
+        self.mediapackage.setTitle("Recording started at" + datetime.datetime.now().replace(microsecond = 0).isoformat())
         self.timer_thread_id = 1
         self.timer_thread = thread(target=self.timer_launch_thread) 
         self.timer_thread.daemon = True
@@ -293,10 +297,15 @@ class RecorderClassUI(gtk.Box):
 
 
     def on_start_before(self, origin, key):
-        """ Start a recording before its schedule """
-        logger.info("Start recording before schedule")
-        self.mediapackage = self.repo.get(key)
-        self.mediapackage.manual = True      
+        """ Start a recording before its schedule or via rest """
+        print "Key start before",
+        if key:
+            logger.info("Start recording before schedule")
+            self.mediapackage = self.repo.get(key)
+            context.get_state().mp=self.mediapackage.identifier
+            self.mediapackage.manual = True      
+        else:
+            logger.info("Rest triggered recording")
         self.on_rec()
         return True            
 
@@ -343,7 +352,7 @@ class RecorderClassUI(gtk.Box):
         return dialog
 
             
-    def on_stop(self,button):
+    def on_ask_stop(self,button):
         """Stops preview or recording and closes the Mediapakage"""
         if self.conf.get_boolean("basic", "stopdialog"):
             text = {"title" : "Recorder",
@@ -356,13 +365,19 @@ class RecorderClassUI(gtk.Box):
 
             if warning.response not in message.POSITIVE:
                 return False
+            else:
+                self.on_stop("UI","current")
 
+    def on_stop(self,source,identifier): 
+        """Close recording and clean schedule if neccesary"""
         if self.scheduled_recording:
             self.current_mediapackage = None
             self.current = None
             self.scheduled_recording = False
-        self.close_recording() 
-
+            logger.info("Scheduled Stop")
+        else:
+            logger.info("Stop recording")
+        self.close_recording()  
 
     def close_recording(self):
         """Set the final data on the mediapackage, stop the record and restart the preview"""
@@ -387,9 +402,6 @@ class RecorderClassUI(gtk.Box):
 
         self.timer_thread_id = None
 
-
-
-
     def on_scheduled_start(self, source, identifier):
         """Starts a scheduled recording, replacing the mediapackage in use"""
         logger.info("Scheduled Start")
@@ -400,13 +412,13 @@ class RecorderClassUI(gtk.Box):
         a.daemon = False
         a.start()
 
-
     def start_thread(self,identifier):
         """Thread handling a scheduled recording"""
         self.start_thread_id = 1
 
         if self.status == GC_PREVIEW: # Record directly
             self.mediapackage = self.repo.get(self.current_mediapackage)
+            context.get_state().mp = self.mediapackage.key
             self.on_rec() 
         
         elif self.status in [ GC_RECORDING, GC_PAUSED ] :
@@ -1080,6 +1092,7 @@ class RecorderClassUI(gtk.Box):
             prevb.set_sensitive(False)
             editb.set_sensitive(True and not self.scheduled_recording)    
             self.dispatcher.emit("update-rec-status", "  Recording  ")
+            context.get_state().is_recording=True
        
         elif state == GC_PAUSED:
             record.set_sensitive(False)
@@ -1100,7 +1113,6 @@ class RecorderClassUI(gtk.Box):
             helpb.set_sensitive(True)
             prevb.set_sensitive(True)
             editb.set_sensitive(False)
-            self.dispatcher.emit("update-rec-status", "Stopped")            
 
         elif state == GC_BLOCKED: 
             record.set_sensitive(False)
@@ -1118,6 +1130,8 @@ class RecorderClassUI(gtk.Box):
             prevb.set_sensitive(True )
             editb.set_sensitive(False)
 
+
+        context.get_state().status = STATUS[state][0]
 
         if self.next == None and state == GC_PREVIEW:
             self.view.set_displayed_row(GC_PRE2)
