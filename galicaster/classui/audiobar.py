@@ -78,7 +78,7 @@ class Vumeter(gtk.Table):
     def scale_vumeter(self,data):
         conf = context.get_conf()
         dispatcher = context.get_dispatcher()
-        minimum= float(conf.get('audio','min') or -80)
+        minimum= float(conf.get('audio','min') or -70)
 
         if data == "Inf":
             valor = 0
