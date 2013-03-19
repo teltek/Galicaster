@@ -421,7 +421,7 @@ class RecorderClassUI(gtk.Box):
 
         if self.status == GC_PREVIEW: # Record directly
             self.mediapackage = self.repo.get(self.current_mediapackage)
-            context.get_state().mp = self.mediapackage.key
+            context.get_state().mp = self.mediapackage.identifier
             self.on_rec() 
         
         elif self.status in [ GC_RECORDING, GC_PAUSED ] :
