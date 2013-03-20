@@ -298,7 +298,6 @@ class RecorderClassUI(gtk.Box):
 
     def on_start_before(self, origin, key):
         """ Start a recording before its schedule or via rest """
-        print "Key start before",
         if key:
             logger.info("Start recording before schedule")
             self.mediapackage = self.repo.get(key)
@@ -322,14 +321,15 @@ class RecorderClassUI(gtk.Box):
             self.recorder.pause()
             gui = gtk.Builder()
             gui.add_from_file(get_ui_path("paused.glade"))
-            dialog = self.pause_dialog(self.get_toplevel())
+            self.pause_dialog = self.create_pause_dialog(self.get_toplevel())
     
-            response = dialog.run()
+            response = self.pause_dialog.run()
             if response == 1:
                 self.on_pause(None)
-            dialog.destroy()     
+            self.pause_dialog.destroy()     
 
-    def pause_dialog(self, parent):
+
+    def create_pause_dialog(self, parent):
        
         gui = gtk.Builder()
         gui.add_from_file(get_ui_path("paused.glade"))
