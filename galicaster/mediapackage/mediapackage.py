@@ -476,7 +476,7 @@ class Mediapackage(object):
                 tagset = set(tags)
                 exc_set = set(filter(lambda tag: tag[0] == '-', tagset))
                 tagset -= exc_set
-                results = filter(lambda elem: (len((set(elem.getTagssetDate()) - exc_set) & tagset) > 0), results)
+                results = filter(lambda elem: (len((set(elem.getTags()) - exc_set) & tagset) > 0), results)
         return results
              
     def getElementById(self, identifier, etype=None):
