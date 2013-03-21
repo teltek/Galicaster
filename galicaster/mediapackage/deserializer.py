@@ -66,7 +66,10 @@ def fromXML(xml, logger=None):
             flavor = unicode(i.getAttribute("type"))
             mime = _checknget(i, "mimetype")
             duration = _checknget(i, "duration")
-            mp.add(_getElementAbsPath(uri, mp.getURI()), etype, flavor, mime, duration, identifier)
+            element_path = _getElementAbsPath(uri, mp.getURI())
+            if not path.exists(element_path):
+                raise IOError, "Not exists the element {} in the MP {}".format(element_path, mp.identifier)
+            mp.add(element_path, etype, flavor, mime, duration, identifier)
 
             if uri == 'org.opencastproject.capture.agent.properties' and etype == mediapackage.TYPE_ATTACHMENT:
                 mp.manual = False
