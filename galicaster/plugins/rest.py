@@ -13,7 +13,9 @@
 
 import json
 import threading
+import tempfile
 from bottle import route, run, response
+import gtk
 
 from galicaster.core import context
 from galicaster.mediapackage.serializer import set_manifest
@@ -24,15 +26,7 @@ Description: Galicaster REST endpoint using bottle micro web-framework.
 Status: Experimental 
 """
 
-repo = None
-
 def init():
-    global repo
-    global dispatcher
-
-    repo = context.get_repository()
-    dispatcher = context.get_dispatcher(
-)
     restp = threading.Thread(target=run,kwargs={'host':'0.0.0.0', 'port':8080,'quiet':True})
     restp.setDaemon(True)
     restp.start()
@@ -52,7 +46,8 @@ def index():
             "/stop" :  "stops current recording",
             "/operation/ingest/:id" : "Ingest MP",
             "/operation/sidebyside/:id"  : "Export MP to side-by-side",
-            "/operation/exporttozip/:id" : "Export MP to zip"
+            "/operation/exporttozip/:id" : "Export MP to zip",
+            "/screen" : "get a screenshoot of the active"
         }    
     return json.dumps(endpoints)
 
@@ -65,7 +60,7 @@ def state():
 
 @route('/repository')
 def list():
-    global repo
+    repo = context.get_repository()
     response.content_type = 'application/json'
     keys = []
     for key,value in repo.iteritems():
@@ -74,16 +69,15 @@ def list():
 
 @route('/repository/:id')
 def get(id):
-    global repo
+    repo = context.get_repository()
     response.content_type = 'text/xml'
     mp = repo.get(id)
     return set_manifest(mp)
 
 @route('/metadata/:id')
 def metadata(id):
-    global repo
     response.content_type = 'application/json'
-    mp = repo.get(id)
+    mp = context.get_repository().get(id)
     line = mp.metadata_episode.copy()
     line["duration"] = long(mp.getDuration()/1000)
     line["created"] = mp.getStartDateAsString()
@@ -97,18 +91,14 @@ def metadata(id):
 
 @route('/start')
 def start():
-    global repo
-    global dispatcher
     response.content_type = 'text/xml'
-    dispatcher.emit('start-before', None)
+    context.get_dispatcher().emit('start-before', None)
     return "Signal to start recording sent"    
 
 @route('/stop')
 def stop():
-    global repo
-    global dispatcher
     response.content_type = 'text/html'
-    dispatcher.emit('stop-record', 0)
+    context.get_dispatcher().emit('stop-record', 0)
     return "Signal to stop recording sent"
 
 @route('/operation/:op/:mpid', method='GET')
@@ -118,3 +108,21 @@ def operationt(op, mpid):
     worker.enqueue_job_by_name(op, mpid)
     return "{0} over {1}".format(op,mpid)
  
+def get_screenshot():
+    """makes screenshot of the current root window, yields gtk.Pixbuf"""
+    window = gtk.gdk.get_default_root_window()
+    size = window.get_size()         
+    pixbuf = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB, False, 8, size[0], size[1])        
+    return pixbuf.get_from_drawable(window, window.get_colormap(), 
+                                    0, 0, 0, 0, size[0], size[1])
+@route('/screen')
+def screen():
+    response.content_type = 'image/png'
+    pb = get_screenshot()    
+    ifile = tempfile.NamedTemporaryFile(suffix='.png')
+    pb.save(ifile.name, "png")
+    pb= open(ifile.name, 'r') 
+    if pb:
+        return pb
+    else:
+        return "Error" 
