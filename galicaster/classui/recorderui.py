@@ -302,7 +302,6 @@ class RecorderClassUI(gtk.Box):
             logger.info("Start recording before schedule")
             self.mediapackage = self.repo.get(key)
             context.get_state().mp=self.mediapackage.identifier
-            self.mediapackage.manual = True      
         else:
             logger.info("Rest triggered recording")
         self.on_rec()
