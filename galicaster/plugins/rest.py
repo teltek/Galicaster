@@ -12,8 +12,12 @@
 # San Francisco, California, 94105, USA.
 
 import json
+import os
 import threading
 from bottle import route, run, response
+import gtk
+
+# pip install bottle
 
 from galicaster.core import context
 from galicaster.mediapackage.serializer import set_manifest
@@ -52,7 +56,8 @@ def index():
             "/stop" :  "stops current recording",
             "/operation/ingest/:id" : "Ingest MP",
             "/operation/sidebyside/:id"  : "Export MP to side-by-side",
-            "/operation/exporttozip/:id" : "Export MP to zip"
+            "/operation/exporttozip/:id" : "Export MP to zip",
+            "/screen" : "take screenshot"
         }    
     return json.dumps(endpoints)
 
@@ -117,4 +122,22 @@ def operationt(op, mpid):
     worker = context.get_worker()
     worker.enqueue_job_by_name(op, mpid)
     return "{0} over {1}".format(op,mpid)
+
+
+@route('/screen')
+def screen():
+    global repo
+    global dispatcher
+    response.content_type = 'image/png'
+    
+    pb = context.get_mainwindow().get_screenshot()
+    
+    path="/tmp/screenshot.png"
+    
+    pb.save(path, "png")    
+    pb= open(path, 'r')
+    if (pb != None):
+        return pb
+    else:
+        return "Error"
  

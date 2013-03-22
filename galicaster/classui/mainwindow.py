@@ -186,5 +186,22 @@ class GCWindow(gtk.Window):
         else:
             if self.logger:
                 self.logger.info("Cancel Shutdown")
+                
+                
+    def get_screenshot(self):
+        """makes screenshot of the current root window, yields gtk.Pixbuf"""
+        window = gtk.gdk.get_default_root_window()
+        size = window.get_size()
         
+        pixbuf = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB, False, 8, size[0], size[1])
+        
+        return pixbuf.get_from_drawable(window, window.get_colormap(), 0, 0, 0, 0, size[0], size[1])
+        #funkar inte... sikkert pga at dt er webprosessen som kaller og ikke har tilgagn til gtk
+       
+        #import os
+        #print os.remove('/tmp/screenshot.png')
+        #print os.system('import -verbose -window root /tmp/screenshot.png')  
+        #
+        
+              
         
