@@ -1,6 +1,5 @@
 *.py[co]
-*.orig
-# Packages
+ 
 *.egg
 *.egg-info
 dist
@@ -12,10 +11,10 @@ var
 sdist
 develop-eggs
 .installed.cfg
-conf
+*.orig
 # Installer logs
 pip-log.txt
-
+scripts
 #Translations
 *.mo
 
