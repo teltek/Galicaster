@@ -11,10 +11,11 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import gobject
 import gst
+import gobject
 from os import path
 import galicaster
+import re
 
 from galicaster.core import context
 from galicaster.recorder.utils import Switcher
@@ -23,10 +24,8 @@ from galicaster.recorder import module_register
 
 logger = context.get_logger()
 
-pipestr = (" identity name=\"joint\" ! tee name=gc-vga2usb-tee ! "
-           " queue !  videorate silent=true ! video/x-raw-yuv,framerate=25/1 ! "
-           " videoscale add-borders=true ! video/x-raw-yuv,width=800,height=600 ! "
-           " ffmpegcolorspace ! valve name=gc-vga2usb-valve drop=false ! queue ! "
+pipestr = (" identity name=\"joint\" ! tee name=gc-vga2usb-tee ! queue ! "
+           " ffmpegcolorspace ! valve name=gc-vga2usb-valve drop=false ! "
            " gc-vga2usb-enc ! queue ! gc-vga2usb-mux ! "
            " queue ! filesink name=gc-vga2usb-sink async=false "
            " gc-vga2usb-tee. ! queue ! ffmpegcolorspace ! identity single-segment=true ! "
@@ -82,6 +81,18 @@ class GCvga2usb(gst.Bin, base.Base):
             "default": "avimux",
             "description": "Gstreamer encoder muxer used in the bin",
             },
+
+        "resolution": {
+            "type": "text",
+            "default": "1024,768",
+            "description": "Output resolution",
+            },
+        "framerate": {
+            "type": "text",
+            "default": "25/1",
+            "description": " Output framerate",
+            },
+
         }
     
     is_pausable = True
@@ -113,13 +124,13 @@ class GCvga2usb(gst.Bin, base.Base):
         aux = (pipestr.replace("gc-vga2usb-preview", "sink-" + self.options['name'])
                       .replace('gc-vga2usb-enc', self.options['encoder'])
                       .replace('gc-vga2usb-mux', self.options['muxer']))
-
-
+        size = self.options['resolution']
+        width, height =  [int(a) for a in size.split(re.search('[,x:]',size).group())]
         bin_end = gst.parse_bin_from_description(aux, True)
         logger.info("Setting background for Epiphan: %s", background)
-        bin_start = Switcher("canguro", self.options['location'], background, driver_type)
+        bin_start = Switcher("canguro", self.options['location'], background, 
+                             driver_type, [width,height], self.options['framerate'])
         self.bin_start=bin_start            
-
         self.add(bin_start, bin_end)
         bin_start.link(bin_end)
 
@@ -136,10 +147,10 @@ class GCvga2usb(gst.Bin, base.Base):
     def getSource(self):
         return self.get_by_name("gc-vga2usb-tee")
 
-    def send_event_to_src(self,event): # IDEA made a common for all our bins
+    def send_event_to_src(self,event):
         self.bin_start.send_event_to_src(event)
 
-    def switch(self): # IDEA made a common for all our bins
+    def switch(self):
         self.bin_start.switch2()
         
         

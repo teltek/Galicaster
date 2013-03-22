@@ -21,7 +21,7 @@ logger = context.get_logger()
 
 class Switcher(gst.Bin):
 
-    def __init__(self, name, device, image=None, driver_type="v4lsrc"): 
+    def __init__(self, name, device, image=None, driver_type="v4lsrc", size=[1024,768], framerate="25/1"): 
 
         gst.Bin.__init__(self, name)
         self.eph_error = False
@@ -38,18 +38,19 @@ class Switcher(gst.Bin):
 
 
         self.device = gst.element_factory_make(self.driver_type, 'device')
-        scale = gst.element_factory_make('videoscale')      
+        scale = gst.element_factory_make('videoscale') 
+        rate  = gst.element_factory_make('videorate') 
         self.selector = gst.element_factory_make('input-selector', 'selector')
-        q0 = gst.element_factory_make('queue', 'q2image')
-        q1 = gst.element_factory_make('queue', 'q2device')
+        q0 = gst.element_factory_make('queue', 'q2branchimg')
+        q1 = gst.element_factory_make('queue', 'q2branchdev')
+        q2 = gst.element_factory_make('queue', 'q2device')
         qs = gst.element_factory_make('queue', 'q2selector')
-        qn = gst.element_factory_make('queue', 'q2identity')
         self.identity = gst.element_factory_make('identity', 'idprobe')
-        color = gst.element_factory_make('ffmpegcolorspace', 'colordevice')
 
-        caps = gst.element_factory_make('capsfilter', 'capsdevice')  
-        caps2 = gst.element_factory_make('capsfilter', 'capsimage')
-        caps3 = gst.element_factory_make('capsfilter', 'capsselector')
+        caps_img = gst.element_factory_make('capsfilter', 'capsimage')
+        caps_dev = gst.element_factory_make('capsfilter', 'capsdevice')
+        caps_rate = gst.element_factory_make('capsfilter', 'capsrate')
+        caps_res = gst.element_factory_make('capsfilter', 'capsres')
         text = gst.element_factory_make('textoverlay', 'textimage')
 
         # Set properties
@@ -62,28 +63,38 @@ class Switcher(gst.Bin):
 
         q0.set_property('max-size-buffers', 1)
         q1.set_property('max-size-buffers', 1)
-        qn.set_property('max-size-buffers', 1)
+        q2.set_property('max-size-buffers', 1)
+        qs.set_property('max-size-buffers', 1)
+
+        rate.set_property('silent',True)
+        scale.set_property('add-borders',True)
+
 
         # CAPS
-        filtre = gst.caps_from_string("video/x-raw-yuv,format=(fourcc)YUY2,width=800,height=600,framerate=(fraction)25/1") 
-        #filtre2 = gst.caps_from_string("video/x-raw-yuv,format=(fourcc)YUY2,width=1024,height=786,framerate=(fraction)25/1")
+        filtre1 = gst.caps_from_string(
+            "video/x-raw-yuv,format=(fourcc)YUY2,width={0},height={1},framerate=(fraction){2}".format(size[0],size[1], framerate ))
+        filtre2 = gst.caps_from_string(
+            "video/x-raw-yuv,format=(fourcc)YUY2, framerate=(fraction){0}, pixel-aspect-ratio=(fraction)1/1".format(framerate ))
+        filtre_rate = gst.caps_from_string("video/x-raw-yuv,framerate={0}".format(framerate))
+        filtre_resolution =gst.caps_from_string("video/x-raw-yuv,width={0},height={1}".format(size[0],size[1]))
 
-        caps.set_property('caps', filtre)
-        caps2.set_property('caps', filtre)
-        caps3.set_property('caps', filtre)
+        caps_img.set_property('caps', filtre1) #device
+        caps_dev.set_property('caps', filtre2) #device
+        caps_rate.set_property('caps', filtre_rate)
+        caps_res.set_property('caps', filtre_resolution)
 
         # Add elements
-        self.add(self.image, caps2, text, scale, q0, 
-                 self.device, self.identity, qn, caps, color, q1,
-                 self.selector, qs, caps3)
+        self.add(self.image, caps_img, text, q0, 
+                 self.device, self.identity, caps_dev, q2, scale, caps_res, rate, caps_rate, q1,
+                 self.selector, qs)
 
         # Link elements and set ghostpad
-        gst.element_link_many(self.image, caps2, text, scale, q0)
-        gst.element_link_many(self.device, self.identity, qn, caps, color, q1)
+        gst.element_link_many(self.image, caps_img, text, q0)
+        gst.element_link_many(self.device, self.identity, caps_dev, q2, scale, caps_res, rate, caps_rate, q1)
 
         q0.link(self.selector)
         q1.link(self.selector)
-        gst.element_link_many(self.selector, caps3, qs)
+        self.selector.link(qs)
         self.add_pad(gst.GhostPad('src', qs.get_pad('src')))
 
         # Set active pad
