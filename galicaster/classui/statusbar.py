@@ -17,7 +17,6 @@ Widget holding multiple information about video status
 import gtk
 import gobject
 import os
-import datetime
 import pango
 
 from galicaster.classui import get_ui_path
@@ -99,12 +98,10 @@ class StatusBarClass(gtk.Box):
         self.SetPresenter(None, presenter)
 
     def time_readable(self,seconds):
-        """ Generates date hour:minute:seconds from seconds """		
-
+        """ Generates date hour:minute:seconds from seconds"""	
         iso = int(seconds)
-        dur = datetime.time(int(iso/3600),(iso%3600)/60,iso%60)		
-        novo = dur.strftime("%H:%M:%S")
-        return novo
+        return "{}:{:02d}:{:02d}".format(iso/3600, (iso%3600)/60, iso%60)
+
 
     def time_readable2(self,s1,s2):
         """ Generates date hour:minute:seconds from seconds """		
