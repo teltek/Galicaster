@@ -71,15 +71,15 @@ class Switcher(gst.Bin):
 
 
         # CAPS
-        filtre1 = gst.caps_from_string(
-            "video/x-raw-yuv,format=(fourcc)YUY2,width={0},height={1},framerate=(fraction){2}".format(size[0],size[1], framerate ))
-        filtre2 = gst.caps_from_string(
-            "video/x-raw-yuv,format=(fourcc)YUY2, framerate=(fraction){0}, pixel-aspect-ratio=(fraction)1/1".format(framerate ))
+        filtre_img = gst.caps_from_string(
+            "video/x-raw-yuv,format=(fourcc)YUY2, width={0}, height={1}, framerate=(fraction){2}, pixel-aspect-ratio=(fraction)1/1".format(size[0],size[1], framerate))
+        filtre_dev = gst.caps_from_string(
+            "video/x-raw-yuv,format=(fourcc)YUY2, framerate=(fraction){0}, pixel-aspect-ratio=(fraction)1/1".format(framerate))
         filtre_rate = gst.caps_from_string("video/x-raw-yuv,framerate={0}, pixel-aspect-ratio=(fraction)1/1".format(framerate))
         filtre_resolution =gst.caps_from_string("video/x-raw-yuv, width={0}, height={1}, pixel-aspect-ratio=(fraction)1/1".format(size[0],size[1]))
 
-        caps_img.set_property('caps', filtre1) #device
-        caps_dev.set_property('caps', filtre2) #device
+        caps_img.set_property('caps', filtre_img) #device
+        caps_dev.set_property('caps', filtre_dev) #device
         caps_rate.set_property('caps', filtre_rate)
         caps_res.set_property('caps', filtre_resolution)
 
