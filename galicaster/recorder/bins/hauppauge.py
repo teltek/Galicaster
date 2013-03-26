@@ -21,13 +21,10 @@ from galicaster.recorder import base
 from galicaster.recorder import module_register
 
 pipestr = ( " filesrc name=gc-hauppauge-file-src ! valve drop=false name=gc-hauppauge-valve !  filesink  name=gc-hauppauge-sink async=false "
-            " v4l2src name=gc-hauppauge-device-src ! queue name=queue33 ! ffmpegcolorspace ! xvimagesink qos=false async=false name=gc-hauppauge-preview " 
+            " v4l2src name=gc-hauppauge-device-src ! queue name=queue33 ! ffmpegcolorspace ! xvimagesink qos=false async=false sync=false name=gc-hauppauge-preview " 
             " filesrc name= gc-hauppauge-audio-src ! audio/x-raw-int, rate=48000, channels=2, endianness=1234, width=16, depth=16, signed=true ! "
             " level name=gc-hauppauge-level message=true interval=100000000 ! "
             " volume name=gc-hauppauge-volume ! alsasink name=gc-hauppauge-audio-sink" )
-            #" audiotestsrc ! level name=gc-hauppauge-level message=True interval=1000000000 ! audioconvert ! audioresample ! fakesink silent=true name=gc-hauppauge-audiosink " )
-            #" gc-hauppauge-audio. ! queue ! mpegdemux name=demuxer "
-            #" { demuxer.audio_00 ! queue ! decodebin2 ! level peak-falloff=1000 ! fakesink silent=True } " )
 
 class GChauppauge(gst.Bin, base.Base):
 

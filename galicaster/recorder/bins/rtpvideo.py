@@ -31,7 +31,7 @@ pipe_config = {'mpeg4':
                    {'depay': 'rtph264depay', 'videoparse': 'h264parse', 'dec': 'ffdec_h264'}} 
 
 pipestr = (' rtspsrc name=gc-rtpvideo-src ! gc-rtpvideo-depay ! gc-rtpvideo-videoparse ! '
-           ' tee name=gc-rtpvideo-tee  ! queue ! gc-rtpvideo-dec  ! xvimagesink async=false qos=false name=gc-rtpvideo-preview'
+           ' tee name=gc-rtpvideo-tee  ! queue ! gc-rtpvideo-dec  ! xvimagesink async=false sync=false qos=false name=gc-rtpvideo-preview'
            ' gc-rtpvideo-tee. ! queue ! valve drop=false name=gc-rtpvideo-valve ! '
            ' queue ! gc-rtpvideo-mux ! filesink name=gc-rtpvideo-sink async=false')
 
