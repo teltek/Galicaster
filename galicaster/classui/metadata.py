@@ -74,7 +74,7 @@ class MetadataClass(gtk.Widget):
         strip = Header(size=size, title="Edit Metadata")
         dialog.vbox.pack_start(strip, True, True, 0)
         dialog.vbox.reorder_child(strip,0)
-        strip.show()
+
 
         if parent != None:
             dialog.set_transient_for(parent.get_toplevel())
@@ -99,13 +99,12 @@ class MetadataClass(gtk.Widget):
         self.fill_metadata(table, package)
         talign.set_padding(int(self.hprop*25), int(self.hprop*10), int(self.hprop*25), int(self.hprop*25))
         dialog.vbox.set_child_packing(dialog.action_area, True, True, int(self.hprop*25), gtk.PACK_END)   
+        dialog.show_all()
 
-        # Close Metadata dialog and update
-        if dialog.run() == -8:
+        return_value = dialog.run()
+        if return_value == -8:
             self.update_metadata(table,package)
-
         dialog.destroy()
-
 		
     def fill_metadata(self,table,mp):
         """
@@ -115,6 +114,7 @@ class MetadataClass(gtk.Widget):
             table.remove(child) #FIXME maybe change the glade to avoid removing any widget
         table.resize(1,2) 
         row = 1
+
         for meta in DCTERMS:
             t=gtk.Label(metadata[meta])
             t.set_justify(gtk.JUSTIFY_LEFT)
@@ -126,38 +126,23 @@ class MetadataClass(gtk.Widget):
             d=gtk.Entry()
             d.set_name(meta)
             try:
-                if  meta == "creator":
-                    if len(mp.creators):
-                        d.set_text(", ".join(mp.creators))
-                    else:
-                        d.set_text("")  
-
-                elif meta in ["ispartof", "isPartOf"]:
+                if meta in ["ispartof", "isPartOf"]:
                     d = ComboBoxEntryExt(self.par,listseries.get_series(),
                                          NO_SERIES)
                     d.set_name(meta)
-                    if mp.series_title not in [None, ""]:
-                        d.child.set_text(mp.series_title)
-                    else:     
-                        d.child.set_text(NO_SERIES)
-                                        
-                elif meta in ["contributor", "subject"]: # FIXME do it like creator
-                    if len(mp.metadata_episode[meta])>0:
-                        d.set_text(", ".join(mp.metadata_episode[meta]))
+                    if mp.getSeriesIdentifier() != None:
+                        d.child.set_text(mp.getSeriesTitle())
                     else:
-                        d.set_text("")
-                else: 
-                    d.set_text(mp.metadata_episode[meta])
-            except (TypeError, KeyError):                
-                if meta in ["ispartof", "isPartOf"]:
-                    d = ComboBoxEntryExt(self.par,listseries.get_series(), 
-                                         NO_SERIES)
-                    if mp.series_title not in [None, ""]:
-                        d.child.set_text(mp.series_title)
-                    else:     
                         d.child.set_text(NO_SERIES)
+                elif mp.metadata_episode.has_key(meta):
+                    d.set_text(mp.metadata_episode[meta] or '')
+                else:
+                    d.set_text('')
+                    
+            except (TypeError, KeyError) as error: 
+                context.get_logger().error("Exception Filling Metadata "+meta)
             
-            if meta == "created":
+            if meta == "created": # currently Unused
                 d.connect("button-press-event",self.edit_date)
             if meta == "title":
                 d.set_tooltip_text(d.get_text())
@@ -166,8 +151,6 @@ class MetadataClass(gtk.Widget):
 
             table.attach(t,0,1,row-1,row,False,False,0,0)
             table.attach(d,1,2,row-1,row,gtk.EXPAND|gtk.FILL,False,0,0)
-            t.show()
-            d.show()
             row=row+1
 
     def strip_spaces(self,value):
@@ -178,28 +161,13 @@ class MetadataClass(gtk.Widget):
         """Write data back to the mediapackage"""
         for child in table.get_children():
             if child.name in DCTERMS:
-                if child.name == "creator":
-                    if child.get_text() != "":                        
-                        new = list(child.get_text().strip().split(','))
-                        splitted = map(self.strip_spaces, new)
-                        mp.setCreators(splitted)
+                if child.name in ["creator", "contributor", "subject"]:
+                    if child.get_text() == "":
+                        mp.metadata_episode[child.name] = None
                     else:
-                        mp.setCreators(list())
-                elif child.name == "contributor":
-                    if child.get_text() != "":
-                        new = list(child.get_text().strip().split(','))
-                        splitted = map(self.strip_spaces, new)
-                        mp.setContributors(splitted)
-                    else:
-                        mp.setContributors(list())
-                elif child.name == "subject":
-                    if child.get_text() != "":
-                        new = list(child.get_text().strip().split(','))
-                        splitted = map(self.strip_spaces, new)
-                        mp.setSubjects(splitted)
-                    else:
-                        mp.setSubjects(list())
-                elif child.name == "ispartof" or child.name == "isPartOf":
+                        mp.metadata_episode[child.name] = child.get_text().strip()
+
+                elif child.name == "ispartof" or child.name == "isPartOf":                 
                     result=child.get_active_text()
                     model = child.get_model()
                     iterator = model.get_iter_first()
@@ -213,29 +181,18 @@ class MetadataClass(gtk.Widget):
                         series = listseries.getSeriesbyId(identifier)
 
                     if series != None:
-                        mp.series = series["id"]
-                        mp.series_title = series["name"]
-
+                        mp.setSeries(series["list"])
                         if not mp.getCatalogs("dublincore/series") and mp.getURI():
                             new_series = mediapackage.Catalog(path.join(mp.getURI(),"series.xml"),mimetype="text/xml",flavor="dublincore/series")
                             mp.add(new_series)
-
                     else: 
-                        mp.series = None
-                        mp.series_title = None
+                        mp.setSeries(None)
 
                         catalog= mp.getCatalogs("dublincore/series")
                         if catalog:
                             mp.remove(catalog[0])
-
                 else:
                     mp.metadata_episode[child.name]=child.get_text()
-
-        #mp.setTitle(mp.metadata_episode['title']) # WARNING title is a property
-        mp.setLanguage(mp.metadata_episode['language'])
-        mp.metadata_episode['creator']=mp.creators
-        mp.metadata_episode['contributor']=mp.contributors
-        mp.metadata_episode['subject']=mp.subjects
 
 
     def edit_date(self,element,event):
@@ -268,8 +225,8 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
         liststore = gtk.ListStore(str,str)
         liststore.append([text,None])
         if listing != None:
-            for n, m in listing.iteritems():
-                liststore.append([m,n]) # NAME ID
+            for key,all_values in listing.iteritems():
+                liststore.append([all_values['title'], key]) # NAME ID
   
         liststore.set_sort_func(0,self.sorting,text) # Put text=NO_SERIES first
         liststore.set_sort_column_id(0,gtk.SORT_ASCENDING)

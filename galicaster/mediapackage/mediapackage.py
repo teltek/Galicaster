@@ -28,9 +28,6 @@ from datetime import datetime
 from xml.dom import minidom
 from galicaster.mediapackage.utils import _checknget, read_ini
 
-DCTERMS = ['title', 'creator', 'isPartOf', 'description', 'subject', 
-           'language', 'contributor', 'created', 'temporal']
-
 # Mediapackage Status
 NEW = 0
 UNSCHEDULED = 1
@@ -238,37 +235,27 @@ class Mediapackage(object):
     """
     def __init__(self, identifier=None, title=None, date=None, presenter=None, uri=None): #FIXME init with sets
 
-        # Main metadata 
-        self.identifier = identifier
-        self.presenter = presenter # FIXME presenter shouldnt exist, its creator
-
-        # Secondary metadata
-        self.language = None
-        self.license = None # why
-        self.creators = list() # should be a list without repetitions
-        if presenter != None:
-            self.creators.append(presenter)
-        self.contributors = list()
-        self.subjects = list()
+        # Catalog metadata 
+        date = date or datetime.utcnow().replace(microsecond = 0)
+        self.metadata_episode = {"title" : title, "identifier" : identifier, 
+                                 "creator" : presenter, "created" : date,}
+            
         self.metadata_series = {'identifier': None, 
                                 'title': None}
+
+        if self.getIdentifier() == None:
+            self.setIdentifier(unicode(uuid.uuid4()))
+
+        # Secondary metadata
         self.uri = uri
         self.manual = True
         self.status = NEW
         self.__duration = None
         self.__howmany = dict( (k, 0) for k in ELEMENT_TYPES )
           
-        date = date or datetime.utcnow().replace(microsecond = 0)
-        if self.identifier == None:
-            self.identifier = unicode(uuid.uuid4()) 
-        
-        self.metadata_episode = {"title" : title, "created" : date, "identifier" : self.identifier, 
-                                 "creator" : self.creators, "contributor": self.contributors, "subject": self.subjects}
         self.operation = dict()
         self.properties = {'notes':'', 'origin': ''}
-
         self.elements = dict()
-
 
     def __repr__(self):
         return repr((self.identifier, self.title, self.startTime))
@@ -277,29 +264,22 @@ class Mediapackage(object):
     # is inconsistent if elements are erased from the MediaPackage (i.e. there may be duplicated ids)
 
     def getMetadataByName(self, name):
-        if name == "identifier":
+        if self.metadata_episode.has_key(name):
+            return self.metadata_episode[name]
+        elif name == "identifier":
             return self.identifier()
-        elif name == "title":
-            return self.getTitle()
-        elif name == "creator":
-            return self.creators
-        elif name == "contributor":
-            return self.contributors
-        elif name == "language":
-            return self.language
-        elif name == "subject":
-            return self.subjects
         elif name == "created":
             return self.startTime
-        elif name == "ispartof":
-            return self.series_title # TODO return series ID somewhere
-        elif name == "isPartOf":
+        elif name.lower() == "ispartof":
+            return self.series 
+        elif name == "seriestitle":
             return self.series_title
         else:
             return None
 
-    def setMetadataByName(self, name, value): # TODO fullfill fuction and replace metadata_episode with it MAYBE use a dictionary
-        pass
+    def setMetadataByName(self, name, value):
+        self.metadata_episode[name] == value # only for episode
+
 
     def __newElementId(self, etype):
         if (etype in ELEMENT_TYPES):
@@ -313,10 +293,12 @@ class Mediapackage(object):
             return None
         
     def getIdentifier(self):
-        return self.identifier
+        return self.metadata_episode['identifier']
 
     def setIdentifier(self, identifier):
-        self.identifier = identifier
+        self.metadata_episode['identifier'] = identifier
+
+    identifier = property(getIdentifier, setIdentifier)
 
     def getTitle(self):
         return self.metadata_episode['title']
@@ -334,62 +316,66 @@ class Mediapackage(object):
 
     series_title = property(getSeriesTitle, setSeriesTitle)
         
-    def addCreator(self, creator):
-        self.creators.append(creator)
+    def getCreator(self):
+        return self.metadata_episode['creator']
 
-    def setCreators(self, creator):
-        self.creators = creator
-            
-    def removeCreator(self, creator):
-        self.creators.remove(creator)
-        
-    def getCreators(self):
-        return self.creators
+    def setCreator(self, creator):
+        self.metadata_episode['creator'] = creator
+
+    creator = property(getCreator, setCreator)
+
+    def getSeriesIdentifier(self):
+        return self.metadata_series["identifier"]
 
     def getSeries(self):
-        return self.metadata_series["identifier"]
+        return self.metadata_series
     
-    def setSeries(self, identifier):
-        self.metadata_series["identifier"] = identifier
-       
-    series = property(getSeries, setSeries)
+    def setSeries(self, catalog): # catalog is a dictionary with metadata
+        if catalog == None:
+            catalog = {'title':None, 'identifier': None }
+        self.metadata_episode["isPartOf"] = catalog['identifier']
+        self.metadata_series = catalog    
 
     def getLicense(self):
-        return self.license
+        return self.metadata_episode['license']
     
     def setLicense(self, license):
-        self.license = license
-        
-    def addContributor(self, contributor): #FIXME is a set
-        self.contributors.append(contributor)
+        self.metadata_episode['license'] = license        
 
-    def setContributors(self, contributor):
-        self.contributors = contributor
-            
-    def removeContributor(self, contributor):
-        self.contributors.remove(contributor)
-        
-    def getContributors(self):
-        return self.contributors
+    license = property(getLicense, setLicense)
+
+    def getContributor(self):
+        return self.metadata_episode['contributor']
+
+    def setContributor(self, contributor):
+        self.metadata_episode['contributor'] = contributor
     
+    contributor = property(getContributor, setContributor)   
+
     def getLanguage(self):
-        return self.language
+        return self.metadata_episode['language']
     
     def setLanguage(self, language):
-        self.language = language
-        
-    def addSubject(self, subject):
-        self.subjects.append(subject)
+        self.metadata_episode['language'] = language
 
-    def setSubjects(self, subject):
-        self.subjects = subject
-            
-    def removeSubject(self, subject):
-        self.subjects.remove(subject)
-        
-    def getSubjects(self):
-        return self.subjects    
+    language = property(getLanguage, setLanguage)
+
+    def getSubject(self):
+        return self.metadata_episode['language']
     
+    def setSubject(self, subject):
+        self.metadata_episode['subject'] = subject
+
+    subject = property(getSubject, setSubject)
+
+    def getDescription(self):
+        return self.metadata_episode['language']
+    
+    def setDescription(self, description):
+        self.metadata_episode['subject'] = subject
+
+    description = property(getDescription, setDescription)
+            
     def getDate(self):
         return self.metadata_episode["created"]
 
@@ -411,12 +397,11 @@ class Mediapackage(object):
 
     def getStartDateAsString(self, isoformat=True, local=True):
         
-        if isoformat:
+        if isoformat: 
             if local:
                 return self.getLocalDate().isoformat()
             else:
                 return self.getDate().isoformat()
-
         else:
             if local:
                 return unicode(self.getLocalDate()) 
@@ -697,20 +682,23 @@ class Mediapackage(object):
         """
         for i in self.getCatalogs():               
             if i.getFlavor() == "dublincore/episode":
-                dom = minidom.parse(i.getURI()) 
-                for name in DCTERMS:
+                dom = minidom.parse(i.getURI())                 
+                # retrive terms
+                EPISODE_TERMS = []
+                for node in dom.firstChild.childNodes:
+                    if not node.nodeName.count('dcterms:'):
+                        continue
+                    EPISODE_TERMS.append(node.nodeName.split(':')[1])    
+                for name in EPISODE_TERMS:
                     if name in ["created"]:
                         creat = _checknget(dom, "dcterms:" + name)
                         if creat:
                             if creat[-1] == "Z":
                                 self.setDate(datetime.strptime(creat, "%Y-%m-%dT%H:%M:%SZ"))
                             else:
-                                self.setDate(datetime.strptime(creat, "%Y-%m-%dT%H:%M:%S"))
-                    elif name in [ "creator", "contributor", "subject"]: # FIXME do this to other metadata
-                        creat = _checknget(dom, "dcterms:" + name) # FIXME check Nones and empty string somewhere
-                        if creat and creat not in self.metadata_episode[name]:
-                            self.metadata_episode[name].append(creat)
-                    elif name == 'isPartOf': 
+                                self.setDate(datetime.strptime(creat, "%Y-%m-%dT%H:%M:%S")) 
+                                # parse erroneous format too
+                    elif name in ['isPartOf', 'ispartof']: 
                         new = _checknget(dom, "dcterms:"+name)
                         old = _checknget(dom, "dcterms:"+name.lower() )
                         self.metadata_episode[name] = new if new != None else old
@@ -718,17 +706,14 @@ class Mediapackage(object):
                         self.metadata_episode[name] = _checknget(dom, "dcterms:" + name)                     
             elif i.getFlavor() == "dublincore/series": # FIXME cover series data and create files if dont exist
                 dom = minidom.parse(i.getURI())                 
-                self.series_title = _checknget(dom, "dcterms:" + "title")
-                self.series = _checknget(dom, "dcterms:" + "identifier") 
-                dom = minidom.parse(i.getURI())
-                for name in DCTERMS: # FIXME reduce it to series terms
+                # retrive terms
+                SERIES_TERMS = []
+                for node in dom.firstChild.childNodes:
+                    SERIES_TERMS.append(node.nodeName.split(':')[1])                
+                for name in SERIES_TERMS:
                     self.metadata_series[name] = _checknget(dom, "dcterms:" + name)
 
-        #FIXME: Init set and attr
-        self.setCreators(self.metadata_episode['creator']) # FIXME creators could be more than one
-        self.setContributors(self.metadata_episode['contributor']) # FIXME creators could be more than one
-        self.setSubjects(self.metadata_episode['subject']) # FIXME creators could be more than one
-
+        # Parse temporal metadatum
         if self.metadata_episode.has_key('temporal') and self.metadata_episode['temporal'] and not self.hasTracks():
             try:
                 g = re.search('start=(.*)Z; end=(.*)Z;', self.metadata_episode['temporal'])
@@ -739,8 +724,6 @@ class Mediapackage(object):
             except:
                 pass
             
-        
-
     #FIXME merge with add
     def addAttachmentAsString(self, content, name=None, rewrite=False, identifier=None):
         assert path.isdir(self.getURI())

@@ -243,7 +243,7 @@ class Repository(object):
 
         if add_catalogs:
             mp.add(os.path.join(mp.getURI(), 'episode.xml'), mediapackage.TYPE_CATALOG, 'dublincore/episode', 'text/xml')
-            if mp.series:
+            if mp.getSeriesIdentifier():
                 mp.add(os.path.join(mp.getURI(), 'series.xml'), mediapackage.TYPE_CATALOG, 'dublincore/series', 'text/xml')
 
         # ADD MP to repo
@@ -296,8 +296,8 @@ class Repository(object):
 
         mappings = {
             'id'          : mp.identifier,
-            'title'       : mp.title, 
-            'series'      : mp.series_title, 
+            'title'       : mp.getTitle(), 
+            'series'      : mp.getSeriesTitle(),
             'hostname'    : self.hostname, 
             'type'        : 'M' if mp.manual else 'S',
             'longtype'    : 'manual' if mp.manual else 'scheduled',
@@ -327,7 +327,7 @@ class Repository(object):
     def __add(self, mp):
         self.__list[mp.getIdentifier()] = mp
         serializer.save_in_dir(mp, self.logger)
-        #FIXME escribir de nuevo los XML de metadata.xml y episode.xml y series.xml
+        #FIXME write new XML metadata, episode, series
         return mp
         
     

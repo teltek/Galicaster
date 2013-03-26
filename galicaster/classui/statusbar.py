@@ -78,12 +78,8 @@ class StatusBarClass(gtk.Box):
             self.video.set_property("tooltip-text",value)
 
     def SetPresenter(self,element, value):
-        if type(value) != str:
-            text=", ".join(value)
-        else:
-            text=value
-        self.presenter.set_text(text)
-        self.presenter.set_property("tooltip-text",value)
+        self.presenter.set_text(value or '')
+        self.presenter.set_property("tooltip-text",value or '')
 
 
     def update(self,status="Iddle",time="00:00",video="None",presenter="Unknow"):    

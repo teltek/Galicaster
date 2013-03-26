@@ -142,7 +142,7 @@ class PlayerClassUI(ManagerUI):
             self.change_state(GC_READY)
 
             self.statusbar.SetVideo(None, self.mediapackage.title)
-            self.statusbar.SetPresenter(None, self.mediapackage.getCreators())
+            self.statusbar.SetPresenter(None, self.mediapackage.getCreator())
 
         self.on_play_clicked(None)
 
@@ -271,7 +271,7 @@ class PlayerClassUI(ManagerUI):
         key = self.mediapackage.identifier
         self.edit(key)
         self.statusbar.SetVideo(None, self.mediapackage.title)
-        self.statusbar.SetPresenter(None, self.mediapackage.getCreators())
+        self.statusbar.SetPresenter(None, self.mediapackage.getCreator())
         return True
 
     def on_question(self,button):

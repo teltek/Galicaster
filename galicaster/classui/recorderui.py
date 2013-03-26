@@ -198,7 +198,8 @@ class RecorderClassUI(gtk.Box):
         """Loads the bins and creates the preview areas for the active profile, creating a new mediapacakge."""
         self.configure_profile()
         logger.info("Setting Devices the new way")
-        self.mediapackage = mediapackage.Mediapackage()
+        now = datetime.datetime.now().replace(microsecond=0)
+        self.mediapackage = mediapackage.Mediapackage(title="Recording started at " + now.isoformat())
 
         context.get_state().mp=self.mediapackage.identifier
 
@@ -284,10 +285,8 @@ class RecorderClassUI(gtk.Box):
         self.dispatcher.emit("starting-record")
         self.recorder.record()
         self.mediapackage.status=mediapackage.RECORDING
-        now = datetime.datetime.now().replace(microsecond=0)
-        self.mediapackage.setLocalDate(now)
-        if self.mediapackage.manual:
-            self.mediapackage.setTitle("Recording started at " + now.isoformat())
+        now = datetime.datetime.utcnow().replace(microsecond=0)
+        self.mediapackage.setDate(now)
         self.timer_thread_id = 1
         self.timer_thread = thread(target=self.timer_launch_thread) 
         self.timer_thread.daemon = True
@@ -608,8 +607,8 @@ class RecorderClassUI(gtk.Box):
             if thread_id==self.timer_thread_id:
                 gtk.gdk.threads_enter()
                 self.statusbar.SetTimer(timer)
-                if rec_title.get_text() != self.mediapackage.title:
-                    rec_title.set_text(self.mediapackage.title)
+                if rec_title.get_text() != self.mediapackage.getTitle():
+                    rec_title.set_text(self.mediapackage.getTitle())
                 rec_elapsed.set_text("Elapsed Time: " + self.time_readable(dif))
                 gtk.gdk.threads_leave()
             time.sleep(0.2)          
@@ -799,8 +798,10 @@ class RecorderClassUI(gtk.Box):
         #self.change_state(GC_BLOCKED)
         if not self.scheduled_recording:
             Metadata(self.mediapackage, parent=self)
-            self.statusbar.SetVideo(None,self.mediapackage.metadata_episode['title'])
-            self.statusbar.SetPresenter(None,self.mediapackage.creators)
+            mp = self.mediapackage
+            self.statusbar.SetVideo(None,mp.getTitle())
+            if self.mediapackage.getCreator() != None:
+                self.statusbar.SetPresenter(None,mp.getCreator() if mp.getCreator() != None else '')
         #self.change_state(self.previous)  
         return True 
 

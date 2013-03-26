@@ -46,7 +46,7 @@ def save_in_dir(mp, logger=None):
     m.close()
 
     # Series
-    if mp.series not in [None, "", "[]"]:
+    if mp.getSeriesIdentifier != None:
         # Create or modify file
         m3 = open(path.join(mp.getURI(), SERIES_FILE), 'w')
         m3.write(set_series(mp,logger)) #FIXME
@@ -255,11 +255,11 @@ def set_episode(mp):
     xml.setAttribute("xmlns:xsi","http://www.w3.org/2001/XMLSchema-instance/")
     xml.setAttribute("xmlns:dcterms","http://purl.org/dc/terms/")
     doc.appendChild(xml)
-    for name in DCTERMS:
+    for name in mp.metadata_episode.iterkeys():
         try:
-            if name == "isPartOf" and mp.series !=None: 
+            if name == "isPartOf" and mp.getSeriesIdentifier() !=None: 
                 created = doc.createElement("dcterms:" + name)
-                text = doc.createTextNode(unicode(mp.series))
+                text = doc.createTextNode(unicode(mp.getSeriesIdentifier()))
                 created.appendChild(text)
                 xml.appendChild(created)
             elif not mp.metadata_episode[name]:
@@ -269,22 +269,14 @@ def set_episode(mp):
                 text = doc.createTextNode(mp.metadata_episode[name].isoformat() + "Z")
                 created.appendChild(text)
                 xml.appendChild(created)
-            elif type(mp.metadata_episode[name]) is not list:
+            else:
                 created = doc.createElement("dcterms:" + name)
                 text = doc.createTextNode(unicode(mp.metadata_episode[name]))
                 created.appendChild(text)
                 xml.appendChild(created)
-            else:
-                if len(mp.metadata_episode[name]):
-                    for element in mp.metadata_episode[name]:
-                        created = doc.createElement("dcterms:" + name)
-                        text = doc.createTextNode(element)
-                        created.appendChild(text)
-                        xml.appendChild(created)
                     
         except KeyError:
             continue
-
     return doc.toxml(encoding="utf-8") #without encoding
 
 
@@ -298,14 +290,15 @@ def set_series(mp, logger=None):
     xml.setAttribute("xmlns","http://www.opencastproject.org/xsd/1.0/dublincore/")
     xml.setAttribute("xmlns:dcterms","http://purl.org/dc/terms/")
     doc.appendChild(xml)
-    for name in ["title", "identifier"]: # FIXME Set mediapackage.SeriesDCTERMS
-        try:
-            created = doc.createElement("dcterms:" + name)
-            text = doc.createTextNode(unicode(mp.metadata_series[name]))
-            created.appendChild(text)
-            xml.appendChild(created)
-        except KeyError:
-            if logger:
-                logger.debug("KeyError in serializer.set_series")
-            continue
+    for name in mp.metadata_series.iterkeys():
+        if mp.metadata_series[name] != None:
+            try:
+                created = doc.createElement("dcterms:" + name)
+                text = doc.createTextNode(unicode(mp.metadata_series[name]))
+                created.appendChild(text)
+                xml.appendChild(created)
+            except KeyError:
+                if logger:
+                    logger.debug("KeyError in serializer.set_series")
+                continue
     return doc.toxml(encoding="utf-8") #without encoding

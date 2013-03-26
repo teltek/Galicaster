@@ -32,11 +32,17 @@ def get_series():
     # convert JSON in ARRAY
     out = {}
 
+
     for series in series_json['catalogs']:
         k = series['http://purl.org/dc/terms/']['identifier'][0]['value']
-        v = series['http://purl.org/dc/terms/']['title'][0]['value']
-        out[k] = v
-
+        group = {}
+        for parameter in series['http://purl.org/dc/terms/'].iterkeys():
+            try:
+                group[parameter] = series['http://purl.org/dc/terms/'][parameter][0]['value']
+            except:
+                group[parameter] = None
+        out[k] = group
+        
     return out
     
     
@@ -51,22 +57,22 @@ def getSeriesbyId(seriesid):
     """
     list_series = get_series()
     try:
-        match = {"id": seriesid, "name": list_series[seriesid]}
+        match = {"id": seriesid, "name": list_series[seriesid]['title'], "list": list_series[seriesid]}
         return match
     except KeyError:
         return None
 
-def getSeriesbyName(seriesid):
+def getSeriesbyName(seriesname):
     """
     Generate a list with the series value name, shortname and id
     """
     list_series = get_series()
-    inv_map = dict(zip(list_series.values(), list_series.keys()))
-    try:
-        match = {"id": inv_map[seriesid], "name": seriesid}
-        return match
-    except KeyError:
-        return None
+    match = None
+    for key,series in list_series.iteritems():
+        if series['title'] == seriesname:
+            match =  {"id": key, "name": seriesname, "list": list_series[seriesid]}
+            break
+    return match
 
 def serialize_series(series_list, series_path):
     in_json = json.dumps(series_list)

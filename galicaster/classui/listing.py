@@ -79,15 +79,15 @@ class ListingClassUI(ManagerUI):
         """Appends the mediapackage data into the list"""
 	lista.clear()
 	for mp in mps:
-            duration = mp.getDuration() # TODO parse via function as creators
+            duration = mp.getDuration()
 	    if duration in ["", None]: 
                 duration = 0
 
 	    if mp.status != mediapackage.SCHEDULED:
                 lista.append([mp.getIdentifier(), 
 			      mp.getTitle(), 
-			      self.list_readable(mp.creators), 
-			      mp.series_title, 
+			      mp.getCreator(), 
+			      mp.series_title , 
 			      long(mp.getSize()),
 			      int(duration), 
 			      mp.getStartDateAsString(), 
@@ -246,7 +246,7 @@ class ListingClassUI(ManagerUI):
         """Fills the new values of a refreshed row"""
 	self.lista.set(i,0,mp.getIdentifier())
 	self.lista.set(i,1,mp.getTitle())
-	self.lista.set(i,2,self.list_readable(mp.creators))
+	self.lista.set(i,2,mp.getCreator())
 	self.lista.set(i,3,mp.series_title)
 	self.lista.set(i,4,long(mp.getSize()))
 	self.lista.set(i,5,int(mp.getDuration()))

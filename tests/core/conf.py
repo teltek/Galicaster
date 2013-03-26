@@ -90,6 +90,7 @@ class TestFunctions(TestCase):
 
     def test_get_tracks_in_mh_dict(self):
         conf = self.conf.get_tracks_in_mh_dict()
+        print self.conf.get('basic','visible_tracks')
         self.assertEqual(len(conf), 3*3 +1)
         self.assertEqual(conf['capture.device.names'], 'track1,track3,track2')
         self.assertEqual(conf['capture.device.track2.outputfile'], 'SCREEN.mpeg')

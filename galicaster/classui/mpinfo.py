@@ -61,6 +61,9 @@ class MPinfo(gtk.Window):
         self.add_data(basic_table,"Recorded on:",
                       readable.date(mp.getStartDateAsString(),
                                     "%B %d, %Y - %H:%M").replace(' 0',' '))
+        for parameter in mp.metadata_episode:
+            if mp.metadata_episode[parameter] and parameter != 'title':
+                self.add_data(basic_table,parameter.capitalize(),mp.metadata_episode[parameter])
 
         # Operations info
         ops, ops_table = self.add_framed_table("Operations")
@@ -74,8 +77,8 @@ class MPinfo(gtk.Window):
         # Series info
         if mp.getSeries():
             series, series_table = self.add_framed_table("Series")
-            self.add_data(series_table,"Series:",mp.getSeriesTitle())
-            self.add_data(series_table,"Identifier:",mp.getSeries())
+            for parameter in mp.metadata_series:
+                self.add_data(series_table,parameter.capitalize(),mp.metadata_series[parameter])
 
         # Track info
         tracks, track_table = self.add_framed_table("Tracks", True)
