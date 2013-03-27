@@ -361,7 +361,7 @@ class Mediapackage(object):
     language = property(getLanguage, setLanguage)
 
     def getSubject(self):
-        return self.metadata_episode['language']
+        return self.metadata_episode['subject']
     
     def setSubject(self, subject):
         self.metadata_episode['subject'] = subject
@@ -369,10 +369,10 @@ class Mediapackage(object):
     subject = property(getSubject, setSubject)
 
     def getDescription(self):
-        return self.metadata_episode['language']
+        return self.metadata_episode['description']
     
     def setDescription(self, description):
-        self.metadata_episode['subject'] = subject
+        self.metadata_episode['description'] = description
 
     description = property(getDescription, setDescription)
             
@@ -396,7 +396,6 @@ class Mediapackage(object):
         self.metadata_episode["created"] = startTime + utcdiff
 
     def getStartDateAsString(self, isoformat=True, local=True):
-        
         if isoformat: 
             if local:
                 return self.getLocalDate().isoformat()
@@ -409,7 +408,7 @@ class Mediapackage(object):
                 return unicode(self.getDate()) 
 
     def getDuration(self):
-        if self.__duration in ["","0",0,None] and self.hasTracks():# FIXME check every assignment on duration
+        if self.__duration in ["", "0", 0, None] and self.hasTracks():# FIXME check every assignment on duration
             for t in self.getTracks():
                 if self.__duration < t.getDuration():
                     self.__duration = t.getDuration()
