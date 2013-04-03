@@ -31,7 +31,7 @@ pipe_config = {'mpeg4':
                    {'depay': 'rtph264depay', 'parse': 'h264parse', 'dec': 'ffdec_h264'}} 
 
 pipe_config_audio = {'mp3':
-                         {'depay': 'rtpmpadepay', 'parse': 'mpegaudioparse', 'dec': 'flump3dec'}
+                         {'depay': 'rtpmpadepay', 'parse': 'mpegaudioparse', 'dec': 'flump3dec'},
                      'aac':
                          {'depay': 'rtpmpadepay', 'parse': 'mpegaudioparse', 'dec': 'faad'}}
 
