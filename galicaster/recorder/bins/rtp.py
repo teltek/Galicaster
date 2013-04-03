@@ -33,7 +33,7 @@ pipe_config = {'mpeg4':
 pipe_config_audio = {'mp3':
                          {'depay': 'rtpmpadepay', 'parse': 'mpegaudioparse', 'dec': 'flump3dec'},
                      'aac':
-                         {'depay': 'rtpmpadepay', 'parse': 'mpegaudioparse', 'dec': 'faad'}}
+                         {'depay': 'rtpmp4gdepay', 'parse': 'aacparse', 'dec': 'faad'}}
 
 pipestr = (' rtspsrc name=gc-rtp-src ! gc-rtp-depay ! gc-rtp-videoparse ! '
            ' tee name=gc-rtp-tee  ! queue ! gc-rtp-dec  ! xvimagesink async=false sync=false qos=false name=gc-rtp-preview'
