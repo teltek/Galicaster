@@ -141,7 +141,6 @@ class GCrtp(gst.Bin, base.Base):
         else:
             self.has_audio = False
 
-        print aux
         bin = gst.parse_bin_from_description(aux, False)
         self.add(bin)
 
