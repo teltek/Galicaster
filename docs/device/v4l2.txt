@@ -1,0 +1,45 @@
+Plugin configuration
+--------------------
+
+Admitted values:
+
+    name: Name assigned to the device.
+    device: Device type: v4l2
+    flavor: Matterhorn "flavor" associated to the track. (presenter|presentation|other)
+    location: Device's mount point in the system (e.g. /dev/video0).
+    file: The file name where the track will be recorded. (The path is automatically assembled)
+    videocrop: Margin in pixels to be cutted. Useful to set a 4:3 proportion on a HD webcam.videocrop-top, videocrop-bottom, videocrop-left, videocrop-right (optional).
+    caps:  GStreamer cappabilities of the device. Check the caps section for more information.
+
+Use GVUCView tool to know wich capabilities are compatible with your device
+For more information  http://pygstdocs.berlios.de/pygst-tutorial/capabilities.html
+
+
+Caps
+----
+
+V4L2 devices accepts two types of signal inputs - RAW and MJPEG - and multiple resolution-framerate combinations. A simplified Gstreamer cappabilities string is formed by type, resolution and framerate among other parameters:
+
+    Type: image/jpeg or video/x-raw-yuv
+    Framerate: X/Y. Examples: 30/1, 25/1, 24/1, 10/1
+    Resolution: width=A,height=B. A and B being length in pixels
+
+Them, a complete caps string looks like:
+
+image/jpeg, framerate=24/1, width=1280, height=720
+video/x-raw-yuv framerate=30/1, width=1280, height=1024
+
+Examples:
+---------
+
+--Logitech c920
+
+[track1]
+name = Webcam
+device = v4l2
+location = /dev/webcam
+file = WEBCAM.avi
+flavor = presenter
+caps = image/jpeg,framerate=24/1,width=1280,height=720
+videocrop-left = 160
+videocrop-right = 160
