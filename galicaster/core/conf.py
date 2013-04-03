@@ -169,7 +169,7 @@ class Conf(object): # TODO list get and other ops arround profile
             os.remove(profile.path)
             self.__profiles.pop(profile.name)
          elif profile.name != 'Default':
-            profile.export_to_file()
+            #profile.export_to_file() #Uncomment if profiles are editable
             if profile == self.__current_profile:
                self.__conf.set('basic','profile',profile.name)
             
