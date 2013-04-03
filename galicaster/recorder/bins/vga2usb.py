@@ -12,7 +12,7 @@
 # San Francisco, California, 94105, USA.
 
 from galicaster.core import context
-from galicaster.recorder import epiphan
+from galicaster.recorder.bins import epiphan
 from galicaster.recorder import module_register
 
 logger = context.get_logger()
