@@ -67,6 +67,7 @@ class MHHTTPClient(object):
         c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_DIGEST)
         c.setopt(pycurl.USERPWD, self.user + ':' + self.password)
         c.setopt(pycurl.HTTPHEADER, ['X-Requested-Auth: Digest'])
+        c.setopt(pycurl.USERAGENT, 'Galicaster')
         if (method == 'POST'):
             if urlencode:
                 c.setopt(pycurl.POST, 1) 
