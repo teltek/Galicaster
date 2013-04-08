@@ -38,7 +38,7 @@ def init():
     dispatcher.connect('audio-mute', warning_audio)
     dispatcher.connect('audio-recovered', warning_audio_destroy)
     dispatcher.connect('galicaster-status', event_change_mode)
-    dispatcher.connect('reload-profile', deactivate_hidden_and_check)
+    dispatcher.connect('reload-profile', clear_data_and_check)
     dispatcher.connect('restart_preview', deactivate_hidden_and_check)
     dispatcher.connect('starting-record', deactivate_hidden_and_check)
     dispatcher.connect('upcoming-recording', deactivate_hidden_and_check)
@@ -69,6 +69,13 @@ def deactivate_hidden_and_check(element=None):
             no_audio_dialog = create_ui()
         no_audio_dialog.show() 
     return True
+
+def clear_data_and_check(element=None):
+    global no_audio
+    no_audio = False
+    deactivate_hidden_and_check()
+    return True
+
 
 def warning_audio(element=None):
     """
@@ -120,7 +127,6 @@ def event_change_mode(orig, old_state, new_state):
             no_audio_dialog.hide()
 
 def refuse_focus(signal, data):
-    print "Grabbing focus"
     data.grab_focus()
     
 
