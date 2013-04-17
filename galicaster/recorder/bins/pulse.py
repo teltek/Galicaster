@@ -18,7 +18,7 @@ from os import path
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
-pipestr = (" pulsesrc name=gc-audio-src  !   audioamplify name=gc-audio-amplify amplification=1 ! "
+pipestr = (" pulsesrc name=gc-audio-src  ! queue ! audioamplify name=gc-audio-amplify amplification=1 ! "
            " tee name=tee-aud  ! queue ! level name=gc-audio-level message=true interval=100000000 ! "
            " volume name=gc-audio-volume ! alsasink sync=false name=gc-audio-preview  "
            " tee-aud. ! queue ! valve drop=false name=gc-audio-valve ! "
@@ -28,8 +28,8 @@ pipestr = (" pulsesrc name=gc-audio-src  !   audioamplify name=gc-audio-amplify 
 
 class GCpulse(gst.Bin, base.Base):
     
-    order = ["name", "flavor", "location", "file", "vumeter", "player",
-             "amplification", "encoder"]
+    order = ["name", "flavor", "location", "file", 
+             "vumeter", "player", "amplification", "audioencoder"]
 
     gc_parameters = {
         "name": {
@@ -45,7 +45,7 @@ class GCpulse(gst.Bin, base.Base):
         "location": {
             "type": "device",
             "default": "default",
-            "description": "Device's mount point of the MPEG output",
+            "description": "Device's mount point of output",
             },
         "file": {
             "type": "text",
@@ -54,24 +54,24 @@ class GCpulse(gst.Bin, base.Base):
             },
         "vumeter": {
             "type": "boolean",
-            "default": "True",
+            "default": True,
             "description": "Activate Level message",
             },
         "player": {
             "type": "boolean",
-            "default": "True",
+            "default": True,
             "description": "Enable sound play",
             },
         "amplification": {
             "type": "float",
-            "default": 2.0,
+            "default": 1.0,
             "range": (0,10),
             "description": "Audio amplification",
             },
-        "encoder": {
+        "audioencoder": {
             "type": "text",
             "default": "lamemp3enc target=1 bitrate=192 cbr=true",
-            "description": "Gstreamer encoder element used in the bin",
+            "description": "Gstreamer audio encoder element used in the bin",
             },
         }
 
@@ -91,7 +91,7 @@ class GCpulse(gst.Bin, base.Base):
         gst.Bin.__init__(self, self.options["name"])
 
         aux = (pipestr.replace("gc-audio-preview", "sink-" + self.options["name"])
-                      .replace("gc-audio-enc", self.options["encoder"]))
+                      .replace("gc-audio-enc", self.options["audioencoder"]))
 
         #bin = gst.parse_bin_from_description(aux, True)
         bin = gst.parse_launch("( {} )".format(aux))
@@ -133,7 +133,6 @@ class GCpulse(gst.Bin, base.Base):
 
     def getSource(self):
         return self.get_by_name("gc-audio-src")
-
 
     def send_event_to_src(self, event):
         src1 = self.get_by_name("gc-audio-src")

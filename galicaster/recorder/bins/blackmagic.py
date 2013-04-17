@@ -21,7 +21,7 @@ from galicaster.recorder import base
 from galicaster.recorder import module_register
 
 videostr = ( ' decklinksrc connection=sdi mode=12 name=gc-blackmagic-src ! '
-             ' identity name=gc-blackmagic-idvideo ! queue ! videorate ! videocrop name=gc-blackmagic-crop !'
+             ' identity name=gc-blackmagic-idvideo ! queue ! videorate ! capsfilter name=gc-blackmagic-vrate ! videocrop name=gc-blackmagic-crop !'
              ' tee name=gc-blackmagic-tee  ! queue ! ffmpegcolorspace ! xvimagesink async=false sync=false qos=false name=gc-blackmagic-preview'
              #REC VIDEO
              ' gc-blackmagic-tee. ! queue ! valve drop=false name=gc-blackmagic-valve ! ffmpegcolorspace ! '
@@ -44,7 +44,8 @@ audiostr= (
 class GCblackmagic(gst.Bin, base.Base):
 
   order = ["name","flavor","location","file",
-           "input-mode","input","audio-input","subdevice"
+           "input-mode","input","audio-input","subdevice",
+           "vumeter", "player", "amplification", 
            "videoencoder", "audioencoder", "muxer"]
 
   gc_parameters = {
@@ -60,12 +61,12 @@ class GCblackmagic(gst.Bin, base.Base):
       },
     "location": {
       "type": "device",
-      "default": "/dev/blackmagic/card0",
-      "description": "Device's mount point of the MPEG output",
+      "default": "/dev/blackmagic0",
+      "description": "Device's mount point of the output",
       },
     "file": {
       "type": "text",
-      "default": "CAMERA.mpg",
+      "default": "CAMERA.avi",
       "description": "The file name where the track will be recorded.",
       },
     "videocrop-right": {
@@ -149,12 +150,12 @@ class GCblackmagic(gst.Bin, base.Base):
       "type": "text",
       "default": "x264enc quantizer=22 speed-preset=2 profile=1",
       #Other examples: "xvidenc bitrate=50000000" or "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000"
-      "description": "Gstreamer encoder element used in the bin",
+      "description": "Gstreamer video encoder element used in the bin",
       },
     "audioencoder": {
       "type": "text",
       "default": "lamemp3enc target=1 bitrate=192 cbr=true",
-      "description": "Gstreamer encoder element used in the bin",
+      "description": "Gstreamer audio encoder element used in the bin",
       },
     "muxer": {
       "type": "text",
@@ -248,6 +249,12 @@ class GCblackmagic(gst.Bin, base.Base):
         for pos in ['right','left','top','bottom']:
             element = self.get_by_name('gc-blackmagic-crop')
             element.set_property(pos, int(self.options['videocrop-' + pos]))
+
+        fr = self.options['input-mode']
+        if fr.count('1080') or fr.count('720p'):
+          pass
+        #newcaps = 'video/x-raw-yuv,framerate='+st(fr)
+        #self.set_value_in_pipeline(newcaps, 'gc-blackmagic-vrate', 'caps', gst.Caps)
 
   def changeValve(self, value):
     valve1=self.get_by_name('gc-blackmagic-valve')

@@ -35,12 +35,12 @@ pipe_config_audio = {'mp3':
                      'aac':
                          {'depay': 'rtpmp4gdepay', 'parse': 'aacparse', 'dec': 'faad'}}
 
-pipestr = (' rtspsrc name=gc-rtp-src ! gc-rtp-depay ! gc-rtp-videoparse ! '
+pipestr = (' rtspsrc name=gc-rtp-src ! gc-rtp-depay ! gc-rtp-videoparse ! queue !'
            ' tee name=gc-rtp-tee  ! queue ! gc-rtp-dec  ! xvimagesink async=false sync=false qos=false name=gc-rtp-preview'
            ' gc-rtp-tee. ! queue ! valve drop=false name=gc-rtp-valve ! '
            ' queue ! gc-rtp-muxer name=gc-rtp-mux ! filesink name=gc-rtp-sink async=false')
 
-audiostr = (' gc-rtp-src. ! gc-rtp-audio-depay ! gc-rtp-audioparse ! '
+audiostr = (' gc-rtp-src. ! gc-rtp-audio-depay ! gc-rtp-audioparse ! queue !'
            ' tee name=gc-rtp-audio-tee ! queue ! valve drop=false name=gc-rtp-audio-valve ! '
            ' queue ! gc-rtp-mux. '
            ' gc-rtp-audio-tee. ! queue ! gc-rtp-audio-dec ! '
@@ -52,7 +52,8 @@ audiostr = (' gc-rtp-src. ! gc-rtp-audio-depay ! gc-rtp-audioparse ! '
 class GCrtp(gst.Bin, base.Base):
 
 
-    order = ["name", "flavor", "location", "file", "videomux", "cameratype"]
+    order = ["name", "flavor", "location", "file", "muxer", 
+             "cameratype", "audio", "audiotype", "vumeter", "player"]
     gc_parameters = {
         "name": {
             "type": "text",
@@ -65,7 +66,7 @@ class GCrtp(gst.Bin, base.Base):
             "description": "Matterhorn flavor associated to the track",
             },
         "location": {
-            "type": "text",  #TODO add URL
+            "type": "text",
             "default": "rtsp://127.0.0.1/mpeg4/media.amp",
             "description": "Location of the RTSP url to read",
             },
@@ -74,7 +75,7 @@ class GCrtp(gst.Bin, base.Base):
             "default": "CAMERA.avi",
             "description": "The file name where the track will be recorded.",
             },
-        "videomux": {
+        "muxer": {
             "type": "text",
             "default": "flvmux",
             "description": "The file name where the track will be recorded.",
@@ -85,7 +86,7 @@ class GCrtp(gst.Bin, base.Base):
             "options": [
                 "h264", "mpeg4"
                 ],
-            "description": "Camera type",
+            "description": "RTP Camera encoding type",
             },
         "audio": {
             "type": "boolean",
@@ -108,7 +109,7 @@ class GCrtp(gst.Bin, base.Base):
             "options": [
                 "mp3", "aac"
                 ],
-            "description": "Camera type",
+            "description": "RTP Audio encoding type",
             }
         }
     

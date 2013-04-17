@@ -18,19 +18,18 @@ from os import path
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
-pipestr = (" audiotestsrc name=gc-audiotest-src is-live=true freq=440 volume=0.8 wave=5 ! " 
+pipestr = (" audiotestsrc name=gc-audiotest-src is-live=true freq=440 volume=0.8 wave=5 ! queue ! " 
            " audioamplify name=gc-audiotest-amplify amplification=1 ! tee name=tee-aud  ! queue ! "
            " level name=gc-audiotest-level message=true interval=100000000 ! "
-           " volume name=gc-audiotest-volume ! alsasink name=gc-audiotest-preview  sync=false "
+           " volume name=gc-audiotest-volume ! alsasink name=gc-audiotest-preview sync=false "
            " tee-aud. ! queue ! valve drop=false name=gc-audiotest-valve ! "
            " audioconvert ! gc-audiotest-enc !  queue ! filesink name=gc-audiotest-sink async=false ")
 
 class GCaudiotest(gst.Bin, base.Base):
 
     order = ["name", "flavor", "location", "file", 
-             "vumeter", "player","amplification",
-             "volume", "pattern", "frequency", "encoder"
-             ]
+             "vumeter", "player","amplification","audioencoder"
+             "volume", "pattern", "frequency" ]
 
     gc_parameters = {
         "name": {
@@ -46,7 +45,7 @@ class GCaudiotest(gst.Bin, base.Base):
         "location": {
             "type": "device",
             "default": "default",
-            "description": "Device's mount point of the MPEG output",
+            "description": "Device's mount point of the output",
             },
         "file": {
             "type": "text",
@@ -71,7 +70,7 @@ class GCaudiotest(gst.Bin, base.Base):
             },
         "volume": {
             "type": "float",
-            "default": 0.5,
+            "default": 1.0,
             "range": (0,1),
             "description": "Audio volume",
             },
@@ -91,10 +90,10 @@ class GCaudiotest(gst.Bin, base.Base):
             "range" : (0, 20000),
             "description": "Reference frequency of the sample, 0-20000 Hz"
             },
-        "encoder": {
+        "audioencoder": {
             "type": "text",
             "default": "lamemp3enc target=1 bitrate=192 cbr=true",
-            "description": "Gstreamer encoder element used in the bin",
+            "description": "Gstreamer audio encoder element used in the bin",
             },
         }
 
@@ -114,7 +113,7 @@ class GCaudiotest(gst.Bin, base.Base):
         gst.Bin.__init__(self, self.options["name"])
 
         aux = (pipestr.replace("gc-audiotest-preview", "sink-" + self.options["name"])
-                      .replace("gc-audiotest-enc", self.options["encoder"]))
+                      .replace("gc-audiotest-enc", self.options["audioencoder"]))
 
         #bin = gst.parse_bin_from_description(aux, True)
         bin = gst.parse_launch("( {} )".format(aux))

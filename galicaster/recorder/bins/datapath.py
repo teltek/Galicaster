@@ -19,7 +19,10 @@ class GCdatapath(v4l2.GCv4l2):
 
     is_pausable = False
 
-    def __init__(self, options={}):
+    def __init__(self, options={'file': 'SCREEN.avi',
+                                'flavor' :'presentation',
+                                'location' : '/dev/datapath',
+                                'caps' : 'video/x-raw-yuv,width=1024,height=768,framerate=30/1'}):
         v4l2.GCv4l2.__init__(self, options)
 
 module_register(GCdatapath, 'datapath')
