@@ -120,7 +120,7 @@ class GCv4l2(gst.Bin, base.Base):
                       .replace('gc-v4l2-mux', self.options['muxer']))
 
         if 'image/jpeg' in self.options['caps']:
-            aux = aux.replace('gc-v4l2-dec', 'jpegdec ! queue !')
+            aux = aux.replace('gc-v4l2-dec', 'jpegdec max-errors=-1 ! queue !')
         else:
             aux = aux.replace('gc-v4l2-dec', '')
 
