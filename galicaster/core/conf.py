@@ -230,8 +230,13 @@ class Conf(object): # TODO list get and other ops arround profile
          filepath = os.path.join(profile_folder, filename)
          if os.path.splitext(filename)[1]=='.ini':
             profile = Profile()
-            profile.import_from_file(filepath)
-            profile_list[profile.name] = profile
+            valid = profile.import_from_file(filepath)
+            if valid:
+               profile_list[profile.name] = profile
+            else:
+               if self.logger:
+                  self.logger.warning("Invalid profile {0}".format(filepath))
+               profile = None
       
       current = self.get("basic","profile")      
       try:
@@ -370,11 +375,15 @@ class Profile(object):
    def import_from_file(self, filepath):
       parser = ConfigParser.ConfigParser()
       parser.read(filepath)
+      if not parser.has_section("data"):
+         return False
+      
       self.name = parser.get('data', 'name')
       if parser.has_option('data', 'execute'):
          self.execute = parser.get('data', 'execute')
       self.path = filepath
       self.import_tracks_from_parser(parser)
+      return True
 
    def export_to_file(self, filepath=None): #MAYBE move to conf, for sure ONLY used by conf  
       if not filepath:
