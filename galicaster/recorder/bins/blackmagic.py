@@ -21,7 +21,7 @@ from galicaster.recorder import base
 from galicaster.recorder import module_register
 
 videostr = ( ' decklinksrc connection=sdi mode=12 name=gc-blackmagic-src ! '
-             ' identity name=gc-blackmagic-idvideo ! queue ! videorate ! capsfilter name=gc-blackmagic-vrate ! videocrop name=gc-blackmagic-crop !'
+             ' identity name=gc-blackmagic-idvideo ! queue ! videocrop name=gc-blackmagic-crop !'
              ' tee name=gc-blackmagic-tee  ! queue ! ffmpegcolorspace ! xvimagesink async=false sync=false qos=false name=gc-blackmagic-preview'
              #REC VIDEO
              ' gc-blackmagic-tee. ! queue ! valve drop=false name=gc-blackmagic-valve ! ffmpegcolorspace ! '
@@ -249,12 +249,6 @@ class GCblackmagic(gst.Bin, base.Base):
         for pos in ['right','left','top','bottom']:
             element = self.get_by_name('gc-blackmagic-crop')
             element.set_property(pos, int(self.options['videocrop-' + pos]))
-
-        fr = self.options['input-mode']
-        if fr.count('1080') or fr.count('720p'):
-          pass
-        #newcaps = 'video/x-raw-yuv,framerate='+st(fr)
-        #self.set_value_in_pipeline(newcaps, 'gc-blackmagic-vrate', 'caps', gst.Caps)
 
   def changeValve(self, value):
     valve1=self.get_by_name('gc-blackmagic-valve')
