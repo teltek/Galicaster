@@ -134,6 +134,7 @@ def get_worker():
     """
     Get Galicaster Worker from the App Context
     """
+    legacy = get_conf().get_boolean('ingest', 'legacy') or get_conf().get_boolean('basic', 'legacy')
     if 'worker' not in __galicaster_context:
         __galicaster_context['worker'] = Worker(get_dispatcher(),
                                                 get_repository(),
@@ -141,7 +142,7 @@ def get_worker():
                                                 get_mhclient(),
                                                 get_conf().get('basic', 'export'),
                                                 get_conf().get('basic', 'tmp'),
-                                                not get_conf().get_boolean('basic', 'legacy'),
+                                                not legacy,
                                                 get_conf().get('sidebyside', 'layout'))
 
     return __galicaster_context['worker']

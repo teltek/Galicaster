@@ -42,6 +42,8 @@ Apartados:
    * admin: activa el modo administrador (True|False)
       - False: Usado por defecto, el usuario solo podra realizar grabaciones. Galicaster operará como GClass.
       - True: Ademas de grabar, el usuario puede editar metadatos, reproducir y administrar las grabaciones. Galicaster operará como GMobile.
+
+-- repository
    * plantilla para los direcotrios del repositorio. Util para cuando se explora de forma manual. Valor por defecto es gc_{hostname}_{year}-{month}-{day}T{hour}h{minute}m{second}. Los codigos que se puedes usar son:
       - {id}: Identificador de MP
       - {title}: Titulo original del MP
@@ -50,19 +52,18 @@ Apartados:
       - {type}: 'M' si el MP se genera con una grabacion manual o 'S' si es agendado.
       - {longtype}: 'manual' si el MP se genera con una grabacion manual o 'scheduled' si es agendado.
       - {year}: Año de grabacion del MP con siglo como un numero decimal.
-      - {month}: Mes de grabacion del MP como un numero decimal [01,12]
-      - {day}: Dia de grabacion del MP como un numero decimal [01,31]
-      - {hour}: Hora de grabacion del MP como un numero decimal [00,23]
-      - {minute}: Minuto de grabacion del MP como un numero decimal
-      - {second}: Segundo de grabacion del MP como un numero decimal
+      - {month}: Mes de grabacion del MP como un numero decimal [01,12].
+      - {day}: Dia de grabacion del MP como un numero decimal [01,31].
+      - {hour}: Hora de grabacion del MP como un numero decimal [00,23].
+      - {minute}: Minuto de grabacion del MP como un numero decimal [00,59].
+      - {second}: Segundo de grabacion del MP como un numero decimal.
       - {utcyear}: Año de grabacion UTC del MP con siglo como un numero decimal.
-      - {utcmonth}: Mes de grabacion UTC del MP como un numero decimal [01,12]
-      - {utcday}: Dia de grabacion UTC del MP como un numero decimal [01,31]
-      - {utchour}: Hora de grabacion UTC del MP como un numero decimal [00,23]
-      - {utcminute}: Minuto de grabacion UTC del MP como un numero decimal
-      - {utcsecond}: Segundo de grabacion UTC del MP como un numero decimal
+      - {utcmonth}: Mes de grabacion UTC del MP como un numero decimal [01,12].
+      - {utcday}: Dia de grabacion UTC del MP como un numero decimal [01,31].
+      - {utchour}: Hora de grabacion UTC del MP como un numero decimal [00,23].
+      - {utcminute}: Minuto de grabacion UTC del MP como un numero decimal [00,59].
+      - {utcsecond}: Segundo de grabacion UTC del MP como un numero decimal [00,59].
       
-   * legacy: activa la compatibilidad con Openacast Matterhonr 1.2 y 1.3, eliminando el campo namespace de los archivos XML de los Mediapackages. (True|False) 
 
 -- screen
    * right: Nombre del dispositivo de vídeo en las lista de tracks que se mostrará en la pantalla derecha (None para desactivar).
@@ -71,6 +72,8 @@ Apartados:
 -- ingest
    Los datos para conectar Galicaster a un servidor Opencast-Matterhorn.
    * active: Activa o desactiva la conexion al servidor Opencast-Matterhorn (True|False)
+   * legacy: activa la compatibilidad con Openacast Matterhonr 1.2 y 1.3, eliminando el campo namespace de los archivos XML de los Mediapackages. (True|False) 
+   * visible_tracks: Activa la visibilidad de las pistas para Matterhor. Activado, las pistas son seleccionbales y solo aquellas seleccionadas se grabarán. En caso contrario, Galicaster grabará las pistal del perfil activo al comienzo de una grabación programada.
    * manual: Configura el método de ingestión automática de las grabaciones manuales. Las opciones posibles son: desactivar la ingestión automática (none), ingestar inmediatamente después de la grabación (immediately) o realizar una ingestión nocturna de todas las grabaciones de ese día (nightly). Por defecto 'none'. (none|immediately|nightly)
    * scheduled: Configura el método de ingestión automática de las grabaciones programadas. Las opciones posibles son: desactivar la ingestión automática (none), ingestar inmediatamente después de la grabación (immediately) o realizar una ingestión nocturna de todas las grabaciones de ese día (nightly). Por defecto 'none'. (none|immediately|nightly)
    * host: URL del servidor matterhorn

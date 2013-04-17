@@ -15,6 +15,7 @@
 import os
 import ConfigParser
 import socket
+from collections import OrderedDict
 
 YES = ['true', 'yes', 'ok', 'si', 'y']
 
@@ -111,7 +112,7 @@ class Conf(object): # TODO list get and other ops arround profile
       return self.get_boolean('basic', 'admin') or False
    
    def tracks_visible_to_matterhorn(self):
-      return self.get_boolean('basic', 'visible_tracks') or False
+      return self.get_boolean('ingest', 'visible_tracks') or False
       
    
    def get_modules(self):
@@ -388,7 +389,7 @@ class Profile(object):
       for track in self.tracks:
          section = 'track'+str(index)
          parser.add_section(section)
-         for key in track.itemlist:
+         for key in track.iterkeys():
             if key not in ['path','active']:
                parser.set(section,key,track[key])
          index+=1
@@ -410,7 +411,7 @@ class Profile(object):
 
 
 
-class Track(dict):
+class Track(OrderedDict):
    """ 
    Custom dictionary focused on Galicaster's Track parameters handling.
    BASIC parameters allways exists and are properties
@@ -425,7 +426,6 @@ class Track(dict):
 
    def __init__(self, *args, **kw):
       super(Track,self).__init__(*args, **kw)
-      self.itemlist = super(Track,self).keys()
 
       for key in self.BASIC:
          if not self.has_key(key):
@@ -471,30 +471,6 @@ class Track(dict):
 
    file = property(_get_file, _set_file)
 
-   def __setitem__(self, key, value):
-      if not key in self.itemlist: 
-         self.itemlist.append(key)
-      super(Track,self).__setitem__(key, value)
-
-   def __delitem__(self, key):
-      self.itemlist.remove(key)
-      super(Track,self).__delitem__(key)
-
-   def __iter__(self):
-      return iter(self.itemlist)
-
-   def keys(self):
-      return self.itemlist
-   
-   def values(self):
-      return [self[key] for key in self.itemlist]  
-
-   def itervalues(self):
-      return (self[key] for key in self.itemlist)
-   
-   def ordered_keys(self):
-      return self.itemlist
-
    def options_keys(self):
       sequence = []
       for key in self.keys():
@@ -513,8 +489,3 @@ class Track(dict):
       for key in self.options_keys():
          out[key] = self[key]
       return out
-
-
-      
-
-
