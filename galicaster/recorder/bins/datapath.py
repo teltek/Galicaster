@@ -19,10 +19,71 @@ class GCdatapath(v4l2.GCv4l2):
 
     is_pausable = False
 
-    def __init__(self, options={'file': 'SCREEN.avi',
-                                'flavor' :'presentation',
-                                'location' : '/dev/datapath',
-                                'caps' : 'video/x-raw-yuv,width=1024,height=768,framerate=30/1'}):
+    gc_parameters = {
+        "name": {
+            "type": "text",
+            "default": "Datapath",
+            "description": "Name assigned to the device",
+            },
+        "flavor": {
+            "type": "flavor",
+            "default": "presentation",
+            "description": "Matterhorn flavor associated to the track",
+            },
+        "location": {
+            "type": "device",
+            "default": "/dev/datapath",
+            "description": "Device's mount point of the output",
+            },
+        "file": {
+            "type": "text",
+            "default": "SCREEN.avi",
+            "description": "The file name where the track will be recorded.",
+            },
+        "caps": {
+            "type": "caps",
+            "default": "video/x-raw-yuv,width=1024,height=768,framerate=30/1",
+            "description": "Forced capabilities",
+            },
+        "videocrop-right": {
+            "type": "integer",
+            "default": 0,
+            "range": (0,200),
+            "description": "Right  Cropping",
+            },
+        "videocrop-left": {
+            "type": "integer",
+            "default": 0,
+            "range": (0,200),
+            "description": "Left  Cropping",
+            },
+        "videocrop-top": {
+            "type": "integer",
+            "default": 0,
+            "range": (0,200),
+            "description": "Top  Cropping",
+            },
+        "videocrop-bottom": {
+            "type": "integer",
+            "default": 0,
+            "range": (0,200),
+            "description": "Bottom  Cropping",
+            },
+        "videoencoder": {
+            "type": "text",
+            "default": "xvidenc bitrate=5000000",
+            # "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000",
+            # "x264enc pass=5 quantizer=22 speed-preset=4 profile=1"
+            "description": "Gstreamer encoder element used in the bin",
+            },
+        "muxer": {
+            "type": "text",
+            "default": "avimux",
+            "description": "Gstreamer encoder muxer used in the bin",
+            },
+        }
+
+    def __init__(self, options={}):
         v4l2.GCv4l2.__init__(self, options)
 
 module_register(GCdatapath, 'datapath')
