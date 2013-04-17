@@ -54,12 +54,12 @@ class GCpulse(gst.Bin, base.Base):
             },
         "vumeter": {
             "type": "boolean",
-            "default": True,
+            "default": "True",
             "description": "Activate Level message",
             },
         "player": {
             "type": "boolean",
-            "default": True,
+            "default": "True",
             "description": "Enable sound play",
             },
         "amplification": {
