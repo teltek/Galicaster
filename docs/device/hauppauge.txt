@@ -1,17 +1,18 @@
-Plugin configuration
--------------------
+Hauppauge Device module configuration
+=====================================
 
-Admitted values:
+Admitted values
+---------------
 
-    name: Name assigned to the device.
-    device: Device type: hauppauge
-    flavor: Matterhorn "flavor" associated to the track. (presenter|presentation|other)
-    location: Device's mount point of the MPEG output.
-    locprevideo: Device's mount point of the RAW output.
-    locpreaudio: Device's mount point of the PCM output.
-    file: The file name where the track will be recorded.
-    vumeter: Whether the audio input would be represented on the vumeter. (True|False)
-    player: Whether the audio input would be played on preview. (True|False)
+name: Name assigned to the device.
+device: Device type: hauppauge
+flavor: Matterhorn "flavor" associated to the track. (presenter|presentation|other)
+location: Device's mount point of the MPEG output.
+locprevideo: Device's mount point of the RAW output.
+locpreaudio: Device's mount point of the PCM output.
+file: The file name where the track will be recorded.
+vumeter: Whether the audio input would be represented on the vumeter. (True|False)
+player: Whether the audio input would be played on preview. (True|False)
 
 Examples:
 ---------

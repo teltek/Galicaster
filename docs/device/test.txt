@@ -1,3 +1,9 @@
+Test Device modules
+===================
+
+Videotest
+---------
+
 [] videotest: Mock video device.
        * name: Name assigned to the device.
        * device: Device type: videotest
@@ -33,6 +39,10 @@
                            (18): ball             - Moving ball
                            (19): smpte100         - SMPTE 100% color bars
                            (20): bar              - Bar
+
+
+Audiotest
+---------
 
  [] audiotest: Mock audio device.
        * name: Name assigned to the device.
