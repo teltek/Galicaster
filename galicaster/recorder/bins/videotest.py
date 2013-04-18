@@ -22,8 +22,8 @@ from galicaster.recorder import module_register
 
 
 pipestr = (' videotestsrc name=gc-videotest-src pattern=0 is-live=true ! capsfilter name=gc-videotest-filter ! '
-           #' videorate ! capsfilter name=gc-videotest-vrate ! '
-           ' tee name=tee-vt  ! queue !  ffmpegcolorspace ! xvimagesink sync=false async=false qos=false name=gc-videotest-preview'
+           ' queue ! tee name=tee-vt  ! '
+           ' queue !  ffmpegcolorspace ! xvimagesink sync=false async=false qos=false name=gc-videotest-preview'
            ' tee-vt. ! queue ! valve drop=false name=gc-videotest-valve ! ffmpegcolorspace ! queue ! '
            ' gc-videotest-enc ! queue ! gc-videotest-mux ! '
            ' queue ! filesink name=gc-videotest-sink async=false')
@@ -32,7 +32,7 @@ pipestr = (' videotestsrc name=gc-videotest-src pattern=0 is-live=true ! capsfil
 class GCvideotest(gst.Bin, base.Base):
 
     order = ["name","flavor","location","file","caps", 
-             "pattern","color1","color2", "encoder", "muxer"
+             "pattern","color1","color2", "videoencoder", "muxer"
              ]
  
     gc_parameters = {
@@ -49,7 +49,7 @@ class GCvideotest(gst.Bin, base.Base):
         "location": {
             "type": "device",
             "default": "default",
-            "description": "Device's mount point of the MPEG output",
+            "description": "Device's mount point of the output",
             },
         "file": {
             "type": "text",
@@ -59,7 +59,7 @@ class GCvideotest(gst.Bin, base.Base):
         "caps": {
             "type": "text",
             "default": "video/x-raw-yuv,framerate=10/1,width=640,height=480", 
-            "description": "Forced capabilities",
+            "description": "Forced capabilities", 
             },
         "pattern": {
             "type": "integer",
@@ -79,10 +79,12 @@ class GCvideotest(gst.Bin, base.Base):
             "range": (0,4294967495),
             "description": "Background color on some patterns",
             },
-        "encoder": {
+        "videoencoder": {
             "type": "text",
-            "default": "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000",
-            #Other examples: "xvidenc bitrate=50000000" or "x264enc pass=5 quantizer=22 speed-preset=4 profile=1"
+            "default": "xvidenc bitrate=5000000", 
+            # Other options
+            # "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000",
+            # "x264enc pass=5 quantizer=22 speed-preset=4 profile=1"
             "description": "Gstreamer encoder element used in the bin",
             },
         "muxer": {
@@ -109,7 +111,7 @@ class GCvideotest(gst.Bin, base.Base):
         gst.Bin.__init__(self, self.options['name'])
 
         aux = (pipestr.replace('gc-videotest-preview', 'sink-' + self.options['name'])
-                      .replace('gc-videotest-enc', self.options['encoder'])
+                      .replace('gc-videotest-enc', self.options['videoencoder'])
                       .replace('gc-videotest-mux', self.options['muxer']))
 
         #bin = gst.parse_bin_from_description(aux, False)

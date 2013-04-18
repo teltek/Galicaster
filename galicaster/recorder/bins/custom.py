@@ -37,7 +37,7 @@ class GCcustom(gst.Bin, base.Base):
         "location": {
             "type": "device",
             "default": "/dev/webcam",
-            "description": "Device's mount point of the MPEG output",
+            "description": "Device's mount point of the xoutput",
             },
         "file": {
             "type": "text",
@@ -75,10 +75,6 @@ class GCcustom(gst.Bin, base.Base):
         self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-custom-sink', 'location')
 
     def changeValve(self, value):
-        if value:
-            print "changeValve TRUE "
-        else:
-            print "changeValve FALSE "
         valve1=self.get_by_name('gc-custom-valve')
         valve1.set_property('drop', value)
 

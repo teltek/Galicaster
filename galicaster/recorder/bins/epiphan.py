@@ -33,8 +33,8 @@ pipestr = (" identity name=\"joint\" ! tee name=gc-epiphan-tee ! queue ! "
 
 class GCepiphan(gst.Bin, base.Base):
 
-    order = ["name","flavor","location","file","drivertype",
-             "encoder", "muxer"]
+    order = ["name","flavor","location","file",
+             "videoencoder", "muxer", "resolution", "framerate"]
 
     gc_parameters = {
         "name": {
@@ -50,7 +50,7 @@ class GCepiphan(gst.Bin, base.Base):
         "location": {
             "type": "device",
             "default": "/dev/screen",
-            "description": "Device's mount point of the MPEG output",
+            "description": "Device's mount point of the output",
             },
         "file": {
             "type": "text",
@@ -70,10 +70,12 @@ class GCepiphan(gst.Bin, base.Base):
             "default": "",
             "description": "Not implemented yet",
             },
-        "encoder": {
+        "videoencoder": {
             "type": "text",
             "default": "xvidenc bitrate=5000000",
-            #Other examples: "x264enc pass=5 quantizer=22 speed-preset=4 profile=1"
+            # Other options
+            # "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000",
+            # "x264enc pass=5 quantizer=22 speed-preset=4 profile=1"
             "description": "Gstreamer encoder element used in the bin",
             },
         "muxer": {
@@ -122,7 +124,7 @@ class GCepiphan(gst.Bin, base.Base):
             driver_type = "v4l2src"
 
         aux = (pipestr.replace("gc-epiphan-preview", "sink-" + self.options['name'])
-                      .replace('gc-epiphan-enc', self.options['encoder'])
+                      .replace('gc-epiphan-enc', self.options['videoencoder'])
                       .replace('gc-epiphan-mux', self.options['muxer']))
         size = self.options['resolution']
         width, height =  [int(a) for a in size.split(re.search('[,x:]',size).group())]

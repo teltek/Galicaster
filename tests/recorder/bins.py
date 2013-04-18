@@ -21,6 +21,11 @@ from unittest import TestCase
 from galicaster.recorder.bins.blackmagic import GCblackmagic
 from galicaster.recorder.bins.v4l2 import GCv4l2
 from galicaster.recorder.bins.hauppauge import GChauppauge
+from galicaster.recorder.bins.datapath import GCdatapath
+from galicaster.recorder.bins.rtp import GCrtp
+from galicaster.recorder.bins.pulse import GCpulse
+from galicaster.recorder.bins.firewire import GCfirewire
+
 
 class TestFunctions(TestCase):
 
@@ -106,3 +111,26 @@ class TestFunctions(TestCase):
     def test_blackmagic_no_audio(self):
         track = GCblackmagic({"audio-input":"none", "path":"/"})
         self.assertEqual(track.has_audio, False)
+
+    def test_datapath_is_v4l2(self):
+        track1 = GCdatapath({"file":"VIDEO.avi", "path":"/"})
+        track2 = GCv4l2({"file":"VIDEO.avi", "path":"/"})
+        self.assertEqual(track1.options['file'],track2.options['file'])
+
+    def test_rtp_types(self):
+        v = "mpeg4"
+        a = "mp3"
+        track = GCrtp({"cameratype":v,"audiotype":a, "muxer": "avimux", "path":"/"})
+        self.assertEqual(track.options['cameratype'], v)
+        self.assertEqual(track.options['audiotype'], a)
+        v = "h264"
+        a = "aac"
+        track2 = GCrtp({"cameratype":v,"audiotype":a, "muxer": "mp4mux", "path":"/"})
+        self.assertEqual(track2.options['cameratype'], v)
+        self.assertEqual(track2.options['audiotype'], a)
+
+    def test_pulse_audio_activated(self):
+        track = GCpulse({"vumeter":"true", "player":"true", "path":"/"})
+        self.assertEqual(track.options['vumeter'], True)
+        self.assertEqual(track.options['player'], True)
+        

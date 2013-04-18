@@ -42,23 +42,12 @@ class TestFunctions(TestCase):
     def test_init_no_file(self):
         primary_conf = path.join('/etc/galicaster','conf.ini')
         secondary_conf = path.abspath(path.join(path.dirname(__file__), '..', '..', 'conf.ini'))
-        primary_dist = path.join('/usr/share/galicaster/',  'conf-dist.ini')
         secondary_dist = path.abspath(path.join(path.dirname(__file__), '..', '..', 'conf-dist.ini'))
         # Conf loads default conf and conf-dist
-        conf = Conf()
+        conf = Conf(conf_dist_file=secondary_dist)
         self.assertEqual( primary_conf if path.isfile(primary_conf) else secondary_conf,
                           conf.conf_file) 
-        self.assertEqual( primary_dist if path.isfile(primary_dist) else secondary_dist,
-                          conf.conf_dist_file) 
-
-    def test_init_no_dist_file(self):
-        conf_file = get_resource('conf/conf.ini')
-        primary_dist = path.join('/usr/share/galicaster/',  'conf-dist.ini')
-        secondary_dist = path.abspath(path.join(path.dirname(__file__), '..', '..', 'conf-dist.ini'))
-        #conf load custom conf and default dist
-        conf = Conf(conf_file)
-        self.assertEqual(conf_file, conf.conf_file)
-        self.assertEqual( primary_dist if path.isfile(primary_dist) else secondary_dist,
+        self.assertEqual( secondary_dist,
                           conf.conf_dist_file) 
 
     def test_init_all_files(self):
@@ -90,7 +79,6 @@ class TestFunctions(TestCase):
 
     def test_get_tracks_in_mh_dict(self):
         conf = self.conf.get_tracks_in_mh_dict()
-        print self.conf.get('basic','visible_tracks')
         self.assertEqual(len(conf), 3*3 +1)
         self.assertEqual(conf['capture.device.names'], 'track1,track3,track2')
         self.assertEqual(conf['capture.device.track2.outputfile'], 'SCREEN.mpeg')

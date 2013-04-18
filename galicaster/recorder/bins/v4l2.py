@@ -21,7 +21,7 @@ from os import path
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
-pipestr = (' v4l2src name=gc-v4l2-src ! capsfilter name=gc-v4l2-filter ! gc-v4l2-dec '
+pipestr = (' v4l2src name=gc-v4l2-src ! capsfilter name=gc-v4l2-filter ! queue ! gc-v4l2-dec '
            ' videorate ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! '
            ' tee name=gc-v4l2-tee  ! queue !  xvimagesink async=false sync=false qos=false name=gc-v4l2-preview'
            ' gc-v4l2-tee. ! queue ! valve drop=false name=gc-v4l2-valve ! ffmpegcolorspace ! queue ! '
@@ -33,8 +33,8 @@ class GCv4l2(gst.Bin, base.Base):
 
 
     order = ["name","flavor","location","file","caps", 
-             "videocrop-left","videocrop-right", "videocrop-top", "videocrop-bottom"
-             "encoder", "muxer"]
+             "videoencoder", "muxer"]
+    
     gc_parameters = {
         "name": {
             "type": "text",
@@ -49,7 +49,7 @@ class GCv4l2(gst.Bin, base.Base):
         "location": {
             "type": "device",
             "default": "/dev/webcam",
-            "description": "Device's mount point of the MPEG output",
+            "description": "Device's mount point of the output",
             },
         "file": {
             "type": "text",
@@ -59,6 +59,7 @@ class GCv4l2(gst.Bin, base.Base):
         "caps": {
             "type": "caps",
             "default": "image/jpeg,framerate=10/1,width=640,height=480", 
+            # video/x-raw-yuv,framerate=25/1,width=1024,height=768", 
             "description": "Forced capabilities",
             },
         "videocrop-right": {
@@ -85,10 +86,11 @@ class GCv4l2(gst.Bin, base.Base):
             "range": (0,200),
             "description": "Bottom  Cropping",
             },
-        "encoder": {
+        "videoencoder": {
             "type": "text",
-            "default": "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000",
-            #Other examples: "xvidenc bitrate=50000000" or "x264enc pass=5 quantizer=22 speed-preset=4 profile=1"
+            "default": "xvidenc bitrate=5000000",
+            # "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000",
+            # "x264enc pass=5 quantizer=22 speed-preset=4 profile=1"
             "description": "Gstreamer encoder element used in the bin",
             },
         "muxer": {
@@ -114,11 +116,11 @@ class GCv4l2(gst.Bin, base.Base):
         gst.Bin.__init__(self, self.options['name'])
 
         aux = (pipestr.replace('gc-v4l2-preview', 'sink-' + self.options['name'])
-                      .replace('gc-v4l2-enc', self.options['encoder'])
+                      .replace('gc-v4l2-enc', self.options['videoencoder'])
                       .replace('gc-v4l2-mux', self.options['muxer']))
 
         if 'image/jpeg' in self.options['caps']:
-            aux = aux.replace('gc-v4l2-dec', 'jpegdec ! queue !')
+            aux = aux.replace('gc-v4l2-dec', 'jpegdec max-errors=-1 ! queue !')
         else:
             aux = aux.replace('gc-v4l2-dec', '')
 
@@ -132,7 +134,7 @@ class GCv4l2(gst.Bin, base.Base):
 
         self.set_option_in_pipeline('caps', 'gc-v4l2-filter', 'caps', gst.Caps)
         fr = re.findall("framerate *= *[0-9]+/[0-9]+", self.options['caps'])
-        if fr:
+        if fr:            
             newcaps = 'video/x-raw-yuv,' + fr[0]
             self.set_value_in_pipeline(newcaps, 'gc-v4l2-vrate', 'caps', gst.Caps)
 
