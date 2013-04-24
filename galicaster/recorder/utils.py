@@ -19,6 +19,16 @@ from galicaster.core import context
 
 logger = context.get_logger()
 
+def makeVideoCaps(self, name, mime, resolution, framerate, options={}):
+    # TODO move to utils
+    element = gst.element_factory_make('capsfilter','gc-{0}-{1}-caps'.format(class_name, name))
+    caps = "{0},width={1},height={2},framerate={3}".format(mime,resolution[0],resolution[1],framerate)
+    if len(options):
+        for key,value in options.iterkeys():
+            caps+=",{0}={1}".format(key,value)
+    element.set_property('caps', gst.Caps(caps))
+    return element
+
 class Switcher(gst.Bin):
 
     def __init__(self, name, device, image=None, driver_type="v4lsrc", size=[1024,768], framerate="25/1"): 
