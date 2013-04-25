@@ -19,9 +19,12 @@ def validate_videopath(value):
 
 def validate_audiopath(value):
     return True, value
+
+def validate_path(value):
+    return True, value
     
 def validate_selection(value, options): # TODO place appart for all galicaster
-    if value not in options['options']:
+    if value not in options:
         return False, value # TODO parse spaces and capital letters
     else:
         return True, value      
@@ -39,6 +42,13 @@ def validate_boolean(value):
         return True, False
     else:
         return False, value #invaled
+
+def validate_crop(value): 
+    try:
+        cropping = [int(a) for a in value.split(re.search('[,;]',value).group())]        
+        return True,cropping
+    except:
+        return False, value
 
 def validate_resolution(value):
     """Splits resolution in two parts, lookin for separators , . : x _"""

@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       galicaster/recorder/sources/base
+#       galicaster/recorder/filters/base
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
@@ -11,7 +11,6 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
-
 import logging
 import gst
 
@@ -19,26 +18,31 @@ from galicaster.recorder import validate
 
 logger = logging.getLogger()
 
-class GCBaseSource(gst.Bin):
-    """
-    Base bin for raw sources
-    """ 
 
+class GCBaseFilter(gst.Bin):
+    """
+    Base bin for filtesr
+    """
+    
     class_name = "base"
-    class_type = "source"
+    class_type = "filter"
     
     has_audio = False
     has_video = False
     is_pausable = False
+    srcpads = 0
+    sinkpads = 0
     
     __gstdetails__ = (
         "Galicaster {0} Bin".format(class_name),
-        "Generic/{0}".format("Both" if has_video and has_audio else "Video"),
-        "Generice bin to v4l2 interface devices",
+        "Generic/{0}".format("Filter"),
+        "Generice bin for filters",
         "Teltek Video Research",
         )
     
     def __init__(self, binname, defaults={}, options={}):
+
+        self.binname = binname
         for key in defaults.iterkeys(): # TODO parse always
             self.parameters[key]['default']=defaults[key]
 
@@ -52,25 +56,20 @@ class GCBaseSource(gst.Bin):
         self.options.update(options)
 
 
-    def makeVideoCaps(self, name, mime, resolution, framerate, options={}):
-        # TODO move to utils
-        element = gst.element_factory_make('capsfilter','gc-{0}-{1}-caps'.format(self.class_name, name))
-        caps = "{0},width={1},height={2},framerate={3}".format(mime,resolution[0],resolution[1],framerate)
-        if len(options):
-            for key,value in options.iteritems():
-                caps+=",{0}={1}".format(key,value)
-        element.set_property('caps', gst.Caps(caps))
-        return element
+    def getSourceGhostpads(self):
+        pads = []
+        for index in range(self.sourcepads):
+            pads += self.getGhospad('ghostsource-'+index)
+        return pads
+        
+    def getSinkGhostpads(self):
+        pads = []
+        for index in range(self.sinkpads):
+            pads += self.getGhospad('ghostsink-'+index)
+        return pads
 
-    def getSource(self):
-        return self.get_by_name('gc-{0}-{1}'.format(self.class_name,'src')) 
-
-    def send_event_to_src(self, event):
-        src = self.getSource()
-        src.send_event(event)
-
-    def getGhostpad(self):
-        return self.get_pad('ghostpad')
+    def getGhostpad(self, name):
+        return self.get_pad(name)       
 
     def validate_options(self, options):
         valid={}
