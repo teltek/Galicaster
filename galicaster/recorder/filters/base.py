@@ -59,13 +59,13 @@ class GCBaseFilter(gst.Bin):
     def getSourceGhostpads(self):
         pads = []
         for index in range(self.sourcepads):
-            pads += self.getGhospad('ghostsource-'+index)
+            pads += [self.getGhostpad('ghostsource-'+str(index))]
         return pads
         
     def getSinkGhostpads(self):
         pads = []
         for index in range(self.sinkpads):
-            pads += self.getGhospad('ghostsink-'+index)
+            pads += [self.getGhostpad('ghostsink-'+str(index))]
         return pads
 
     def getGhostpad(self, name):
