@@ -21,7 +21,8 @@ from galicaster.recorder import base
 from galicaster.recorder import module_register
 
 videostr = ( ' decklinksrc connection=sdi mode=12 name=gc-blackmagic-src ! '
-             ' identity name=gc-blackmagic-idvideo ! queue ! videocrop name=gc-blackmagic-crop !'
+             ' identity name=gc-blackmagic-idvideo ! videorate ! gc-blackmagic-capsfilter !'
+             ' queue ! videocrop name=gc-blackmagic-crop ! '
              ' tee name=gc-blackmagic-tee  ! queue ! ffmpegcolorspace ! xvimagesink async=false sync=false qos=false name=gc-blackmagic-preview'
              #REC VIDEO
              ' gc-blackmagic-tee. ! queue ! valve drop=false name=gc-blackmagic-valve ! ffmpegcolorspace ! '
@@ -39,6 +40,10 @@ audiostr= (
             ' audioconvert ! gc-blackmagic-audioenc ! queue ! gc-blackmagic-muxer. '
             )
 
+FRAMERATE = dict(zip(
+    ["ntsc","ntsc2398", "pal", "ntsc-p","pal-p", "1800p2398", "1080p24", "1080p25", "1080p2997", "1080p30", "1080i50", "1080i5994", "1080i60", "1080p50", "1080p5994", "1080p60", "720p50", "720p5994","720p60"],
+    ["30000/1001","24000/1001", "25/1", "30000/1001","25/1", "24000/1001", "24/1", "25/1", "30000/1001", "30/1", "25/1", "30000/1001", "30/1", "50/1", "60000/1001", "60/1", "50/1", "60000/1","60/1"]
+    ))
 
 
 class GCblackmagic(gst.Bin, base.Base):
@@ -186,10 +191,15 @@ class GCblackmagic(gst.Bin, base.Base):
         else:
           self.has_audio = True
           pipestr = videostr + audiostr
+          print FRAMERATE[self.options["input-mode"]]
+          aux = (pipestr.replace('gc-blackmagic-preview', 'sink-' + self.options['name'])
+                 .replace('gc-blackmagic-enc', self.options['videoencoder'])
+                 .replace('gc-blackmagic-mux', self.options['muxer']+" name=gc-blackmagic-muxer")
+                 .replace('gc-blackmagic-capsfilter', "video/x-raw-yuv,framerate={0}".format(
+                FRAMERATE[self.options["input-mode"]]))
+                 )
 
-        aux = (pipestr.replace('gc-blackmagic-preview', 'sink-' + self.options['name'])
-                      .replace('gc-blackmagic-enc', self.options['videoencoder'])
-                      .replace('gc-blackmagic-mux', self.options['muxer']+" name=gc-blackmagic-muxer"  ))
+        print aux
 
         if self.has_audio:
           aux = aux.replace('gc-blackmagic-audioenc', self.options['audioencoder'])
