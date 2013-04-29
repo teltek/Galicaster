@@ -25,7 +25,7 @@ videostr = ( ' decklinksrc connection=sdi mode=12 name=gc-blackmagic-src ! '
              ' tee name=gc-blackmagic-tee  ! queue ! ffmpegcolorspace ! xvimagesink async=false sync=false qos=false name=gc-blackmagic-preview'
              #REC VIDEO
              ' gc-blackmagic-tee. ! queue ! valve drop=false name=gc-blackmagic-valve ! ffmpegcolorspace ! '
-             ' gc-blackmagic-enc ! queue ! gc-blackmagic-mux name=gc-blackmagic-muxer ! '
+             ' gc-blackmagic-enc ! queue ! gc-blackmagic-muxer ! '
              ' queue ! identity name=gc-blackmagic-idend ! filesink name=gc-blackmagic-sink async=false' 
              )
 audiostr= (
@@ -189,7 +189,7 @@ class GCblackmagic(gst.Bin, base.Base):
 
         aux = (pipestr.replace('gc-blackmagic-preview', 'sink-' + self.options['name'])
                       .replace('gc-blackmagic-enc', self.options['videoencoder'])
-                      .replace('gc-blackmagic-mux', self.options['muxer']))
+                      .replace('gc-blackmagic-mux', self.options['muxer']+" name=gc-blackmagic-muxer"  ))
 
         if self.has_audio:
           aux = aux.replace('gc-blackmagic-audioenc', self.options['audioencoder'])
