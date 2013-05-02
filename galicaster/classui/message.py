@@ -65,9 +65,15 @@ class PopUp(gtk.Widget):
             dialog = self.create_ui_two_lines(buttons, two_lines, text, message, parent)
         else:
             dialog = self.create_ui(buttons,text, message, parent, message == ERROR)  
-        self.response = dialog.run()
-        dialog.destroy()
-        return None
+        self.dialog = dialog
+        if message == ERROR:
+            a = self.dialog.get_action_area().get_children()[0]
+            a.connect('clicked',self.dialog_destroy)            
+            self.dialog.show_all()
+        else:
+            self.response = dialog.run()
+            dialog.destroy()
+        #return None
 
     def create_ui_two_lines(self, buttons, secondary, text, message, parent):
         """Creates and additional button box"""
@@ -110,8 +116,6 @@ class PopUp(gtk.Widget):
         dialog.vbox.pack_start(strip, True, True, 0)
         strip.show()
 
-
-        self.dialog = dialog
         dialog.set_property('width-request',int(self.size[0]/2.5)) 
         # relative to screen size       
         if self.size[0]<1300:
@@ -196,7 +200,6 @@ class PopUp(gtk.Widget):
         dialog.vbox.pack_start(strip, True, True, 0)
         strip.show()
 
-        self.dialog = dialog
         dialog.set_property('width-request',int(self.size[0]/1.8)) # relative to screen size       
                     
         if parent != None:
@@ -362,9 +365,10 @@ class PopUp(gtk.Widget):
         alist.insert(attr)
         return alist
 
-    def dialog_destroy(self):
-        self.dialog.destroy()
-        self.dialog = None 
+    def dialog_destroy(self, origin=None):
+        if self.dialog:
+            self.dialog.destroy()
+            self.dialog = None 
     
 gobject.type_register(PopUp)
 

@@ -214,10 +214,14 @@ class RecorderClassUI(gtk.Box):
         self.bins = bins
         self.areas = areas
         
-        self.error_text = None
-        self.error_dialog = None
-        if self.error_id:
-            self.dispatcher.disconnect(self.error_id)
+        if self.error_dialog:
+            if self.error_id:
+                self.dispatcher.disconnect(self.error_id)
+                self.error_id = None
+            self.error_dialog.dialog_destroy()
+            self.error_dialog = None
+            self.error_text = None
+
         self.error_id = self.dispatcher.connect(
             "recorder-error",
             self.handle_pipeline_error)
@@ -253,6 +257,10 @@ class RecorderClassUI(gtk.Box):
             if self.restarting:
                 logger.error("Restarting Preview Failed")
             self.change_state(GC_ERROR)
+            if self.scheduled_recording:
+                self.on_failed_scheduled(self.current_mediapackage)
+                
+            # TODO kill counter in case of error and scheduler
 
     def go_ahead(self):
         """Continue Recorder init create Record module and start_preview"""
@@ -379,11 +387,16 @@ class RecorderClassUI(gtk.Box):
 
     def close_recording(self):
         """Set the final data on the mediapackage, stop the record and restart the preview"""
-        close_duration = (self.recorder.get_time()-self.initial_time)*1000/gst.SECOND  
+        paused = self.paused_time.total_seconds()*1000000000 # pass to ns
+        close_duration = int((self.recorder.get_time()-self.initial_time-paused)*1000/gst.SECOND)
         # To avoid error messages on stopping pipelines
         if self.error_dialog:
-            self.error_dialog.destroy()
+            if self.error_id:
+                self.dispatcher.disconnect(self.error_id)
+                self.error_id = None
+            self.error_dialog.dialog_destroy()
             self.error_dialog = None
+            self.error_text = None
         self.recorder.stop_record_and_restart_preview()
         self.change_state(GC_STOP)
 
@@ -412,8 +425,7 @@ class RecorderClassUI(gtk.Box):
 
     def start_thread(self,identifier):
         """Thread handling a scheduled recording"""
-        self.start_thread_id = 1
-
+        self.start_thread_id = 1        
         if self.status == GC_PREVIEW: # Record directly
             self.mediapackage = self.repo.get(self.current_mediapackage)
             context.get_state().mp = self.mediapackage.identifier
@@ -445,9 +457,24 @@ class RecorderClassUI(gtk.Box):
             self.mediapackage = self.repo.get(self.current_mediapackage)
             self.on_rec()
 
+        elif self.status == GC_ERROR:
+            if self.error_dialog:
+                if self.error_id:
+                    self.dispatcher.disconnect(self.error_id)
+                    self.error_id = None
+                self.error_dialog.dialog_destroy()
+                self.error_dialog = None
+                self.error_text = None
+            self.on_start_button()
+            while self.recorder.get_status() != gst.STATE_PLAYING:
+                time.sleep(0.2)
+                if self.start_thread_id == None:
+                    return
+            self.mediapackage = self.repo.get(self.current_mediapackage)
+            self.on_rec()              
+
         title = self.repo.get(identifier).title
-        self.dispatcher.emit("update-video", title)
-        
+        self.dispatcher.emit("update-video", title)        
         return None
 
     def on_scheduled_stop(self,source,identifier):
@@ -457,6 +484,15 @@ class RecorderClassUI(gtk.Box):
         self.current = None
         self.close_recording()
         self.scheduled_recording = False
+
+    def on_failed_scheduled(self, identifier):
+        """Updates the mediapackage information after a scheduled recoring."""
+        #TODO change MP status to failed 
+        logger.info("Scheduled {0} failed on error".format(identifier))
+        self.current_mediapackage = None
+        self.current = None
+        self.scheduled_recording = False
+        self.start_thread_id = None
 
 
     def reload_state_and_permissions(self):
@@ -509,6 +545,7 @@ class RecorderClassUI(gtk.Box):
         if self.error_id:
             self.dispatcher.disconnect(self.error_id)
             self.error_id = None
+            #TODO kill previous error if needed
         
         self.error_text = error_message
         if self.focus_is_active:
@@ -521,13 +558,20 @@ class RecorderClassUI(gtk.Box):
             "main" : " Please review your configuration \nor load another profile",                
             "text" : error_message
 			}
-        buttons = None
         self.error_dialog = message.PopUp(message.ERROR, text, 
-                                context.get_mainwindow(), buttons)
+                                context.get_mainwindow(), None)
+        
         
 
     def on_recover_from_error(self, origin):
-        """If an error ocurred, removes preview areas and disconnect error handlers."""
+        """If an error ocurred, removes preview areas and disconnect error handlers."""   
+
+        if self.error_id:
+            self.dispatcher.disconnect(self.error_id)
+            self.error_id = None
+            self.error_dialog = None
+            self.error_text = None
+     
         if self.status in [GC_ERROR,GC_STOP]:
             main = self.main_area  
             for child in main.get_children():
@@ -539,8 +583,6 @@ class RecorderClassUI(gtk.Box):
         elif self.status in [GC_PREVIEW, GC_PRE2]:
             #self.restart()
             self.recorder.stop_preview()
-            self.dispatcher.disconnect(self.error_id)
-            self.error_id = None
             self.change_state(GC_STOP)
             main = self.main_area  
             for child in main.get_children():
@@ -551,7 +593,6 @@ class RecorderClassUI(gtk.Box):
                 
         elif self.status != GC_RECORDING:
             logger.debug("Won't recover from this status")
-
         else:
             logger.error("Profile changed on the middle of a recording")
 
@@ -594,6 +635,7 @@ class RecorderClassUI(gtk.Box):
         gtk.gdk.threads_enter()
         self.statusbar.SetTimer(0)
         gtk.gdk.threads_leave()
+        self.paused_time = datetime.timedelta(0,0)
 
         rec_title = self.gui.get_object("recording1")
         rec_elapsed = self.gui.get_object("recording3")
@@ -602,7 +644,9 @@ class RecorderClassUI(gtk.Box):
         #while True:
             actual_time=self.recorder.get_time()               
             timer=(actual_time-self.initial_time)/gst.SECOND
-            dif = datetime.datetime.utcnow() - self.initial_datetime
+            if self.status==GC_PAUSED:
+                self.paused_time = self.paused_time + datetime.timedelta(0,0,200000)               
+            dif = datetime.datetime.utcnow() - self.initial_datetime - self.paused_time
 
             if thread_id==self.timer_thread_id:
                 gtk.gdk.threads_enter()
