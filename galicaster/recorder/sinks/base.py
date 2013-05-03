@@ -59,6 +59,18 @@ class GCBaseSink(gst.Bin):
     def getGhostpad(self):
         return self.get_pad('ghostpad')
 
+    def getVideoGhostpad(self):
+        if self.has_video and self.has_audio:
+            return self.get_pad('ghostpad-video')
+        else:
+            return self.getGhostpad()
+
+    def getAudioGhostpad(self):
+        if self.has_video and self.has_audio:
+             return self.get_pad('ghostpad-audio')
+        else:
+            return self.getGhostpad()
+
     def blockPad(self):
         #self.first.get_pad('sink').set_blocked_async(block, self.callback)        
         pad = self.first.get_pad('sink')
@@ -82,7 +94,11 @@ class GCBaseSink(gst.Bin):
         print pad, "SHOULD UNLINK and NULL STATE"
 
     def sendEventToSrc(self, event):
-        self.first.send_event(event)         
+        if not isinstance(self.first,list):
+            self.first.send_event(event)#TODO be always a list
+        else:
+            for element in self.first:
+                element.send_event(event)
 
     def drop(self, dropping): # REMOVE if valve's missing
         self.valve.set_property('drop', dropping)
