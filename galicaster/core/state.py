@@ -53,7 +53,7 @@ class State(object):
                  "net" : self.net,
                  "is-recording": self.is_recording,
                  "recorder-status" : self. status,
-                 "current-prifle" : self.profile.name,
+                 "current-profile" : self.profile.name,
                  "active-area" : AREA[self.area],
                  "current-mediapackage" : self.mp}
         
