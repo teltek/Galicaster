@@ -56,8 +56,6 @@ GC_STOP = 6
 GC_BLOCKED = 7
 GC_ERROR = 9
 
-
-
 STATUS = [  ["Initialization","#F7F6F6"],
             ["Ready","#F7F6F6"],
             ["Preview","#F7F6F6"],
@@ -70,6 +68,20 @@ STATUS = [  ["Initialization","#F7F6F6"],
             ["Error","#FF0000"],
             ]
 
+SENSITIVITY_BLOCKED = [False, False, False, False, False, False]
+SENSITIVITY = { GC_EXIT : SENSITIVITY_BLOCKED,
+                GC_INIT : [False, False, False, True, False, True], # only help and previous
+                GC_READY : [False, False, False, True, False, True],# only help and previous
+                GC_PREVIEW : [True, False, False, True, False, True], # Allow recording
+                GC_PRE2 : [True, False, False, True, False, True], #Waiting
+                GC_RECORDING : [False, True, True, True, True, False],# * means if
+                GC_REC2 : [False, True, True, True, True, False],# * means if
+                GC_PAUSED : SENSITIVITY_BLOCKED, #TODO block only contrlos and previous as REC
+                GC_STOP : [False, False, False, True, False, True], 
+                GC_BLOCKED: SENSITIVITY_BLOCKED,
+                GC_ERROR : [False, False, False, True, False, True],
+                # Record, pause, stop, help, edit, previous
+                }   
 
 TIME_BLINK_START = 20
 TIME_BLINK_STOP = 20
@@ -118,6 +130,17 @@ class RecorderClassUI(gtk.Box):
         self.main_area = builder.get_object("videobox")
         self.vubox = builder.get_object("vubox")
         self.gui = builder
+
+        # CONNECT buttons
+        self.handlers = {}
+        self.connect_button(builder.get_object("recbutton"), self.on_rec)
+        self.connect_toggle(builder.get_object("pausebutton"), self.on_pause)
+        self.connect_button(builder.get_object("stopbutton"), self.on_ask_stop)
+        self.connect_button(builder.get_object("editbutton"), self.on_edit_meta)
+        self.connect_button(builder.get_object("helpbutton"), self.on_help)
+        self.connect_eventbox(builder.get_object("eventbox2"), self.show_about)
+        self.connect_button(builder.get_object("morebutton"), self.show_next)
+        
 
         # BIG STATUS
         big_status = builder.get_object("bg_status")
@@ -1095,86 +1118,41 @@ class RecorderClassUI(gtk.Box):
         
     def change_state(self, state):
         """Activates or deactivates the buttons depending on the new state"""
-        record = self.gui.get_object("recbutton")
-        pause = self.gui.get_object("pausebutton")
-        stop = self.gui.get_object("stopbutton")
-        helpb = self.gui.get_object("helpbutton")
-        editb = self.gui.get_object("editbutton")
-        prevb = self.gui.get_object("previousbutton")
-
   
+        record, pause, stop, helpb, prevb, editb  = range(6)
+
         if state != self.status:
-            self.previous,self.status = self.status,state
+            self.previous,self.status = self.status,state          
 
+        #Define button sensitivity
+        sensitivity_table = SENSITIVITY[ state ]
+
+        if state == GC_PREVIEW:
+            sensitivity_table[ record ] = self.allow_start or self.allow_manual
+            #TODO check GC_PRE2                
+        elif state == GC_RECORDING:
+            sensitivity_table[ pause ] = self.allow_pause and self.recorder.is_pausable()
+            sensitivity_table[ stop ] = (self.allow_stop or self.allow_manual)
+            sensitivity_table [ editb ] = True and not self.scheduled_recording           
+        if state == GC_STOP:
+            if self.previous == GC_PAUSED:
+                self.pause_dialog.destroy()
+        self.setSensitivity(state, sensitivity_table)
+
+        # Launch status_bar change        
         if state == GC_INIT:
-            record.set_sensitive(False)
-            pause.set_sensitive(False)
-            stop.set_sensitive(False)
-            helpb.set_sensitive(True)
-            prevb.set_sensitive(True)
-            editb.set_sensitive(False)
             self.dispatcher.emit("update-rec-status", "Initialization")            
-
-        elif state == GC_PREVIEW:    
-            record.set_sensitive( (self.allow_start or self.allow_manual) )
-            pause.set_sensitive(False)
-            pause.set_active(False)
-            stop.set_sensitive(False)
-            helpb.set_sensitive(True)
-            prevb.set_sensitive(True)
-            editb.set_sensitive(False)
+        elif state == GC_PREVIEW:   
             if self.next == None:
                 self.dispatcher.emit("update-rec-status", "Idle")            
             else:
-                self.dispatcher.emit("update-rec-status", "Waiting")     
-
+                self.dispatcher.emit("update-rec-status", "Waiting")   
         elif state == GC_RECORDING:
-            record.set_sensitive(False)
-            pause.set_sensitive(self.allow_pause and self.recorder.is_pausable()) 
-            stop.set_sensitive( (self.allow_stop or self.allow_manual) )
-            helpb.set_sensitive(True)
-            prevb.set_sensitive(False)
-            editb.set_sensitive(True and not self.scheduled_recording)    
             self.dispatcher.emit("update-rec-status", "  Recording  ")
             context.get_state().is_recording=True
-       
         elif state == GC_PAUSED:
-            record.set_sensitive(False)
-            pause.set_sensitive(False) 
-            stop.set_sensitive(False)
-            prevb.set_sensitive(False)
-            helpb.set_sensitive(False)
-            editb.set_sensitive(False)
-  
             self.dispatcher.emit("update-rec-status", "Paused")
-            
-        elif state == GC_STOP:
-            if self.previous == GC_PAUSED:
-                self.pause_dialog.destroy()
-            record.set_sensitive(False)
-            pause.set_sensitive(False)
-            stop.set_sensitive(False)
-            helpb.set_sensitive(True)
-            prevb.set_sensitive(True)
-            editb.set_sensitive(False)
-
-        elif state == GC_BLOCKED: 
-            record.set_sensitive(False)
-            pause.set_sensitive(False)
-            stop.set_sensitive(False)
-            helpb.set_sensitive(False)   
-            prevb.set_sensitive(False)
-            editb.set_sensitive(False)
-
-        elif state == GC_ERROR:             
-            record.set_sensitive(False)
-            pause.set_sensitive(False)
-            stop.set_sensitive(False)
-            helpb.set_sensitive(True) 
-            prevb.set_sensitive(True )
-            editb.set_sensitive(False)
-
-
+              
         context.get_state().status = STATUS[state][0]
 
         if self.next == None and state == GC_PREVIEW:
@@ -1182,6 +1160,47 @@ class RecorderClassUI(gtk.Box):
         else:
             self.view.set_displayed_row(state)
 
+            
+                
+    def setSensitivity( self,status, values):
+        record = self.gui.get_object("recbutton")
+        pause = self.gui.get_object("pausebutton")
+        stop = self.gui.get_object("stopbutton")
+        helpb = self.gui.get_object("helpbutton")
+        editb = self.gui.get_object("editbutton")
+        prevb = self.gui.get_object("previousbutton")
+        buttons = [record, pause, stop, helpb, editb, prevb]
+        for index in range(len(buttons)):
+            buttons[index].set_sensitive(values[index])          
+
+    def connect_button(self, button, function):
+        self.handlers[button] = button.connect("clicked", function)   
+
+    def connect_toggle(self, button, function):
+        self.handlers[button] = button.connect("toggled", function)    
+
+    def connect_eventbox(self, button, function):
+        self.handlers[button] = button.connect("button-press-event", function)    
+
+    def get_all_buttons(self):
+        buttons = []
+        buttons += [ self.gui.get_object("recbutton") ]
+        buttons += [ self.gui.get_object("pausebutton") ]
+        buttons += [ self.gui.get_object("stopbutton") ]
+        buttons += [ self.gui.get_object("helpbutton") ]
+        buttons += [ self.gui.get_object("editbutton") ]
+        buttons += [ self.gui.get_object("previousbutton") ]
+        buttons += [ self.gui.get_object("eventbox2") ]
+        buttons += [ self.gui.get_object("bg_status") ]
+        buttons += [ self.gui.get_object("morebutton") ]
+        return buttons
+
+    def block_handlers(self, block): # Can be refactorized
+        for key,value in self.handlers.iteritems():
+            if block:
+                key.handler_block(value)
+            else:
+                key.handler_unblock(value)      
 
     def block(self):
         prev = self.gui.get_object("prebox")
@@ -1197,7 +1216,6 @@ class RecorderClassUI(gtk.Box):
 
         # Start Preview
         self.dispatcher.emit("start-preview")
-
  
     def close(self, signal):
         """Handles the area closure, stopping threads, mediapackage and preview"""

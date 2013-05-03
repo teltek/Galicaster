@@ -46,23 +46,25 @@ class DistribUI(gtk.Box):
         profile_button = dbuilder.get_object("profile_button")
         self.selected = dbuilder.get_object("selected_profile")
         self.update_selected_profile()
+        self.handlers = {}
         
         #Connect signals
         dispatcher = context.get_dispatcher()
         dispatcher.connect("reload-profile", self.update_selected_profile)
-        recorder.connect("clicked", self.emit_signal, "change_mode", 0)
-        manager.connect("clicked", self.emit_signal, "change_mode", 1)
-        quit_button.connect("clicked", self.emit_signal, "galicaster-quit")
-        shutdown_button.connect("clicked", self.emit_signal, "galicaster-shutdown")
-        profile_button.connect("clicked", self.on_profile_button)
+        self.handlers[recorder] = recorder.connect("clicked", self.emit_signal, "change_mode", 0)
+        self.handlers[manager] = manager.connect("clicked", self.emit_signal, "change_mode", 1)
+        self.handlers[quit_button] = quit_button.connect("clicked", self.emit_signal, "galicaster-quit")
+        self.handlers[shutdown_button] = shutdown_button.connect("clicked", self.emit_signal, "galicaster-shutdown")
+        self.handlers[profile_button] = profile_button.connect("clicked", self.on_profile_button)
         
         about = dbuilder.get_object("aboutevent")
-        about.connect("button-press-event", self.show_about_dialog)
+        self.handlers[about] = about.connect("button-press-event", self.show_about_dialog)
 
         conf = context.get_conf()
         quit_button.set_visible(conf.get_boolean("basic", "quit"))
         shutdown_button.set_visible(conf.get_boolean("basic", "shutdown"))
         self.pack_start(dbox, True, True, 0)
+
 
     def on_profile_button(self, origin):
         parent = self.get_toplevel()
@@ -83,6 +85,16 @@ class DistribUI(gtk.Box):
 
     def show_about_dialog(self,origin, button):
         GCAboutDialog()
+
+    def get_all_buttons(self):
+        return self.handlers.keys()
+
+    def block_handlers(self, block):
+        for key,value in self.handlers.iteritems():
+            if block:
+                key.handler_block(value)
+            else:
+                key.handler_unblock(value)
 
     def resize(self): 
         size = context.get_mainwindow().get_size()

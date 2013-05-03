@@ -15,9 +15,11 @@ UI for the welcoming page
 """
 import re
 import gtk
+import gobject
 
 from galicaster import __version__
 from galicaster.classui import message
+from galicaster.classui.login import LoginDialog
 from galicaster.classui import get_image_path
 from galicaster.utils.shutdown import shutdown as UtilsShutdown
 
@@ -28,7 +30,6 @@ class GCWindow(gtk.Window):
     __gtype_name__ = 'GCWindow'
 
     def __init__(self, dispatcher=None, state=None, size=None, logger=None):  
-
         gtk.Window.__init__(self,gtk.WINDOW_TOPLEVEL)
         self.full_size = self.discover_size() # Fullscreen size
         self.custom_size = self.full_size
@@ -68,7 +69,9 @@ class GCWindow(gtk.Window):
 
         self.nbox = gtk.Notebook()
         self.nbox.set_show_tabs(False)
-        self.add(self.nbox)
+        self.eventLayer = gtk.EventBox()
+        self.eventLayer.add(self.nbox)
+        self.add(self.eventLayer)
 
 
     def start(self):
@@ -77,7 +80,8 @@ class GCWindow(gtk.Window):
             self.fullscreen()
         self.resize_childs()
         self.show_all()
-        
+        self.block_authentication()
+
     def toggle_fullscreen(self, other = None):
         """Allows shifting between full and regular screen mode.
         For development purposes."""
@@ -91,7 +95,7 @@ class GCWindow(gtk.Window):
 
     def resize_childs(self):
         """Resize the children upon the main window screen size."""
-        nbook = self.get_child()
+        nbook = self.eventLayer.get_child() # TODO get nbook directly!
         current = nbook.get_nth_page(self.get_current_page())
         current.resize()
 
@@ -144,7 +148,32 @@ class GCWindow(gtk.Window):
         if self.dispatcher:
             self.dispatcher.emit('galicaster-quit')
 
+    # Authentication
+    def block_authentication(self):
+        self.login_id = {}
+        self.login = LoginDialog(self)
+        self.login.getOut.connect("clicked",self.activate_auth_block)
+        #self.activate_auth_block(None, self.eventLayer) #first hide is useless
+        self.login.show_all()
+        gobject.timeout_add(5000, self.activate_auth_block) # Hide dialog counter
 
+    def show_auth(self, origin, event=None):
+        self.login.show_all()
+        for key,value in self.login_id.iteritems():
+            key.disconnect(value)
+        page = self.nbox.get_nth_page(self.get_current_page()) #Get DIStribution directly
+        page.block_handlers(False)
+        self.login_id = {}
+        return True
+
+    def activate_auth_block(self, event=None, element=None):
+        self.login.hide_login()
+        page = self.nbox.get_nth_page(self.get_current_page()) #Get DIStribution directly
+        page.block_handlers(True)
+        buttons=page.get_all_buttons()
+        for button in buttons+[self]:
+            self.login_id[button] = button.connect('button-press-event',self.show_auth)
+                
     def close(self, signal):
         """Pops up a dialog asking to quit"""
         text = {"title" : "Quit",

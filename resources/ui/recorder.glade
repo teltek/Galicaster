@@ -107,7 +107,6 @@
                   <object class="GtkEventBox" id="eventbox2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <signal name="button-press-event" handler="show_about" swapped="no"/>
                     <child>
                       <object class="GtkImage" id="classlogo">
                         <property name="visible">True</property>
@@ -201,7 +200,6 @@
                             <property name="use_action_appearance">False</property>
                             <property name="relief">none</property>
                             <property name="focus_on_click">False</property>
-                            <signal name="clicked" handler="show_next" swapped="no"/>
                             <child>
                               <object class="GtkImage" id="moreimage">
                                 <property name="visible">True</property>
@@ -521,7 +519,6 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="use_action_appearance">False</property>
-                            <signal name="clicked" handler="on_rec" swapped="no"/>
                             <child>
                               <object class="GtkImage" id="image1">
                                 <property name="visible">True</property>
@@ -545,7 +542,6 @@
                             <property name="receives_default">True</property>
                             <property name="use_action_appearance">False</property>
                             <property name="focus_on_click">False</property>
-                            <signal name="toggled" handler="on_pause" swapped="no"/>
                             <child>
                               <object class="GtkImage" id="image2">
                                 <property name="visible">True</property>
@@ -568,7 +564,6 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="use_action_appearance">False</property>
-                            <signal name="clicked" handler="on_ask_stop" swapped="no"/>
                             <child>
                               <object class="GtkImage" id="image3">
                                 <property name="visible">True</property>
@@ -592,7 +587,6 @@
                             <property name="receives_default">True</property>
                             <property name="no_show_all">True</property>
                             <property name="use_action_appearance">False</property>
-                            <signal name="clicked" handler="on_edit_meta" swapped="no"/>
                             <child>
                               <object class="GtkVBox" id="vboxedit">
                                 <property name="visible">True</property>
@@ -638,7 +632,6 @@
                             <property name="receives_default">True</property>
                             <property name="no_show_all">True</property>
                             <property name="use_action_appearance">False</property>
-                            <signal name="clicked" handler="on_help" swapped="no"/>
                             <child>
                               <object class="GtkLabel" id="label4">
                                 <property name="visible">True</property>
