@@ -17,10 +17,11 @@ Login Dialog UI
 import gtk
 import pango
 from galicaster.classui.elements.message_header import Header
+from galicaster.utils.mhhttpclient import MHUserClient
 
 class LoginDialog(gtk.Window):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, mh_host = None):
         if parent:
             size = parent.get_size()
         else: 
@@ -28,6 +29,7 @@ class LoginDialog(gtk.Window):
         self.size = size
         self.wprop = size[0]/1920.0
         self.hprop = size[1]/1080.0
+        self.host = mh_host
 
         # LEVELS
         # 1 mainbox 2 strip, dialog, buttons 3 icon, textbox 4 question box 5 textbox entrybox 
@@ -95,16 +97,20 @@ class LoginDialog(gtk.Window):
         dialog.pack_start(entrybox,False,True,0)
 
     def check_login(self, button): # Just check if password has at least char
-        if len(self.entryPass.get_text()): # if OK
-            self.clear_data()
+        user = self.entryUser.get_text()
+        password = self.entryPass.get_text()
+        result = MHUserClient(self.host, user, password).auth()
+        if result:
+            self.clear_data() #TODO set user on the UI
             self.hide()
-        else:   # if Failed
-            self.text.set_text("Sorry, authentication failed\nTry again")          
-            self.entryPass.set_text("") 
+        else:
+             self.text.set_text("Sorry, authentication failed\nTry again")     
+             self.entryPass.set_text("") 
         return True
 
     def hide_login(self, button=None):
         self.clear_data()
+        self.text.set_text("Authentication needed")
         self.hide()
         
     def clear_data(self):

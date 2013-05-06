@@ -14,6 +14,7 @@
 import json
 import urllib
 import socket
+import hashlib
 #IDEA use cStringIO to improve performance
 from StringIO import StringIO
 import pycurl
@@ -190,3 +191,49 @@ class MHHTTPClient(object):
         # TODO No limit, to get all
         return self.__call('GET', SERIES_ENDPOINT, {'count': 100})
         
+class MHUserClient(object):
+
+      def __init__(self, server, user, password ):
+        """
+        Arguments:
+
+        server -- Matterhorn server URL.
+        user -- Account used to operate the Matterhorn REST endpoints service.
+        password -- Password for the account  used to operate the Matterhorn REST endpoints service.
+    
+        """
+
+
+        self.server = server
+        self.user = user
+        userpass = password + "{" +  user + "}"
+        self.hashpass = hashlib.md5(userpass).hexdigest()
+        self.endpoint = INIT_ENDPOINT
+
+      def auth(self):
+      
+        c = pycurl.Curl()
+        b = StringIO()
+        c.setopt(pycurl.URL, self.server + self.endpoint)
+        c.setopt(pycurl.FOLLOWLOCATION, False)
+        c.setopt(pycurl.CONNECTTIMEOUT, 2)
+        c.setopt(pycurl.TIMEOUT, 2)
+        c.setopt(pycurl.NOSIGNAL, 1)
+        c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_DIGEST)
+        c.setopt(pycurl.USERPWD, self.user + ':' + self.hashpass)
+        c.setopt(pycurl.HTTPHEADER, ['X-Requested-Auth: Digest'])
+        c.setopt(pycurl.USERAGENT, 'Galicaster')
+        c.setopt(pycurl.WRITEFUNCTION, b.write)
+        #c.setopt(pycurl.VERBOSE, True)
+        try:
+            c.perform()
+        except:
+            return False # TODO handle time out
+        #raise RuntimeError, 'connect timed out!'
+
+        status_code = c.getinfo(pycurl.HTTP_CODE)
+        c.close() 
+        if status_code != 200:
+            return False
+        else:
+            return True

@@ -156,6 +156,7 @@ def get_mainwindow():
         __galicaster_context['mainwindow'] = GCWindow(get_dispatcher(), 
                                                       get_state(), 
                                                       get_conf().get_size(), 
+                                                      get_conf().get('ingest','host'),
                                                       get_logger())
 
     return __galicaster_context['mainwindow']

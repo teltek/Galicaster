@@ -29,7 +29,7 @@ class GCWindow(gtk.Window):
     """
     __gtype_name__ = 'GCWindow'
 
-    def __init__(self, dispatcher=None, state=None, size=None, logger=None):  
+    def __init__(self, dispatcher=None, state=None, size=None, host=None, logger=None):  
         gtk.Window.__init__(self,gtk.WINDOW_TOPLEVEL)
         self.full_size = self.discover_size() # Fullscreen size
         self.custom_size = self.full_size
@@ -56,6 +56,7 @@ class GCWindow(gtk.Window):
         self.set_decorated(False)
         self.set_position(gtk.WIN_POS_CENTER)
         self.is_fullscreen = (self.custom_size == self.full_size)
+        self.host = host
         self.logger = logger
 
         pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(get_image_path('galicaster.svg'),48,48)        
@@ -151,14 +152,16 @@ class GCWindow(gtk.Window):
     # Authentication
     def block_authentication(self):
         self.login_id = {}
-        self.login = LoginDialog(self)
+        self.login = LoginDialog(self, self.host)
         self.login.getOut.connect("clicked",self.activate_auth_block)
         #self.activate_auth_block(None, self.eventLayer) #first hide is useless
         self.login.show_all()
-        gobject.timeout_add(5000, self.activate_auth_block) # Hide dialog counter
+        # self.login.activate_timeout() TODO
+        tout_id = gobject.timeout_add(10000, self.activate_auth_block) # Hide dialog counter
 
     def show_auth(self, origin, event=None):
         self.login.show_all()
+        gobject.timeout_add(10000, self.activate_auth_block)
         for key,value in self.login_id.iteritems():
             key.disconnect(value)
         page = self.nbox.get_nth_page(self.get_current_page()) #Get DIStribution directly
@@ -173,6 +176,7 @@ class GCWindow(gtk.Window):
         buttons=page.get_all_buttons()
         for button in buttons+[self]:
             self.login_id[button] = button.connect('button-press-event',self.show_auth)
+
                 
     def close(self, signal):
         """Pops up a dialog asking to quit"""
