@@ -33,7 +33,7 @@ from galicaster.classui.metadata import MetadataClass as Metadata
 from galicaster.classui import statusbar as status_bar
 from galicaster.classui.audiobar import Vumeter
 from galicaster.classui.events import EventManager
-from galicaster.classui.about import GCAboutDialog
+from galicaster.classui.strip import StripUI
 
 from galicaster.classui import message
 from galicaster.classui import get_ui_path, get_image_path
@@ -138,14 +138,23 @@ class RecorderClassUI(gtk.Box):
         self.connect_button(builder.get_object("stopbutton"), self.on_ask_stop)
         self.connect_button(builder.get_object("editbutton"), self.on_edit_meta)
         self.connect_button(builder.get_object("helpbutton"), self.on_help)
-        self.connect_eventbox(builder.get_object("eventbox2"), self.show_about)
+        #self.connect_eventbox(builder.get_object("eventbox2"), self.show_about)
         self.connect_button(builder.get_object("morebutton"), self.show_next)
         
 
         # BIG STATUS
-        big_status = builder.get_object("bg_status")
+        blocked = context.get_conf().is_admin_blocked()
+        self.strip = StripUI(3,2 if blocked else 3) # TODO connect change_mode correctly 
+        for key,value in self.strip.handlers.iteritems():
+            self.handlers[key]=value
+	self.recorderui.pack_start(self.strip,False,False,0)
+	self.recorderui.reorder_child(self.strip,0)
+        
+        #TODO add strip handlers
+        big_status = self.strip.status # TODO maybe refactorize for strip 
         self.view = self.set_status_view()
         big_status.add(self.view)
+        #big_status.show_all()
 
         # STATUS BAR
         self.statusbar=status_bar.StatusBarClass()
@@ -808,12 +817,11 @@ class RecorderClassUI(gtk.Box):
         Based on: http://pygstdocs.berlios.de/pygst-tutorial/seeking.html
         """
         thread_id= self.clock_thread_id
-        clock = self.gui.get_object("local_clock")
 
         while thread_id == self.clock_thread_id:            
             if thread_id==self.clock_thread_id:
                 clocktime = datetime.datetime.now().time().strftime("%H:%M")
-                clock.set_label(clocktime)           
+                self.strip.clock.set_label(clocktime)
             time.sleep(1)          
         return True
 
@@ -929,7 +937,7 @@ class RecorderClassUI(gtk.Box):
         """Set the message and color of the status pilot on the top bar"""
 
         size = context.get_mainwindow().get_size()
-        # k1 = size[0] / 1920.0
+        k1 = size[0] / 1920.0
         k2 = size[1] / 1080.0
 
         l = gtk.ListStore(str,str,str)
@@ -954,12 +962,9 @@ class RecorderClassUI(gtk.Box):
         r = gtk.CellRendererText()
         self.renderer=r
         r.set_alignment(0.5,0.5)
-        r.set_fixed_size(int(k2*400),-1)
+        r.set_fixed_size(int(k2*380),-1) # TODO review
 
-
-        # k1 = size[0] / 1920.0
-        k2 = size[1] / 1080.0
-        font = pango.FontDescription("bold "+ str(int(k2*48)))
+        font = pango.FontDescription("bold "+ str(int(k1*45))) # maybe a little too tall
         r.set_property('font-desc', font)
         v.pack_start(r,True)
         v.add_attribute(r, "text", 0)
@@ -1027,12 +1032,13 @@ class RecorderClassUI(gtk.Box):
         self.proportion = k1
 
         #Recorder
-        clock = self.gui.get_object("local_clock")
-        logo = self.gui.get_object("classlogo")       
+        #clock = self.gui.get_object("local_clock")
+        
+        #logo = self.gui.get_object("classlogo")       
         nextl = self.gui.get_object("nextlabel")
         title = self.gui.get_object("titlelabel")
-        # eventl = self.gui.get_object("eventlabel")
-        pbox = self.gui.get_object("prebox")
+        eventl = self.gui.get_object("eventlabel")
+        #pbox = self.gui.get_object("prebox")
 
         rec_title = self.gui.get_object("recording1")
         rec_elapsed = self.gui.get_object("recording3")
@@ -1042,16 +1048,10 @@ class RecorderClassUI(gtk.Box):
         l2 = self.gui.get_object("tab2")
         l3 = self.gui.get_object("tab3")
                     
-        relabel(clock,k1*25,False)
+        #relabel(clock,k1*25,False)
         font = pango.FontDescription("bold "+str(int(k2*48)))
         self.renderer.set_property('font-desc', font)
-        self.renderer.set_fixed_size(int(k2*400),-1)
-        pixbuf = gtk.gdk.pixbuf_new_from_file(get_image_path('logo.svg'))  
-        pixbuf = pixbuf.scale_simple(
-            int(pixbuf.get_width()*k1),
-            int(pixbuf.get_height()*k1),
-            gtk.gdk.INTERP_BILINEAR)
-        logo.set_from_pixbuf(pixbuf)
+        #self.renderer.set_fixed_size(int(k2*400),-1)
 
         modification = "bold "+str(k1*42)
         self.font = pango.FontDescription(modification)     
@@ -1096,7 +1096,7 @@ class RecorderClassUI(gtk.Box):
                 gtk.gdk.INTERP_BILINEAR)
             image.set_from_pixbuf(pixbuf)  
 
-        for name  in ["previousbutton", "morebutton"]:
+        for name  in ["morebutton"]:
             button = self.gui.get_object(name)
             button.set_property("width-request", int(k1*70) )
             button.set_property("height-request", int(k1*70) )
@@ -1106,13 +1106,15 @@ class RecorderClassUI(gtk.Box):
                 image[0].set_pixel_size(int(k1*56))  
 
 
-        talign = self.gui.get_object("top_align")
-        talign.set_padding(int(k1*10),int(k1*25),0,0)
+        #talign = self.gui.get_object("top_align")
+        #talign.set_padding(int(k1*10),int(k1*25),0,0)
         calign = self.gui.get_object("control_align")
         calign.set_padding(int(k1*10),int(k1*30),int(k1*50),int(k1*50))
         vum = self.gui.get_object("vubox")
         vum.set_padding(int(k1*20),int(k1*10),int(k1*40),int(k1*40))         
-        pbox.set_property("width-request", int(k1*225) )        
+        #pbox.set_property("width-request", int(k1*225) )        
+        self.strip.resize()
+
         return True
 
         
@@ -1163,13 +1165,14 @@ class RecorderClassUI(gtk.Box):
             
                 
     def setSensitivity( self,status, values):
-        record = self.gui.get_object("recbutton")
-        pause = self.gui.get_object("pausebutton")
-        stop = self.gui.get_object("stopbutton")
-        helpb = self.gui.get_object("helpbutton")
-        editb = self.gui.get_object("editbutton")
-        prevb = self.gui.get_object("previousbutton")
-        buttons = [record, pause, stop, helpb, editb, prevb]
+        buttons = []
+        buttons += self.gui.get_object("recbutton")
+        buttons += self.gui.get_object("pausebutton")
+        buttons += self.gui.get_object("stopbutton")
+        buttons += self.gui.get_object("helpbutton")
+        buttons += self.gui.get_object("editbutton")
+        if self.strip.UItype == 2:
+            buttons += self.strip.previous
         for index in range(len(buttons)):
             buttons[index].set_sensitive(values[index])          
 
@@ -1189,10 +1192,10 @@ class RecorderClassUI(gtk.Box):
         buttons += [ self.gui.get_object("stopbutton") ]
         buttons += [ self.gui.get_object("helpbutton") ]
         buttons += [ self.gui.get_object("editbutton") ]
-        buttons += [ self.gui.get_object("previousbutton") ]
-        buttons += [ self.gui.get_object("eventbox2") ]
-        buttons += [ self.gui.get_object("bg_status") ]
+        #buttons += [ self.gui.get_object("bg_status") ]
         buttons += [ self.gui.get_object("morebutton") ]
+        buttons += self.strip.get_all_buttons() # TODO set get_all_buttons including eventboxes
+        #TODO add strip buttons
         return buttons
 
     def block_handlers(self, block): # Can be refactorized
@@ -1202,9 +1205,7 @@ class RecorderClassUI(gtk.Box):
             else:
                 key.handler_unblock(value)      
 
-    def block(self):
-        prev = self.gui.get_object("prebox")
-        prev.set_child_visible(False)
+    def block(self):        
         self.focus_is_active = True
         self.event_change_mode(None, 3, 0)
 
@@ -1227,6 +1228,5 @@ class RecorderClassUI(gtk.Box):
         if self.status in [GC_PREVIEW]:
             self.recorder.stop_preview()        
         return True        
-
 
 gobject.type_register(RecorderClassUI)

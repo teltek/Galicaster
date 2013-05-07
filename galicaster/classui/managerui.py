@@ -36,7 +36,8 @@ class ManagerUI(gtk.Box):
     def __init__(self, element):
         """elements set the previous area to which the top bar's back button points to"""
         gtk.Box.__init__(self)
-        self.strip = StripUI(element)
+
+        self.strip = StripUI(element, 1)
         
 	self.conf = context.get_conf()
 	self.dispatcher = context.get_dispatcher() 

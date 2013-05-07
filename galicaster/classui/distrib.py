@@ -19,8 +19,8 @@ import pango
 from galicaster.core import context
 from galicaster.classui import get_ui_path, get_image_path
 from galicaster import __version__
+from galicaster.classui.strip import StripUI
 from galicaster.classui.profile import ProfileUI as ListProfile
-from galicaster.classui.about import GCAboutDialog
 from galicaster.utils.resize import relabel
 
 class DistribUI(gtk.Box):
@@ -34,7 +34,13 @@ class DistribUI(gtk.Box):
         dbuilder= gtk.Builder()
         dbuilder.add_from_file(get_ui_path('distrib.glade'))
         self.builder = dbuilder
+
+        
         dbox = dbuilder.get_object("distbox")
+        self.strip = StripUI(None,0)
+	dbox.pack_start(self.strip,False,False,0)
+	dbox.reorder_child(self.strip,0)
+        
         release = dbuilder.get_object("release_label")
         release.set_label("Galicaster "+__version__)
 
@@ -57,8 +63,8 @@ class DistribUI(gtk.Box):
         self.handlers[shutdown_button] = shutdown_button.connect("clicked", self.emit_signal, "galicaster-shutdown")
         self.handlers[profile_button] = profile_button.connect("clicked", self.on_profile_button)
         
-        about = dbuilder.get_object("aboutevent")
-        self.handlers[about] = about.connect("button-press-event", self.show_about_dialog)
+        for key, value in self.strip.handlers.iteritems():            
+            self.handlers[key]=value
 
         conf = context.get_conf()
         quit_button.set_visible(conf.get_boolean("basic", "quit"))
@@ -83,9 +89,6 @@ class DistribUI(gtk.Box):
         else:
             dispatcher.emit(signal)
 
-    def show_about_dialog(self,origin, button):
-        GCAboutDialog()
-
     def get_all_buttons(self):
         return self.handlers.keys()
 
@@ -103,10 +106,6 @@ class DistribUI(gtk.Box):
         k = anchura / 1920.0
 
         builder= self.builder
-        logos = builder.get_object("logo_align")
-        logos.set_padding(int(k*52),int(k*30),0,0)
-        # disal = builder.get_object("dis_align")
-        # disal.set_padding(int(k*25),int(k*25),int(k*50),int(k*50))
 
         l1 = builder.get_object("reclabel")
         l2 = builder.get_object("mmlabel")
@@ -125,18 +124,4 @@ class DistribUI(gtk.Box):
         b1.set_property("height-request", int(anchura/3.5) )
         b2.set_property("height-request", int(anchura/3.5) )
    
-        lclass = builder.get_object("logo2")
-        lcompany = builder.get_object("logo1")
-
-        iclass=gtk.gdk.pixbuf_new_from_file(get_image_path("logo.svg"))
-        icompany=gtk.gdk.pixbuf_new_from_file(get_image_path("teltek.svg"))
-        iclass = iclass.scale_simple(
-            int(iclass.get_width()*k),
-            int(iclass.get_height()*k),
-            gtk.gdk.INTERP_BILINEAR)
-        icompany = icompany.scale_simple(
-            int(icompany.get_width()*k),
-            int(icompany.get_height()*k),
-            gtk.gdk.INTERP_BILINEAR)
-        lclass.set_from_pixbuf(iclass)
-        lcompany.set_from_pixbuf(icompany)
+        self.strip.resize()

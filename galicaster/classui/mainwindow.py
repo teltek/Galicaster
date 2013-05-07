@@ -62,6 +62,7 @@ class GCWindow(gtk.Window):
         pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(get_image_path('galicaster.svg'),48,48)        
         pixbuf = pixbuf.scale_simple(128, 128, gtk.gdk.INTERP_BILINEAR)
         self.set_icon(pixbuf)
+
         self.connect('delete_event', lambda *x: self.__on_delete_event())    
         self.dispatcher = dispatcher
         if self.dispatcher:
@@ -83,6 +84,8 @@ class GCWindow(gtk.Window):
         self.show_all()
         self.block_authentication()
 
+    
+    # SIZE routines
     def toggle_fullscreen(self, other = None):
         """Allows shifting between full and regular screen mode.
         For development purposes."""
@@ -126,7 +129,6 @@ class GCWindow(gtk.Window):
             
         return size
         
-
     def insert_page(self, page, label, cod):
         """Insert an area on the main window notebook widget"""
         self.nbox.insert_page(page, gtk.Label(label), cod) 
@@ -141,7 +143,58 @@ class GCWindow(gtk.Window):
         """Gets the current page id number"""
         return self.nbox.get_current_page()
 
+    # AUTHENTICATION
+    def block_authentication(self):
+        self.login_id = {}
+        self.connect_logout()
+        self.login = LoginDialog(self, self.host)
+        self.login.getIn.connect_after("clicked", self.connect_user)
+        self.login.getOut.connect("clicked",self.activate_auth_block)
+        #self.activate_auth_block(None, self.eventLayer) #first hide is useless
+        self.login.show_all()
 
+        # self.login.activate_timeout() TODO
+        #tout_id = gobject.timeout_add(10000, self.activate_auth_block) # Hide dialog counter
+
+    def show_auth(self, origin, event=None):
+        self.login.show_all()
+        #gobject.timeout_add(10000, self.activate_auth_block)
+        for key,value in self.login_id.iteritems():
+            key.disconnect(value)
+        self.login_id = {}
+        page = self.nbox.get_nth_page(self.get_current_page()) #Get DIStribution directlyx
+        return True
+
+    def activate_auth_block(self, event=None, element=None):
+        self.login.hide_login()
+        page = self.nbox.get_nth_page(self.get_current_page()) #Get DIStribution directly
+        buttons=page.get_all_buttons()
+        for button in buttons+[self]:
+            self.login_id[button] = button.connect('button-press-event',self.show_auth)
+        # TODO Activate login showing if timeout
+
+    def connect_logout(self):
+        for index in range(self.nbox.get_n_pages()):
+            page = self.nbox.get_nth_page(index)
+            page.strip.logout.connect("clicked", self.disconnect_user)
+            page.strip.logout.hide()
+            page.block_handlers(True)
+
+    def connect_user(self, event):
+        # TODO dont process a connect user when authentication failed
+        for index in range(self.nbox.get_n_pages()):
+            page = self.nbox.get_nth_page(index)
+            page.strip.set_user(self.login.user)
+            page.block_handlers(False)
+
+    def disconnect_user(self, event):
+        for index in range(self.nbox.get_n_pages()):
+            page = self.nbox.get_nth_page(index)
+            page.strip.unset_user()
+            page.block_handlers(True)
+        self.activate_auth_block()
+
+    # EXIT ROUTINES
     def __on_delete_event(self):
         """Emits the quit signal to its childs"""
         if self.logger:
@@ -149,35 +202,7 @@ class GCWindow(gtk.Window):
         if self.dispatcher:
             self.dispatcher.emit('galicaster-quit')
 
-    # Authentication
-    def block_authentication(self):
-        self.login_id = {}
-        self.login = LoginDialog(self, self.host)
-        self.login.getOut.connect("clicked",self.activate_auth_block)
-        #self.activate_auth_block(None, self.eventLayer) #first hide is useless
-        self.login.show_all()
-        # self.login.activate_timeout() TODO
-        tout_id = gobject.timeout_add(10000, self.activate_auth_block) # Hide dialog counter
 
-    def show_auth(self, origin, event=None):
-        self.login.show_all()
-        gobject.timeout_add(10000, self.activate_auth_block)
-        for key,value in self.login_id.iteritems():
-            key.disconnect(value)
-        page = self.nbox.get_nth_page(self.get_current_page()) #Get DIStribution directly
-        page.block_handlers(False)
-        self.login_id = {}
-        return True
-
-    def activate_auth_block(self, event=None, element=None):
-        self.login.hide_login()
-        page = self.nbox.get_nth_page(self.get_current_page()) #Get DIStribution directly
-        page.block_handlers(True)
-        buttons=page.get_all_buttons()
-        for button in buttons+[self]:
-            self.login_id[button] = button.connect('button-press-event',self.show_auth)
-
-                
     def close(self, signal):
         """Pops up a dialog asking to quit"""
         text = {"title" : "Quit",

@@ -95,6 +95,7 @@ class LoginDialog(gtk.Window):
         dialog.pack_start(icon,False,False,20)
         dialog.pack_start(textbox,False,False,20)
         dialog.pack_start(entrybox,False,True,0)
+        self.user = None
 
     def check_login(self, button): # Just check if password has at least char
         user = self.entryUser.get_text()
@@ -102,11 +103,13 @@ class LoginDialog(gtk.Window):
         result = MHUserClient(self.host, user, password).auth()
         if result:
             self.clear_data() #TODO set user on the UI
+            self.user = user
             self.hide()
+            return True
         else:
              self.text.set_text("Sorry, authentication failed\nTry again")     
              self.entryPass.set_text("") 
-        return True
+             return False
 
     def hide_login(self, button=None):
         self.clear_data()
