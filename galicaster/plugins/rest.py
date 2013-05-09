@@ -23,18 +23,22 @@ from galicaster.utils import readable
 
 """
 Description: Galicaster REST endpoint using bottle micro web-framework.
-Status: Experimental 
+Status: Experimental
 """
 
 def init():
-    restp = threading.Thread(target=run,kwargs={'host':'0.0.0.0', 'port':8080,'quiet':True})
+    conf = context.get_conf()
+    host = conf.get('rest', 'host')
+    port = conf.get_int('rest', 'port')
+
+    restp = threading.Thread(target=run,kwargs={'host': host, 'port': port, 'quiet': True})
     restp.setDaemon(True)
     restp.start()
 
 
 @route('/')
 def index():
-    response.content_type = 'application/json' 
+    response.content_type = 'application/json'
     state = context.get_state()
     text="Galicaster REST endpoint plugin\n\n"
     endpoints = {

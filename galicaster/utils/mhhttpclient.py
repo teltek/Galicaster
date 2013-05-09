@@ -17,6 +17,7 @@ import socket
 #IDEA use cStringIO to improve performance
 from StringIO import StringIO
 import pycurl
+from collections import OrderedDict
 
 INIT_ENDPOINT = '/welcome.html'
 ME_ENDPOINT = '/info/me.json'
@@ -164,19 +165,17 @@ class MHHTTPClient(object):
 
     def _prepare_ingest(self, mp_file, workflow=None, workflow_instance=None, workflow_parameters=None):
         "refactor of ingest to unit test"
-        postdict = {u'workflowDefinitionId': workflow or self.workflow,
-                    u'track': (pycurl.FORM_FILE, mp_file)}
-            
+        postdict = OrderedDict()
+        postdict[u'workflowDefinitionId'] = workflow or self.workflow
         if workflow_instance:
             postdict['workflowInstanceId'] = str(workflow_instance)
-
         if isinstance(workflow_parameters, basestring):
             postdict.update(dict(item.split(":") for item in workflow_parameters.split(";")))
         elif isinstance(workflow_parameters, dict) and workflow_parameters:
             postdict.update(workflow_parameters)
         else:
            postdict.update(self.workflow_parameters)
-
+        postdict[u'track'] = (pycurl.FORM_FILE, mp_file)
         return postdict
 
 
