@@ -278,7 +278,7 @@ class Mediapackage(object):
             return None
 
     def setMetadataByName(self, name, value):
-        self.metadata_episode[name] == value # only for episode
+        self.metadata_episode[name] = value # only for episode
 
 
     def __newElementId(self, etype):
