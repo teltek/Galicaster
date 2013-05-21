@@ -66,6 +66,8 @@ gobject.signal_new('update-play-status', Dispatcher, gobject.SIGNAL_RUN_LAST, go
 gobject.signal_new('update-rec-status', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 gobject.signal_new('update-video', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 gobject.signal_new('start-before', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+gobject.signal_new('update-pipeline-status', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,gobject.TYPE_PYOBJECT,) )
+
 #DISTRIBUTION
 gobject.signal_new('change-mode', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 gobject.signal_new('galicaster-status', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, gobject.TYPE_PYOBJECT) )

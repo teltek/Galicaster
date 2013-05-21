@@ -221,6 +221,8 @@ class Recorder(object):
             for bin_name, bin in self.bins.iteritems():
                 valve = bin.changeValve(True) 
             self.pipeline.set_state(gst.STATE_PLAYING)
+        if (isinstance(message.src, gst.Pipeline)):
+            self.dispatcher.emit('update-pipeline-status', old, new)
 
     def _on_sync_message(self, bus, message):
         if message.structure is None:
