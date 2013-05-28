@@ -130,6 +130,7 @@ class Recorder(object):
 
     def record(self):
         if self.pipeline.get_state()[1] == gst.STATE_PLAYING:
+            context.get_state().is_recording=True
             for bin_name, bin in self.bins.iteritems():
                 valve = bin.changeValve(False)                
             # Get clock
@@ -137,6 +138,7 @@ class Recorder(object):
     def stop_record(self):                
         a = gst.structure_from_string('letpass')
         event = gst.event_new_custom(gst.EVENT_EOS, a)
+        context.get_state().is_recording=False
         for bin_name, bin in self.bins.iteritems():
             resultado = bin.send_event_to_src(event)
             #if resultado: 
@@ -145,12 +147,7 @@ class Recorder(object):
 
     def stop_record_and_restart_preview(self):
         logger.debug("Stopping Recording and Restarting Preview")
-        a = gst.structure_from_string('letpass')
-        event = gst.event_new_custom(gst.EVENT_EOS, a)
-        for bin_name, bin in self.bins.iteritems():
-            resultado = bin.send_event_to_src(event)
-            #if resultado: 
-            #    print "EOS sended to src of: " + bin_name
+        self.stop_record()
         self.restart = True  # FIXME send user_data on the EOS to force restart
         if self.pipeline.get_state()[1] == gst.STATE_PAUSED: 
             # If paused ensure sending EOS

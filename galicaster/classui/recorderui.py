@@ -1136,7 +1136,6 @@ class RecorderClassUI(gtk.Box):
             prevb.set_sensitive(False)
             editb.set_sensitive(True and not self.scheduled_recording)    
             self.dispatcher.emit("update-rec-status", "  Recording  ")
-            context.get_state().is_recording=True
        
         elif state == GC_PAUSED:
             record.set_sensitive(False)
