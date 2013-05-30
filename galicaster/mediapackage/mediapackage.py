@@ -254,7 +254,7 @@ class Mediapackage(object):
         self.__howmany = dict( (k, 0) for k in ELEMENT_TYPES )
           
         self.operation = dict()
-        self.properties = {'notes':'', 'origin': ''}
+        self.properties = {'notes':'', 'origin': '', 'archived' : False }
         self.elements = dict()
 
     def __repr__(self):
@@ -565,6 +565,23 @@ class Mediapackage(object):
     
     def hasUnclassifiedElements(self):
         return self.hasElements(TYPE_OTHER)
+
+    # PROPERTIES
+    def addProperty(self,key,value):
+        self.properties[key]=value
+        
+    def removeProperty(self,key):
+        return self.properties.pop(key)
+
+    def hasProperty(self,key):
+        return self.properties.has_key(key)
+
+    def getProperty(self,key):
+        return self.properties.get(key)
+
+    def setProperty(self, key, value):
+        self.addProperty(key,value)   
+
     
     def add(self, item, etype=None, flavor=None, mime=None, duration=None, identifier=None): # FIXME incluir starttime?
         if isinstance(item, Element):

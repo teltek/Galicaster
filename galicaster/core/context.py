@@ -117,15 +117,19 @@ def get_repository():
     if 'repository' not in __galicaster_context:
         conf = get_conf()
         template = conf.get('repository','foldertemplate')
+        archive = conf.get_boolean('basic','archive')
+        print "Repository with archive", archive
         if template is None:
             __galicaster_context['repository'] = Repository(
                 conf.get('basic', 'repository'), 
-                conf.hostname)
+                conf.hostname, 
+                archive)
         else:
             __galicaster_context['repository'] = Repository(
                 conf.get('basic', 'repository'), 
                 conf.hostname,
-                conf.get('repository', 'foldertemplate'))
+                conf.get('repository', 'foldertemplate'),
+                archive)
 
     return __galicaster_context['repository']
 

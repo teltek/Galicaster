@@ -30,7 +30,7 @@ class Repository(object):
 
     def __init__(self, root=None, hostname='', 
                  folder_template='gc_{hostname}_{year}-{month}-{day}T{hour}h{minute}m{second}',
-                 logger=None):
+                 logger=None, archive=False):
         """
         param: root: absolute path to the working folder. ~/Repository use if is None
         param: hostname: galicaster name use in folder prefix
@@ -45,6 +45,13 @@ class Repository(object):
         self.save_crash_recordings()
         
         self.logger = logger
+
+        if not archive:
+            self.list = self.list_regular
+            self.delete = self.hard_delete
+        else:
+            self.list = self.list_not_archived
+            self.delete= self.send_to_archive # TODO keep archive datetime
 
         self.__list = dict()
         self.refresh(True)
@@ -112,9 +119,14 @@ class Repository(object):
             self.update(mp)
 
 
-    def list(self):
+    def list_regular(self):
         return self.__list
+    
+    def list_not_archived(self):
+        return self.filter(self.__list, archived=False) 
 
+    def list_archived(self):
+        return self.filter(self.__list, archived=True)
 
     def list_by_status(self, status):
         def is_valid(mp):
@@ -131,7 +143,7 @@ class Repository(object):
         next = filter(is_valid, self.__list.values())
         return next
 
-    def size(self):
+    def size(self):# TODO check where is used and repairs
         return len(self.__list)
 
     def values(self):
@@ -155,9 +167,18 @@ class Repository(object):
     def __getitem__(self, k):
         return self.__list[k]
 
-    def filter(self):
-        # TODO filter by certain parameters
-        return self.__list
+    def filter(self, mplist, archived=False):
+        filtered = mplist.copy()
+        for key,value in mplist.iteritems():
+            status = value.getProperty('archived')
+            if status == None:
+                status = False
+            else:
+                status = True if status in [True, "True", "true", 1, "yes"] else False
+            if status != archived:
+                filtered.pop(key)                
+        return filtered
+
 
     def get_next_mediapackages(self):
         """
@@ -250,12 +271,19 @@ class Repository(object):
         self.__add(mp) 
 
 
-    def delete(self, mp):
+    def hard_delete(self, mp):
         if not self.has(mp):
             raise KeyError('Key not Exists')
 
         del self.__list[mp.getIdentifier()]
         rmtree(mp.getURI())
+        return mp
+
+    def send_to_archive(self, mp):
+        if not self.has(mp):
+            raise KeyError('Key not Exists')
+        mp.setProperty("archived", True) # TODO update Trash
+        self.update(mp)
         return mp
 
         
