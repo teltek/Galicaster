@@ -35,7 +35,7 @@ from galicaster.classui.managerui import ManagerUI
 from galicaster.classui.statusbar import StatusBarClass
 from galicaster.classui.audiobar import AudioBarClass
 from galicaster.classui import get_ui_path
-
+from galicaster.classui import message
 
 gtk.gdk.threads_init()
 
@@ -146,8 +146,9 @@ class PlayerClassUI(ManagerUI):
 
         self.on_play_clicked(None)
 
-    def play_from_list(self, origin, package):
+    def play_from_list(self, origin, package, backto):
         """Takes a MP from the listing area and plays it"""
+        self.strip.back_page = backto
         self.dispatcher.emit("change-mode", 2)
         self.init_player(None, package)          
 
@@ -276,15 +277,45 @@ class PlayerClassUI(ManagerUI):
 
     def on_question(self,button):
         """Pops up a dialog with the available operations"""
-        package = self.mediapackage
-        self.ingest_question(package)      
 
-    def on_delete(self, button):
+	operation = self.ingest_question() # TODO ingest question for any package
+        if not operation:
+            return True
+        package = self.mediapackage
+        
+        if operation.count('nightly'):
+            context.get_worker().do_job_nightly(operation.replace("_",""), package)
+        else:                
+            context.get_worker().do_job(operation, package)
+        # TODO refresh row
+	return True
+
+    def on_delete(self, key):
         """ Pops up a dialog.
         If response is positive the mediapackage is deleted and the focus goes to the previous area"""
         key = self.mediapackage.identifier
-        response=self.delete(key)		
-        if response:
+        log.info("Delete Dialog")
+        t1 = '"{0}" is going to be deleted.'.format(self.mediapackage.getTitle())
+        if not self.conf.get_boolean('basic', 'archive'):
+            t2 = "\n\nThis action will remove the recording from the hard disk"
+        else:
+            t2=""
+
+        text = {"title" : "Media Manager",
+                "main" : "Are you sure you want to delete?",
+                "text" : t1+t2
+                }
+
+        buttons = ( gtk.STOCK_DELETE, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
+        warning = message.PopUp(message.WARNING, text,
+                                context.get_mainwindow(),
+                                buttons)
+
+        if not warning.response in message.POSITIVE:
+            return False
+
+        else:
+            self.deleting(key)
             self.thread_id = None
             self.player.stop()
             self.statusbar.SetVideo(None, "")
@@ -292,7 +323,7 @@ class PlayerClassUI(ManagerUI):
             self.statusbar.ClearTimer()
             self.change_state(GC_INIT)
             self.mediapackage = None
-            self.dispatcher.emit("change-mode", 1)
+            self.dispatcher.emit("change-mode", self.strip.back_page)
             
         return True
     

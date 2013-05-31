@@ -33,8 +33,6 @@ class Dispatcher(gobject.GObject):
         parameters = (gobject.TYPE_PYOBJECT,) if param else ()
         gobject.signal_new(name, self, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, parameters)
         
-        
-
 
 gobject.type_register(Dispatcher)
 gobject.signal_new('galicaster-init', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
@@ -57,7 +55,7 @@ gobject.signal_new('audio-recovered', Dispatcher, gobject.SIGNAL_RUN_LAST, gobje
 #PLAYER
 gobject.signal_new('update-play-vumeter', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 gobject.signal_new('play-stopped', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
-gobject.signal_new('play-list', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+gobject.signal_new('play-list', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,gobject.TYPE_PYOBJECT) )
 
 #MEDIAMANAGER
 gobject.signal_new('refresh-row', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )

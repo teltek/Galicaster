@@ -46,6 +46,8 @@ class DistribUI(gtk.Box):
         profile_button = dbuilder.get_object("profile_button")
         self.selected = dbuilder.get_object("selected_profile")
         self.update_selected_profile()
+
+        archive_button = dbuilder.get_object("archive_button")
         
         #Connect signals
         dispatcher = context.get_dispatcher()
@@ -55,7 +57,8 @@ class DistribUI(gtk.Box):
         quit_button.connect("clicked", self.emit_signal, "galicaster-quit")
         shutdown_button.connect("clicked", self.emit_signal, "galicaster-shutdown")
         profile_button.connect("clicked", self.on_profile_button)
-        
+        archive_button.connect("clicked", self.emit_signal, "change_mode", 4)
+
         about = dbuilder.get_object("aboutevent")
         about.connect("button-press-event", self.show_about_dialog)
 
@@ -99,6 +102,7 @@ class DistribUI(gtk.Box):
         l1 = builder.get_object("reclabel")
         l2 = builder.get_object("mmlabel")
         l3 = builder.get_object("selected_profile")
+        l4 = builder.get_object("archive")
         i1 = builder.get_object("recimage")
         i2 = builder.get_object("mmimage")
         b1 = builder.get_object("button1")
@@ -106,6 +110,7 @@ class DistribUI(gtk.Box):
 	relabel(l1,k*48,True)
         relabel(l2,k*48,True)  
         relabel(l3,k*26,True)  
+        relabel(l4,k*26,True)  
         i1.set_pixel_size(int(k*120))
         i2.set_pixel_size(int(k*120))
         b1.set_property("width-request", int(anchura/3.5) )

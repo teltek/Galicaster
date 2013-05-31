@@ -38,15 +38,17 @@ class StripUI(gtk.Box):
         builder.add_from_file(get_ui_path('strip.glade'))
         self.builder = builder
         self.strip = builder.get_object("stripbox")
+        self.back_page=back_page
         button = builder.get_object("previousbutton")
-        button.connect("clicked", self.emit_signal, "change-mode", back_page)
+        button.connect("clicked", self.emit_signal, self, "change-mode")
         about = builder.get_object("aboutevent")
         about.connect("button-press-event", self.show_about_dialog)
 
         self.pack_start(self.strip,True,True,0)
 
-    def emit_signal(origin, button, signal, value):
+    def emit_signal(origin, button, self, signal):
         """Connect a button to a signal emission"""
+        value = self.back_page
         dispatcher = context.get_dispatcher()
         dispatcher.emit(signal, value)
         

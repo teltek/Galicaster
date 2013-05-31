@@ -41,10 +41,10 @@ class ListingClassUI(ManagerUI):
     Create Recording Listing in a VBOX with TreeView from an MP list
     """
     __gtype_name__ = 'Listing'
-	
 
     def __init__(self):
         ManagerUI.__init__(self, 3)
+        self.reference = 1
 
 	builder = gtk.Builder()
 	builder.add_from_file(get_ui_path('listing.glade'))
@@ -53,13 +53,19 @@ class ListingClassUI(ManagerUI):
 	self.box = builder.get_object("listingbox")
 	self.vista = builder.get_object("vista")		
 	self.scroll = builder.get_object("scrolledw")
-	self.vista.get_selection().set_mode(gtk.SELECTION_SINGLE) # could SELECTION_MULTIPLE
+	self.vista.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
+
+        def force_ctrl(iv, ev):
+            ev.state = gtk.gdk.CONTROL_MASK
+
+        self.vista.connect('key-press-event', force_ctrl)
+        self.vista.connect('button-press-event', force_ctrl)
 
 	old_style = context.get_conf().get_color_style()
 	self.color = context.get_conf().get_palette(old_style)
 	
 	builder.connect_signals(self)
-	self.dispatcher.connect("refresh-row", self.refresh_row_from_mp)
+	self.dispatcher.connect("refresh-row", self.refresh_row_from_mp, self.reference)
 	self.dispatcher.connect("start-operation", self.refresh_operation)
 	self.dispatcher.connect("stop-operation", self.refresh_operation)
 	self.dispatcher.connect("galicaster-status", self.event_change_mode)
@@ -72,7 +78,7 @@ class ListingClassUI(ManagerUI):
 		
 	
     def event_change_mode(self, orig, old_state, new_state):
-        if new_state == 1:
+        if new_state == self.reference :
             self.refresh()
 			
     def insert_data_in_list(self, lista, mps):
@@ -220,9 +226,12 @@ class ListingClassUI(ManagerUI):
 	s = 0 if len(selected) == 0 else selected[0][0]
 	self.vista.get_selection().select_path(s)
 
-    def refresh_row_from_mp(self, origin, identifier):
+    def refresh_row_from_mp(self, origin, identifier, reference):
 	"""Refresh the values of a single row"""
 	# Search Iter to the liststor
+        if self.reference != reference:
+            return True
+        
 	i = None
 	for row in self.lista:
 	    if row[0] == identifier:
@@ -235,7 +244,7 @@ class ListingClassUI(ManagerUI):
     def refresh_operation(self, origin, operation, package, success = None):
         """Refresh the status of an operation in a given row"""
 	identifier = package.identifier
-	self.refresh_row_from_mp(origin,identifier)
+	self.refresh_row_from_mp(origin,identifier, self.reference)
 
     def refresh_row(self,reference,i):# FIXME keep the sort id 
         mpid = self.lista[i][0] # FIXME set the id as the first metadata
@@ -273,28 +282,34 @@ class ListingClassUI(ManagerUI):
 
 	logger.info("ON_action >> "+op)
 
+        selection = self.vista.get_selection()
+        store,rows = selection.get_selected_rows()
 
-	if op == "Delete":
-	    #self.vista.get_selection().selected_foreach(self.delete)
-	    model, selected = self.vista.get_selection().get_selected_rows()
-	    iters = []
-	    for row in selected:
-                iterator=self.lista.get_iter(row)
-		iters.append(iterator)
-	    for i in iters:
-                self.on_delete(self.lista,i)
-		#TODO connect "row-deleted" to delete package
-	elif op == "Operations" or op == "Ingest":
-            self.vista.get_selection().selected_foreach(self.on_ingest_question)
-	elif op == "Play":
-	    self.vista.get_selection().selected_foreach(self.on_play)# FIX single operation
+        #print self.get_attribute("on_{0}".format(op.lower()))
+
+        if op == "Play": # TODO get attribute on_attribute(so
+            last = store.get_iter(rows[len(rows)-1])
+            self.on_play(store, None, last)
 	elif op == "Edit":
-	    self.vista.get_selection().selected_foreach(self.on_edit)# FIX single operation
+            last = store.get_iter(rows[len(rows)-1])
+            self.on_edit(store, None, last)
+        elif op == "Delete":
+            if self.reference == 1:
+                self.on_archive(store, rows)
+            elif self.reference == 4:
+                self.on_delete(store, rows)
+        elif op == "Restore":
+            self.on_restore(store, rows)
+        elif op == "Empty":
+            self.on_empty()
 	elif op == "Info":
-	    self.vista.get_selection().selected_foreach(self.on_info)
+            last = store.get_iter(rows[len(rows)-1])
+            self.on_info(store, None, last)
+	elif op == "Operations" or op == "Ingest":
+            self.on_ingest_question(store, rows)
 	else:
-            logger.debug('Invalid action')
-			   
+            logger.debug('Invalid action: {0}'.format(op))
+
 
     def create_menu(self):
         """Creates a menu to be shown on right-button-click over a MP"""
@@ -332,30 +347,40 @@ class ListingClassUI(ManagerUI):
         """Set the player for previewing if double click"""
 	self.on_play(treeview.get_model(),reference,treeview.get_model().get_iter(reference))
 
-    def on_ingest_question(self,store,reference,iterator):
+    def on_ingest_question(self,store, rows):
         """Launchs ingest dialog and refresh row afterwards."""
+
+	operation = self.ingest_question() # TODO ingest question for any package
+        
+        if not operation:
+            return True
+        iterators = []
+        for c in rows:
+            iterators += [ store.get_iter(c) ]
+        for i in iterators:
+            package = self.repository.get(store[i][0])
+            if operation.count('nightly'):
+                context.get_worker().do_job_nightly(operation.replace("_",""), package)
+            else:                
+                context.get_worker().do_job(operation, package)
+        self.vista.get_selection().select_path(0)
+	return True
+
+        
 	package = self.repository.get(store[iterator][0])
 	self.ingest_question(package)
 	self.refresh_row(reference,iterator)
 	return True
 
-    def on_delete(self,store,iterator):
-        """Remove a mediapackage from the view list"""
-	key = store[iterator][0]
-	response = self.delete(key)
-	if response:
-            self.lista.remove(iterator)
-	    self.vista.get_selection().select_path(0)
-	return True
-		
-    def on_play(self,store,reference,iterator):
+
+    def on_play(self, store, reference, iterator):
         """ Retrieve mediapackage and send videos to player"""
 	key = store[iterator][0]
 	logger.info("Play: " + str(key))
 	package = self.repository.get(key)
 
 	if package.status == mediapackage.RECORDED:
-	    self.dispatcher.emit("play-list", package)
+	    self.dispatcher.emit("play-list", package, self.reference)
 	else:			
 	    text = {"title" : "Media Manager",
 		    "main" : "This recording can't be played",
@@ -366,7 +391,6 @@ class ListingClassUI(ManagerUI):
                           buttons)
 	return True	
 
-#--------------------------------------- Edit METADATA -----------------------------
 	
     def on_edit(self,store,reference,iterator):
         """Pop ups the Metadata Editor"""
@@ -420,7 +444,128 @@ class ListingClassUI(ManagerUI):
 
 	self.do_resize(buttonlist)
 	return True
+
+class ArchiveUI(ListingClassUI):
+
+    def __init__(self):
+
+        ManagerUI.__init__(self, 3)
+        self.reference = 4
+        self.create_ui()
+        #self.box
+
+        # Set selection mode
+	self.vista.get_selection().set_mode(gtk.SELECTION_MULTIPLE) # could SELECTION_MULTIPLE
+
+
+	old_style = context.get_conf().get_color_style()
+	self.color = context.get_conf().get_palette(old_style)
+	
+        # connect signals
+        #builder.connect_signals(self)
+	self.dispatcher.connect("refresh-row", self.refresh_row_from_mp, self.reference)
+	self.dispatcher.connect("galicaster-status", self.event_change_mode)
 		
+        # populate treeview
+	self.populate_treeview(self.repository.list_archived().values())
+	self.box.pack_start(self.strip,False,False,0)
+	self.box.reorder_child(self.strip,0)
+	self.box.show()
+	self.pack_start(self.box,True,True,0)
 
+    def create_ui(self):
+        
+        listingbox = gtk.VBox()
+        self.box = listingbox
+        listalign = gtk.Alignment(0.5, 0.5, 0.88, 0.99) # why not 1
+        scrolledw = gtk.ScrolledWindow()
+        scrolledw.set_policy(gtk.POLICY_NEVER,gtk.POLICY_ALWAYS)
+        scrolledw.set_placement(gtk.CORNER_TOP_LEFT)
+        scrolledw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
+        
+        self.vista = gtk.TreeView()
+        self.vista.set_show_expanders(False)
+        self.vista.set_rubber_banding(True)
+        self.vista.set_tooltip_column(1)
+
+        def force_ctrl(iv, ev):
+            ev.state = gtk.gdk.CONTROL_MASK
+
+        self.vista.connect('key-press-event', force_ctrl)
+        self.vista.connect('button-press-event', force_ctrl)
+
+        #self.vista.can_focus(True)
+        scrolledw.add(self.vista)
+        self.scroll = scrolledw
+        controlbox = gtk.VBox()
+        buttonbox = gtk.HButtonBox()
+        buttonbox.set_layout(gtk.BUTTONBOX_SPREAD)
+        buttonbox.set_homogeneous(True)        
+        
+        self.box.pack_start(listalign, True, True, 0)
+        listalign.add(scrolledw)
+        self.box.pack_start(controlbox, False, False, 50) # TODO padding on resize
+        controlbox.pack_start(buttonbox,True, True, 10) # IDEM
+        self.buttonlist = []
+        self.add_button(buttonbox, gtk.STOCK_MEDIA_PLAY, "Play") 
+        self.add_button(buttonbox, gtk.STOCK_UNDO, "Restore") 
+        self.add_button(buttonbox, gtk.STOCK_CLOSE, "Delete") 
+        self.add_button(buttonbox, "user-trash", "Empty") 
+
+    def add_button(self, box, icon, text):
+        composition = gtk.VBox()
+        image = gtk.Image()
+        if not icon.count('user'):
+            image.set_from_stock(icon, gtk.ICON_SIZE_DIALOG)
+        else:
+            image.set_from_icon_name(icon, gtk.ICON_SIZE_DIALOG)
+        
+        label = gtk.Label(text)
+        composition.pack_start(image)
+        composition.pack_start(label)
+        button = gtk.Button()
+        button.add(composition)
+        button.set_tooltip_text(text)
+        button.connect('clicked', self.on_action)
+        self.buttonlist += [button]
+        box.pack_start(button)   
+
+    def refresh_treeview(self):
+	"""Refresh all the values on the list"""
+	logger.info("Refreshing TreeView")
+	model, selected = self.vista.get_selection().get_selected_rows()
+	self.repository.refresh()
+	self.insert_data_in_list(self.lista, self.repository.list_archived().values())
+
+	s = 0 if len(selected) == 0 else selected[0][0]
+	self.vista.get_selection().select_path(s)
+
+    def do_resize(self, buttonlist, secondlist=[]): 
+        """Force a resize on the Media Manager"""
+        size = context.get_mainwindow().get_size()
+        self.strip.resize()
+	altura = size[1]
+	anchura = size[0]
+
+	k1 = anchura / 1920.0
+	k2 = altura / 1080.0
+	self.proportion = k1
+
+        buttonlist = self.buttonlist
+	for button in buttonlist:
+	    button.set_property("width-request", int(k1*100) )
+	    button.set_property("height-request", int(k1*100) )
+
+	    image = button.get_children()
+	    if type(image[0]) == gtk.Image:
+		image[0].set_pixel_size(int(k1*80))   
+
+	    elif type(image[0]) == gtk.VBox:
+		for element in image[0].get_children():
+		    if type(element) == gtk.Image:
+			element.set_pixel_size(int(k1*46))
+	return True
+
+        
 gobject.type_register(ListingClassUI)
-
+gobject.type_register(ArchiveUI)	

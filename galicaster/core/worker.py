@@ -83,7 +83,11 @@ class Worker(object):
 
     def get_all_job_types(self):
         nn = ' Nightly'
-        return [INGEST, ZIPPING, SBS, INGEST+nn, ZIPPING+nn, SBS+nn]
+        if not self.mh_client:
+            return [ZIPPING, SBS],[ZIPPING+nn, SBS+nn]
+        else:
+            return [INGEST, ZIPPING, SBS],[INGEST+nn, ZIPPING+nn, SBS+nn]
+              
 
     def get_all_job_types_by_mp(self, mp):
         nn = ' Nightly'

@@ -286,6 +286,13 @@ class Repository(object):
         self.update(mp)
         return mp
 
+    def restore(self, mp):
+        if not self.has(mp):
+            raise KeyError('Key not Exists')
+        mp.setProperty("archived", False) # TODO update Trash
+        self.update(mp)
+        return mp
+
         
     def update(self, mp):
         if not self.has(mp):

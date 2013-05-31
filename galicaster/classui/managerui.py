@@ -206,11 +206,11 @@ class ManagerUI(gtk.Box):
 
 #---------------------------------------- ACTION CALLBACKS ------------------
 
-    def ingest_question(self,package):            
+    def ingest_question(self):            
         """Pops up a question dialog for available operations."""
         buttons = None
         disabled = not self.conf.get_boolean("ingest", "active")
-        day,night = context.get_worker().get_all_job_types_by_mp(package)
+        day,night = context.get_worker().get_all_job_types()
         jobs = day+night
         text = {"title" : "Media Manager",
                 "main" : "Which operation do you want to perform?"
@@ -224,7 +224,7 @@ class ManagerUI(gtk.Box):
         if not self.network:                                         
             text['text']=text['text']+"Ingest disabled because of network problems."
             for job in day:
-                if job.lower().count("ingest"):
+                if job.lower().count("ingest"): # TODO dont remove other ingest operations
                     jobs.remove(job)            
                     day.remove(job)
             for job in night:
@@ -232,15 +232,7 @@ class ManagerUI(gtk.Box):
                     pass
                     #jobs.remove(job)            
                     #night.remove(job)
-
-        for job in day:
-            op_state = package.operation[job.lower().replace(" ", "")]
-            if op_state == mediapackage.OP_DONE:
-                text['text']="\n" + text['text'] + job + " already perfomed"
-            elif op_state == mediapackage.OP_NIGHTLY:
-                text['text']="\n"+ text['text'] + job + " will be performed tonight" 
-            
-
+                
         index = 0
         response_dict = {}
         grouped1 = []
@@ -270,31 +262,157 @@ class ManagerUI(gtk.Box):
                                 buttons2, buttons)
 
         if warning.response == 0:               
-            return True
+            return False
         elif warning.response == gtk.RESPONSE_OK: # Warning
-            return True
+            return False
         else:
+            # TODO do_job for every package
             chosen_job = response_dict[warning.response].lower().replace (" ", "_")
-            if chosen_job.count('nightly'):
-                context.get_worker().do_job_nightly(chosen_job.replace("_",""), package)
-            else:                
-                context.get_worker().do_job(chosen_job, package)
-            return True
+            return chosen_job
+
+    def on_archive(self, store, rows):
+        """Remove a mediapackage from the media manager"""
+
+        if not self.conf.get_boolean('basic', 'archive'):
+            return self.on_delete(store, rows)
+
+        logger.info("Archive Dialog")
+
+        t1 = "{0} recording{1} {2} going to be deleted.".format(len(rows),
+                                                                 "s" if len(rows)>1 else '',
+                                                                 "are" if len(rows)>1 else 'is')
+        text = {"title" : "Media Manager",
+                "main" : "Are you sure you want to delete?",
+                "text" : t1
+                }
+
+        buttons = ( gtk.STOCK_DELETE, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
+        warning = message.PopUp(message.WARNING, text,
+                                context.get_mainwindow(),
+                                buttons)
+
+        if not warning.response in message.POSITIVE:
+            return False
+
+        iterators = []
+        for c in rows:
+            iterators += [ store.get_iter(c) ]
+        for i in iterators:
+            key = store[i][0]
+            self.deleting(key)
+            self.lista.remove(i)
+
+        self.vista.get_selection().select_path(0)
+	return True
 
 
+    def on_delete(self, store, rows):
+        """Pops up a dialog. If response is positive, deletes the selection of MP."""
 
-#--------------------------------------- METADATA -----------------------------
+        logger.info("Delete Dialog")
+        t1 = "{0} recording{1} {2} going to be deleted.".format(len(rows),
+                                                                "s" if len(rows)>1 else '',
+                                                                "are" if len(rows)>1 else 'is')
+	t2 = "This action will remove the recording{0} from the hard disk.".format( "s" if len(rows)>1 else '')
+
+        text = {"title" : "Media Manager",
+                "main" : "Are you sure you want to delete?",
+                "text" : t1+"\n\n"+t2
+                }
+
+        buttons = ( gtk.STOCK_DELETE, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
+        warning = message.PopUp(message.WARNING, text,
+                                context.get_mainwindow(),
+                                buttons)
+
+        if not warning.response in message.POSITIVE:
+            return False
+
+        iterators = []
+        for c in rows:
+            iterators += [ store.get_iter(c) ]
+        for i in iterators:
+            key = store[i][0]
+            self.hard_deleting(key)
+            self.lista.remove(i)
+
+        self.vista.get_selection().select_path(0)
+	return True
+
+    def on_empty(self):
+        """Pops up a dialog. If response is positive, deletes all the archive."""
+
+        logger.info("Empty Archive Dialog")
+	t1 = "All recordings will be permanently deleted from the hard disk."
+
+        text = {"title" : "Media Manager",
+                "main" : "Are you sure you want to empty the archive?",
+                "text" : t1
+                }
+
+        buttons = ( gtk.STOCK_DELETE, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
+        warning = message.PopUp(message.WARNING, text,
+                                context.get_mainwindow(),
+                                buttons)
+
+        if not warning.response in message.POSITIVE:
+            return False
+
+        self.vista.get_selection().select_all()
+        store, rows = self.vista.get_selection().get_selected_rows()
+        iterators = []
+        for c in rows:
+            iterators += [ store.get_iter(c) ]
+        for i in iterators:
+            key = store[i][0]
+            self.hard_deleting(key)
+            self.lista.remove(i)
+
+        self.vista.get_selection().select_path(0)
+	return True
+
+
+    def on_restore(self, store, rows):
+	"""Pops up de MP info dialog"""
+
+        iterators = []
+        for c in rows:
+            iterators += [store.get_iter(c) ]
+        for i in iterators:
+            key = store[i][0]
+            self.restore(key)
+            self.lista.remove(i)
+
+        self.vista.get_selection().select_path(0)
+	return True
+
+
+    def deleting(self, key):
+        logger.debug("Deleting {0}".format(key))
+        package = self.repository.get(key)
+        self.repository.delete(package)    
+
+    def hard_deleting(self, key):
+        logger.debug("Hard deleting {0}".format(key))
+        package = self.repository.get(key)
+        self.repository.hard_delete(package) 
+
+    def restore(self,key):
+        """Restore a MP to the Media Manager"""
+        logger.debug("Restoring {0}".format(key))
+	package = self.repository.get(key)
+        self.repository.restore(package)
 
     def edit(self,key):
         """Pop ups the Metadata Editor"""
-	logger.info("Edit: "+str(key))
+        logger.debug("Editting {0}".format(key))
 	selected_mp = self.repository.get(key)
 	Metadata(selected_mp)
 	self.repository.update(selected_mp)
 
     def info(self,key):
         """Pops up de MP info dialog"""
-        logger.info("Info: "+str(key))
+        logger.debug("Showing Info for {0}".format(key))
         MPinfo(key)
 
     def do_resize(self, buttonlist, secondlist=[]): 
@@ -339,30 +457,10 @@ class ManagerUI(gtk.Box):
 
 	return True
 
-    def delete(self,key):
-        """Pops up a dialog. If response is positive, deletes a MP."""
-	logger.info("Delete: "+str(key))
-	package = self.repository.get(key)
-	t1 = "This action will remove the recording from the hard disk."
-	t2 = 'Recording:  "'+package.getTitle()+'"'
-	text = {"title" : "Media Manager",
-		"main" : "Are you sure you want to delete?",
-		"text" : t1+"\n\n"+t2
-		    }
-	buttons = ( gtk.STOCK_DELETE, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
-	warning = message.PopUp(message.WARNING, text,
-                                context.get_mainwindow(),
-                                buttons)
-
-	if warning.response in message.POSITIVE:                
-	    self.repository.delete(package)
-	    return True
-	else:
-	    return False
-
-
     def network_status(self, signal, status):
         """Updates the signal status from a received signal"""
         self.network = status           
 
 gobject.type_register(ManagerUI)
+
+
