@@ -51,13 +51,12 @@ class Chooser(gtk.VBox):
         self.options
 
     def getSelected(self): # define for each on to ensure getAll works
-        return self.preselected
+        return self.selector.getSelected()
  
     def getAll(self): 
         return {self.variable: self.getSelected()}
 
     def prepare_selector(self, title, selector_type, values, selection,  fontsize, extra):
-        #print title, selector_type
         if selector_type == "combo":
             return Combo(values, selection, fontsize)
         if selector_type == "list":
@@ -178,13 +177,12 @@ class Togglebox(gtk.VButtonBox):
         self.group = menu
 
         for element in menu:
-            print "add",element
             self.pack_start(element, False, True, 0) # TODO proportional to size
 
         self.show_all()
             
     def getSelected(self):
-        for button in self.group.get_group():
+        for button in self.group:
             if button.get_active():
                 return button.get_label()
           
@@ -242,7 +240,7 @@ class Listbox(gtk.ScrolledWindow):
     def getSelected(self):# TODO test
         model,iterator = self.view.get_selection().get_selected()
         if type(iterator) is gtk.TreeIter:
-            value = model.get_value(iterator,0)
+            value = model.get_value(iterator,0) 
             return value
         else:
             return "nothing selected"

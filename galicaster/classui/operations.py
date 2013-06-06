@@ -67,54 +67,23 @@ class OperationList(MainList):
         self.add_button("OK",self.select)
         self.add_button("Cancel",self.close, True)
         self.operation =  nas.IngestNas # decide it somehow, first alphabetic
-        self.append_list()
-        self.append_schedule()
-        #self.select_current() # Fix operation to default or first
-        #self.append_info(self.view.get_selection())
+        self.chooser = []
+        self.chooser += [self.append_list()]
+        self.chooser += [self.append_schedule()]
         self.show_all()
         
     def select(self, button=None):
-        model,iterator=self.view.get_selection().get_selected()
-        if type(iterator) is gtk.TreeIter: # TODO must be an iterator, otherwise chose first
-            value1 =  model.get_value(iterator,0)
-            value2 =  model.get_value(iterator,1)
-            print value1,value2
-            self.operation = self.superior.equivalence[ value2 ] # TODO mediapackage is on the operation
-            self.operation = value1
-            self.common["schedule"]= "immediate" # TODO fetch get selected
-            #next_page = ConfigurationList(self.superior, self.size, value2)
-            #self.superior.append_tab(next_page,gtk.Label(value2))
-            # Open Next tab with main configuration options
-        else:
-            pass # TODO get first one, should be chosen always
+        options = {}
+        for element in self.chooser:
+            options[element.variable] =element.getSelected()
+        print options
+        self.close(True)
 
     def close(self, button=None): #it's commmon
         self.superior.close()
 
-    def refresh(self): #it's common
-        self.list.clear()
-        self.append_list()
-        # MAYBE reappend schedule
-        #self.select_current()
-
-    def select_current(self): # It can be made common # TODO move to Chooser
-        iterator =self.list.get_iter_first()
-        if self.operation == None:            
-              self.view.get_selection().select_iter(iterator)    
-        else:
-            iterator = self.list.iter_next(iterator)
-            while iterator != None:
-                if self.list[iterator][0] == self.operation: # check operation name on superior.operation.sthg
-                    self.view.get_selection().select_iter(iterator)                
-                    break
-                iterator = self.list.iter_next(iterator)
-        return self.list,iterator
-
     def append_list(self):  
         # TODO the list should be available on operations
-        # TODO have a chooser for this list
-        # TODO when clicked change self.operation OPTIONAL change info panel
-        
         """Lists the available operations"""
         available_list = [ (ingest.Ingest, "Ingest"), # TODO fix append list on the top of the module
                            (export_to_zip.ExportToZip, "Export To Zip"),
@@ -122,23 +91,22 @@ class OperationList(MainList):
                            (nas.IngestNas, "Ingest to Nas")        
                            ]
         variable = "operation"
-        selector = Chooser(variable,
+        selectorUI = Chooser(variable,
                            variable.capitalize(),
                            "tree",
                            available_list,
                            preselection = "Ingest",
                            fontsize = 15)
 
-        self.pack_start(selector, False, False, 0)
-        self.reorder_child(selector,0)
-        #selector.resize(1)
-
-
+        self.pack_start(selectorUI, False, False, 0)
+        self.reorder_child(selectorUI,0)
+        # TODO selector resize(size)
+        return selectorUI
 
     def append_schedule(self): # TODO get size from class
         variable = "scheduling" 
         font = 15
-        selector = Chooser(variable,
+        selectorUI = Chooser(variable,
                          variable.capitalize(),
                          "toogle",
                          # operation.commom[variable]["type"],      
@@ -147,9 +115,9 @@ class OperationList(MainList):
                            fontsize = font)
         # TODO attach clock to scheduled
 
-        self.pack_start(selector, False, False, 0)
-        self.reorder_child(selector,1)
-        selector.resize(1)
+        self.pack_start(selectorUI, False, False, 0)
+        self.reorder_child(selectorUI,1)
+        selectorUI.resize(1)
+        return selectorUI
         
         # TODO get chooser and place it sbs
-

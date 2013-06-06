@@ -19,6 +19,7 @@ from galicaster.classui.managerui import ManagerUI
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 from galicaster.classui import get_ui_path
+from galicaster.classui.operations import OperationsUI
 
 logger = context.get_logger()
 
@@ -306,7 +307,8 @@ class ListingClassUI(ManagerUI):
             last = store.get_iter(rows[len(rows)-1])
             self.on_info(store, None, last)
 	elif op == "Operations" or op == "Ingest":
-            self.on_ingest_question(store, rows)
+            #self.on_ingest_question(store, rows)
+            self.on_operations_question(store, rows)
 	else:
             logger.debug('Invalid action: {0}'.format(op))
 
@@ -346,6 +348,13 @@ class ListingClassUI(ManagerUI):
     def on_double_click(self,treeview,reference,column):
         """Set the player for previewing if double click"""
 	self.on_play(treeview.get_model(),reference,treeview.get_model().get_iter(reference))
+
+    def on_operations_question(self,store, rows):
+        packages = []
+        for c in rows:
+             iterator = store.get_iter(c)
+             packages += [self.repository.get(store[iterator][0])]
+        OperationsUI(mediapackage = packages)       
 
     def on_ingest_question(self,store, rows):
         """Launchs ingest dialog and refresh row afterwards."""
@@ -484,6 +493,11 @@ class ArchiveUI(ListingClassUI):
         scrolledw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         
         self.vista = gtk.TreeView()
+
+        style=self.vista.rc_get_style().copy()
+        color = gtk.gdk.color_parse(str(style.base[gtk.STATE_SELECTED]))
+        #self.vista.modify_base(gtk.STATE_ACTIVE, color) 
+
         self.vista.set_show_expanders(False)
         self.vista.set_rubber_banding(True)
         self.vista.set_tooltip_column(1)
