@@ -13,13 +13,14 @@ import gtk
 import pango
 from galicaster.classui import get_image_path
 
-class Header(gtk.VBox):
+class Header(gtk.Frame):
 
     def __init__(self, size=[1920,1080],title = None):
         
         wprop = size[0]/1920.0
         hprop = size[1]/1080.0
-        gtk.VBox.__init__(self)
+        gtk.Frame.__init__(self)
+        self.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         box = gtk.HBox()
         box.set_border_width(int(wprop*10))
         strip = gtk.Image()
@@ -39,8 +40,9 @@ class Header(gtk.VBox):
             label.modify_font(font)
             box.pack_end(label, True, True, 0) # introduce hprop
         separator=gtk.HSeparator()
-        self.pack_start(box, True, True, 0)
-        self.pack_start(separator, True, True, 0)
+        #self.pack_start(box, True, True, 0)
+        self.add(box)
+        #self.pack_start(separator, True, True, 0)
         box.show_all()
-        separator.show()
+        #separator.show()
         

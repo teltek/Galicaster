@@ -161,8 +161,8 @@ class Togglebox(gtk.VButtonBox):
         
         gtk.VButtonBox.__init__(self)
 
-        self.set_layout(gtk.BUTTONBOX_SPREAD)
-        self.set_size_request(-1,150)
+        self.set_layout(gtk.BUTTONBOX_EDGE)
+        self.set_size_request(-1,130)
         menu = []
         
         for value in values:
@@ -178,7 +178,8 @@ class Togglebox(gtk.VButtonBox):
         self.group = menu
 
         for element in menu:
-            self.pack_start(element, False, True, 5) # TODO proportional to size
+            print "add",element
+            self.pack_start(element, False, True, 0) # TODO proportional to size
 
         self.show_all()
             
@@ -215,6 +216,9 @@ class Listbox(gtk.ScrolledWindow):
 
         lista = gtk.ListStore(object, str) 
         view = gtk.TreeView() 
+        style=view.rc_get_style().copy()
+        color = gtk.gdk.color_parse(str(style.base[gtk.STATE_SELECTED]))
+        view.modify_base(gtk.STATE_ACTIVE, color)
         view.set_model(lista)
 	view.get_selection().set_mode(gtk.SELECTION_SINGLE)
         view.set_headers_visible(False)
