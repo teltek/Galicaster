@@ -22,7 +22,7 @@ from elements.__init__ import Chooser
 from selector import SelectorUI, MainList
 from elements.clock import Clock
 
-from galicaster.operations import ingest, export_to_zip, nas#,side_by_side
+from galicaster.operations import loader
 
 class OperationsUI(SelectorUI):
     """
@@ -32,23 +32,11 @@ class OperationsUI(SelectorUI):
     
     __gtype_name__ = 'OperationsUI'
 
-    equivalence = { # TODO list multiple NAS-Polimedia by configuration
-        "Ingest": ingest.Ingest, # TODO configure which operations appears # TODO Name it Ingest to MH
-        "Export to Zip": export_to_zip.ExportToZip, # TODO should be Export to Zip
-        "Ingest to Nas": nas.IngestNas,
-        #"Side by Side": sbs.SideBySide       # TODO make SBS operation the new way
-        }
-
     def __init__(self, parent=None, size = [1920,1080], mediapackage = None):
         SelectorUI.__init__(self, parent, size)
 
-
         #configuration data
         self.mediapackage = mediapackage # TODO take into account single or multiple MPs
-        self.operation = nas.IngestNas # TODO set a default operation, also orange on interface
-        self.common = {} # Priority and Schedule 
-        self.specific = {} # Specific parameters
-
         self.list = OperationList(self, size, "Operation Information")
         self.add_main_tab("Operation Selector", self.list)
         self.show_all()
@@ -66,7 +54,6 @@ class OperationList(MainList):
         
         self.add_button("OK",self.select)
         self.add_button("Cancel",self.close, True)
-        self.operation =  nas.IngestNas # decide it somehow, first alphabetic
         self.chooser = []
         self.chooser += [self.append_list()]
         self.chooser += [self.append_schedule()]
@@ -76,7 +63,9 @@ class OperationList(MainList):
         options = {}
         for element in self.chooser:
             options[element.variable] =element.getSelected()
-        print options
+        operation = options.pop('operation')
+        operation.configure(options = options)        
+        loader.enqueue_operations(operation,self.superior.mediapackage) # TODO send a signal better
         self.close(True)
 
     def close(self, button=None): #it's commmon
@@ -85,17 +74,14 @@ class OperationList(MainList):
     def append_list(self):  
         # TODO the list should be available on operations
         """Lists the available operations"""
-        available_list = [ (ingest.Ingest, "Ingest"), # TODO fix append list on the top of the module
-                           (export_to_zip.ExportToZip, "Export To Zip"),
-                           #(side_by_side.SideBySide, "Side by Side"),
-                           (nas.IngestNas, "Ingest to Nas")        
-                           ]
+
+        available_list = loader.get_operations()
         variable = "operation"
         selectorUI = Chooser(variable,
                            variable.capitalize(),
                            "tree",
                            available_list,
-                           preselection = "Ingest",
+                           preselection = available_list[0],
                            fontsize = 15)
 
         self.pack_start(selectorUI, False, False, 0)

@@ -22,6 +22,7 @@ from galicaster import __version__
 from galicaster.classui.profile import ProfileUI as ListProfile
 from galicaster.classui.about import GCAboutDialog
 from galicaster.utils.resize import relabel
+from galicaster.classui.strip import StripUI
 
 class DistribUI(gtk.Box):
     """
@@ -34,7 +35,13 @@ class DistribUI(gtk.Box):
         dbuilder= gtk.Builder()
         dbuilder.add_from_file(get_ui_path('distrib.glade'))
         self.builder = dbuilder
+
         dbox = dbuilder.get_object("distbox")
+
+        self.strip = StripUI(None,0)
+	dbox.pack_start(self.strip,False,False,0)
+	dbox.reorder_child(self.strip,0)
+
         release = dbuilder.get_object("release_label")
         release.set_label("Galicaster "+__version__)
 
@@ -57,10 +64,7 @@ class DistribUI(gtk.Box):
         quit_button.connect("clicked", self.emit_signal, "galicaster-quit")
         shutdown_button.connect("clicked", self.emit_signal, "galicaster-shutdown")
         profile_button.connect("clicked", self.on_profile_button)
-        archive_button.connect("clicked", self.emit_signal, "change_mode", 4)
-
-        about = dbuilder.get_object("aboutevent")
-        about.connect("button-press-event", self.show_about_dialog)
+        #archive_button.connect("clicked", self.emit_signal, "change_mode", 4)
 
         conf = context.get_conf()
         quit_button.set_visible(conf.get_boolean("basic", "quit"))
@@ -94,15 +98,11 @@ class DistribUI(gtk.Box):
         k = anchura / 1920.0
 
         builder= self.builder
-        logos = builder.get_object("logo_align")
-        logos.set_padding(int(k*52),int(k*30),0,0)
-        # disal = builder.get_object("dis_align")
-        # disal.set_padding(int(k*25),int(k*25),int(k*50),int(k*50))
 
         l1 = builder.get_object("reclabel")
         l2 = builder.get_object("mmlabel")
         l3 = builder.get_object("selected_profile")
-        l4 = builder.get_object("archive")
+        #l4 = builder.get_object("archive")
         i1 = builder.get_object("recimage")
         i2 = builder.get_object("mmimage")
         b1 = builder.get_object("button1")
@@ -110,26 +110,12 @@ class DistribUI(gtk.Box):
 	relabel(l1,k*48,True)
         relabel(l2,k*48,True)  
         relabel(l3,k*26,True)  
-        relabel(l4,k*26,True)  
+        #relabel(l4,k*26,True)  
         i1.set_pixel_size(int(k*120))
         i2.set_pixel_size(int(k*120))
         b1.set_property("width-request", int(anchura/3.5) )
         b2.set_property("width-request", int(anchura/3.5) )
         b1.set_property("height-request", int(anchura/3.5) )
         b2.set_property("height-request", int(anchura/3.5) )
-   
-        lclass = builder.get_object("logo2")
-        lcompany = builder.get_object("logo1")
 
-        iclass=gtk.gdk.pixbuf_new_from_file(get_image_path("logo.svg"))
-        icompany=gtk.gdk.pixbuf_new_from_file(get_image_path("teltek.svg"))
-        iclass = iclass.scale_simple(
-            int(iclass.get_width()*k),
-            int(iclass.get_height()*k),
-            gtk.gdk.INTERP_BILINEAR)
-        icompany = icompany.scale_simple(
-            int(icompany.get_width()*k),
-            int(icompany.get_height()*k),
-            gtk.gdk.INTERP_BILINEAR)
-        lclass.set_from_pixbuf(iclass)
-        lcompany.set_from_pixbuf(icompany)
+        self.strip.resize()

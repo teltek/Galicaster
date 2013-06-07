@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- codingo:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
 #       galicaster/ui/managerui
@@ -33,10 +33,10 @@ class ManagerUI(gtk.Box):
     """
     __gtype_name__ = 'Manager'
 
-    def __init__(self, element):
+    def __init__(self, element, thepage, title=""):
         """elements set the previous area to which the top bar's back button points to"""
         gtk.Box.__init__(self)
-        self.strip = StripUI(element)
+        self.strip = StripUI(element, thepage, text=title )
         
 	self.conf = context.get_conf()
 	self.dispatcher = context.get_dispatcher() 
@@ -206,7 +206,7 @@ class ManagerUI(gtk.Box):
 
 #---------------------------------------- ACTION CALLBACKS ------------------
 
-    def ingest_question(self):            
+    def ingest_question(self): # TODO delete           
         """Pops up a question dialog for available operations."""
         buttons = None
         disabled = not self.conf.get_boolean("ingest", "active")
@@ -338,6 +338,10 @@ class ManagerUI(gtk.Box):
 
         self.vista.get_selection().select_path(0)
 	return True
+
+    def on_trash(self):
+        print "trash required"
+        self.dispatcher.emit("change_mode", 4)
 
     def on_empty(self):
         """Pops up a dialog. If response is positive, deletes all the archive."""

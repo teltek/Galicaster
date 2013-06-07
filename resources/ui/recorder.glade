@@ -6,141 +6,6 @@
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <child>
-      <object class="GtkAlignment" id="top_align">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="xscale">0.82999998331069946</property>
-        <property name="top_padding">20</property>
-        <property name="bottom_padding">40</property>
-        <child>
-          <object class="GtkVBox" id="vbox1">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <child>
-              <object class="GtkHBox" id="clockbox">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="homogeneous">True</property>
-                <child>
-                  <object class="GtkFrame" id="clock_frame">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label_xalign">0</property>
-                    <child>
-                      <object class="GtkLabel" id="local_clock">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="xpad">20</property>
-                        <property name="label" translatable="yes">01:23</property>
-                      </object>
-                    </child>
-                    <child type="label_item">
-                      <placeholder/>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkHBox" id="hbox1">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <child>
-                  <object class="GtkHBox" id="prebox">
-                    <property name="width_request">225</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkButton" id="previousbutton">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
-                        <property name="relief">half</property>
-                        <signal name="clicked" handler="change_mode" swapped="no"/>
-                        <child>
-                          <object class="GtkImage" id="image4">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="icon_name">go-previous</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkEventBox" id="bg_status">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <child>
-                      <placeholder/>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">False</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkEventBox" id="eventbox2">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <signal name="button-press-event" handler="show_about" swapped="no"/>
-                    <child>
-                      <object class="GtkImage" id="classlogo">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="xalign">1</property>
-                        <property name="pixbuf">../images/logo.svg</property>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="pack_type">end</property>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-        </child>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">False</property>
-        <property name="position">0</property>
-      </packing>
-    </child>
-    <child>
       <object class="GtkHBox" id="videobox">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
@@ -151,16 +16,13 @@
       <packing>
         <property name="expand">True</property>
         <property name="fill">True</property>
-        <property name="position">1</property>
+        <property name="position">0</property>
       </packing>
     </child>
     <child>
       <object class="GtkAlignment" id="control_align">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="xscale">0</property>
-        <property name="top_padding">10</property>
-        <property name="bottom_padding">10</property>
         <child>
           <object class="GtkHBox" id="panelbox">
             <property name="visible">True</property>
@@ -201,7 +63,6 @@
                             <property name="use_action_appearance">False</property>
                             <property name="relief">none</property>
                             <property name="focus_on_click">False</property>
-                            <signal name="clicked" handler="show_next" swapped="no"/>
                             <child>
                               <object class="GtkImage" id="moreimage">
                                 <property name="visible">True</property>
@@ -521,7 +382,6 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="use_action_appearance">False</property>
-                            <signal name="clicked" handler="on_rec" swapped="no"/>
                             <child>
                               <object class="GtkImage" id="image1">
                                 <property name="visible">True</property>
@@ -545,7 +405,6 @@
                             <property name="receives_default">True</property>
                             <property name="use_action_appearance">False</property>
                             <property name="focus_on_click">False</property>
-                            <signal name="toggled" handler="on_pause" swapped="no"/>
                             <child>
                               <object class="GtkImage" id="image2">
                                 <property name="visible">True</property>
@@ -568,7 +427,6 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="use_action_appearance">False</property>
-                            <signal name="clicked" handler="on_ask_stop" swapped="no"/>
                             <child>
                               <object class="GtkImage" id="image3">
                                 <property name="visible">True</property>
@@ -592,7 +450,6 @@
                             <property name="receives_default">True</property>
                             <property name="no_show_all">True</property>
                             <property name="use_action_appearance">False</property>
-                            <signal name="clicked" handler="on_edit_meta" swapped="no"/>
                             <child>
                               <object class="GtkVBox" id="vboxedit">
                                 <property name="visible">True</property>
@@ -638,7 +495,6 @@
                             <property name="receives_default">True</property>
                             <property name="no_show_all">True</property>
                             <property name="use_action_appearance">False</property>
-                            <signal name="clicked" handler="on_help" swapped="no"/>
                             <child>
                               <object class="GtkLabel" id="label4">
                                 <property name="visible">True</property>
@@ -714,7 +570,7 @@
       <packing>
         <property name="expand">False</property>
         <property name="fill">False</property>
-        <property name="position">2</property>
+        <property name="position">1</property>
       </packing>
     </child>
   </object>

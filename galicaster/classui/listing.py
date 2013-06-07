@@ -44,39 +44,26 @@ class ListingClassUI(ManagerUI):
     __gtype_name__ = 'Listing'
 
     def __init__(self):
-        ManagerUI.__init__(self, 3)
+        ManagerUI.__init__(self, 3, 1, "Media Manager")
         self.reference = 1
 
-	builder = gtk.Builder()
-	builder.add_from_file(get_ui_path('listing.glade'))
-	self.gui = builder
-
-	self.box = builder.get_object("listingbox")
-	self.vista = builder.get_object("vista")		
-	self.scroll = builder.get_object("scrolledw")
+        self.create_ui()
 	self.vista.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
-
-        def force_ctrl(iv, ev):
-            ev.state = gtk.gdk.CONTROL_MASK
-
-        self.vista.connect('key-press-event', force_ctrl)
-        self.vista.connect('button-press-event', force_ctrl)
-
+        # COLOR PALETTE
 	old_style = context.get_conf().get_color_style()
 	self.color = context.get_conf().get_palette(old_style)
 	
-	builder.connect_signals(self)
 	self.dispatcher.connect("refresh-row", self.refresh_row_from_mp, self.reference)
+	self.dispatcher.connect("galicaster-status", self.event_change_mode)
 	self.dispatcher.connect("start-operation", self.refresh_operation)
 	self.dispatcher.connect("stop-operation", self.refresh_operation)
-	self.dispatcher.connect("galicaster-status", self.event_change_mode)
 		
+        # populate treeview
 	self.populate_treeview(self.repository.list().values())
 	self.box.pack_start(self.strip,False,False,0)
 	self.box.reorder_child(self.strip,0)
 	self.box.show()
-	self.pack_start(self.box,True,True,0)
-		
+	self.pack_start(self.box,True,True,0)		
 	
     def event_change_mode(self, orig, old_state, new_state):
         if new_state == self.reference :
@@ -303,6 +290,8 @@ class ListingClassUI(ManagerUI):
             self.on_restore(store, rows)
         elif op == "Empty":
             self.on_empty()
+        elif op == "Trash":
+            self.on_trash()
 	elif op == "Info":
             last = store.get_iter(rows[len(rows)-1])
             self.on_info(store, None, last)
@@ -349,14 +338,15 @@ class ListingClassUI(ManagerUI):
         """Set the player for previewing if double click"""
 	self.on_play(treeview.get_model(),reference,treeview.get_model().get_iter(reference))
 
-    def on_operations_question(self,store, rows):
+    def on_operations_question(self,store, rows): # Move to 
         packages = []
         for c in rows:
              iterator = store.get_iter(c)
              packages += [self.repository.get(store[iterator][0])]
-        OperationsUI(mediapackage = packages)       
+        OperationsUI(mediapackage = packages) #TODO launch and return
+        
 
-    def on_ingest_question(self,store, rows):
+    def on_ingest_question(self,store, rows): # TODO Bound to be eliminated
         """Launchs ingest dialog and refresh row afterwards."""
 
 	operation = self.ingest_question() # TODO ingest question for any package
@@ -411,6 +401,151 @@ class ListingClassUI(ManagerUI):
 	"""Pops up de MP info dialog"""
 	key = store[iterator][0]
 	self.info(key)
+
+    def create_ui(self):
+        
+        listingbox = gtk.VBox()
+        self.box = listingbox
+        listalign = gtk.Alignment(0.5, 0.5, 0.88, 0.99) # why not 1
+        scrolledw = gtk.ScrolledWindow()
+        scrolledw.set_policy(gtk.POLICY_NEVER,gtk.POLICY_ALWAYS)
+        scrolledw.set_placement(gtk.CORNER_TOP_LEFT)
+        scrolledw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
+        
+        self.vista = gtk.TreeView()
+        style=self.vista.rc_get_style().copy()
+        color = gtk.gdk.color_parse(str(style.base[gtk.STATE_SELECTED]))
+        self.vista.modify_base(gtk.STATE_ACTIVE, color)
+
+        style=self.vista.rc_get_style().copy()
+        color = gtk.gdk.color_parse(str(style.base[gtk.STATE_SELECTED]))
+        #self.vista.modify_base(gtk.STATE_ACTIVE, color) 
+
+        self.vista.set_show_expanders(False)
+        self.vista.set_rubber_banding(True)
+        self.vista.set_tooltip_column(1)
+
+        def force_ctrl(iv, ev):
+            ev.state = gtk.gdk.CONTROL_MASK
+
+        self.vista.connect('key-press-event', force_ctrl)
+        self.vista.connect('button-press-event', force_ctrl)
+
+
+        #self.vista.can_focus(True)
+        scrolledw.add(self.vista)
+        self.scroll = scrolledw
+
+        # SHORTCUT BUTTONS
+        shortcut = gtk.HButtonBox()
+        shortcut.set_layout(gtk.BUTTONBOX_START)
+        allb = gtk.Button("All")
+        noneb = gtk.Button("None")
+        allb.set_can_focus(False)
+        noneb.set_can_focus(False)
+        shortcut.pack_start(allb)
+        shortcut.pack_start(noneb)
+        allb.connect("clicked", lambda l:self.vista.get_selection().select_all())
+        noneb.connect("clicked", lambda l:self.vista.get_selection().unselect_all())
+        self.shortcutlist = [allb, noneb]
+
+        # CONTROL BOX
+        controlbox = gtk.VBox()
+        buttonbox = gtk.HButtonBox()
+        buttonbox.set_layout(gtk.BUTTONBOX_SPREAD)
+        buttonbox.set_homogeneous(True)        
+        self.buttonbox = buttonbox
+        
+        self.box.pack_start(listalign, True, True, 0)
+        listbox = gtk.VBox()
+        listbox.pack_start(scrolledw, True, True, 0)
+        listbox.pack_start(shortcut, False, False, 0)
+        listalign.add(listbox)
+        self.box.pack_start(controlbox, False, False, 50) # TODO padding on resize
+        controlbox.pack_start(buttonbox,True, True, 10) # IDEM
+        self.define_buttons()
+
+    def define_buttons(self):
+        self.buttonlist = []
+        self.add_button(self.buttonbox, gtk.STOCK_MEDIA_PLAY, "Play") 
+        self.add_button(self.buttonbox, gtk.STOCK_COPY, "Edit") 
+        self.add_button(self.buttonbox, gtk.STOCK_GO_UP, "Operations") 
+        self.add_button(self.buttonbox, gtk.STOCK_CLOSE, "Delete") 
+        self.add_button(self.buttonbox, "user-trash", "Trash") 
+
+    def add_button(self, box, icon, text):
+        composition = gtk.VBox()
+        image = gtk.Image()
+        if not icon.count('user'):
+            image.set_from_stock(icon, gtk.ICON_SIZE_DIALOG)
+        else:
+            image.set_from_icon_name(icon, gtk.ICON_SIZE_DIALOG)
+        
+        label = gtk.Label(text)
+        composition.pack_start(image)
+        composition.pack_start(label)
+        button = gtk.Button()
+        button.add(composition)
+        button.set_tooltip_text(text)
+        button.connect('clicked', self.on_action)
+        self.buttonlist += [button]
+        box.pack_start(button)   
+
+
+    def do_resize(self, buttonlist, secondlist=[]): 
+        """Force a resize on the Media Manager"""
+        size = context.get_mainwindow().get_size()
+        self.strip.resize()
+	altura = size[1]
+	anchura = size[0]
+
+	k1 = anchura / 1920.0
+	k2 = altura / 1080.0
+	self.proportion = k1
+
+        buttonlist = self.buttonlist
+	for button in buttonlist:
+	    button.set_property("width-request", int(k1*100) )
+	    button.set_property("height-request", int(k1*100) )
+
+	    image = button.get_children()
+	    if type(image[0]) == gtk.Image:
+		image[0].set_pixel_size(int(k1*80))   
+
+	    elif type(image[0]) == gtk.VBox:
+		for element in image[0].get_children():
+		    if type(element) == gtk.Image:
+			element.set_pixel_size(int(k1*46))
+
+	for button in self.shortcutlist:
+	    button.set_property("width-request", int(k1*100) )
+	    button.set_property("height-request", int(k1*50) )
+            fsize = 12*k2
+            font = pango.FontDescription(str(fsize))
+            label = button.get_children()[0]
+	    if type(label) == gtk.Label:
+                attr = pango.AttrList()
+                attr.insert(pango.AttrFontDesc(font,0,-1))
+                label.set_attributes(attr)
+   
+	for name in secondlist:
+	    button2 = self.gui.get_object(name) # TODO, check player
+	    button2.set_property("width-request", int(k2*85) )
+	    button2.set_property("height-request", int(k2*85) )
+
+	    image = button2.get_children()
+	    if type(image[0]) == gtk.Image:
+		image[0].set_pixel_size(int(k1*56))
+                image[0].show()
+
+	    elif type(image[0]) == gtk.VBox:
+		for element in image[0].get_children():
+		    if type(element) == gtk.Image:
+			element.set_pixel_size(int(k1*46))
+
+	return True
+
+
 	
     def resize(self):
         """Adapts GUI elements to the screen size"""
@@ -458,7 +593,7 @@ class ArchiveUI(ListingClassUI):
 
     def __init__(self):
 
-        ManagerUI.__init__(self, 3)
+        ManagerUI.__init__(self, 1, 1, "Trash")
         self.reference = 4
         self.create_ui()
         #self.box
@@ -482,67 +617,12 @@ class ArchiveUI(ListingClassUI):
 	self.box.show()
 	self.pack_start(self.box,True,True,0)
 
-    def create_ui(self):
-        
-        listingbox = gtk.VBox()
-        self.box = listingbox
-        listalign = gtk.Alignment(0.5, 0.5, 0.88, 0.99) # why not 1
-        scrolledw = gtk.ScrolledWindow()
-        scrolledw.set_policy(gtk.POLICY_NEVER,gtk.POLICY_ALWAYS)
-        scrolledw.set_placement(gtk.CORNER_TOP_LEFT)
-        scrolledw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
-        
-        self.vista = gtk.TreeView()
-
-        style=self.vista.rc_get_style().copy()
-        color = gtk.gdk.color_parse(str(style.base[gtk.STATE_SELECTED]))
-        #self.vista.modify_base(gtk.STATE_ACTIVE, color) 
-
-        self.vista.set_show_expanders(False)
-        self.vista.set_rubber_banding(True)
-        self.vista.set_tooltip_column(1)
-
-        def force_ctrl(iv, ev):
-            ev.state = gtk.gdk.CONTROL_MASK
-
-        self.vista.connect('key-press-event', force_ctrl)
-        self.vista.connect('button-press-event', force_ctrl)
-
-        #self.vista.can_focus(True)
-        scrolledw.add(self.vista)
-        self.scroll = scrolledw
-        controlbox = gtk.VBox()
-        buttonbox = gtk.HButtonBox()
-        buttonbox.set_layout(gtk.BUTTONBOX_SPREAD)
-        buttonbox.set_homogeneous(True)        
-        
-        self.box.pack_start(listalign, True, True, 0)
-        listalign.add(scrolledw)
-        self.box.pack_start(controlbox, False, False, 50) # TODO padding on resize
-        controlbox.pack_start(buttonbox,True, True, 10) # IDEM
+    def define_buttons(self):
         self.buttonlist = []
-        self.add_button(buttonbox, gtk.STOCK_MEDIA_PLAY, "Play") 
-        self.add_button(buttonbox, gtk.STOCK_UNDO, "Restore") 
-        self.add_button(buttonbox, gtk.STOCK_CLOSE, "Delete") 
-        self.add_button(buttonbox, "user-trash", "Empty") 
-
-    def add_button(self, box, icon, text):
-        composition = gtk.VBox()
-        image = gtk.Image()
-        if not icon.count('user'):
-            image.set_from_stock(icon, gtk.ICON_SIZE_DIALOG)
-        else:
-            image.set_from_icon_name(icon, gtk.ICON_SIZE_DIALOG)
-        
-        label = gtk.Label(text)
-        composition.pack_start(image)
-        composition.pack_start(label)
-        button = gtk.Button()
-        button.add(composition)
-        button.set_tooltip_text(text)
-        button.connect('clicked', self.on_action)
-        self.buttonlist += [button]
-        box.pack_start(button)   
+        self.add_button(self.buttonbox, gtk.STOCK_MEDIA_PLAY, "Play") 
+        self.add_button(self.buttonbox, gtk.STOCK_UNDO, "Restore") 
+        self.add_button(self.buttonbox, gtk.STOCK_CLOSE, "Delete") 
+        self.add_button(self.buttonbox, "user-trash", "Empty") 
 
     def refresh_treeview(self):
 	"""Refresh all the values on the list"""
@@ -553,32 +633,6 @@ class ArchiveUI(ListingClassUI):
 
 	s = 0 if len(selected) == 0 else selected[0][0]
 	self.vista.get_selection().select_path(s)
-
-    def do_resize(self, buttonlist, secondlist=[]): 
-        """Force a resize on the Media Manager"""
-        size = context.get_mainwindow().get_size()
-        self.strip.resize()
-	altura = size[1]
-	anchura = size[0]
-
-	k1 = anchura / 1920.0
-	k2 = altura / 1080.0
-	self.proportion = k1
-
-        buttonlist = self.buttonlist
-	for button in buttonlist:
-	    button.set_property("width-request", int(k1*100) )
-	    button.set_property("height-request", int(k1*100) )
-
-	    image = button.get_children()
-	    if type(image[0]) == gtk.Image:
-		image[0].set_pixel_size(int(k1*80))   
-
-	    elif type(image[0]) == gtk.VBox:
-		for element in image[0].get_children():
-		    if type(element) == gtk.Image:
-			element.set_pixel_size(int(k1*46))
-	return True
 
         
 gobject.type_register(ListingClassUI)

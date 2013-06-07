@@ -57,7 +57,7 @@ class PlayerClassUI(ManagerUI):
     
     
     def __init__(self,package=None):       
-        ManagerUI.__init__(self,1)
+        ManagerUI.__init__(self, 1, 1, "Player")
 	builder = gtk.Builder()
         builder.add_from_file(get_ui_path('player.glade'))
         self.gui=builder
@@ -148,6 +148,7 @@ class PlayerClassUI(ManagerUI):
 
     def play_from_list(self, origin, package, backto):
         """Takes a MP from the listing area and plays it"""
+        print "backto", backto
         self.strip.back_page = backto
         self.dispatcher.emit("change-mode", 2)
         self.init_player(None, package)          
