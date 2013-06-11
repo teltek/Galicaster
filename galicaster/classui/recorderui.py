@@ -147,8 +147,7 @@ class RecorderClassUI(gtk.Box):
         self.connect_button(builder.get_object("editbutton"), self.on_edit_meta)
         self.connect_button(builder.get_object("helpbutton"), self.on_help)
         #self.connect_eventbox(builder.get_object("eventbox2"), self.show_about)
-        self.connect_button(builder.get_object("morebutton"), self.show_next)
-        
+        self.connect_button(builder.get_object("morebutton"), self.show_next)     
 
         # BIG STATUS
         blocked = context.get_conf().is_admin_blocked()
@@ -396,7 +395,6 @@ class RecorderClassUI(gtk.Box):
             gtk.gdk.INTERP_BILINEAR)
         button.set_from_pixbuf(pixbuf)
         return dialog
-
             
     def on_ask_stop(self,button):
         """Stops preview or recording and closes the Mediapakage"""
@@ -534,7 +532,6 @@ class RecorderClassUI(gtk.Box):
         self.scheduled_recording = False
         self.start_thread_id = None
 
-
     def reload_state_and_permissions(self):
         """Force a state review in case permissions had changed."""
         self.conf.reload()
@@ -548,8 +545,6 @@ class RecorderClassUI(gtk.Box):
     def reload_state(self):
         """Force a state review in case situation had changed"""
         self.change_state(self.status)
-
-
 
     def on_help(self,button):
         """Triggers a pop-up when Help button is clicked"""
@@ -600,8 +595,7 @@ class RecorderClassUI(gtk.Box):
 			}
         self.error_dialog = message.PopUp(message.ERROR, text, 
                                 context.get_mainwindow(), None)
-        
-        
+      
 
     def on_recover_from_error(self, origin):
         """If an error ocurred, removes preview areas and disconnect error handlers."""   
@@ -717,11 +711,9 @@ class RecorderClassUI(gtk.Box):
         signalized = False
         
         if self.font == None:
-            anchura = self.get_toplevel().get_screen().get_width()
-            if anchura not in [1024,1280,1920]:
-                anchura = 1920            
-            k1 = anchura / 1920.0
-            changing_font = pango.FontDescription("bold "+str(k1*42))       
+            size = context.get_mainwindow().get_size()
+            k1 = size[0] / 1920.0
+            changing_font = pango.FontDescription("bold "+str(int(k1*45)))       
             self.font = changing_font
         
         bold = pango.AttrWeight(700, 0, -1)
@@ -970,7 +962,7 @@ class RecorderClassUI(gtk.Box):
         r = gtk.CellRendererText()
         self.renderer=r
         r.set_alignment(0.5,0.5)
-        r.set_fixed_size(int(k2*380),-1) # TODO review
+        r.set_fixed_size(int(k1*380),-1) # TODO review
 
         font = pango.FontDescription("bold "+ str(int(k1*45))) # maybe a little too tall
         r.set_property('font-desc', font)
@@ -1055,13 +1047,8 @@ class RecorderClassUI(gtk.Box):
         l1 = self.gui.get_object("tab1")
         l2 = self.gui.get_object("tab2")
         l3 = self.gui.get_object("tab3")
-                    
-        #relabel(clock,k1*25,False)
-        font = pango.FontDescription("bold "+str(int(k2*48)))
-        self.renderer.set_property('font-desc', font)
-        #self.renderer.set_fixed_size(int(k2*400),-1)
 
-        modification = "bold "+str(k1*42)
+        modification = "bold "+str(int(k1*45))
         self.font = pango.FontDescription(modification)     
         relabel(nextl,k1*25,True)
         relabel(title,k1*33,True)
@@ -1120,16 +1107,20 @@ class RecorderClassUI(gtk.Box):
         calign.set_padding(int(k1*10),int(k1*30),int(k1*50),int(k1*50))
         vum = self.gui.get_object("vubox")
         vum.set_padding(int(k1*20),int(k1*10),int(k1*40),int(k1*40))         
-        #pbox.set_property("width-request", int(k1*225) )        
-        self.strip.resize()
+        #pbox.set_property("width-request", int(k1*225) )  
 
+        self.renderer.set_fixed_size(int(k1*380),-1)
+        font = pango.FontDescription("bold "+str(int(k1*45)))
+        self.renderer.set_property('font-desc', font)
+        self.strip.resize()
+        self.view.queue_resize()
         return True
 
         
     def change_state(self, state):
         """Activates or deactivates the buttons depending on the new state"""
   
-        record, pause, stop, helpb, prevb, editb  = range(6)
+        record, pause, stop, helpb, editb, prevb  = range(6)
 
         if state != self.status:
             self.previous,self.status = self.status,state          
@@ -1158,7 +1149,7 @@ class RecorderClassUI(gtk.Box):
             else:
                 self.dispatcher.emit("update-rec-status", "Waiting")   
         elif state == GC_RECORDING:
-            self.dispatcher.emit("update-rec-status", "  Recording  ")
+            self.dispatcher.emit("update-rec-status", " Recording ")
             context.get_state().is_recording=True
         elif state == GC_PAUSED:
             self.dispatcher.emit("update-rec-status", "Paused")
@@ -1176,6 +1167,7 @@ class RecorderClassUI(gtk.Box):
         buttons = list(self.buttons)
         if self.strip.UItype == 2:
             buttons += [self.strip.previous]
+        
         for index in range(len(buttons)):
             buttons[index].set_sensitive(values[index])          
 

@@ -99,7 +99,7 @@ class ListingClassUI(ManagerUI):
 	self.insert_data_in_list(self.lista, mp)
 
 	# Edit Cells per column
-	render1 = gtk.CellRendererText() #name
+	render1 = gtk.CellRendererText() #name / title
 	render6 = gtk.CellRendererText() #presenter
 	render7 = gtk.CellRendererText() #series
 	render2 = gtk.CellRendererText() #size
@@ -114,6 +114,7 @@ class ListingClassUI(ManagerUI):
 	self.renders[2].set_property('xalign',0.5)
 	self.renders[3].set_property('xalign',0.5)
 	self.renders[8].set_property('xalign',0.5)
+        render1.set_property('ellipsize', pango.ELLIPSIZE_END)
 	
 	
 	vbar = self.scroll.get_vscrollbar()
@@ -122,7 +123,7 @@ class ListingClassUI(ManagerUI):
 	# Create each column
 	#columna5 = gtk.TreeViewColumn("Id",render5,text = 0, background= 8) 
 	# column5 wont be append to the treeview
-	columna1 = gtk.TreeViewColumn("Name",render1,text = 1, background= 8)
+	columna1 = gtk.TreeViewColumn("Title",render1,text = 1, background= 8)
 	columna6 = gtk.TreeViewColumn("Presenter", render6, text = 2, background= 8)
 	columna7 = gtk.TreeViewColumn("Series", render7, text = 3, background= 8)
 	columna2 = gtk.TreeViewColumn("Size", render2, text = 4, background= 8)
@@ -133,10 +134,20 @@ class ListingClassUI(ManagerUI):
 	columna9 = gtk.TreeViewColumn("Ingest", render9)
 	columna10 = gtk.TreeViewColumn("Zip", render9)
 	columna11 = gtk.TreeViewColumn("SbS", render9)		
-	
-	#columna8 = gtk.TreeViewColumn("Status", render8, text = 7, background= 8)
-	#columna9 = gtk.TreeViewColumn("Operations", render9, text = 9, background= 8)
-	#columna9 = gtk.TreeViewColumn("Background",render9, text = 8)
+	columna12 = gtk.TreeViewColumn("NAS", render9)		
+        columns = [columna4, columna2, columna3, columna9, columna10, columna11, columna12, columna6, columna7]
+        for column in columns:
+            column.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
+        columna4.set_fixed_width(140)
+        columna2.set_fixed_width(90)
+        columna3.set_fixed_width(95)
+        op = 95
+        columna9.set_fixed_width(op)
+        columna10.set_fixed_width(op)
+        columna11.set_fixed_width(op)
+        columna12.set_fixed_width(op)
+        columna6.set_fixed_width(115)
+        columna7.set_fixed_width(125)
 
 	# Edit columns				
 	columna1.set_expand(True)
@@ -149,6 +160,7 @@ class ListingClassUI(ManagerUI):
 	columna9.set_cell_data_func(render9,self.operation_readable,"ingest")
 	columna10.set_cell_data_func(render9,self.operation_readable,"exporttozip")
 	columna11.set_cell_data_func(render9,self.operation_readable,"sidebyside")
+	columna12.set_cell_data_func(render9,self.operation_readable,"nas")
 	#columna7.set_cell_data_func(render7,self.series_readable,None)
 	# Columns 6 and 7 are not edited
 
@@ -164,8 +176,9 @@ class ListingClassUI(ManagerUI):
 	self.vista.append_column(columna3) # duration
 	#self.vista.append_column(columna8) # operation former status
 	self.vista.append_column(columna9) # operation former status
-	self.vista.append_column(columna10) # operation
-	self.vista.append_column(columna11) # operation
+	self.vista.append_column(columna10) # operation zip
+	self.vista.append_column(columna11) # operation sbs
+	self.vista.append_column(columna12) # operation nas
 		
 
 	#self.resize()
@@ -469,7 +482,7 @@ class ListingClassUI(ManagerUI):
 
     def define_buttons(self):
         self.buttonlist = []
-        self.add_button(self.buttonbox, gtk.STOCK_MEDIA_PLAY, "Play") 
+        self.add_button(self.buttonbox, "media-playback-start", "Play") 
         self.add_button(self.buttonbox, gtk.STOCK_COPY, "Edit") 
         self.add_button(self.buttonbox, gtk.STOCK_GO_UP, "Operations") 
         self.add_button(self.buttonbox, gtk.STOCK_CLOSE, "Delete") 
@@ -478,10 +491,11 @@ class ListingClassUI(ManagerUI):
     def add_button(self, box, icon, text):
         composition = gtk.VBox()
         image = gtk.Image()
-        if not icon.count('user'):
-            image.set_from_stock(icon, gtk.ICON_SIZE_DIALOG)
-        else:
-            image.set_from_icon_name(icon, gtk.ICON_SIZE_DIALOG)
+        #if not icon.count('user'):
+        #    image.set_from_stock(icon, gtk.ICON_SIZE_DIALOG)
+        #else:
+        #    image.set_from_icon_name(icon, gtk.ICON_SIZE_DIALOG)
+        image.set_from_icon_name(icon, gtk.ICON_SIZE_DIALOG)
         
         label = gtk.Label(text)
         composition.pack_start(image)

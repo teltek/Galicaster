@@ -81,7 +81,8 @@ class StripUI(gtk.VBox):
             previous = gtk.Button()
             previous.set_can_focus(False)
             image = gtk.Image()
-            image.set_from_stock(gtk.STOCK_GO_BACK, gtk.ICON_SIZE_DIALOG)
+            image.set_from_icon_name("gtk-go-back-ltr", gtk.ICON_SIZE_DND)
+            image.set_pixel_size(50)            
             previous.set_image(image)
             self.buttons += [(previous,220,60)]
             self.events += [previous]
@@ -99,6 +100,7 @@ class StripUI(gtk.VBox):
         logo_file = 'logo.svg'
         self.logos += [(logo, logo_file)]
 
+        # TODO only create if login
         user = gtk.HBox()
         name= gtk.Label("LOGIN")
         name.set_justify(gtk.JUSTIFY_LEFT)
@@ -112,9 +114,9 @@ class StripUI(gtk.VBox):
         icon.set_relief(gtk.RELIEF_NONE)
         
         icon.check_resize()
-        self.buttons += [(icon, 50, 50)]
-        user.pack_start(name, True, True, 0)
-        user.pack_start(icon, True, True, 0)
+        #self.buttons += [(icon, 50, 50)]
+        #user.pack_start(name, True, True, 0)
+        #user.pack_start(icon, True, True, 0)
            
         self.about = about
         self.user = name
@@ -191,10 +193,22 @@ class StripUI(gtk.VBox):
             button, width, height = pair
             button.set_property("width-request", int(k1*width) )
             button.set_property("height-request", int(k1*height) )
+            for align in button.get_children():
+                image = align.get_child().get_children()[0]
+                if isinstance(image, gtk.Image):
+                    #print image.get_stock()
+                    #print type(image)
+                    #print image.get_pixel_size()
+                    image.set_pixel_size(int(k1*50))
+                #print dir(image)
+
+                #print image.get_name()
+                #print image.get_icon_name()
+                #print image.get_image()
 
         for pair in self.labels:
             label, font = pair
-            relabel(label,k2*font,True)
+            relabel(label,int(k1*font),True)
         for pair in self.aligns:
             align, top, bottom, sides = pair
             align.set_padding(int(k1*top), int(k1*bottom), int(k1*sides), int(k1*sides) )
