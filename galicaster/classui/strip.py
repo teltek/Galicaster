@@ -196,15 +196,7 @@ class StripUI(gtk.VBox):
             for align in button.get_children():
                 image = align.get_child().get_children()[0]
                 if isinstance(image, gtk.Image):
-                    #print image.get_stock()
-                    #print type(image)
-                    #print image.get_pixel_size()
                     image.set_pixel_size(int(k1*50))
-                #print dir(image)
-
-                #print image.get_name()
-                #print image.get_icon_name()
-                #print image.get_image()
 
         for pair in self.labels:
             label, font = pair

@@ -90,7 +90,7 @@ class OperationList(MainList):
         return selectorUI
 
     def append_schedule(self): # TODO get size from class
-        variable = "scheduling" 
+        variable = "schedule" 
         font = 15
         selectorUI = Chooser(variable,
                          variable.capitalize(),

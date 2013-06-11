@@ -47,10 +47,10 @@ class Operation(object):
         else:
             pass #log zip operation inside the other action
         success = True
-        #try:
-        self.do_perform(mp)
-        #except:
-        #    success = False
+        try:
+            self.do_perform(mp)
+        except:
+            success = False
         if self.is_action:
             self.logEnd(mp, success)
         else:
@@ -65,6 +65,11 @@ class Operation(object):
     def setEndTime(self):
         self.end_time = datetime.datetime.utcnow()
 
+    def logNightly(self, mp):
+        mp.setOpStatus(self.__name,mediapackage.OP_NIGHTLY)
+        context.get_dispatcher().emit('refresh-row', mp.getIdentifier())
+        context.get_repository().update(mp)
+        
     def logCreation(self, mp):
         """Leaves log when operation is created"""
         self.setCreationTime()

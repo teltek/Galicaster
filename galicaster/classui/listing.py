@@ -89,12 +89,14 @@ class ListingClassUI(ManagerUI):
 			      self.color[mp.getOpStatus("ingest")],
 			      mp.getOpStatus("ingest"),
 			      mp.getOpStatus("exporttozip"),
-			      mp.getOpStatus("sidebyside"),])				    
+			      mp.getOpStatus("sidebyside"),
+                              mp.getOpStatus("nas")
+                              ])				    
 
 
     def populate_treeview(self, mp):
 	"""Establishes which values to be shown, its properties"""
-	self.lista = gtk.ListStore(str,str, str, str, long, int, str, int, str, int, int, int)
+	self.lista = gtk.ListStore(str,str, str, str, long, int, str, int, str, int, int, int, int)
 	# gobject.TYPE_PYOBJECT
 	self.insert_data_in_list(self.lista, mp)
 
@@ -182,7 +184,7 @@ class ListingClassUI(ManagerUI):
 		
 
 	#self.resize()
-	self.equivalent= {6: 0, 1: 1, 2 : 2, 3 : 3, 4: 4, 5 : 5, 7: 3, 9:6, 10:7, 11:8}  # 9
+	self.equivalent= {6: 0, 1: 1, 2 : 2, 3 : 3, 4: 4, 5 : 5, 7: 3, 9:6, 10:7, 11:8, 12:9}  # 9
 	# data position versus column position
 
 	# Show TreeView
@@ -202,6 +204,7 @@ class ListingClassUI(ManagerUI):
 	columna9.set_sort_column_id(9) # operation <<
 	columna10.set_sort_column_id(10) # operation <<
 	columna11.set_sort_column_id(11) # operation <<
+	columna11.set_sort_column_id(12) # operation <<
 	
 	self.lista.set_sort_func(5,self.sorting,5)
 	self.lista.set_sort_func(1,self.sorting_text,1)
@@ -256,18 +259,19 @@ class ListingClassUI(ManagerUI):
 
     def _refresh(self,mp,i):
         """Fills the new values of a refreshed row"""
-	self.lista.set(i,0,mp.getIdentifier())
+	#self.lista.set(i,0,mp.getIdentifier())
 	self.lista.set(i,1,mp.getTitle())
 	self.lista.set(i,2,mp.getCreator())
 	self.lista.set(i,3,mp.series_title)
-	self.lista.set(i,4,long(mp.getSize()))
-	self.lista.set(i,5,int(mp.getDuration()))
-	self.lista.set(i,6,mp.getStartDateAsString())
+	#self.lista.set(i,4,long(mp.getSize()))
+	#self.lista.set(i,5,int(mp.getDuration()))
+	#self.lista.set(i,6,mp.getStartDateAsString())
 	self.lista.set(i,7,mp.status)
 	self.lista.set(i,8,self.color[mp.getOpStatus("ingest")])
 	self.lista.set(i,9,mp.getOpStatus("ingest"))
 	self.lista.set(i,10,mp.getOpStatus("exporttozip"))
 	self.lista.set(i,11,mp.getOpStatus("sidebyside"))
+	self.lista.set(i,12,mp.getOpStatus("nas"))
 	
     def refresh(self,element=None,package=None):
         # self refresh_row()
@@ -307,6 +311,8 @@ class ListingClassUI(ManagerUI):
             self.on_empty()
         elif op == "Trash":
             self.on_trash()
+        elif op == "Sync":
+            self.dispatcher.emit('galicaster-notify-nightly')
 	elif op == "Info":
             last = store.get_iter(rows[len(rows)-1])
             self.on_info(store, None, last)
@@ -487,6 +493,7 @@ class ListingClassUI(ManagerUI):
         self.add_button(self.buttonbox, gtk.STOCK_GO_UP, "Operations") 
         self.add_button(self.buttonbox, gtk.STOCK_CLOSE, "Delete") 
         self.add_button(self.buttonbox, "user-trash", "Trash") 
+        self.add_button(self.buttonbox, gtk.STOCK_DIALOG_WARNING, "Sync") 
 
     def add_button(self, box, icon, text):
         composition = gtk.VBox()

@@ -87,7 +87,6 @@ class MHIngest(Operation):
         self.options["temporal-path"] = self.transform_folder(self.options["temporal-path"])
         self.ifile = tempfile.NamedTemporaryFile(dir= self.options["temporal-path"])
         self.options["temporal-path"] = self.ifile.name
-        print self.options["temporal-path"]
         # create zip suboperation
         self.export=ExportToZip()
         self.export.configure({"use-namespace": self.options["use-namespace"],
@@ -114,7 +113,6 @@ class MHIngest(Operation):
         self.export.perform(mp) # It was defined in configure
         mhclient = context.get_mhclient()
         if mp.manual:
-            print mhclient
             mhclient.ingest(self.options["temporal-path"])
         else:
             mhclient.ingest(self.options["temporal-path"], workflow,

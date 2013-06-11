@@ -35,7 +35,7 @@ def enqueue_operations(operation, packages):
         if operation.schedule.lower() == operation.IMMEDIATE:
             context.get_worker().enqueueJob(operation, package) # package is already on the operation?
         else:
-            context.get_worker().nightJob(operation, package)
+            context.get_worker().enqueueJobNightly(operation, package)
 
 def import_from_file(filepath):
     parser = ConfigParser.ConfigParser()

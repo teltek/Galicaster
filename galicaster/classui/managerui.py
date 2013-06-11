@@ -1,4 +1,4 @@
-# -*- codingo:utf-8 -*-
+# -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
 #       galicaster/ui/managerui

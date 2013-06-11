@@ -59,28 +59,23 @@ class SideBySide(Operation):
 
         Operation.configure(self, options, is_action)
 
-        self.name = self.options["filename"]
-        if os.path.splitext(self.name)[1] != '.mp4':
-            self.name = self.name+'.mp4' # TODO clean . or similar odd carachters
-        self.location = self.options["location"]
+        if os.path.splitext(self.options["filename"])[1] != '.mp4':
+            self.optionsn["filename"] = self.options["filename"]+'.mp4' # TODO clean . or similar odd carachters
         self.layout = self.options["layout"]
         self.date=datetime.datetime.now()
 
     def do_perform(self, mp): # TODO log creation
 
-        folder = self.transform_folder(self.location, mp) # TODO update options to reflect changes
-        filename = self.transform_template(self.name, mp)
-        destination = os.path.join(folder, filename)
-        print folder, self.location
-        print filename, self.name
-        print destination
+        self.options["location"] = self.transform_folder( self.options["location"], mp) # TODO update options to reflect changes
+        self.options["filename"] = self.transform_template( self.options["filename"], mp)
+        destination = os.path.join(self.options["location"], self.options["filename"])
         base = destination
         count = itertools.count(2)
         while os.path.exists(destination):
             destination = (base + "_" + str(next(count)))
-
+        self.options["filename"] = os.path.split(destination)[1]
         camera, screen, audio = self.parse_tracks(mp) # TODO move to configure if possible
-        sidebyside.create_sbs(destination, camera, screen, audio, self.layout)
+        sidebyside.create_sbs(destination, camera, screen, audio, self.options["layout"])
 
     def parse_tracks(self, mp):
         audio = None 

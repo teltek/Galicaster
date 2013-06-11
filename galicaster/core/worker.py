@@ -15,6 +15,7 @@ import os
 import threading
 import tempfile
 import Queue
+from galicaster.mediapackage import mediapackage
 
 class Worker(object):
 
@@ -58,17 +59,32 @@ class Worker(object):
                 os.makedirs(dir_path)
 
         self.jobs = Queue.Queue()
+        self.nightJobs = []
         
         self.t = self.T(self.jobs)
         self.t.setDaemon(True)
         self.t.start()
 
-        #self.dispatcher.connect('galicaster-notify-nightly', self.exec_nightly)
+        self.dispatcher.connect('galicaster-notify-nightly', self.exec_nightly)
 
 
     def enqueueJob(self, operation, package):        
         operation.setCreationTime()
         self.jobs.put( (operation.perform,(package,)) ) # TODO log
+
+    def enqueueJobNightly(self, operation, package):        
+        operation.logNightly(package)
+        self.nightJobs.append( (operation, package) )
+        
+    def exec_nightly(self, origin):
+        while len(self.nightJobs)>0:
+            op, package = self.nightJobs.pop(0)
+            self.enqueueJob( op, package )
+        return True
+                                   
+
+
+        #self.jobs.put( (operation.perform,(package,)) ) # TODO log
         
     # TODO enqueue nightly
     # save subtype, date and options to rebuild operations
