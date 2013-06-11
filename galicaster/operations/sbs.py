@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       galicaster/operations/export_to_zip
+#       galicaster/operations/sbs
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
@@ -12,20 +12,21 @@
 # San Francisco, California, 94105, USA.
 
 """
-Export to Zip Operation module
+Side by side and Picture in picture Operation module
 """
 import os
 import datetime
 import tempfile
+import itertools
 
 from galicaster.core import context
-from galicaster.mediapackage import serializer
+from galicaster.utils import sidebyside
 from __init__ import Operation
 
-class ExportToZip(Operation):
+class SideBySide(Operation):
 
-    order = ["schedule", "location", "filename" , "use-namespace", "ziptype",]
-    show = [ "schedule" ]
+    order = ["schedule", "location", "filename", "layout"]
+    show = ["schedule"]
     parameters = {
         "schedule": {
             "type": "select",
@@ -33,52 +34,71 @@ class ExportToZip(Operation):
             "description": "",
             "options": [ "immediate", "nightly" ]
             },
-         "filename": {
-            "type": "file",
-            "default": "{date}.zip", # TODO use format
+        "filename": {
+            "type": "filepath",
+            "default": "${title}.zip", # TODO use format
             "description": "Zip filename where to save the mediapackage",
             },
          "location": {
-            "type": "folder",
-            "default": "{export}",#TODO get export folder
-            "description": "Location where to save the zip file",
+            "type": "folderpath",
+            "default": "{export}", # TODO use format
+            "description": "Location where the resulting file will be exported",
             },
-         "use-namespace": {
-            "type": "boolean",
-            "default": True,
-            "description": "Wheter XML namespace is included on metadata files",
-            },
-         "ziptype": { # TODO implement
+         "layout": {
             "type": "select",
-            "default": "native",
-            "description": "Wheter XML namespace is included on metadata files",
-            "options": ["native","system"],
+            "default": "sbs",
+            "description": "Video composition layout for the side by side output",
+            "options": [ "sbs", "pip_screen", "pip_camera" ] # TODO parameters for differnen layouts
             },
          }
          
     def __init__(self, options = {}):
-        Operation.__init__(self, "exporttozip", options)
+        Operation.__init__(self, "sidebyside", options)
 
     def configure(self, options={}, is_action=True):
 
         Operation.configure(self, options, is_action)
-       
-        
-        #if notos.path.splitext(self.options["filename"])[1] != '.zip':
-        #    self.options["filename"] = self.options["filename"]+'.zip' # TODO clean . or similar odd carachters
-        self.date=datetime.datetime.now()
-        # TODO ziptype from somewhere
-        # TODO use-namespace from conf
-        
-    def do_perform(self, mp):
-        self.options["location"] = self.transform_folder(self.options["location"])
-        self.options["filename"] = self.transform_template(self.options["filename"], mp)
-        destination = os.path.join(self.options["location"], self.options["filename"])
-        # Don't look for duplicates, ingest needs to overwrite files
-        self.options["filename"] = os.path.split(destination)[1]
-        serializer.save_in_zip(mp, destination, self.options["use-namespace"], context.get_logger())
 
-    def transform_folder(self, template):
+        self.name = self.options["filename"]
+        if os.path.splitext(self.name)[1] != '.mp4':
+            self.name = self.name+'.mp4' # TODO clean . or similar odd carachters
+        self.location = self.options["location"]
+        self.layout = self.options["layout"]
+        self.date=datetime.datetime.now()
+
+    def do_perform(self, mp): # TODO log creation
+
+        folder = self.transform_folder(self.location, mp) # TODO update options to reflect changes
+        filename = self.transform_template(self.name, mp)
+        destination = os.path.join(folder, filename)
+        print folder, self.location
+        print filename, self.name
+        print destination
+        base = destination
+        count = itertools.count(2)
+        while os.path.exists(destination):
+            destination = (base + "_" + str(next(count)))
+
+        camera, screen, audio = self.parse_tracks(mp) # TODO move to configure if possible
+        sidebyside.create_sbs(destination, camera, screen, audio, self.layout)
+
+    def parse_tracks(self, mp):
+        audio = None 
+        camera = None
+        screen = None
+        for track in mp.getTracks():
+            if track.getMimeType()[0:5] == 'audio':
+                 audio = track.getURI()
+            else:
+                if track.getFlavor()[0:9] == 'presenter' :
+                    camera = track.getURI()
+                if track.getFlavor()[0:12] == 'presentation':
+                    screen = track.getURI()
+
+        return camera, screen, audio
+
+
+    def transform_folder(self, template, mp): # TODO refactorize with export and nas
 
         conf = context.get_conf()
         mappings = {

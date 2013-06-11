@@ -62,7 +62,7 @@ class OperationList(MainList):
     def select(self, button=None):
         options = {}
         for element in self.chooser:
-            options[element.variable] =element.getSelected()
+            options[element.variable] = element.getSelected()
         operation = options.pop('operation')
         operation.configure(options = options)        
         loader.enqueue_operations(operation,self.superior.mediapackage) # TODO send a signal better

@@ -231,8 +231,10 @@ class ListingClassUI(ManagerUI):
 
     def refresh_operation(self, origin, operation, package, success = None):
         """Refresh the status of an operation in a given row"""
-	identifier = package.identifier
-	self.refresh_row_from_mp(origin,identifier, self.reference)
+        identifier = package
+        if not isinstance(package, unicode):
+            identifier = package.getIdentifier()
+	self.refresh_row_from_mp(origin, identifier, self.reference)
 
     def refresh_row(self,reference,i):# FIXME keep the sort id 
         mpid = self.lista[i][0] # FIXME set the id as the first metadata

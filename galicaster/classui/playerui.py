@@ -148,7 +148,6 @@ class PlayerClassUI(ManagerUI):
 
     def play_from_list(self, origin, package, backto):
         """Takes a MP from the listing area and plays it"""
-        print "backto", backto
         self.strip.back_page = backto
         self.dispatcher.emit("change-mode", 2)
         self.init_player(None, package)          

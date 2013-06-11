@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+1# -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
 #       galicaster/operations/operation/nas
@@ -15,7 +15,7 @@ Operation loader for custom operations
 
 import os
 import ConfigParser
-import nas, export_to_zip#, sbs, ingest_to_mh
+import nas, export_to_zip, sbs, ingest
 from galicaster.core import context
 
 def get_operations():
@@ -33,9 +33,9 @@ def get_operations():
 def enqueue_operations(operation, packages):
     for package in packages: # TODO perform them in order
         if operation.schedule.lower() == operation.IMMEDIATE:
-            context.get_worker().enqueueJob(operation.perform, package) # package is already on the operation?
+            context.get_worker().enqueueJob(operation, package) # package is already on the operation?
         else:
-            context.get_worker().nightJob(operation.perform, package)
+            context.get_worker().nightJob(operation, package)
 
 def import_from_file(filepath):
     parser = ConfigParser.ConfigParser()
@@ -59,13 +59,17 @@ def convert_operation(operations):
         except:
             pass
         if theType == "zip":
-            op = export_to_zip.ExportToZip()
+            op = export_to_zip.ExportToZip(operation)
         elif theType == "nas":
-            op = nas.IngestNas()
+            op = nas.IngestNas(operation)
+        elif theType == "sbs":
+            op = sbs.SideBySide(operation)
+        elif theType == "ingest":
+            op = ingest.MHIngest(operation)
+
+
         else:
             pass # TODO error, do log
         
-        # TODO, check Nones
-        op.configure(options=operation)
         group.append((op,name))
     return group

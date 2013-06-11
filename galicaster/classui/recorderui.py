@@ -1173,9 +1173,7 @@ class RecorderClassUI(gtk.Box):
             
                 
     def setSensitivity( self,status, values):
-        print "setting Sensitivity"
         buttons = list(self.buttons)
-        print buttons
         if self.strip.UItype == 2:
             buttons += [self.strip.previous]
         for index in range(len(buttons)):

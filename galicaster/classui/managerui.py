@@ -340,7 +340,6 @@ class ManagerUI(gtk.Box):
 	return True
 
     def on_trash(self):
-        print "trash required"
         self.dispatcher.emit("change_mode", 4)
 
     def on_empty(self):

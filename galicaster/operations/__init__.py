@@ -23,46 +23,38 @@ class Operation(object):
     Base class for operation objects
     """
 
-    # priority
-    #TODO just use a positive integer
-    LOW = 0
-    NORMAL = 1
-    HIGH = 2
-    HIGHEST = 3
-
     # schedule
     IMMEDIATELY = 0
     NIGHTLY = 1
     SCHEDULED = 2
     IMMEDIATE = "immediate"
 
-    priority = {
-        "priority": {
-            "type": "selection",
-            "default": "Low",
-            "options": ["Low", "Normal", "High"],
-            "description": "Queue priority",
-            },
-        }
-    scheduling = {    
-        "scheduling": {
-            "type": "selection",
-            "default": "Immediate",
-            "options": ["Immediate","Nightly","Scheduled"],
-            "description": "Scheduling type",
-            },
-        }
-
-    commom = scheduling
-    commom.update(priority)
-
-    def __init__(self, name, mp = None, priority=NORMAL, schedule=IMMEDIATELY):
+    def __init__(self, name, options):
         self.__name = name
-        self.mp = mp # SUDO MP might be unnecessary
-        self.identifier = unicode(uuid.uuid4())# TIME might make identifier unnecesary
-        self.creation_time = datetime.datetime.utcnow() # TODO creation time on configure
-        self.start_time = None
-        self.end_time = None
+        self.creation_time = None # Initialize on worker.put
+        self.start_time = None # stablish on perform
+        self.end_time = None # set on failed or succesful end
+        self.options = {}
+        self.parse_options(options)
+
+    def configure(self, options, is_action):
+        self.parse_options(options)
+        self.is_action = is_action
+
+    def perform(self, mp):
+        if self.is_action:
+            self.logStart(mp)
+        else:
+            pass #log zip operation inside the other action
+        success = True
+        #try:
+        self.do_perform(mp)
+        #except:
+        #    success = False
+        if self.is_action:
+            self.logEnd(mp, success)
+        else:
+            pass # log zip inside another action
         
     def setCreationTime(self):
         self.creation_time = datetime.datetime.utcnow()
@@ -78,7 +70,7 @@ class Operation(object):
         self.setCreationTime()
         context.get_logger().info("Creating {0} for {1}".format(self.__name, mp.getIdentifier() ))
         mp.setOpStatus(self.__name,mediapackage.OP_PENDING)
-        context.get_dispatcher().emit('refresh-row', self.mp.identifier)
+        context.get_dispatcher().emit('refresh-row', mp.getIdentifier())
         context.get_repository().update(mp)
 
     def logStart(self, mp):
@@ -87,7 +79,7 @@ class Operation(object):
         context.get_logger().info("Executing {0} for {1}".format(self.__name, mp.getIdentifier() ))
         mp.setOpStatus(self.__name, mediapackage.OP_PROCESSING)
         context.get_dispatcher().emit('start-operation', self.__name, mp.getIdentifier())
-        context.get_dispatcher().emit('refresh-row', mp.identifier)
+        context.get_dispatcher().emit('refresh-row', mp.getIdentifier())
         context.get_repository().update(mp)
 
     def logEnd(self, mp, success):
@@ -99,7 +91,7 @@ class Operation(object):
             context.get_logger().info("Failed {0} for {1}".format(self.__name, mp.getIdentifier() ))
         mp.setOpStatus(self.__name, mediapackage.OP_DONE if success else mediapackage.OP_FAILED)
         context.get_dispatcher().emit('stop-operation', self.__name, mp, success)
-        context.get_dispatcher().emit('refresh-row', mp.identifier)
+        context.get_dispatcher().emit('refresh-row', mp.getIdentifier())
         context.get_repository().update(mp)
 
     def serialize_operation(self):
@@ -110,15 +102,17 @@ class Operation(object):
         # doc = minidom.Document()
         pass
 
-    def parse_options(self,options):
-        self.options={}
+    def parse_options(self, input_options):
+        options = self.validate_options(input_options)
+        self.options.update(options)
         for key in self.order:
-            if not options.has_key(key):
+            if not self.options.has_key(key):
                 self.options[key]=self.parameters[key]['default']
-            else:
-                self.options[key]=options[key]
+        self.schedule = self.options["schedule"]
 
-    # SHARED METHODS
+    def validate_options(self, options):
+        return options
+        
 
     def select_tracks(self, mp, tracks): 
         # TODO integrate on Operation since is duplicated in ingest
@@ -152,7 +146,6 @@ def deserialize_operation(self, string):
         klass=prop.get_attribute("name")
         value = klass.firstChild.wholeText.strip().strip("\n")
         props[klass]=value
-    print props
 
     mp_id = string.getAttribute("mediapackage")
     new=Operation(name,props["mediapackage"],props["priority"],props["schedule"])
