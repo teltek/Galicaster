@@ -76,13 +76,8 @@ class ListingClassUI(ManagerUI):
         for mp in mps:
             if mp.status != mediapackage.SCHEDULED:
                 lista.append([mp, mp.getStartDateAsString()])
-			
 
-    def populate_treeview(self, mp):
-        
-        
-	self.lista = gtk.ListStore(object, str) # Just mp
-        self.insert_data_in_list(self.lista, mp) # insert all mps
+    def set_columns(self):
 
         # Definition  
         renderTitle = gtk.CellRendererText()
@@ -103,29 +98,25 @@ class ListingClassUI(ManagerUI):
         for op in ops:
             shortnames += [ op[0][1].get("shortname") ]
 
-        # Definition        
         title = { "column-title" : "Title", 'render' : renderTitle, 'function' : self.render_title,
                   "fixed-width" : 200, "wprop" : 56, "sorting": self.sort }
         presenter = { "column-title" : "Presenter", 'render' : renderText, 'function' : self.render_presenter,
-                      "fixed-width" : 115, "wprop" : 27, "sorting": self.sorting_empty }
+                      "fixed-width" : 125, "wprop" : 27, "sorting": self.sorting_empty }
         series = { "column-title" : "Series", 'render' : renderText, 'function' : self.render_series,
-                   "fixed-width" : 125, "wprop" : 33, "sorting": self.sorting_empty }
+                   "fixed-width" : 135, "wprop" : 33, "sorting": self.sorting_empty }
         date = { "column-title" : "Date", 'render' : renderText, 'function' : self.render_date,
-                 "fixed-width" : 150, "wprop" : 23, "sorting": self.sort }
+                 "fixed-width" : 140, "wprop" : 23, "sorting": self.sort }
         size = { "column-title" : "Size", 'render' : renderValue, 'function' : self.render_size,
-                 "fixed-width" : 90, "wprop" : 14, "sorting": self.sort }
+                 "fixed-width" : 88, "wprop" : 14, "sorting": self.sort }
         duration = { "column-title" : "Duration", 'render' : renderValue, 'function' : self.render_duration,
                      "fixed-width" : 93, "wprop" : 10, 'sorting': self.sort  }
         definitions = [ date, title, presenter, series, size, duration]
-        for op in shortnames:
-            operation = {"column-title" : op, 'render' : renderOperation, 
-                         'function' : self.render_operation, "fixed-width" : 95, "wprop" : 8, 
-                         'sorting': self.sort  }
-            definitions += [ operation]
-
-
-	vbar = self.scroll.get_vscrollbar()
-	vbar.set_update_policy(gtk.UPDATE_DELAYED)
+        if self.reference == 1:
+            for op in shortnames:
+                operation = {"column-title" : op, 'render' : renderOperation, 
+                             'function' : self.render_operation, "fixed-width" : 95, "wprop" : 8, 
+                             'sorting': self.sort  }
+                definitions += [ operation]
 
         columns = []
 
@@ -144,13 +135,20 @@ class ListingClassUI(ManagerUI):
                 self.lista.set_sort_func(len(columns), 
                                          value['sorting'], 
                                          value['column-title'])
+        return definitions, columns
+
+    def populate_treeview(self, mp):
+	self.lista = gtk.ListStore(object, str) # Just mp
+        self.insert_data_in_list(self.lista, mp) # insert all mps
+        definitions, columns = self.set_columns()
+
+	vbar = self.scroll.get_vscrollbar()
+	vbar.set_update_policy(gtk.UPDATE_DELAYED)
                 
         self.definitions = definitions
         self.columns = columns
 
 	self.vista.set_model(self.lista)
-        #for column in columns:
-            #self.vista.append_column(column) # TODO filter ops columns
 	self.vista.set_headers_clickable(True)
 
 	self.vista.connect('row-activated',self.on_double_click)
@@ -182,8 +180,8 @@ class ListingClassUI(ManagerUI):
     def render_date(self, column, cell, model, iterator, user_data = None ):
         mp = model[iterator][0]
         value = mp.getStartDateAsString()
-        readable.date(value)
-        cell.set_property('text', value)		
+        result = readable.date(value)
+        cell.set_property('text', result)
 
     def render_duration(self, column, cell, model, iterator, user_data = None ):
         mp = model[iterator][0]

@@ -106,11 +106,11 @@ class ManagerUI(gtk.Box):
         first = None
         second = None
         column = 0
-        if data =="series":
+        if data.lower() =="series":
             first = treemodel[iter1][0].series_title
             second = treemodel[iter2][0].series_title
             column = 3
-        if data =="presenter":
+        if data.lower() =="presenter":
              first = treemodel[iter1][0].getCreator()
              second = treemodel[iter2][0].getCreator()
              column = 2
