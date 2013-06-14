@@ -35,10 +35,10 @@ SCHEDULED = 2
 RECORDING = 3
 RECORDED = 4
 FAILED = 5
-PENDING = 6 #DEPRECATED see Operation Status
-INGESTING = 7 #DEPRECATED see Operation Status
-INGESTED = 8 #DEPRECATED see Operation Status
-INGEST_FAILED = 9 #DEPRECATED see Operation Status
+PENDING = 6 #DEPRECATED 
+INGESTING = 7 #DEPRECATED 
+INGESTED = 8 #DEPRECATED 
+INGEST_FAILED = 9 #DEPRECATED 
 
 # Operation Status
 OP_IDLE = 0
@@ -427,15 +427,32 @@ class Mediapackage(object):
         else:
             self.__duration = duration
 
+    # Operations
+    def getOp(self, name):
+        if name not in self.operation:
+            self.operation[name] = (OP_IDLE, 0)
+        return self.operation[name]
+
+    def setOp(self, name, value, time=0):
+        self.operation[name] = (value, time)
+
     def getOpStatus(self, name):
-        if name in self.operation:
-            return self.operation[name] 
-        
-        self.operation[name] = OP_IDLE
-        return OP_IDLE
+        if name not in self.operation:
+            self.operation[name] = (OP_IDLE, 0)
+        return self.operation[name][0]
+
+    def getOpTime(self, name):
+        if name not in self.operation:
+            self.operation[name] = (OP_IDLE, 0)
+        return self.operation[name][2]
 
     def setOpStatus(self, name, value):
-        self.operation[name] = value
+        status, time = self.getOp(name)
+        self.operation[name] = (value , time)
+
+    def setOpTime( self, name, value):
+        status, time = self.getOp(name)
+        self.operation[name] = (status, value)
     
     def contains(self, element):
         if element == None:

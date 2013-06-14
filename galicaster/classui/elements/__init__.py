@@ -200,7 +200,9 @@ class Listbox(gtk.ScrolledWindow):
         
         gtk.ScrolledWindow.__init__(self)
         self.set_shadow_type(gtk.SHADOW_ETCHED_IN)
-        self.set_size_request(-1,206) # TODO get size from parents
+        rows = len(values) if len(values)<5 else 5
+        self.set_size_request(-1,len(values)*69) # TODO get size from parents
+        
 
         lista, self.view = self.prepare_view(1)# TODO get size from parent
         for value in values:

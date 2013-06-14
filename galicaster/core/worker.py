@@ -2,7 +2,7 @@
 # Galicaster, Multistream Recorder and Player
 #
 #       galicaster/core/worker
-#
+#OP_
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
@@ -43,8 +43,8 @@ class Worker(object):
         export_path -- path where galicaster exports zip and sidebyside
         tmp_path -- temporal path (need if /tmp partition is small)
         """
-
-
+        
+        self.context = (logger, dispatcher, repo)
         self.repo = repo
         self.mh_client = mh_client
         self.export_path = export_path or os.path.expanduser('~')
@@ -60,16 +60,49 @@ class Worker(object):
 
         self.jobs = Queue.Queue()
         self.nightJobs = []
+
+        #self.rebuildQueues()
         
         self.t = self.T(self.jobs)
         self.t.setDaemon(True)
         self.t.start()
 
         self.dispatcher.connect('galicaster-notify-nightly', self.exec_nightly)
+        #self.dispatcher.connect('galicaster-cancel-nightly', self.cancel_nightly_operations)
+        #self.dispatcher.connect('galicaster-do_now-nightly', self.do_now_nightly_operations)
 
+    def rebuildQueues(self):
+        for identifier,mp in self.repo.iteritems():
+            change = False
+            for (op_name, op_values) in mp.operation.iteritems():
+                op_value, op_time = op_values
+                if op_value is mediapackage.OP_PROCESSING:
+                    mp.setOpStatus(op_name, mediapackage.OP_FAILED)
+                    change = True
+                elif op_value is mediapackage.OP_PENDING:
+                    print "recreating pending op", op_name
+                    #op = loader.recreate_op(op_name)
+                    op = None
+                    if op:
+                        self.enqueueJob(op,mp)
+                    else:
+                        mp.setOpStatus(op_name, mediapackage.OP_FAILED) # TODO log the operation is missing
+                        change = True
+                elif op_value is mediapackage.OP_NIGHTLY:
+                        print "recreating nightly ", op_name
+                        #op = loader.recreate_op(op_name)
+                        op = None
+                        if op:
+                            self.enqueueJobNightly(op,mp)
+                        else:
+                            mp.setOpStatus(op_name, mediapackage.OP_FAILED) # TODO log the operation is missing
+                            change = True
+            if change:
+                self.repo.update(mp)        
+        print "Rebuild", len(self.nightJobs)
 
     def enqueueJob(self, operation, package):        
-        operation.setCreationTime()
+        operation.logCreation(package)
         self.jobs.put( (operation.perform,(package,)) ) # TODO log
 
     def enqueueJobNightly(self, operation, package):        
@@ -81,10 +114,34 @@ class Worker(object):
             op, package = self.nightJobs.pop(0)
             self.enqueueJob( op, package )
         return True
-                                   
 
+    def cancel_nightly_operations(self, op, mps):
+        for mp in mps:
+            pop = None
+            for operation, package in self.nightJobs:
+                if mp == package and op==operation.name:
+                    pop = (operation, package)
+            if pop != None:
+                self.nightJobs.pop( self.nightJobs.index(pop) )
+                pop[0].logCancelNightly( pop[1] )
+                
+    def do_now_nightly_operations(self, op, mps):
+        for mp in mps:
+            pop = None
+            for operation, package in self.nightJobs:
+                if mp == package and op==operation.name:
+                    pop = ( operation, package )
+            if pop != None:
+                self.nightJobs.pop( self.nightJobs.index(pop) )
+                self.enqueueJob(pop[0], pop[1])
 
-        #self.jobs.put( (operation.perform,(package,)) ) # TODO log
-        
-    # TODO enqueue nightly
-    # save subtype, date and options to rebuild operations
+    def enqueue_operations(self, operation, packages):
+        for package in packages: # TODO perform them in order
+            bound = operation[0]
+            subtype = operation[1].pop('shortname')
+            defined = bound( subtype, operation[1], self.context )
+            defined.configure( operation[2] )
+            if defined.schedule.lower() == defined.IMMEDIATE:
+                self.enqueueJob(defined, package) # package is already on the operation?
+            else: # TODO check Nightly also
+                self.enqueueJobNightly(defined, package)

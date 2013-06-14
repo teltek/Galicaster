@@ -52,8 +52,8 @@ class SideBySide(Operation):
             },
          }
          
-    def __init__(self, options = {}):
-        Operation.__init__(self, "sidebyside", options)
+    def __init__(self, subtype, options = {}, context=None):
+        Operation.__init__(self, "sidebyside", subtype, options, context)
 
     def configure(self, options={}, is_action=True):
 

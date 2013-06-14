@@ -75,8 +75,8 @@ class MHIngest(Operation):
             },            
         }
         
-    def __init__(self, options ={}):
-        Operation.__init__(self,"ingest", options)
+    def __init__(self, subtype, options ={}, context=None):
+        Operation.__init__(self,"ingest", subtype, options, context)
 
     def configure(self, options={}, is_action=True):
         """Parameters in options: server, workflow, workflow-parameters, username, password,
@@ -88,7 +88,7 @@ class MHIngest(Operation):
         self.ifile = tempfile.NamedTemporaryFile(dir= self.options["temporal-path"])
         self.options["temporal-path"] = self.ifile.name
         # create zip suboperation
-        self.export=ExportToZip()
+        self.export=ExportToZip("zipingest", context=self.context)
         self.export.configure({"use-namespace": self.options["use-namespace"],
                                "location": os.path.split(self.options["temporal-path"])[0], # TMPfile
                                "filename": os.path.split(self.options["temporal-path"])[1], # TMPfile

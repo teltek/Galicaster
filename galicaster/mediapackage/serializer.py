@@ -157,9 +157,12 @@ def set_properties(mp):
 
     operations = doc.createElement("operations")
     galicaster.appendChild(operations)
-    for (op_name, op_value) in mp.operation.iteritems():
+    for op_name, (op_value, op_time) in mp.operation.iteritems():        
+        if isinstance(op_time, datetime):
+            op_time = op_time.isoformat()        
         operation = doc.createElement("operation")
-        operation.setAttribute("key", op_name) 
+        operation.setAttribute("key", op_name)
+        operation.setAttribute("time", op_time) # TODO pass to datetime
         status = doc.createElement("status")
         text = doc.createTextNode(unicode(op_value))
         status.appendChild(text)

@@ -56,16 +56,12 @@ class ExportToZip(Operation):
             },
          }
          
-    def __init__(self, options = {}):
-        Operation.__init__(self, "exporttozip", options)
+    def __init__(self, subtype, options = {}, context=None):
+        Operation.__init__(self, "exporttozip", subtype, options, context)
 
     def configure(self, options={}, is_action=True):
 
         Operation.configure(self, options, is_action)
-       
-        
-        #if notos.path.splitext(self.options["filename"])[1] != '.zip':
-        #    self.options["filename"] = self.options["filename"]+'.zip' # TODO clean . or similar odd carachters
         self.date=datetime.datetime.now()
         # TODO ziptype from somewhere
         # TODO use-namespace from conf
@@ -76,11 +72,11 @@ class ExportToZip(Operation):
         destination = os.path.join(self.options["location"], self.options["filename"])
         # Don't look for duplicates, ingest needs to overwrite files
         self.options["filename"] = os.path.split(destination)[1]
-        serializer.save_in_zip(mp, destination, self.options["use-namespace"], context.get_logger())
+        serializer.save_in_zip(mp, destination, self.options["use-namespace"], self.context[0])
 
     def transform_folder(self, template):
 
-        conf = context.get_conf()
+        conf = context.get_conf() # TODO remove or get from worker
         mappings = {
             '{export}'     : conf.get('basic', 'export') or os.path.expanduser('~'),
             '{user}'       : os.path.expanduser('~'), 
@@ -99,8 +95,8 @@ class ExportToZip(Operation):
         mpcreation = mp.getLocalDate()
 
         mappings = {
-            '{id}'          : mp.identifier,
-            '{title}'       : mp.getTitle(), 
+            '{id}'          : mp.getIdentifier(),
+            '{title}'       : mp.getTitle(),
             '{series}'      : mp.getSeriesTitle() or "Undefined_Series",
             '{presenter}'   : mp.getCreator() or "Unknow_Presenter",
             '{type}'        : 'M' if mp.manual else 'S',

@@ -43,8 +43,13 @@ def fromXML(xml, logger=None):
         mp.status = int(_checknget(galicaster, "status"))
         for i in galicaster.getElementsByTagName("operation"):
             op = unicode(i.getAttribute("key"))
+            time = unicode(i.getAttribute("time"))
+            if time in ["0", ""]:
+                time = 0
+            else:
+                time = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S')
             status = _checknget(i, "status")
-            mp.setOpStatus(op, int(status))
+            mp.setOp(op, int(status), time) 
         for i in galicaster.getElementsByTagName("property"):
             op = unicode(i.getAttribute("name"))
             value = _checkget(i)

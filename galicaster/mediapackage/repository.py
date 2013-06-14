@@ -107,14 +107,10 @@ class Repository(object):
         Check if any operations was being processed before the previous running
         """
         change = False
+        
         if mp.status > mediapackage.FAILED:
             mp.status = mediapackage.RECORDED
             change = True
-        for (op_name, op_value) in mp.operation.iteritems():
-            if op_value in [mediapackage.OP_PROCESSING, mediapackage.OP_PENDING]:
-                mp.setOpStatus(op_name, mediapackage.OP_FAILED)
-                change = True
-
         if change:
             self.update(mp)
 

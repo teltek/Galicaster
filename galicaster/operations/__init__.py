@@ -15,7 +15,6 @@ import uuid
 import datetime
 from xml.dom import minidom
 
-from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 
 class Operation(object):
@@ -29,10 +28,12 @@ class Operation(object):
     SCHEDULED = 2
     IMMEDIATE = "immediate"
 
-    def __init__(self, name, options):
-        self.__name = name
-        self.creation_time = None # Initialize on worker.put
-        self.start_time = None # stablish on perform
+    def __init__(self, name, subtype, options, context):
+        self.__name = name # TODO log the main type
+        self.name = subtype
+        self.context = context
+        self.creation_time = None # Initialized on worker.put
+        self.start_time = None # stablished on perform
         self.end_time = None # set on failed or succesful end
         self.options = {}
         self.parse_options(options)
@@ -57,47 +58,57 @@ class Operation(object):
             pass # log zip inside another action
         
     def setCreationTime(self):
-        self.creation_time = datetime.datetime.utcnow()
+        self.creation_time = datetime.datetime.utcnow().replace(microsecond=0)
 
     def setStartTime(self):
-        self.start_time = datetime.datetime.utcnow()
+        self.start_time = datetime.datetime.utcnow().replace(microsecond=0)
 
     def setEndTime(self):
-        self.end_time = datetime.datetime.utcnow()
+        self.end_time = datetime.datetime.utcnow().replace(microsecond=0)
 
-    def logNightly(self, mp):
-        mp.setOpStatus(self.__name,mediapackage.OP_NIGHTLY)
-        context.get_dispatcher().emit('refresh-row', mp.getIdentifier())
-        context.get_repository().update(mp)
-        
     def logCreation(self, mp):
         """Leaves log when operation is created"""
+        print "Creation"
         self.setCreationTime()
-        context.get_logger().info("Creating {0} for {1}".format(self.__name, mp.getIdentifier() ))
-        mp.setOpStatus(self.__name,mediapackage.OP_PENDING)
-        context.get_dispatcher().emit('refresh-row', mp.getIdentifier())
-        context.get_repository().update(mp)
+        mp.setOp(self.name, mediapackage.OP_PENDING, self.creation_time)
+        self.context[0].info("Creating {0} for {1}".format(self.name, mp.getIdentifier() ))
+        self.context[1].emit('refresh-row', mp.getIdentifier())
+        self.context[2].update(mp)
+
+    def logNightly(self, mp):
+        self.context[0].info("Nightly {0} for {1}".format(self.name, mp.getIdentifier() ))
+        mp.setOp(self.name, mediapackage.OP_NIGHTLY, self.creation_time)
+        self.context[1].emit('refresh-row', mp.getIdentifier())
+        self.context[2].update(mp)        
+
+    def logCancelNightly(self, mp):
+        self.context[0].info("Canceled {0} for {1}".format(self.name, mp.getIdentifier() ))
+        mp.setOp(self.name,mediapackage.OP_IDLE, 0)
+        self.context[1].emit('refresh-row', mp.getIdentifier())
+        self.context[2].update(mp)
 
     def logStart(self, mp):
         """Leaves log when operation starts"""
+        print "Start"
         self.setStartTime()
-        context.get_logger().info("Executing {0} for {1}".format(self.__name, mp.getIdentifier() ))
-        mp.setOpStatus(self.__name, mediapackage.OP_PROCESSING)
-        context.get_dispatcher().emit('start-operation', self.__name, mp.getIdentifier())
-        context.get_dispatcher().emit('refresh-row', mp.getIdentifier())
-        context.get_repository().update(mp)
+        self.context[0].info("Executing {0} for {1}".format(self.name, mp.getIdentifier() ))
+        mp.setOp(self.name, mediapackage.OP_PROCESSING, self.start_time)
+        self.context[1].emit('start-operation', self.name, mp.getIdentifier())
+        self.context[1].emit('refresh-row', mp.getIdentifier())
+        self.context[2].update(mp)
 
     def logEnd(self, mp, success):
         """Leaves log when opeartaion ends or fails"""
+        print "End"
         self.setEndTime()
         if success:
-            context.get_logger().info("Finalized {0} for {1}".format(self.__name, mp.getIdentifier() ))
+            self.context[0].info("Finalized {0} for {1}".format(self.name, mp.getIdentifier() ))
         else:
-            context.get_logger().info("Failed {0} for {1}".format(self.__name, mp.getIdentifier() ))
-        mp.setOpStatus(self.__name, mediapackage.OP_DONE if success else mediapackage.OP_FAILED)
-        context.get_dispatcher().emit('stop-operation', self.__name, mp, success)
-        context.get_dispatcher().emit('refresh-row', mp.getIdentifier())
-        context.get_repository().update(mp)
+            self.context[0].info("Failed {0} for {1}".format(self.name, mp.getIdentifier() ))
+        mp.setOp(self.name, mediapackage.OP_DONE if success else mediapackage.OP_FAILED, self.end_time)
+        self.context[1].emit('stop-operation', self.name, mp, success)
+        self.context[1].emit('refresh-row', mp.getIdentifier())
+        self.context[2].update(mp)
 
     def serialize_operation(self):
         """Transform metadata into XML and rewrite"""

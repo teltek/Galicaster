@@ -16,10 +16,10 @@ Operation loader for custom operations
 import os
 import ConfigParser
 import nas, export_to_zip, sbs, ingest
-from galicaster.core import context
 
+    
 def get_operations():
-    folder = "/home/galicaster/src/git/uned2/Galicaster/operations/"   
+    folder = "/home/galicaster/src/git/uned2/Galicaster/operations/"  # TODO
     operations = []
     for filename in os.listdir(folder):
         filepath = os.path.join(folder, filename)
@@ -28,14 +28,27 @@ def get_operations():
     list_operations = convert_operation(operations)
     return list_operations
 
-    #TODO convert dict into configured operations    
+    #TODO convert dict into configured operations  
 
-def enqueue_operations(operation, packages):
-    for package in packages: # TODO perform them in order
-        if operation.schedule.lower() == operation.IMMEDIATE:
-            context.get_worker().enqueueJob(operation, package) # package is already on the operation?
-        else:
-            context.get_worker().enqueueJobNightly(operation, package)
+def get_nightly_operations(mps):
+
+    ops =get_operations()
+    keys = []
+    for op in ops:
+        keys += [ op[1] ]
+    number = {}
+    for key in keys:
+        number[key] = 0
+    for mp in mps:
+        for key in keys:
+            if mp.getOpStatus(key) == 1:
+                number[key] = number[key] + 1
+
+    new_list = []
+    for key in keys:
+        if number[key]:
+            new_list.append(key)                
+    return new_list  
 
 def import_from_file(filepath):
     parser = ConfigParser.ConfigParser()
@@ -46,6 +59,15 @@ def import_from_file(filepath):
         result += [dict(parser.items(section))]
     return result
 
+def recreate_operation(subtype):
+    available = get_operations()
+    result = None
+    for op, name in available:
+        if subtype == name:
+            result = op
+            break
+    return result    
+
 def convert_operation(operations):
     # TODO check parameters
     group = []
@@ -55,21 +77,18 @@ def convert_operation(operations):
         op = None
         try:
             theType = operation.pop("operation") #TODO check valid type # MUST be type
-            name = operation.pop("name")
+            name = operation.get("shortname")
         except:
             pass
         if theType == "zip":
-            op = export_to_zip.ExportToZip(operation)
+            op = (export_to_zip.ExportToZip, operation)
         elif theType == "nas":
-            op = nas.IngestNas(operation)
+            op = (nas.IngestNas, operation)
         elif theType == "sbs":
-            op = sbs.SideBySide(operation)
+            op = (sbs.SideBySide, operation)
         elif theType == "ingest":
-            op = ingest.MHIngest(operation)
-
-
+            op = (ingest.MHIngest,operation)
         else:
-            pass # TODO error, do log
-        
+                pass # TODO error, do log        
         group.append((op,name))
     return group

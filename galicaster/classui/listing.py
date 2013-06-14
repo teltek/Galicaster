@@ -20,6 +20,8 @@ from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 from galicaster.classui import get_ui_path
 from galicaster.classui.operations import OperationsUI
+from galicaster.operations import loader
+from galicaster.utils import readable
 
 logger = context.get_logger()
 
@@ -68,157 +70,135 @@ class ListingClassUI(ManagerUI):
     def event_change_mode(self, orig, old_state, new_state):
         if new_state == self.reference :
             self.refresh()
-			
+
     def insert_data_in_list(self, lista, mps):
-        """Appends the mediapackage data into the list"""
-	lista.clear()
-	for mp in mps:
-            duration = mp.getDuration()
-	    if duration in ["", None]: 
-                duration = 0
-
-	    if mp.status != mediapackage.SCHEDULED:
-                lista.append([mp.getIdentifier(), 
-			      mp.getTitle(), 
-			      mp.getCreator(), 
-			      mp.series_title , 
-			      long(mp.getSize()),
-			      int(duration), 
-			      mp.getStartDateAsString(), 
-			      mp.status,
-			      self.color[mp.getOpStatus("ingest")],
-			      mp.getOpStatus("ingest"),
-			      mp.getOpStatus("exporttozip"),
-			      mp.getOpStatus("sidebyside"),
-                              mp.getOpStatus("nas")
-                              ])				    
-
+        lista.clear() # TODO don't refresh by clearing
+        for mp in mps:
+            if mp.status != mediapackage.SCHEDULED:
+                lista.append([mp, mp.getStartDateAsString()])
+			
 
     def populate_treeview(self, mp):
-	"""Establishes which values to be shown, its properties"""
-	self.lista = gtk.ListStore(str,str, str, str, long, int, str, int, str, int, int, int, int)
-	# gobject.TYPE_PYOBJECT
-	self.insert_data_in_list(self.lista, mp)
+        
+        
+	self.lista = gtk.ListStore(object, str) # Just mp
+        self.insert_data_in_list(self.lista, mp) # insert all mps
 
-	# Edit Cells per column
-	render1 = gtk.CellRendererText() #name / title
-	render6 = gtk.CellRendererText() #presenter
-	render7 = gtk.CellRendererText() #series
-	render2 = gtk.CellRendererText() #size
-	render3 = gtk.CellRendererText() #duration
-	render4 = gtk.CellRendererText() #date
-	render5 = gtk.CellRendererText() #id
-	render8 = gtk.CellRendererText() #status
-	render9 = gtk.CellRendererText() #operation
-	#render9 = gtk.CellRendererText() #bg
-	self.renders= [render1, render2, render3, render4, render5, render6, render7, render8, render9]
-	self.renders[1].set_property('xalign',1.0)
-	self.renders[2].set_property('xalign',0.5)
-	self.renders[3].set_property('xalign',0.5)
-	self.renders[8].set_property('xalign',0.5)
-        render1.set_property('ellipsize', pango.ELLIPSIZE_END)
-	
-	
+        # Definition  
+        renderTitle = gtk.CellRendererText()
+        renderTitle.set_property('ellipsize', pango.ELLIPSIZE_END)
+        renderTitle.set_property('xalign',0.0)
+        renderTitle.set_property('background', self.color[0])
+        renderText =  gtk.CellRendererText()
+        renderText.set_property('xalign',0.0)
+        renderText.set_property('background', self.color[0])
+        renderValue = gtk.CellRendererText()
+        renderValue.set_property('xalign', 0.5)
+        renderValue.set_property('background', self.color[0])
+        renderOperation = gtk.CellRendererText()
+        renderOperation.set_property('xalign', 0.5)
+
+	ops = loader.get_operations()
+        shortnames = []
+        for op in ops:
+            shortnames += [ op[0][1].get("shortname") ]
+
+        # Definition        
+        title = { "column-title" : "Title", 'render' : renderTitle, 'function' : self.render_title,
+                  "fixed-width" : 200, "wprop" : 56, "sorting": self.sort }
+        presenter = { "column-title" : "Presenter", 'render' : renderText, 'function' : self.render_presenter,
+                      "fixed-width" : 115, "wprop" : 27, "sorting": self.sorting_empty }
+        series = { "column-title" : "Series", 'render' : renderText, 'function' : self.render_series,
+                   "fixed-width" : 125, "wprop" : 33, "sorting": self.sorting_empty }
+        date = { "column-title" : "Date", 'render' : renderText, 'function' : self.render_date,
+                 "fixed-width" : 150, "wprop" : 23, "sorting": self.sort }
+        size = { "column-title" : "Size", 'render' : renderValue, 'function' : self.render_size,
+                 "fixed-width" : 90, "wprop" : 14, "sorting": self.sort }
+        duration = { "column-title" : "Duration", 'render' : renderValue, 'function' : self.render_duration,
+                     "fixed-width" : 93, "wprop" : 10, 'sorting': self.sort  }
+        definitions = [ date, title, presenter, series, size, duration]
+        for op in shortnames:
+            operation = {"column-title" : op, 'render' : renderOperation, 
+                         'function' : self.render_operation, "fixed-width" : 95, "wprop" : 8, 
+                         'sorting': self.sort  }
+            definitions += [ operation]
+
+
 	vbar = self.scroll.get_vscrollbar()
 	vbar.set_update_policy(gtk.UPDATE_DELAYED)
-		
-	# Create each column
-	#columna5 = gtk.TreeViewColumn("Id",render5,text = 0, background= 8) 
-	# column5 wont be append to the treeview
-	columna1 = gtk.TreeViewColumn("Title",render1,text = 1, background= 8)
-	columna6 = gtk.TreeViewColumn("Presenter", render6, text = 2, background= 8)
-	columna7 = gtk.TreeViewColumn("Series", render7, text = 3, background= 8)
-	columna2 = gtk.TreeViewColumn("Size", render2, text = 4, background= 8)
-	columna3 = gtk.TreeViewColumn("Duration", render3, text = 5, background= 8)
-	columna4 = gtk.TreeViewColumn("Date", render4, text = 6, background= 8)
-	
-	#columna8 = gtk.TreeViewColumn("Status", render8, text = 7, background= 8)
-	columna9 = gtk.TreeViewColumn("Ingest", render9)
-	columna10 = gtk.TreeViewColumn("Zip", render9)
-	columna11 = gtk.TreeViewColumn("SbS", render9)		
-	columna12 = gtk.TreeViewColumn("NAS", render9)		
-        columns = [columna4, columna2, columna3, columna9, columna10, columna11, columna12, columna6, columna7]
-        for column in columns:
+
+        columns = []
+
+        for value in definitions:
+            column = gtk.TreeViewColumn( value["column-title"], value['render'])
+            column.set_fixed_width(value["fixed-width"])
+            column.set_cell_data_func(value['render'], value['function'], 
+                                      None if value['render'] != renderOperation else value['column-title'])
             column.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
-        columna4.set_fixed_width(140)
-        columna2.set_fixed_width(90)
-        columna3.set_fixed_width(95)
-        op = 95
-        columna9.set_fixed_width(op)
-        columna10.set_fixed_width(op)
-        columna11.set_fixed_width(op)
-        columna12.set_fixed_width(op)
-        columna6.set_fixed_width(115)
-        columna7.set_fixed_width(125)
+            columns += [column]
+            column.set_sort_column_id(len(columns))
+            self.vista.append_column(column)
+            if value == title:
+                column.set_expand(True)
+            if value.has_key('sorting'):
+                self.lista.set_sort_func(len(columns), 
+                                         value['sorting'], 
+                                         value['column-title'])
+                
+        self.definitions = definitions
+        self.columns = columns
 
-	# Edit columns				
-	columna1.set_expand(True)
-
-	# Edit content
-	columna2.set_cell_data_func(render2,self.size_readable,None)	
-	columna3.set_cell_data_func(render3,self.time_readable,None)
-	columna4.set_cell_data_func(render4,self.date_readable,None)
-	#columna8.set_cell_data_func(render8,self.status_readable,None)
-	columna9.set_cell_data_func(render9,self.operation_readable,"ingest")
-	columna10.set_cell_data_func(render9,self.operation_readable,"exporttozip")
-	columna11.set_cell_data_func(render9,self.operation_readable,"sidebyside")
-	columna12.set_cell_data_func(render9,self.operation_readable,"nas")
-	#columna7.set_cell_data_func(render7,self.series_readable,None)
-	# Columns 6 and 7 are not edited
-
-	# Set Treeview Model
 	self.vista.set_model(self.lista)
-
-	# Append Columns
-	self.vista.append_column(columna4) # date
-	self.vista.append_column(columna1) # name	
-	self.vista.append_column(columna6) # presenter
-	self.vista.append_column(columna7) # series
-	self.vista.append_column(columna2) # size
-	self.vista.append_column(columna3) # duration
-	#self.vista.append_column(columna8) # operation former status
-	self.vista.append_column(columna9) # operation former status
-	self.vista.append_column(columna10) # operation zip
-	self.vista.append_column(columna11) # operation sbs
-	self.vista.append_column(columna12) # operation nas
-		
-
-	#self.resize()
-	self.equivalent= {6: 0, 1: 1, 2 : 2, 3 : 3, 4: 4, 5 : 5, 7: 3, 9:6, 10:7, 11:8, 12:9}  # 9
-	# data position versus column position
-
-	# Show TreeView
-	self.vista.show()
-
-	# Make Headers clickable
+        #for column in columns:
+            #self.vista.append_column(column) # TODO filter ops columns
 	self.vista.set_headers_clickable(True)
-
-	# Make colums sortable
-	columna1.set_sort_column_id(1) # name <<
-	columna2.set_sort_column_id(4) # size
-	columna3.set_sort_column_id(5) # duration
-	columna4.set_sort_column_id(6) # date
-	columna6.set_sort_column_id(2) # presenter <<
-	columna7.set_sort_column_id(3) # series <<
-	#columna8.set_sort_column_id(7) # operation form status <<		
-	columna9.set_sort_column_id(9) # operation <<
-	columna10.set_sort_column_id(10) # operation <<
-	columna11.set_sort_column_id(11) # operation <<
-	columna11.set_sort_column_id(12) # operation <<
-	
-	self.lista.set_sort_func(5,self.sorting,5)
-	self.lista.set_sort_func(1,self.sorting_text,1)
-	self.lista.set_sort_func(2,self.sorting_empty,2)
-	self.lista.set_sort_func(3,self.sorting_empty,3)
-	#self.lista.set_sort_func(7,self.sorting,7)
-	#self.lista.set_sort_func(10,self.sorting,10)
-	#self.lista.set_sort_func(11,self.sorting,11)
-	#self.lista.set_sort_func(12,self.sorting,12)
 
 	self.vista.connect('row-activated',self.on_double_click)
 	self.vista.connect('button-release-event',self.menu)
 
-	self.lista.set_sort_column_id(6,gtk.SORT_DESCENDING)
+        self.lista.set_sort_column_id(1 ,gtk.SORT_ASCENDING) # Sort by Date column
+        self.vista.show()
+
+   
+    def render_title(self, column, cell, model, iterator, user_data = None ): 
+        # TODO Refact ALL renders providing getAttribut for mp
+        mp = model[iterator][0]
+        cell.set_property('text', mp.getTitle())
+
+    def render_presenter(self, column, cell, model, iterator, user_data = None ):
+        mp = model[iterator][0]
+        cell.set_property('text', mp.getCreator())
+
+    def render_series(self, column, cell, model, iterator, user_data = None ):
+        mp = model[iterator][0]
+        cell.set_property('text', mp.series_title)
+
+    def render_size(self, column, cell, model, iterator, user_data = None ):
+        mp = model[iterator][0]
+        value = mp.getSize()
+        result = readable.size(value)
+        cell.set_property('text', result) 
+
+    def render_date(self, column, cell, model, iterator, user_data = None ):
+        mp = model[iterator][0]
+        value = mp.getStartDateAsString()
+        readable.date(value)
+        cell.set_property('text', value)		
+
+    def render_duration(self, column, cell, model, iterator, user_data = None ):
+        mp = model[iterator][0]
+        value = mp.getDuration() if mp.getDuration() else 0
+        result = readable.time(int(value)/1000)
+        cell.set_property('text', result)
+
+    def render_operation(self, column, cell, model, iterator, user_data = None ):
+        mp = model[iterator][0]
+        status = mp.getOpStatus(user_data)
+        old_style = context.get_conf().get_color_style()
+        palette = context.get_conf().get_palette()
+        color = self.color[status] if old_style else palette[status]
+        cell.set_property('background', color)
+        cell.set_property('text', mediapackage.op_status[status] )
 
     def refresh_treeview(self):
 	"""Refresh all the values on the list"""
@@ -232,7 +212,7 @@ class ListingClassUI(ManagerUI):
 
     def refresh_row_from_mp(self, origin, identifier, reference):
 	"""Refresh the values of a single row"""
-	# Search Iter to the liststor
+	# Search Iter to the liststore
         if self.reference != reference:
             return True
         
@@ -253,25 +233,13 @@ class ListingClassUI(ManagerUI):
 	self.refresh_row_from_mp(origin, identifier, self.reference)
 
     def refresh_row(self,reference,i):# FIXME keep the sort id 
-        mpid = self.lista[i][0] # FIXME set the id as the first metadata
-	mp = self.repository.get(mpid)
+        mp = self.lista[i][0] # FIXME set the id as the first metadata
+	#mp = self.repository.get(mpid)
 	self._refresh(mp,i)
 
     def _refresh(self,mp,i):
-        """Fills the new values of a refreshed row"""
-	#self.lista.set(i,0,mp.getIdentifier())
-	self.lista.set(i,1,mp.getTitle())
-	self.lista.set(i,2,mp.getCreator())
-	self.lista.set(i,3,mp.series_title)
-	#self.lista.set(i,4,long(mp.getSize()))
-	#self.lista.set(i,5,int(mp.getDuration()))
-	#self.lista.set(i,6,mp.getStartDateAsString())
-	self.lista.set(i,7,mp.status)
-	self.lista.set(i,8,self.color[mp.getOpStatus("ingest")])
-	self.lista.set(i,9,mp.getOpStatus("ingest"))
-	self.lista.set(i,10,mp.getOpStatus("exporttozip"))
-	self.lista.set(i,11,mp.getOpStatus("sidebyside"))
-	self.lista.set(i,12,mp.getOpStatus("nas"))
+        self.lista.set(i, 0, mp)
+        self.lista.set(i, 1, mp.getStartDateAsString())
 	
     def refresh(self,element=None,package=None):
         # self refresh_row()
@@ -294,7 +262,7 @@ class ListingClassUI(ManagerUI):
 
         #print self.get_attribute("on_{0}".format(op.lower()))
 
-        if op == "Play": # TODO get attribute on_attribute(so
+        if op == "Play": # TODO get attribute on_$operation
             last = store.get_iter(rows[len(rows)-1])
             self.on_play(store, None, last)
 	elif op == "Edit":
@@ -331,7 +299,7 @@ class ListingClassUI(ManagerUI):
 	else:
 	    operations = ["Play", "Edit", "Info", "Delete"]
 
-	for op in operations:
+        for op in operations:
             item = gtk.MenuItem(op)
 	    menu.append(item)
 	    item.connect("activate", self.on_action)
@@ -363,39 +331,12 @@ class ListingClassUI(ManagerUI):
         packages = []
         for c in rows:
              iterator = store.get_iter(c)
-             packages += [self.repository.get(store[iterator][0])]
+             packages += [store[iterator][0]]
         OperationsUI(mediapackage = packages) #TODO launch and return
-        
-
-    def on_ingest_question(self,store, rows): # TODO Bound to be eliminated
-        """Launchs ingest dialog and refresh row afterwards."""
-
-	operation = self.ingest_question() # TODO ingest question for any package
-        
-        if not operation:
-            return True
-        iterators = []
-        for c in rows:
-            iterators += [ store.get_iter(c) ]
-        for i in iterators:
-            package = self.repository.get(store[i][0])
-            if operation.count('nightly'):
-                context.get_worker().do_job_nightly(operation.replace("_",""), package)
-            else:                
-                context.get_worker().do_job(operation, package)
-        self.vista.get_selection().select_path(0)
-	return True
-
-        
-	package = self.repository.get(store[iterator][0])
-	self.ingest_question(package)
-	self.refresh_row(reference,iterator)
-	return True
-
 
     def on_play(self, store, reference, iterator):
         """ Retrieve mediapackage and send videos to player"""
-	key = store[iterator][0]
+	key = store[iterator][0].getIdentifier()
 	logger.info("Play: " + str(key))
 	package = self.repository.get(key)
 
@@ -409,18 +350,17 @@ class ListingClassUI(ManagerUI):
 	    message.PopUp(message.WARNING, text, 
                           context.get_mainwindow(),
                           buttons)
-	return True	
-
+	return True 
 	
     def on_edit(self,store,reference,iterator):
         """Pop ups the Metadata Editor"""
-	key = store[iterator][0]
+	key = store[iterator][0].getIdentifier()
 	self.edit(key)		
 	self.refresh_row(reference,iterator)
 	
     def on_info(self,store,reference,iterator):
 	"""Pops up de MP info dialog"""
-	key = store[iterator][0]
+	key = store[iterator][0].getIdentifier()
 	self.info(key)
 
     def create_ui(self):
@@ -498,10 +438,6 @@ class ListingClassUI(ManagerUI):
     def add_button(self, box, icon, text):
         composition = gtk.VBox()
         image = gtk.Image()
-        #if not icon.count('user'):
-        #    image.set_from_stock(icon, gtk.ICON_SIZE_DIALOG)
-        #else:
-        #    image.set_from_icon_name(icon, gtk.ICON_SIZE_DIALOG)
         image.set_from_icon_name(icon, gtk.ICON_SIZE_DIALOG)
         
         label = gtk.Label(text)
@@ -510,6 +446,7 @@ class ListingClassUI(ManagerUI):
         button = gtk.Button()
         button.add(composition)
         button.set_tooltip_text(text)
+        button.set_can_focus(False)
         button.connect('clicked', self.on_action)
         self.buttonlist += [button]
         box.pack_start(button)   
@@ -569,48 +506,41 @@ class ListingClassUI(ManagerUI):
 	return True
 
 
-	
     def resize(self):
-        """Adapts GUI elements to the screen size"""
-	buttonlist = ["playbutton","editbutton","ingestbutton","deletebutton"]
-	size = context.get_mainwindow().get_size()
-	wprop = size[0]/1920.0
-	hprop = size[1]/1080.0
-	
-	vbar = self.scroll.get_vscrollbar()
-	vbar.set_size_request(int(wprop*6),-1)
+         """Adapts GUI elements to the screen size"""
+         buttonlist = ["playbutton","editbutton","ingestbutton","deletebutton"]
+         size = context.get_mainwindow().get_size()
+         wprop = size[0]/1920.0
+         hprop = size[1]/1080.0
+         fsize = 12*hprop
+         font = pango.FontDescription(str(fsize))
+         #columnae = self.vista.get_columns()
+         columnae =self.columns
+         for index,column in enumerate(columnae):
+             cell = column.get_cells()[0]
+             #cell = self.definitions[index]['render']
+             cell.set_property('font-desc', font)
+             cell.set_property('height', int(hprop*40))
+             cell.set_property('width-chars', 
+                                int( wprop*self.definitions[index]["wprop"] )
+                                )
 
-	self.renders[0].set_property('height', int(hprop*40))
-	self.renders[0].set_property('width-chars',int(wprop*56))#name
-	self.renders[1].set_property('width-chars',int(wprop*14))#size
-	self.renders[2].set_property('width-chars',int(wprop*10))#duration
-	self.renders[3].set_property('width-chars',int(wprop*23))#date
-	self.renders[5].set_property('width-chars',int(wprop*27))#presenter
-	self.renders[6].set_property('width-chars',int(wprop*33.5))#series
-	#self.renders[7].set_property('width-chars',int(wprop*12.5))#statusess
-	self.renders[8].set_property('width-chars',int(wprop*14))#operations less
+         for column in self.vista.get_columns():
+             first = column.get_widget()
+             if not first:
+                 label = gtk.Label(" "+column.get_title())
+             else:
+                 label = column.get_widget()
+             attr = pango.AttrList()
+             attr.insert(pango.AttrFontDesc(font,0,-1))
+             label.set_attributes(attr)
+             if not first:
+                 label.show()			
+                 column.set_widget(label)
+             column.queue_resize()
 
-	fsize = 12*hprop
-	for cell in self.renders:
-            font = pango.FontDescription(str(fsize))
-	    cell.set_property('font-desc', font)
-
-	for column in self.vista.get_columns():
-            first = column.get_widget()
-	    if not first:
-                label = gtk.Label(" "+column.get_title())
-	    else:
-                label = column.get_widget()
-            attr = pango.AttrList()
-            attr.insert(pango.AttrFontDesc(font,0,-1))
-            label.set_attributes(attr)
-            if not first:
-                label.show()			
-                column.set_widget(label)
-            column.queue_resize()
-
-	self.do_resize(buttonlist)
-	return True
+         self.do_resize(buttonlist)
+         return True
 
 class ArchiveUI(ListingClassUI):
 
@@ -642,8 +572,8 @@ class ArchiveUI(ListingClassUI):
 
     def define_buttons(self):
         self.buttonlist = []
-        self.add_button(self.buttonbox, gtk.STOCK_MEDIA_PLAY, "Play") 
-        self.add_button(self.buttonbox, gtk.STOCK_UNDO, "Restore") 
+        self.add_button(self.buttonbox, "media-playback-start", "Play") 
+        self.add_button(self.buttonbox, "edit-undo", "Restore") 
         self.add_button(self.buttonbox, gtk.STOCK_CLOSE, "Delete") 
         self.add_button(self.buttonbox, "user-trash", "Empty") 
 
@@ -659,4 +589,4 @@ class ArchiveUI(ListingClassUI):
 
         
 gobject.type_register(ListingClassUI)
-gobject.type_register(ArchiveUI)	
+gobject.type_register(ArchiveUI)

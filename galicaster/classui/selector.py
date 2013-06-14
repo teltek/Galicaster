@@ -98,7 +98,7 @@ class MainList(gtk.HBox):
     append_list, append_info and prepare_view have to be defined on each subtype
     """
 
-    def __init__(self, parent=None, size=(1920,1080), info_label = None):
+    def __init__(self, parent=None, size=(1920,1080), info_label = None, additional = False):
         self.superior = parent
         self.size = size
         wprop = size[0]/1920.0
@@ -136,6 +136,7 @@ class MainList(gtk.HBox):
         else:
             self.buttons.pack_end(button)
         button.connect("clicked",connection)
+        button.set_can_focus(False)
         return button
         
     def close(self,button=None):

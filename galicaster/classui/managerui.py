@@ -46,100 +46,95 @@ class ManagerUI(gtk.Box):
 	self.dispatcher.connect("net-up", self.network_status, True)
 	self.dispatcher.connect("net-down", self.network_status, False)
 
-
-    def sorting(self, treemodel, iter1, iter2, data, regular=True, ascending=1):	 
-        """Basic Sort comparisson"""
-        first =treemodel[iter1][data]
-        second = treemodel[iter2][data]
-
-        if  first >  second:
-            return 1 * ascending
-
-        elif first == second:
-            if regular:
-                if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:
-                    ascending=-1
-                # order by date
-                response = self.sorting(treemodel,iter1,iter2,6,False,ascending) 
-                return response
-            else:
-                return 0		       
-        else:
-            return -1 * ascending
-
-    def sorting_text(self, treemodel, iter1, iter2, data, regular=True, ascending=1):
+    def sort(self, model, iter1, iter2, data, regular=True, ascending=1):
         """Sort algorithm, giving similar value to capital and regular letters"""
+
         # Null sorting
-        first = treemodel[iter1][data]
-        second = treemodel[iter2][data]
-        if first != None:
-            first = first.lower()
-        if second != None:
-            second = second.lower()
+        first = None
+        second = None
+        if data.lower() == 'title':
+            first = model[iter1][0].getTitle().lower(); second = model[iter2][0].getTitle().lower()
+            column = 1 # TODO set column by given position not hardcoded
+            # TODO get first and second by mp attribute got via data
+        elif data.lower() == 'date':
+            first = model[iter1][0].getLocalDate() ; second = model[iter2][0].getLocalDate()
+            column = 0
+        elif data.lower() == 'size':
+            first = model[iter1][0].getSize(); second = model[iter2][0].getSize()
+            column = 4
+        elif data.lower() == 'duration':
+            first = model[iter1][0].getDuration(); second = model[iter2][0].getDuration()
+            column = 5
+        else:
+            first = str(model[iter1][0].getOpStatus(data));
+            second = str(model[iter2][0].getOpStatus(data));
+            column = 0
+            for index,definition in enumerate(self.definitions):
+                if definition['column-title'] == data:
+                    column = index
+            
 
         if first in ["",None] and second in ["",None]:
-            if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:
+            if self.vista.get_column(column).get_sort_order() == gtk.SORT_DESCENDING:
                 ascending=-1
             # order by date
-            response = self.sorting(treemodel,iter1,iter2,6,False,ascending) 
+            response = self.sort(model,iter1,iter2,'date',False,ascending) 
             return response
 
         elif  first in ["",None]:
-            if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:	
-                return -1  
-            else:
-                return 1
+            return -1 if self.vista.get_column(column).get_sort_order() == gtk.SORT_DESCENDING else 1
 
         elif  second in ["",None]:
-            if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:	
-                return 1  
-            else:
-                return -1
+            return 1 if self.vista.get_column(column).get_sort_order() == gtk.SORT_DESCENDING else -1
 
-	    # Regular sorting
-        if first > second:
+        # Regular sorting
+        if first < second:
             return 1 * ascending
         elif first == second:
-            if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:
+            if self.vista.get_column(column).get_sort_order() == gtk.SORT_DESCENDING:
                 ascending=-1
-            # order by date
-            response = self.sorting(treemodel,iter1,iter2,6,False,ascending) 
+        # order by date
+            response = self.sort(model,iter1,iter2, 'date',False,ascending) 
             return response 
         else:
             return -1 * ascending
 
     def sorting_empty(self, treemodel, iter1, iter2, data, regular=True, ascending=1):
         """Sorting algorithm, placing empty values always and the end, both descending and ascending"""
+
         # Null sorting
-        first = treemodel[iter1][data]
-        second = treemodel[iter2][data]
+        first = None
+        second = None
+        column = 0
+        if data =="series":
+            first = treemodel[iter1][0].series_title
+            second = treemodel[iter2][0].series_title
+            column = 3
+        if data =="presenter":
+             first = treemodel[iter1][0].getCreator()
+             second = treemodel[iter2][0].getCreator()
+             column = 2
         if first in ["",None] and second in ["",None]:
-            if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:
+            if self.vista.get_column(column).get_sort_order() == gtk.SORT_DESCENDING:
                 ascending=-1
             # order by date
-            response = self.sorting(treemodel,iter1,iter2,6,False,ascending) 
+            response = self.sort(treemodel,iter1,iter2,"date",False,ascending) 
             return response
 
-        elif  first in ["",None]:
-            if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:	
-                return -1  
-            else:
-                return 1
+        elif first in ["",None]:
+            return -1 if self.vista.get_column(column).get_sort_order() == gtk.SORT_DESCENDING else 1
 
         elif  second in ["",None]:
-            if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:	
-                return 1  
-            else:
-                return -1
+            return 1 if self.vista.get_column(column).get_sort_order() == gtk.SORT_DESCENDING else -1
 
-	    # Regular sorting
-        if first > second:
+        # Regular sorting
+        if first < second:
             return 1 * ascending
         elif first == second:
-            if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:
+            if self.vista.get_column(column).get_sort_order() == gtk.SORT_DESCENDING:
                 ascending=-1
             # order by date
-            response = self.sorting(treemodel,iter1,iter2,6,False,ascending) 
+            response = self.sort(treemodel,iter1,iter2,"date",False,ascending) 
             return response 
         else:
             return -1 * ascending
@@ -147,26 +142,6 @@ class ManagerUI(gtk.Box):
 
 #-------------------------------- DATA PRESENTATION --------------------------------
 
-
-    def size_readable(self,column,cell,model,iterador,user_data):
-        """Generates human readable string for a number.
-        Returns: A string form of the number using size abbreviations (KB, MB, etc.) """
-        resultado = readable.size(cell.get_property('text'))
-        cell.set_property('text',resultado)
-        return resultado
-
-    def date_readable(self,column,cell,model,iterador,user_data):
-        """ Generates date readable string from an isoformat datetime. """		
-        novo=readable.date(cell.get_property('text'))
-        cell.set_property('text',novo)		
-        return novo
-
-    def time_readable(self,column,cell,model,iterador,user_data):
-        """Generates date hout:minute:seconds from seconds."""		
-        ms = cell.get_property('text')
-        novo = readable.time(int(ms)/1000)
-        cell.set_property('text',novo)		
-        return novo
 
     def list_readable(self,listed):
         """Generates a string of items from a list, separated by commas."""		
@@ -181,10 +156,7 @@ class ManagerUI(gtk.Box):
 
     def operation_readable(self,column,cell,model,iterator,operation):
         """Sets text equivalent for numeric operation status of mediapackages."""	
-        mp=self.repository.get((model[iterator])[0])
-        status=mp.getOpStatus(operation)
-        out = mediapackage.op_status[status]
-        cell.set_property('text', out)
+
         old_style = context.get_conf().get_color_style()
         if old_style:
             color = model[iterator][8]
@@ -193,7 +165,6 @@ class ManagerUI(gtk.Box):
             color = palette[status]
         cell.set_property('background', color)
      
-
     def series_readable(self,column,cell,model,iterator,user_data):
         """Sets text equivalent for numeric status of mediapackages."""	
         ms = cell.get_property('text')
@@ -205,70 +176,6 @@ class ManagerUI(gtk.Box):
         return novo
 
 #---------------------------------------- ACTION CALLBACKS ------------------
-
-    def ingest_question(self): # TODO delete           
-        """Pops up a question dialog for available operations."""
-        buttons = None
-        disabled = not self.conf.get_boolean("ingest", "active")
-        day,night = context.get_worker().get_all_job_types()
-        jobs = day+night
-        text = {"title" : "Media Manager",
-                "main" : "Which operation do you want to perform?"
-                        }
-        text['text'] = ''
-        icon = message.QUESTION
-
-        if disabled:                                         
-            text['text']=text['text']+"The ingest service is disabled."
-
-        if not self.network:                                         
-            text['text']=text['text']+"Ingest disabled because of network problems."
-            for job in day:
-                if job.lower().count("ingest"): # TODO dont remove other ingest operations
-                    jobs.remove(job)            
-                    day.remove(job)
-            for job in night:
-                if job.lower().count("ingest"):
-                    pass
-                    #jobs.remove(job)            
-                    #night.remove(job)
-                
-        index = 0
-        response_dict = {}
-        grouped1 = []
-        grouped2 = []
-        for job in day:
-            index+=1  
-            response_dict[index]=job
-            grouped1.append(job)
-            grouped1.append(index)
-
-        for job in night:
-            index+=1
-            response_dict[index]=job
-            grouped2.append(job)
-            grouped2.append(index)
-
-        grouped2.append("Cancel")
-        grouped2.append(0) 
-
-        buttons = tuple(grouped1)
-        buttons2 = tuple(grouped2)
-        if icon == message.QUESTION:
-            icon = "INGEST"
-
-        warning = message.PopUp(icon,text,
-                                context.get_mainwindow(),
-                                buttons2, buttons)
-
-        if warning.response == 0:               
-            return False
-        elif warning.response == gtk.RESPONSE_OK: # Warning
-            return False
-        else:
-            # TODO do_job for every package
-            chosen_job = response_dict[warning.response].lower().replace (" ", "_")
-            return chosen_job
 
     def on_archive(self, store, rows):
         """Remove a mediapackage from the media manager"""
@@ -465,5 +372,3 @@ class ManagerUI(gtk.Box):
         self.network = status           
 
 gobject.type_register(ManagerUI)
-
-

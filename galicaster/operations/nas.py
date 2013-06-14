@@ -17,8 +17,6 @@ import os, re
 import tempfile, shutil, itertools
 import datetime
 
-from galicaster.core import context
-
 from __init__ import Operation
 
 class IngestNas(Operation):
@@ -60,8 +58,8 @@ class IngestNas(Operation):
             },
         }
         
-    def __init__(self, options = {} ):
-        Operation.__init__(self,"nas", options)
+    def __init__(self, subtype, options = {}, context=None ):
+        Operation.__init__(self,"nas", subtype, options, context)
 
     def configure(self, options={}, is_action=True):
         """Parameters in options: server, workflow, workflow-parameters, username, password,
@@ -112,7 +110,7 @@ class IngestNas(Operation):
         creation = mp.getLocalDate()
 
         mappings = {
-            '{id}'          : mp.identifier,
+            '{id}'          : mp.getIdentifier(),
             '{title}'       : mp.getTitle(), 
             '{series}'      : mp.getSeriesTitle() or "Undefined_Series",
             '{presenter}'   : mp.getCreator() or "Unknow_Presenter",

@@ -362,7 +362,7 @@ class ListProfileBox(ProfileDialog):
         self.refresh()
 
     def new_profile(self, origin):
-        new = conf.Profile("New Profile")
+        new = conf.Profile("New Profile") # TODO use context
         new.path = context.get_conf().get_free_profile()
         ProfileBox(new,self.superior)
         self.superior.profile=ProfileBox(new,self.superior)
@@ -377,7 +377,7 @@ class ListProfileBox(ProfileDialog):
 
         profile = model.get_value(iterator,0)
         
-        new_profile = conf.Profile (                                    
+        new_profile = conf.Profile ( # TODO use context
             profile.name+" copy",
             context.get_conf().get_free_profile()
             )
@@ -448,7 +448,7 @@ class ProfileBox(ProfileDialog):
         
     def new_track(self, origin):
         """Creates a new track on a given profile and pops up the editor"""
-        new=conf.Track()
+        new=conf.Track() # TODO Use context 
         tab3=gtk.Label(self.superior.get_title()+" > "+"New Track")
         self.superior.track=TrackBox(self.profile,new, self.superior)
         self.superior.append_tab(self.superior.track,tab3)
