@@ -46,14 +46,15 @@ class StripUI(gtk.VBox):
         if uitype not in [0, 3]:
             self.handlers[self.previous] = self.previous.connect("clicked", self.emit_signal, 
                                                                  "change-mode")
-            
-        self.handlers[self.about]=self.about.connect("button-press-event", self.show_about_dialog)
+        
+        self.about.connect("button-press-event", self.show_about_dialog)
+        
         self.show_all()
 
     def createBUI(self, uitype=0, authentication=False):
         #UI type 0 Media manager
         #UI type 1 Distribution
-        #UI type 2 Recorder
+        #UI type 2 Recorder 3 TRecorder Blocked
 
         self.logos = []
         self.buttons = []
@@ -61,21 +62,19 @@ class StripUI(gtk.VBox):
         self.aligns = []
         self.events = []
 
-        align = gtk.Alignment(0.5, 0.5, 1.0, 1.0) # TODO replace scale for padding
+        align = gtk.Alignment(0.5, 0.5, 1.0, 1.0)
         if uitype < 2:
             self.aligns += [(align, 52, 20, 54)]
         else: 
             self.aligns += [(align, 9, 20, 54)]
-        self.pack_start(align,True, True, 0) # TODO set padding resized
+        self.pack_start(align,True, True, 0) 
         
         table = gtk.VBox()
         align.add(table)
         
         line1 = gtk.HButtonBox()
         line2 = gtk.HBox()
-        line3 = gtk.HButtonBox()
         #line1.set_layout(gtk.BUTTONBOX_CENTER)
-        line3.set_layout(gtk.BUTTONBOX_END)
 
         if uitype not in [0, 3]:
             previous = gtk.Button()
@@ -88,39 +87,18 @@ class StripUI(gtk.VBox):
             self.events += [previous]
             self.previous = previous
         else:
-            #TODO eventbox for handler
             logo2 = gtk.Image()
             logo2_file = 'teltek.svg'
             self.logos += [(logo2, logo2_file)]
 
-        #TODO resize button     
         about = gtk.EventBox()
         self.events += [about]
         logo = gtk.Image()
         logo_file = 'logo.svg'
         self.logos += [(logo, logo_file)]
+        about.add(logo)
 
-        # TODO only create if login
-        user = gtk.HBox()
-        name= gtk.Label("LOGIN")
-        name.set_justify(gtk.JUSTIFY_LEFT)
-        self.labels = [(name,20)]
-        image2 = gtk.Image()
-        image2.set_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_DND)
-        icon = gtk.Button()
-        icon.set_can_focus(False)
-        icon.set_image(image2)
-        icon.set_focus_on_click(False)
-        icon.set_relief(gtk.RELIEF_NONE)
-        
-        icon.check_resize()
-        #self.buttons += [(icon, 50, 50)]
-        #user.pack_start(name, True, True, 0)
-        #user.pack_start(icon, True, True, 0)
-           
         self.about = about
-        self.user = name
-        self.logout = icon
         self.padding = align
 
         align_left = gtk.Alignment(0.0, 0.5, 0, 0)
@@ -151,14 +129,12 @@ class StripUI(gtk.VBox):
             line2.reorder_child(titleLabel,1)
 
         align_right = gtk.Alignment(1.0, 0.5, 0, 0)
-        align_right.add(logo)
+        align_right.add(about)
         self.aligns += [(align_right,5,5,0)]
         line2.pack_start(align_right, True, True, 0)
 
-        line3.pack_end(user, True, True, 0)
         table.pack_start(line1, False, False, 0)
         table.pack_start(line2, True, True, 0)
-        #table.pack_start(line3, True, True, 10) # TODO resize spacing
 
         self.resize()
 

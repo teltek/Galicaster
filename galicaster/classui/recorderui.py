@@ -1193,13 +1193,6 @@ class RecorderClassUI(gtk.Box):
         #TODO add strip buttons
         return buttons
 
-    def block_handlers(self, block): # Can be refactorized
-        for key,value in self.handlers.iteritems():
-            if block:
-                key.handler_block(value)
-            else:
-                key.handler_unblock(value)      
-
     def block(self):        
         self.focus_is_active = True
         self.event_change_mode(None, 3, 0)
