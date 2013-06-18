@@ -95,7 +95,7 @@ class OperationList(MainList):
                 "main" : "Are you sure?",
                 "text" : "The selected operations operations will be cancelled"
                 }
-        buttons = ( gtk.STOCK_DELETE, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
+        buttons = ( "Clear", gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
         warning = message.PopUp(message.WARNING, text,
                                 context.get_mainwindow(),
                                 buttons)

@@ -249,7 +249,7 @@ class ManagerUI(gtk.Box):
     def on_noselection(self):
 	"""Pops up a warning dialog"""
         text = {"title" : "Operations",
-		    "main" : "You haven't selected any recording",
+		    "main" : "You have not selected any recording",
 		    }
         buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
         message.PopUp(message.WARNING, text, 
@@ -268,7 +268,6 @@ class ManagerUI(gtk.Box):
                       context.get_mainwindow(),
                       buttons)
         return True
-
 
 
 

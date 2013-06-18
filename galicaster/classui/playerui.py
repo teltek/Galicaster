@@ -36,6 +36,8 @@ from galicaster.classui.statusbar import StatusBarClass
 from galicaster.classui.audiobar import AudioBarClass
 from galicaster.classui import get_ui_path
 from galicaster.classui import message
+from galicaster.classui.operations import OperationsUI
+
 
 gtk.gdk.threads_init()
 
@@ -277,17 +279,8 @@ class PlayerClassUI(ManagerUI):
 
     def on_question(self,button):
         """Pops up a dialog with the available operations"""
-
-	operation = self.ingest_question() # TODO ingest question for any package
-        if not operation:
-            return True
-        package = self.mediapackage
-        
-        if operation.count('nightly'):
-            context.get_worker().do_job_nightly(operation.replace("_",""), package)
-        else:                
-            context.get_worker().do_job(operation, package)
-        # TODO refresh row
+        packages = [ self.mediapackage ]
+        OperationsUI( mediapackage=packages, UItype=0 )
 	return True
 
     def on_delete(self, key):
