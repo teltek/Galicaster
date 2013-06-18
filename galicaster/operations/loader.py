@@ -19,7 +19,7 @@ import nas, export_to_zip, sbs, ingest
 
     
 def get_operations():
-    folder = "/home/galicaster/src/git/uned2/Galicaster/operations/"  # TODO
+    folder = "/home/galicaster/src/git/uned2/Galicaster/operations/"  # TODO change to relative location
     operations = []
     for filename in os.listdir(folder):
         filepath = os.path.join(folder, filename)
@@ -35,7 +35,8 @@ def get_nightly_operations(mps):
     ops =get_operations()
     keys = []
     for op in ops:
-        keys += [ op[1] ]
+        keys += [ op[0][1].get('shortname') ]
+        
     number = {}
     for key in keys:
         number[key] = 0
@@ -47,7 +48,7 @@ def get_nightly_operations(mps):
     new_list = []
     for key in keys:
         if number[key]:
-            new_list.append(key)                
+            new_list.append(key)
     return new_list  
 
 def import_from_file(filepath):
@@ -77,7 +78,7 @@ def convert_operation(operations):
         op = None
         try:
             theType = operation.pop("operation") #TODO check valid type # MUST be type
-            name = operation.get("shortname")
+            name = operation.get("name")
         except:
             pass
         if theType == "zip":

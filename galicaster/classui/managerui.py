@@ -246,7 +246,33 @@ class ManagerUI(gtk.Box):
         self.vista.get_selection().select_path(0)
 	return True
 
-    def on_trash(self):
+    def on_noselection(self):
+	"""Pops up a warning dialog"""
+        text = {"title" : "Operations",
+		    "main" : "You haven't selected any recording",
+		    }
+        buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
+        message.PopUp(message.WARNING, text, 
+                      context.get_mainwindow(),
+                      buttons)
+
+        return True
+
+    def on_no_available(self):
+	"""Pops up a warning dialog"""
+        text = {"title" : "Operations",
+		    "main" : "There is not any active operation.",
+		    }
+        buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
+        message.PopUp(message.WARNING, text, 
+                      context.get_mainwindow(),
+                      buttons)
+        return True
+
+
+
+
+    def on_trash(self, button=None):
         self.dispatcher.emit("change_mode", 4)
 
     def on_empty(self):

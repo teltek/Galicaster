@@ -24,6 +24,11 @@ from elements.clock import Clock
 
 from galicaster.operations import loader
 from galicaster.core import context
+from galicaster.classui import message
+
+CREATE = 0
+CLEAR = 1
+EXECUTE = 2
 
 class OperationsUI(SelectorUI):
     """
@@ -33,47 +38,80 @@ class OperationsUI(SelectorUI):
     
     __gtype_name__ = 'OperationsUI'
 
-    def __init__(self, parent=None, size = [1920,1080], mediapackage = None):
+    def __init__(self, parent=None, size = [1920,1080], mediapackage = None, UItype = 0):
         SelectorUI.__init__(self, parent, size)
 
         #configuration data
         self.mediapackage = mediapackage # TODO take into account single or multiple MPs
-
-        # TODO get directly from mediapackage
-        advanced = loader.get_nightly_operations(mediapackage) 
-
-        self.list = OperationList(self, size, "Operation Information", len(advanced))
+        self.list = OperationList(self, size, "Operation Information", UItype)
         self.add_main_tab("Operation Selector", self.list)
-        if advanced:
-               self.list2 = AdvancedList(self, size, "Advanced Operation Manager")
-               self.add_main_tab("Advanced", self.list2)
-               self.notebook.prev_page()
         self.show_all()
+        
 
 class OperationList(MainList):
     """
     List of available operations with some handy information
     """
 
-    def __init__(self, parent, size, sidelabel, advanced=False): # "Could be common
-        MainList.__init__(self, parent, size, sidelabel, advanced)
-        
-        self.add_button("Select",self.select)
-        if advanced:
-            self.add_button("Advanced",self.shift)
-        self.add_button("Cancel",self.close, True)
+    def __init__(self, parent, size, sidelabel, UItype): # "Could be common
+        MainList.__init__(self, parent, size, sidelabel, UItype)
         self.chooser = []
-        self.chooser += [self.append_list()]
-        self.chooser += [self.append_schedule()]
+        if UItype == CREATE:
+            self.add_button("Select",self.select)
+            self.add_button("Cancel",self.close, True)
+            self.chooser += [self.append_list()]
+            self.chooser += [self.append_schedule()]
+        elif UItype == CLEAR:
+            self.add_button("Clear",self.clear)
+            self.add_button("Cancel",self.close, True)
+            self.chooser += [self.append_clear()]
+        elif UItype == EXECUTE:
+            self.add_button("Execute",self.execute)
+            self.add_button("Cancel",self.close, True)
+            self.chooser += [self.append_clear()]
         self.show_all()
         
     def select(self, button=None):
         parameters = {}
         for element in self.chooser:
-            parameters[element.variable] = element.getSelected()
+            if element.variable == 'operation':
+                parameters[element.variable] = element.getSelected()
+            else: # schedule
+                parameters[element.variable] = element.getSelected()[0]
         operation, defaults = parameters.pop('operation')
         group = (operation, defaults, parameters)
         context.get_worker().enqueue_operations(group, self.superior.mediapackage) # TODO send a signal better
+        self.close(True)
+
+    def clear(self, button=None):
+        # TODO launch Question
+        options = {}
+        for element in self.chooser:
+            options[element.variable] = element.getSelected()
+
+        self.close(True)
+
+        text = {"title" : "Operations",
+                "main" : "Are you sure?",
+                "text" : "The selected operations operations will be cancelled"
+                }
+        buttons = ( gtk.STOCK_DELETE, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
+        warning = message.PopUp(message.WARNING, text,
+                                context.get_mainwindow(),
+                                buttons)
+        if not warning.response in message.POSITIVE:
+            return False
+        for op in options["operation"]:
+            context.get_worker().cancel_nightly_operations( op, self.superior.mediapackage )
+        #self.close(True)
+
+    def execute(self, button=None):
+        # TODO launch question
+        options = {}
+        for element in self.chooser:
+            options[element.variable] = element.getSelected()
+        for op in options["operation"]:
+            context.get_worker().do_now_nightly_operations( op, self.superior.mediapackage)
         self.close(True)
 
     def close(self, button=None): #it's commmon
@@ -86,83 +124,7 @@ class OperationList(MainList):
         available_list = loader.get_operations()
         variable = "operation"
         selectorUI = Chooser(variable,
-                           variable.capitalize(),
-                           "tree",
-                           available_list,
-                           preselection = available_list[0],
-                           fontsize = 15)
-
-        self.pack_start(selectorUI, False, False, 0)
-        self.reorder_child(selectorUI,0)
-        # TODO selector resize(size)
-        return selectorUI
-
-    def append_schedule(self): # TODO get size from class
-        variable = "schedule" 
-        font = 15
-        selectorUI = Chooser(variable,
-                         variable.capitalize(),
-                         "toogle",
-                         # operation.commom[variable]["type"],      
-                           ["Immediate", "Nightly"],
-                           preselection = "Immediate",
-                           fontsize = font)
-        # TODO attach clock to scheduled
-
-        self.pack_start(selectorUI, False, False, 0)
-        self.reorder_child(selectorUI,1)
-        selectorUI.resize(1)
-        return selectorUI
-
-    def shift(self, button = None):
-        self.superior.notebook.next_page()
-
-
-class AdvancedList(MainList):
-    """
-    List of advanced operations like cancel nightly or sync all
-    """
-
-    def __init__(self, parent, size, sidelabel): # "Could be common
-        MainList.__init__(self, parent, size, sidelabel)
-        
-        self.add_button("Select",self.select)
-        #self.add_button("Cancel",self.close, True)
-        self.add_button("Back",self.shift)
-
-        self.chooser = []
-        self.chooser += [self.append_ops()]
-        self.chooser += [self.append_advanced()]
-        self.show_all()
-
-    def select(self, button=None):
-        options = {}
-        for element in self.chooser:
-            options[element.variable] = element.getSelected()
-        if options.get("advanced") == "Do All Now":
-            # TODO send signal
-            context.get_worker().do_now_nightly_operations(options["operation"], self.superior.mediapackage)
-        else:
-            # TODO send signal
-            context.get_worker().cancel_nightly_operations(options["operation"], self.superior.mediapackage)
-        
-        # TODO change queue and status for every operation
-
-        self.close(True)
-
-    def shift(self, button=None):
-        self.superior.notebook.prev_page()
-
-    def append_ops(self):  
-        # TODO the list should be available on operations
-        """Lists the available operations"""
-
-        available_list = loader.get_nightly_operations(self.superior.mediapackage)
-        new_list = [ (x, str(x)) for x in available_list]
-        available_list = new_list
-        variable = "operation"
-        selectorUI = Chooser(variable,
-                             "Active Operations",
+                             variable.capitalize(),
                              "tree",
                              available_list,
                              preselection = available_list[0],
@@ -173,18 +135,38 @@ class AdvancedList(MainList):
         # TODO selector resize(size)
         return selectorUI
 
-    def append_advanced(self): # TODO get size from class
-        variable = "advanced" 
+    def append_schedule(self): # TODO get size from class
+        variable = "schedule" 
         font = 15
         selectorUI = Chooser(variable,
-                             "Advanced Options",
-                             "toogle",
-                             # operation.commom[variable]["type"],      
-                             ["Cancel All", "Do All Now"],
-                             preselection = "Cancel All",
+                             variable.capitalize(),
+                             "tree-single", 
+                            ["Immediate", "Nightly"],
+                             preselection = "Immediate",
                              fontsize = font)
-
         self.pack_start(selectorUI, False, False, 0)
         self.reorder_child(selectorUI,1)
-        selectorUI.resize(1)
+        #selectorUI.resize(1)
+        return selectorUI
+
+    def append_clear(self):  
+        # TODO the list should be available on operations
+        """Lists the available operations"""
+
+        available_list = loader.get_nightly_operations(self.superior.mediapackage)
+        if not len(available_list):
+            print "No active operations for this packages"
+            return None
+
+        variable = "operation"
+        selectorUI = Chooser(variable,
+                             "Active Operations",
+                             "tree-multiple",
+                             available_list,
+                             preselection = None,                             
+                             fontsize = 15)
+
+        self.pack_start(selectorUI, False, False, 0)
+        self.reorder_child(selectorUI,0)
+        # TODO selector resize(size)
         return selectorUI

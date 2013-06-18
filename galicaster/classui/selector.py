@@ -34,7 +34,7 @@ class SelectorUI(gtk.Window):
         if not size:
             size = context.get_mainwindow().get_size()
         self.size=size
-        width = int(size[0]/2.2)
+        width = int(size[0]/3.0) # Former 2.2
         height = int(size[1]/3.0)
 
         gtk.Window.__init__(self)
@@ -113,12 +113,15 @@ class MainList(gtk.HBox):
         self.buttons = gtk.VButtonBox()
         self.buttons.set_layout(gtk.BUTTONBOX_START)
         self.buttons.set_spacing(int(wprop*5))
+        self.buttons2 = gtk.VButtonBox()
+        self.buttons2.set_layout(gtk.BUTTONBOX_END)
 
         sidebox = gtk.VBox(False,0)  
         #sidebox.set_size_request(int(wprop*750),-1) # TODO use simillar size to Chooser
 
         self.pack_start(self.vbox, True, True, 0)
-        sidebox.pack_start(self.buttons, False, False, int(hprop*10))
+        sidebox.pack_start(self.buttons, True, True, int(hprop*10))
+        sidebox.pack_start(self.buttons2, True, True, int(hprop*10))
         self.pack_start(sidebox,False,False,int(wprop*15))
         
 
@@ -134,9 +137,9 @@ class MainList(gtk.HBox):
         if not end:
             self.buttons.pack_start(button)
         else:
-            self.buttons.pack_end(button)
+            self.buttons2.pack_end(button)
         button.connect("clicked",connection)
-        button.set_can_focus(False)
+        #button.set_can_focus(False)
         return button
         
     def close(self,button=None):

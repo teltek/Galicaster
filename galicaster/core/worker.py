@@ -61,7 +61,7 @@ class Worker(object):
         self.jobs = Queue.Queue()
         self.nightJobs = []
 
-        #self.rebuildQueues()
+        self.rebuildQueues()
         
         self.t = self.T(self.jobs)
         self.t.setDaemon(True)
@@ -80,26 +80,28 @@ class Worker(object):
                     mp.setOpStatus(op_name, mediapackage.OP_FAILED)
                     change = True
                 elif op_value is mediapackage.OP_PENDING:
-                    print "recreating pending op", op_name
+                    #print "recreating pending op", op_name
+                    mp.setOpStatus(op_name, mediapackage.OP_FAILED)
+                    change = True
                     #op = loader.recreate_op(op_name)
+                    #op = None
+                    #if op:
+                    #    self.enqueueJob(op,mp)
+                    #else:
+                    #    mp.setOpStatus(op_name, mediapackage.OP_FAILED) # TODO log the operation is missing
+                    #    change = True
+                elif op_value is mediapackage.OP_NIGHTLY:
+                    # print "recreating nightly ", op_name
+                    # op = loader.recreate_op(op_name)
                     op = None
                     if op:
-                        self.enqueueJob(op,mp)
+                        self.enqueueJobNightly(op,mp)
                     else:
-                        mp.setOpStatus(op_name, mediapackage.OP_FAILED) # TODO log the operation is missing
+                        mp.setOpStatus(op_name, mediapackage.OP_IDLE) # TODO log the operation is missing
                         change = True
-                elif op_value is mediapackage.OP_NIGHTLY:
-                        print "recreating nightly ", op_name
-                        #op = loader.recreate_op(op_name)
-                        op = None
-                        if op:
-                            self.enqueueJobNightly(op,mp)
-                        else:
-                            mp.setOpStatus(op_name, mediapackage.OP_FAILED) # TODO log the operation is missing
-                            change = True
             if change:
                 self.repo.update(mp)        
-        print "Rebuild", len(self.nightJobs)
+            #print "Rebuild", len(self.nightJobs)
 
     def enqueueJob(self, operation, package):        
         operation.logCreation(package)
@@ -138,7 +140,7 @@ class Worker(object):
     def enqueue_operations(self, operation, packages):
         for package in packages: # TODO perform them in order
             bound = operation[0]
-            subtype = operation[1].pop('shortname')
+            subtype = operation[1].get('shortname')
             defined = bound( subtype, operation[1], self.context )
             defined.configure( operation[2] )
             if defined.schedule.lower() == defined.IMMEDIATE:

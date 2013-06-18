@@ -22,6 +22,7 @@ from galicaster.classui import get_ui_path
 from galicaster.classui.operations import OperationsUI
 from galicaster.operations import loader
 from galicaster.utils import readable
+from galicaster.classui import message
 
 logger = context.get_logger()
 
@@ -72,7 +73,7 @@ class ListingClassUI(ManagerUI):
             self.refresh()
 
     def insert_data_in_list(self, lista, mps):
-        lista.clear() # TODO don't refresh by clearing
+        lista.clear()
         for mp in mps:
             if mp.status != mediapackage.SCHEDULED:
                 lista.append([mp, mp.getStartDateAsString()])
@@ -159,7 +160,6 @@ class ListingClassUI(ManagerUI):
 
    
     def render_title(self, column, cell, model, iterator, user_data = None ): 
-        # TODO Refact ALL renders providing getAttribut for mp
         mp = model[iterator][0]
         cell.set_property('text', mp.getTitle())
 
@@ -257,37 +257,55 @@ class ListingClassUI(ManagerUI):
 
         selection = self.vista.get_selection()
         store,rows = selection.get_selected_rows()
+        if not len(rows) and op != "Trash":
+            self.on_noselection()
+        else:
+            available = self.active_operations(store,rows)
+            if op == "Play": # TODO get attribute on_$operation
+                last = store.get_iter(rows[len(rows)-1])
+                self.on_play(store, None, last)
+            elif op == "Edit":
+                last = store.get_iter(rows[len(rows)-1])
+                self.on_edit(store, None, last)
+            elif op == "Delete":
+                if self.reference == 1:
+                    self.on_archive(store, rows)
+                elif self.reference == 4:
+                    self.on_delete(store, rows)
+            elif op == "Restore":
+                self.on_restore(store, rows)
+            elif op == "Empty":
+                self.on_empty()
+            elif op == "Trash":
+                self.on_trash()
+            elif op == "Info":
+                last = store.get_iter(rows[len(rows)-1])
+                self.on_info(store, None, last)
+            elif op in ["Operations", "Ingest"]:
+                self.on_operations_question(store, rows, 0)
+            elif op == "Clear":
+                if available:
+                    self.on_operations_question(store, rows, 1)
+                else:
+                    self.on_no_available()                   
+                    
+            elif op == "Execute":
+                if available:
+                    self.on_operations_question(store, rows, 2)
+                else:
+                    self.on_no_available()         
+            else:
+                logger.debug('Invalid action: {0}'.format(op))
 
-        #print self.get_attribute("on_{0}".format(op.lower()))
+    def active_operations(self, store, rows):
+        packages = []
+        for c in rows:
+            iterator = store.get_iter(c)
+            packages += [ store[iterator][0] ] 
+        active = True if loader.get_nightly_operations( packages ) else False
+        return active
 
-        if op == "Play": # TODO get attribute on_$operation
-            last = store.get_iter(rows[len(rows)-1])
-            self.on_play(store, None, last)
-	elif op == "Edit":
-            last = store.get_iter(rows[len(rows)-1])
-            self.on_edit(store, None, last)
-        elif op == "Delete":
-            if self.reference == 1:
-                self.on_archive(store, rows)
-            elif self.reference == 4:
-                self.on_delete(store, rows)
-        elif op == "Restore":
-            self.on_restore(store, rows)
-        elif op == "Empty":
-            self.on_empty()
-        elif op == "Trash":
-            self.on_trash()
-        elif op == "Sync":
-            self.dispatcher.emit('galicaster-notify-nightly')
-	elif op == "Info":
-            last = store.get_iter(rows[len(rows)-1])
-            self.on_info(store, None, last)
-	elif op == "Operations" or op == "Ingest":
-            #self.on_ingest_question(store, rows)
-            self.on_operations_question(store, rows)
-	else:
-            logger.debug('Invalid action: {0}'.format(op))
-
+    
 
     def create_menu(self):
         """Creates a menu to be shown on right-button-click over a MP"""
@@ -325,12 +343,12 @@ class ListingClassUI(ManagerUI):
         """Set the player for previewing if double click"""
 	self.on_play(treeview.get_model(),reference,treeview.get_model().get_iter(reference))
 
-    def on_operations_question(self,store, rows): # Move to 
+    def on_operations_question(self,store, rows, ui): # Move to 
         packages = []
         for c in rows:
              iterator = store.get_iter(c)
              packages += [store[iterator][0]]
-        OperationsUI(mediapackage = packages) #TODO launch and return
+        OperationsUI( mediapackage=packages, UItype=ui )
 
     def on_play(self, store, reference, iterator):
         """ Retrieve mediapackage and send videos to player"""
@@ -345,7 +363,7 @@ class ListingClassUI(ManagerUI):
 		    "main" : "This recording can't be played",
 		    }
 	    buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
-	    message.PopUp(message.WARNING, text, 
+	    message.PopUp(message.WARNING, text,  # TODO will fail move to managerui
                           context.get_mainwindow(),
                           buttons)
 	return True 
@@ -407,6 +425,18 @@ class ListingClassUI(ManagerUI):
         allb.connect("clicked", lambda l:self.vista.get_selection().select_all())
         noneb.connect("clicked", lambda l:self.vista.get_selection().unselect_all())
         self.shortcutlist = [allb, noneb]
+        control_below=gtk.HBox()
+        control_below.pack_start( shortcut, True, True, 0 )
+
+        if self.reference == 1:
+            gototrash = gtk.HButtonBox()
+            gototrash.set_layout(gtk.BUTTONBOX_END)
+            trash_button = gtk.Button("Trash")
+            gototrash.pack_start( trash_button )
+            trash_button.connect("clicked", self.on_trash)
+            trash_button.set_can_focus(False)
+            control_below.pack_start( gototrash, True, True, 0 )      
+            self.shortcutlist += [trash_button]
 
         # CONTROL BOX
         controlbox = gtk.VBox()
@@ -418,10 +448,10 @@ class ListingClassUI(ManagerUI):
         self.box.pack_start(listalign, True, True, 0)
         listbox = gtk.VBox()
         listbox.pack_start(scrolledw, True, True, 0)
-        listbox.pack_start(shortcut, False, False, 0)
+        listbox.pack_start(control_below, False, False, 0)
         listalign.add(listbox)
-        self.box.pack_start(controlbox, False, False, 50) # TODO padding on resize
-        controlbox.pack_start(buttonbox,True, True, 10) # IDEM
+        self.box.pack_start(controlbox, False, False, 50) 
+        controlbox.pack_start(buttonbox,True, True, 10)
         self.define_buttons()
 
     def define_buttons(self):
@@ -429,9 +459,9 @@ class ListingClassUI(ManagerUI):
         self.add_button(self.buttonbox, "media-playback-start", "Play") 
         self.add_button(self.buttonbox, gtk.STOCK_COPY, "Edit") 
         self.add_button(self.buttonbox, gtk.STOCK_GO_UP, "Operations") 
+        self.add_button(self.buttonbox, gtk.STOCK_CLEAR, "Clear") 
+        self.add_button(self.buttonbox, gtk.STOCK_EXECUTE, "Execute") 
         self.add_button(self.buttonbox, gtk.STOCK_CLOSE, "Delete") 
-        self.add_button(self.buttonbox, "user-trash", "Trash") 
-        self.add_button(self.buttonbox, gtk.STOCK_DIALOG_WARNING, "Sync") 
 
     def add_button(self, box, icon, text):
         composition = gtk.VBox()
@@ -487,7 +517,7 @@ class ListingClassUI(ManagerUI):
                 label.set_attributes(attr)
    
 	for name in secondlist:
-	    button2 = self.gui.get_object(name) # TODO, check player
+	    button2 = self.gui.get_object(name)
 	    button2.set_property("width-request", int(k2*85) )
 	    button2.set_property("height-request", int(k2*85) )
 
@@ -572,8 +602,7 @@ class ArchiveUI(ListingClassUI):
         self.buttonlist = []
         self.add_button(self.buttonbox, "media-playback-start", "Play") 
         self.add_button(self.buttonbox, "edit-undo", "Restore") 
-        self.add_button(self.buttonbox, gtk.STOCK_CLOSE, "Delete") 
-        self.add_button(self.buttonbox, "user-trash", "Empty") 
+        self.add_button(self.buttonbox, "user-trash", "Empty Trash")
 
     def refresh_treeview(self):
 	"""Refresh all the values on the list"""

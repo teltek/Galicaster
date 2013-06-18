@@ -67,8 +67,12 @@ class Chooser(gtk.VBox):
             return Radiobox(values, selection, fontsize, extra)
         if selector_type == "toogle":
             return Togglebox(values, selection)
-        if selector_type == "tree":
+        if selector_type == "tree": # TODO make it for several data combinations
             return Listbox(values, selection)
+        if selector_type == "tree-single":
+            return MultipleListbox(values, selection, False)
+        if selector_type == "tree-multiple":
+            return MultipleListbox(values, selection, True)
 
     def resize(self, wprop=1, hprop=1):
         self.selector.resize(wprop, hprop)
@@ -242,10 +246,69 @@ class Listbox(gtk.ScrolledWindow):
     def getSelected(self):# TODO test
         model,iterator = self.view.get_selection().get_selected()
         if type(iterator) is gtk.TreeIter:
-            value = model.get_value(iterator,0) 
+            value = model.get_value(iterator,0)
             return value
         else:
             return "nothing selected"
+
+class MultipleListbox(gtk.ScrolledWindow):
+
+    def __init__(self, values, preselection, multiple):
+        
+        gtk.ScrolledWindow.__init__(self)
+        self.set_shadow_type(gtk.SHADOW_ETCHED_IN)
+        rows = len(values) if len(values)<5 else 5
+        self.set_size_request(-1,len(values)*69) # TODO get size from parents
+
+        lista, self.view = self.prepare_view(1, multiple)# TODO get size from parent
+        for value in values:
+            lista.append(self.prepare_data(value))
+        self.add(self.view)
+        self.view.get_selection().select_iter(lista.get_iter_first()) # TODO select preselection
+        self.show_all()
+
+
+    def prepare_view(self, hprop, multiple): # TODO get hprop right
+
+        lista = gtk.ListStore(str) 
+        view = gtk.TreeView() 
+        style=view.rc_get_style().copy()
+        color = gtk.gdk.color_parse(str(style.base[gtk.STATE_SELECTED]))
+        view.modify_base(gtk.STATE_ACTIVE, color)
+        view.set_model(lista)
+        view.get_selection().set_mode(gtk.SELECTION_SINGLE)
+        if multiple:
+            view.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
+            def force_ctrl(iv, ev):
+                ev.state = gtk.gdk.CONTROL_MASK
+            view.connect('key-press-event', force_ctrl)
+            view.connect('button-press-event', force_ctrl)
+
+        view.set_headers_visible(False)
+        view.columns_autosize()
+
+        render = gtk.CellRendererText() 
+        render.set_property('xalign',0.5)
+        font = pango.FontDescription("bold "+str(int(hprop*20))) # TODO Get it by pixel size
+        render.set_property('font-desc', font)
+        render.set_fixed_height_from_font(2)
+	column0 = gtk.TreeViewColumn("Operation", render, text = 0) # 
+        
+        view.append_column(column0)
+        column0.set_sort_column_id(0)
+        return lista,view
+
+    def prepare_data(self, name): 
+        data = [name]
+        return data
+           
+    def getSelected(self):# TODO test
+        model, iterators = self.view.get_selection().get_selected_rows()
+        values = []
+        for iterator in iterators:
+            values += [model.get_value(model.get_iter(iterator),0)]
+        return values
+
 
           
       

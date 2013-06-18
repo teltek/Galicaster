@@ -68,7 +68,6 @@ class Operation(object):
 
     def logCreation(self, mp):
         """Leaves log when operation is created"""
-        print "Creation"
         self.setCreationTime()
         mp.setOp(self.name, mediapackage.OP_PENDING, self.creation_time)
         self.context[0].info("Creating {0} for {1}".format(self.name, mp.getIdentifier() ))
@@ -89,7 +88,6 @@ class Operation(object):
 
     def logStart(self, mp):
         """Leaves log when operation starts"""
-        print "Start"
         self.setStartTime()
         self.context[0].info("Executing {0} for {1}".format(self.name, mp.getIdentifier() ))
         mp.setOp(self.name, mediapackage.OP_PROCESSING, self.start_time)
@@ -99,7 +97,6 @@ class Operation(object):
 
     def logEnd(self, mp, success):
         """Leaves log when opeartaion ends or fails"""
-        print "End"
         self.setEndTime()
         if success:
             self.context[0].info("Finalized {0} for {1}".format(self.name, mp.getIdentifier() ))
