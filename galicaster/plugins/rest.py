@@ -15,6 +15,7 @@ import json
 import threading
 import tempfile
 from bottle import route, run, response
+import os.path, time
 import gtk
 
 from galicaster.core import context
@@ -51,7 +52,8 @@ def index():
             "/operation/ingest/:id" : "Ingest MP",
             "/operation/sidebyside/:id"  : "Export MP to side-by-side",
             "/operation/exporttozip/:id" : "Export MP to zip",
-            "/screen" : "get a screenshoot of the active"
+            "/screen" : "get a screenshoot of the active",
+            "/logstale" : "check if log is stale (theads crashed)"
         }    
     return json.dumps(endpoints)
 
@@ -128,5 +130,24 @@ def screen():
     pb= open(ifile.name, 'r') 
     if pb:
         return pb
+    else:
+        return "Error"
+    
+@route('/logstale')
+def logstale():
+    
+    conf = context.get_conf()
+    
+    file = conf.get('logger', 'path')
+    stale = conf.get('logger', 'stale')
+    if not stale:
+            stale= 5 * 60 # 5 minutes
+            
+    if file:
+        age = (time.time() - os.path.getmtime(file)) 
+        if age > stale:
+            return "STALE LOG: age:  %s s" % age
+        else:
+            return "OK LOG: age: %s s" % age
     else:
         return "Error" 
