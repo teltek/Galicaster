@@ -86,10 +86,10 @@ class IngestNas(Operation):
     def get_data(self, mp):
         for track in mp.getTracks():
             self.data += [track.getURI()]
-        if self.options["include-attachments"]:
+        if self.options["include-attachments"] in [True, "True", "true", "yes"]:
             for attach in mp.getAttachments():
                 self.data += [attach.getURI()]
-        if self.options["include-metadata"]:
+        if self.options["include-metadata"] in [True, "True", "true", "yes"]:
             for catalog in mp.getCatalogs():
                 self.data += [catalog.getURI()]
 
@@ -100,7 +100,7 @@ class IngestNas(Operation):
 
     def list_files(self, location):
         filelist = []
-        for dirname, dirnames, filenames in os.walk('.'):
+        for dirname, dirnames, filenames in os.walk(location):
             for filename in filenames:
                 filelist += [ os.path.join(dirname, filename) ]
         return filelist

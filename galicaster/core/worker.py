@@ -2,7 +2,7 @@
 # Galicaster, Multistream Recorder and Player
 #
 #       galicaster/core/worker
-#OP_
+#
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
@@ -80,32 +80,21 @@ class Worker(object):
                     mp.setOpStatus(op_name, mediapackage.OP_FAILED)
                     change = True
                 elif op_value is mediapackage.OP_PENDING:
-                    #print "recreating pending op", op_name
                     mp.setOpStatus(op_name, mediapackage.OP_FAILED)
                     change = True
-                    #op = loader.recreate_op(op_name)
-                    #op = None
-                    #if op:
-                    #    self.enqueueJob(op,mp)
-                    #else:
-                    #    mp.setOpStatus(op_name, mediapackage.OP_FAILED) # TODO log the operation is missing
-                    #    change = True
                 elif op_value is mediapackage.OP_NIGHTLY:
-                    # print "recreating nightly ", op_name
-                    # op = loader.recreate_op(op_name)
                     op = None
                     if op:
                         self.enqueueJobNightly(op,mp)
                     else:
-                        mp.setOpStatus(op_name, mediapackage.OP_IDLE) # TODO log the operation is missing
+                        mp.setOpStatus(op_name, mediapackage.OP_IDLE)
                         change = True
             if change:
                 self.repo.update(mp)        
-            #print "Rebuild", len(self.nightJobs)
 
     def enqueueJob(self, operation, package):        
         operation.logCreation(package)
-        self.jobs.put( (operation.perform,(package,)) ) # TODO log
+        self.jobs.put( (operation.perform,(package,)) )
 
     def enqueueJobNightly(self, operation, package):        
         operation.logNightly(package)
@@ -144,6 +133,6 @@ class Worker(object):
             defined = bound( subtype, operation[1], self.context )
             defined.configure( operation[2] )
             if defined.schedule.lower() == defined.IMMEDIATE:
-                self.enqueueJob(defined, package) # package is already on the operation?
-            else: # TODO check Nightly also
+                self.enqueueJob(defined, package)
+            else:
                 self.enqueueJobNightly(defined, package)
