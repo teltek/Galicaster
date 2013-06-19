@@ -19,7 +19,7 @@ import nas, export_to_zip, sbs, ingest
 
     
 def get_operations():
-    folder = "/home/galicaster/src/git/uned2/Galicaster/operations/"  # TODO change to relative location
+    folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'operations'))
     operations = []
     for filename in os.listdir(folder):
         filepath = os.path.join(folder, filename)

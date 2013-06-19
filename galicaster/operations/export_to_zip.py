@@ -48,11 +48,11 @@ class ExportToZip(Operation):
             "default": True,
             "description": "Wheter XML namespace is included on metadata files",
             },
-         "ziptype": { # TODO implement
+         "ziptype": {
             "type": "select",
-            "default": "native",
-            "description": "Wheter XML namespace is included on metadata files",
-            "options": ["native","system"],
+            "default": "system",
+            "description": "Wheter files are zipped via Python or via system zip",
+            "options": ["system","native"],
             },
          }
          
@@ -63,7 +63,6 @@ class ExportToZip(Operation):
 
         Operation.configure(self, options, is_action)
         self.date=datetime.datetime.now()
-        # TODO ziptype from somewhere
         # TODO use-namespace from conf
         
     def do_perform(self, mp):
@@ -72,7 +71,8 @@ class ExportToZip(Operation):
         destination = os.path.join(self.options["location"], self.options["filename"])
         # Don't look for duplicates, ingest needs to overwrite files
         self.options["filename"] = os.path.split(destination)[1]
-        serializer.save_in_zip(mp, destination, self.options["use-namespace"], self.context[0])
+        serializer.save_in_zip(mp, destination, self.options["use-namespace"], 
+                               self.options['ziptype'], self.context[0])
 
     def transform_folder(self, template):
 

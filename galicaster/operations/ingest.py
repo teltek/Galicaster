@@ -24,7 +24,7 @@ from export_to_zip import ExportToZip
 
 class MHIngest(Operation):
 
-    order = ["schedule", "use-namespace", "temporal-path"]
+    order = ["schedule", "use-namespace", "ziptype" "temporal-path"]
     future = ["server","workflow", "workflow-parameters", "username", "password" ]
     show = [ "schedule" ]
     # Workflow
@@ -39,6 +39,12 @@ class MHIngest(Operation):
             "type": "boolean",
             "default": True,
             "description": "Wheter XML namespace is included on metadata files",
+            },
+        "ziptype": {
+            "type": "select",
+            "default": "system",
+            "description": "Wheter files are zipped via Python or via system zip",
+            "options": ["system","native"],
             },
         "temporal-path": {
             "type": "folder",
@@ -89,13 +95,13 @@ class MHIngest(Operation):
         self.options["temporal-path"] = self.ifile.name
         # create zip suboperation
         self.export=ExportToZip("zipingest", context=self.context)
-        self.export.configure({"use-namespace": self.options["use-namespace"],
-                               "location": os.path.split(self.options["temporal-path"])[0], # TMPfile
-                               "filename": os.path.split(self.options["temporal-path"])[1], # TMPfile
-                               },
-                              is_action=False) 
-        # TODO Set NATIVE/SYSTEM zip
-        # TODO get user-namespace from legacy conf
+        self.export.configure(
+            {"use-namespace": self.options["use-namespace"],
+             "location": os.path.split(self.options["temporal-path"])[0], # TMPfile
+             "filename": os.path.split(self.options["temporal-path"])[1], # TMPfile
+             "ziptype": self.options["ziptype"],
+             },
+            is_action=False) 
 
     def do_perform(self, mp):
         self.ingest(mp)        

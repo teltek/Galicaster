@@ -26,7 +26,6 @@ DCTERMS = ['title', 'creator', 'isPartOf', 'description', 'subject',
            'language', 'contributor', 'created', 'temporal']
 
 SERIES_FILE="series.xml"
-ziptype = "system" # system,native
 
 def save_in_dir(mp, logger=None):
     assert path.isdir(mp.getURI())
@@ -137,10 +136,11 @@ def save_system_zip(mp, loc, use_namespace=True, logger=None):
     loc = None
     os.remove(tmp_file)
 
-if ziptype == "system":
-    save_in_zip = save_system_zip
-else: 
-    save_in_zip = save_native_zip
+def save_in_zip(mp, loc, use_namespace=True, ziptype='system', logger=None):
+    if ziptype == "system":
+        save_system_zip(mp, loc, use_namespace, ziptype)
+    else: 
+        save_native_zip(mp, loc, use_namespace, ziptype)
 
 
 def set_properties(mp):
