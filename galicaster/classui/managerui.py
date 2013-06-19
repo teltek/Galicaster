@@ -205,8 +205,8 @@ class ManagerUI(gtk.Box):
         for c in rows:
             iterators += [ store.get_iter(c) ]
         for i in iterators:
-            key = store[i][0]
-            self.deleting(key)
+            mp = store[i][0]
+            self.deleting(mp)
             self.lista.remove(i)
 
         self.vista.get_selection().select_path(0)
@@ -239,8 +239,8 @@ class ManagerUI(gtk.Box):
         for c in rows:
             iterators += [ store.get_iter(c) ]
         for i in iterators:
-            key = store[i][0]
-            self.hard_deleting(key)
+            mp = store[i][0]
+            self.hard_deleting(mp)
             self.lista.remove(i)
 
         self.vista.get_selection().select_path(0)
@@ -299,8 +299,8 @@ class ManagerUI(gtk.Box):
         for c in rows:
             iterators += [ store.get_iter(c) ]
         for i in iterators:
-            key = store[i][0]
-            self.hard_deleting(key)
+            mp = store[i][0]
+            self.hard_deleting(mp)
             self.lista.remove(i)
 
         self.vista.get_selection().select_path(0)
@@ -314,28 +314,25 @@ class ManagerUI(gtk.Box):
         for c in rows:
             iterators += [store.get_iter(c) ]
         for i in iterators:
-            key = store[i][0]
-            self.restore(key)
+            mp = store[i][0]
+            self.restore(mp)
             self.lista.remove(i)
 
         self.vista.get_selection().select_path(0)
 	return True
 
 
-    def deleting(self, key):
-        logger.debug("Deleting {0}".format(key))
-        package = self.repository.get(key)
+    def deleting(self, package):
+        logger.debug("Deleting {0}".format(package.getIdentifier() ))
         self.repository.delete(package)    
 
-    def hard_deleting(self, key):
-        logger.debug("Hard deleting {0}".format(key))
-        package = self.repository.get(key)
+    def hard_deleting(self, package):
+        logger.debug("Hard deleting {0}".format(package.getIdentifier() ))
         self.repository.hard_delete(package) 
 
-    def restore(self,key):
+    def restore(self,package):
         """Restore a MP to the Media Manager"""
-        logger.debug("Restoring {0}".format(key))
-	package = self.repository.get(key)
+        logger.debug("Restoring {0}".format(package.getIdentifier() ))
         self.repository.restore(package)
 
     def edit(self,key):

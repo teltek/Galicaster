@@ -196,6 +196,10 @@ class ListingClassUI(ManagerUI):
         palette = context.get_conf().get_palette()
         color = self.color[status] if old_style else palette[status]
         cell.set_property('background', color)
+        if status > 1:
+            cell.set_property('foreground', "#FFFFFF")
+        else:
+            cell.set_property('foreground', "#333333")
         cell.set_property('text', mediapackage.op_status[status] )
 
     def refresh_treeview(self):
@@ -257,7 +261,7 @@ class ListingClassUI(ManagerUI):
 
         selection = self.vista.get_selection()
         store,rows = selection.get_selected_rows()
-        if not len(rows) and op != "Trash":
+        if not len(rows) and not op.count("Empty"):
             self.on_noselection()
         else:
             available = self.active_operations(store,rows)
@@ -274,7 +278,7 @@ class ListingClassUI(ManagerUI):
                     self.on_delete(store, rows)
             elif op == "Restore":
                 self.on_restore(store, rows)
-            elif op == "Empty":
+            elif op in ["Empty", "Empty Trash"]:
                 self.on_empty()
             elif op == "Trash":
                 self.on_trash()

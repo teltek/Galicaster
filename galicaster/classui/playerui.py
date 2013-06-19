@@ -308,7 +308,7 @@ class PlayerClassUI(ManagerUI):
             return False
 
         else:
-            self.deleting(key)
+            self.deleting(self.mediapacakge) # TODO deactivate on Trash Player, activate restore
             self.thread_id = None
             self.player.stop()
             self.statusbar.SetVideo(None, "")
