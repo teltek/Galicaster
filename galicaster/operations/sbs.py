@@ -36,19 +36,19 @@ class SideBySide(Operation):
             },
         "filename": {
             "type": "filepath",
-            "default": "${title}.zip", # TODO use format
+            "default": "${title}.zip",
             "description": "Zip filename where to save the mediapackage",
             },
          "location": {
             "type": "folderpath",
-            "default": "{export}", # TODO use format
+            "default": "{export}",
             "description": "Location where the resulting file will be exported",
             },
          "layout": {
             "type": "select",
             "default": "sbs",
             "description": "Video composition layout for the side by side output",
-            "options": [ "sbs", "pip_screen", "pip_camera" ] # TODO parameters for differnen layouts
+            "options": [ "sbs", "pip_screen", "pip_camera" ]
             },
          }
          
@@ -64,9 +64,9 @@ class SideBySide(Operation):
         self.layout = self.options["layout"]
         self.date=datetime.datetime.now()
 
-    def do_perform(self, mp): # TODO log creation
+    def do_perform(self, mp):
 
-        self.options["location"] = self.transform_folder( self.options["location"], mp) # TODO update options to reflect changes
+        self.options["location"] = self.transform_folder( self.options["location"], mp) 
         self.options["filename"] = self.transform_template( self.options["filename"], mp)
         destination = os.path.join(self.options["location"], self.options["filename"])
         base = destination

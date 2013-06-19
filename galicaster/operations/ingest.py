@@ -24,7 +24,7 @@ from export_to_zip import ExportToZip
 
 class MHIngest(Operation):
 
-    order = ["schedule", "use-namespace", "ziptype" "temporal-path"]
+    order = ["schedule", "use-namespace", "ziptype", "temporal-path"]
     future = ["server","workflow", "workflow-parameters", "username", "password" ]
     show = [ "schedule" ]
     # Workflow

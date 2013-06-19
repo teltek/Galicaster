@@ -29,7 +29,7 @@ class Operation(object):
     IMMEDIATE = "immediate"
 
     def __init__(self, name, subtype, options, context):
-        self.__name = name # TODO log the main type
+        self.__name = name 
         self.name = subtype
         self.context = context
         self.creation_time = None # Initialized on worker.put
@@ -146,7 +146,7 @@ def deserialize_xml(self, xml):
         new_op=deserialize_operation(op)
         ops+=[new_op]
     #TODO Log recovered operations somehow
-    return ops # TODO the list of objects should be added orderly to the jobs queue
+    return ops 
 
 def deserialize_operation(self, string):
     name = string.getAttribute("name")

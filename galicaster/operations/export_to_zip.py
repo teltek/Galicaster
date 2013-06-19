@@ -24,7 +24,7 @@ from __init__ import Operation
 
 class ExportToZip(Operation):
 
-    order = ["schedule", "location", "filename" , "use-namespace", "ziptype",]
+    order = ["schedule", "location", "filename" , "use-namespace", "ziptype"]
     show = [ "schedule" ]
     parameters = {
         "schedule": {
@@ -35,12 +35,12 @@ class ExportToZip(Operation):
             },
          "filename": {
             "type": "file",
-            "default": "{date}.zip", # TODO use format
+            "default": "{date}.zip",
             "description": "Zip filename where to save the mediapackage",
             },
          "location": {
             "type": "folder",
-            "default": "{export}",#TODO get export folder
+            "default": "{export}",
             "description": "Location where to save the zip file",
             },
          "use-namespace": {
@@ -63,7 +63,6 @@ class ExportToZip(Operation):
 
         Operation.configure(self, options, is_action)
         self.date=datetime.datetime.now()
-        # TODO use-namespace from conf
         
     def do_perform(self, mp):
         self.options["location"] = self.transform_folder(self.options["location"])

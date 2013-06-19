@@ -84,7 +84,6 @@ class OperationList(MainList):
         self.close(True)
 
     def clear(self, button=None):
-        # TODO launch Question
         options = {}
         for element in self.chooser:
             options[element.variable] = element.getSelected()
@@ -101,17 +100,23 @@ class OperationList(MainList):
                                 buttons)
         if not warning.response in message.POSITIVE:
             return False
+        ops = loader.get_operations()
         for op in options["operation"]:
-            context.get_worker().cancel_nightly_operations( op, self.superior.mediapackage )
-        #self.close(True)
+            for item in ops:
+                if item[1] == op:
+                    context.get_worker().cancel_nightly_operations( item[0][1]['shortname'], self.superior.mediapackage )
 
     def execute(self, button=None):
-        # TODO launch question
         options = {}
         for element in self.chooser:
             options[element.variable] = element.getSelected()
+            
+        ops = loader.get_operations()
         for op in options["operation"]:
-            context.get_worker().do_now_nightly_operations( op, self.superior.mediapackage)
+            for item in ops:
+                if item[1] == op:
+                    context.get_worker().do_now_nightly_operations( item[0][1]['shortname'], self.superior.mediapackage )
+
         self.close(True)
 
     def close(self, button=None): #it's commmon
@@ -153,7 +158,10 @@ class OperationList(MainList):
         # TODO the list should be available on operations
         """Lists the available operations"""
 
-        available_list = loader.get_nightly_operations(self.superior.mediapackage)
+        full_list = loader.get_nightly_operations(self.superior.mediapackage)
+        available_list = []
+        for item in full_list:
+            available_list += [ item.get('name') ] 
         if not len(available_list):
             print "No active operations for this packages"
             return None

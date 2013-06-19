@@ -138,9 +138,9 @@ def save_system_zip(mp, loc, use_namespace=True, logger=None):
 
 def save_in_zip(mp, loc, use_namespace=True, ziptype='system', logger=None):
     if ziptype == "system":
-        save_system_zip(mp, loc, use_namespace, ziptype)
+        save_system_zip(mp, loc, use_namespace, logger)
     else: 
-        save_native_zip(mp, loc, use_namespace, ziptype)
+        save_native_zip(mp, loc, use_namespace, logger)
 
 
 def set_properties(mp):

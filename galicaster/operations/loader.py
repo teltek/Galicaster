@@ -1,4 +1,4 @@
-1# -*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
 #       galicaster/operations/operation/nas
@@ -28,26 +28,25 @@ def get_operations():
     list_operations = convert_operation(operations)
     return list_operations
 
-    #TODO convert dict into configured operations  
-
 def get_nightly_operations(mps):
 
     ops =get_operations()
     keys = []
     for op in ops:
-        keys += [ op[0][1].get('shortname') ]
+        keys += [ op[0][1] ]
         
     number = {}
     for key in keys:
-        number[key] = 0
+        number[key.get('shortname')] = 0
     for mp in mps:
-        for key in keys:
+        for group in keys:
+            key = group.get('shortname')
             if mp.getOpStatus(key) == 1:
                 number[key] = number[key] + 1
 
     new_list = []
     for key in keys:
-        if number[key]:
+        if number[key.get('shortname')]:
             new_list.append(key)
     return new_list  
 
