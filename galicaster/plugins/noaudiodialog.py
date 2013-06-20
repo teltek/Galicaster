@@ -72,7 +72,7 @@ def deactivate_hidden_and_check(element=None):
 
 def clear_data_and_check(element=None):
     global no_audio
-    no_audio = False
+    no_audio = True
     deactivate_hidden_and_check()
     return True
 
