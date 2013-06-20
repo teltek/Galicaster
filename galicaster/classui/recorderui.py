@@ -249,7 +249,7 @@ class RecorderClassUI(gtk.Box):
     def init_recorder(self):
         self.recorder = Recorder(self.bins, self.areas) 
         self.recorder.mute_preview(not self.focus_is_active)   
-        ok =self.recorder.preview()
+        ok = self.recorder.preview()
         if ok :
             if self.mediapackage.manual:
                 self.change_state(GC_PREVIEW)
@@ -300,6 +300,7 @@ class RecorderClassUI(gtk.Box):
         self.timer_thread.daemon = True
         self.timer_thread.start()
         self.change_state(GC_RECORDING)
+        context.get_state().is_recording = True
         return True  
 
 
@@ -411,6 +412,7 @@ class RecorderClassUI(gtk.Box):
         elif self.conf.get_lower('ingest', code) == 'nightly':
             self.worker.ingest_nightly(self.mediapackage)
 
+        context.get_state().is_recording = False
         self.timer_thread_id = None
 
     def on_scheduled_start(self, source, identifier):
@@ -542,6 +544,7 @@ class RecorderClassUI(gtk.Box):
         """
         self.change_state(GC_ERROR)
         self.recorder.stop_elements()
+        context.get_state().is_recording = False
         if self.error_id:
             self.dispatcher.disconnect(self.error_id)
             self.error_id = None
@@ -1136,7 +1139,6 @@ class RecorderClassUI(gtk.Box):
             prevb.set_sensitive(False)
             editb.set_sensitive(True and not self.scheduled_recording)    
             self.dispatcher.emit("update-rec-status", "  Recording  ")
-            context.get_state().is_recording=True
        
         elif state == GC_PAUSED:
             record.set_sensitive(False)
