@@ -5,6 +5,23 @@ Web version of the changelog in http://wiki.teltek.es/display/Galicaster/Release
 To get the diff for a specific change, go to https://github.com/teltek/galicaster/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/teltek/galicaster/compare/1.2.1...1.2.3
 
+* 1.3.0 (2013-06-21)
+
+ * New RTP device module - to support RTP network devices such as Axis cameras. (mpeg4 and h264)
+ * New Custom device module - to test new sources within Galicaster using GStreamer syntax. (advanced users)
+ * External scripts in profiles for device configuration.
+ * Configurable encoder and muxer.
+ * Close session and shutdown option on the UI.
+ * Save crashed recordings on restart.
+ * Ruled VU meter.
+ * Configurable side-by-side layout.
+ * New pop-up decoration.
+ * Configurable UI resolution.
+ * Configurable logger. (location, syslog, rotation...)
+ * Improved metadata treatment.
+ * Updated REST endpoint.
+ * New or improved Plugins: Check repository, ScreenSaver, No audio dialog
+
 * 1.2.3 (2012-12-19)
 
  * Feature: After crash partial recordings are saved
