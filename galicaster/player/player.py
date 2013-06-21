@@ -54,6 +54,7 @@ class Player(object):
         self.players = players
         self.duration = 0
         self.has_audio = False
+        self.pipeline_complete = False
         self.audio_sink = None
 
         self.__get_duration_and_run()
@@ -69,6 +70,7 @@ class Player(object):
         bus.connect('message::eos', WeakMethod(self, '_on_eos'))
         bus.connect('message::error', WeakMethod(self, '_on_error'))
         bus.connect('message::element', WeakMethod(self, '_on_message_element'))
+        bus.connect('message::state-changed', WeakMethod(self, '_on_state_changed'))
         bus.connect('sync-message::element', WeakMethod(self, '_on_sync_message'))
 
         # Create elements
@@ -114,7 +116,11 @@ class Player(object):
         Start to play
         """
         logger.debug("player playing")
-        self.pipeline.set_state(gst.STATE_PLAYING)
+        if not self.pipeline_complete:
+            self.pipeline.set_state(gst.STATE_PAUSED)
+            self.pipeline_complete = True
+        else:
+            self.pipeline.set_state(gst.STATE_PLAYING)
         return None
 
 
@@ -183,6 +189,11 @@ class Player(object):
         if self.audio_sink != None:
             self.audio_sink.set_property('volume', volume)
 	
+    def _on_state_changed(self, bus, message):
+        old, new, pending = message.parse_state_changed()
+        if (isinstance(message.src, gst.Pipeline) and 
+            (old, new) == (gst.STATE_READY, gst.STATE_PAUSED) ):
+            self.pipeline.set_state(gst.STATE_PLAYING)
 
     def _on_new_decoded_pad(self, element, pad, last):         
         name = pad.get_caps()[0].get_name()
@@ -201,15 +212,15 @@ class Player(object):
                 self.pipeline.add(self.audio_sink, vumeter)
                 pad.link(vumeter.get_pad('sink'))
                 vumeter.link(self.audio_sink)
-                vumeter.set_state(gst.STATE_PLAYING)
-                assert self.audio_sink.set_state(gst.STATE_PLAYING)
+                vumeter.set_state(gst.STATE_PAUSED)
+                assert self.audio_sink.set_state(gst.STATE_PAUSED)
                 
         elif name.startswith('video/'):
             sink = gst.element_factory_make('xvimagesink', 'sink-' + element_name) 
             sink.set_property('force-aspect-ratio', True)
             self.pipeline.add(sink)
             pad.link(sink.get_pad('sink'))
-            assert sink.set_state(gst.STATE_PLAYING)
+            assert sink.set_state(gst.STATE_PAUSED)
             
         return sink
 
