@@ -9,7 +9,6 @@ Version=1.2.0
 Exec=galicaster
 Icon=galicaster
 Terminal=false
-Type=Application
 MimeType=video/x-raw-yuv
 Categories=Gstreamer;Python;GTK;Multistream;AudioVideo;VideoRecorder;VideoPlayer;Audio;Video
 StartupWMClass=Galicaster
