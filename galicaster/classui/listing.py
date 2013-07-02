@@ -408,10 +408,9 @@ class ListingClassUI(ManagerUI):
 
         def force_ctrl(iv, ev):
             ev.state = gtk.gdk.CONTROL_MASK
-
-        self.vista.connect('key-press-event', force_ctrl)
-        self.vista.connect('button-press-event', force_ctrl)
-
+        if context.get_conf().get('mediamanager', 'selection').lower().count('touch'):
+            self.vista.connect('key-press-event', force_ctrl)
+            self.vista.connect('button-press-event', force_ctrl)
 
         #self.vista.can_focus(True)
         scrolledw.add(self.vista)

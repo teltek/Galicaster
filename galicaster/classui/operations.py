@@ -45,6 +45,7 @@ class OperationsUI(SelectorUI):
         self.mediapackage = mediapackage # TODO take into account single or multiple MPs
         self.list = OperationList(self, size, "Operation Information", UItype)
         self.add_main_tab("Operation Selector", self.list)
+        self.tactile = context.get_conf().get('mediamanager', 'selection').lower().count("touch")
         self.show_all()
         
 
@@ -148,7 +149,8 @@ class OperationList(MainList):
                              "tree-single", 
                             ["Immediate", "Nightly"],
                              preselection = "Immediate",
-                             fontsize = font)
+                             fontsize = font,
+                             )
         self.pack_start(selectorUI, False, False, 0)
         self.reorder_child(selectorUI,1)
         #selectorUI.resize(1)
@@ -172,7 +174,8 @@ class OperationList(MainList):
                              "tree-multiple",
                              available_list,
                              preselection = None,                             
-                             fontsize = 15)
+                             fontsize = 15,
+                             extra = self.tactile )
 
         self.pack_start(selectorUI, False, False, 0)
         self.reorder_child(selectorUI,0)

@@ -56,7 +56,7 @@ class Chooser(gtk.VBox):
     def getAll(self): 
         return {self.variable: self.getSelected()}
 
-    def prepare_selector(self, title, selector_type, values, selection,  fontsize, extra):
+    def prepare_selector(self, title, selector_type, values, selection, fontsize, extra):
         if selector_type == "combo":
             return Combo(values, selection, fontsize)
         if selector_type == "list":
@@ -70,9 +70,9 @@ class Chooser(gtk.VBox):
         if selector_type == "tree": # TODO make it for several data combinations
             return Listbox(values, selection)
         if selector_type == "tree-single":
-            return MultipleListbox(values, selection, False)
+            return MultipleListbox(values, selection, False, extra)
         if selector_type == "tree-multiple":
-            return MultipleListbox(values, selection, True)
+            return MultipleListbox(values, selection, True, extra)
 
     def resize(self, wprop=1, hprop=1):
         self.selector.resize(wprop, hprop)
@@ -253,14 +253,14 @@ class Listbox(gtk.ScrolledWindow):
 
 class MultipleListbox(gtk.ScrolledWindow):
 
-    def __init__(self, values, preselection, multiple):
+    def __init__(self, values, preselection, multiple, tactile):
         
         gtk.ScrolledWindow.__init__(self)
         self.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         rows = len(values) if len(values)<5 else 5
         self.set_size_request(-1,len(values)*69) # TODO get size from parents
 
-        lista, self.view = self.prepare_view(1, multiple)# TODO get size from parent
+        lista, self.view = self.prepare_view(1, multiple, tactile)# TODO get size from parent
         for value in values:
             lista.append(self.prepare_data(value))
         self.add(self.view)
@@ -268,7 +268,7 @@ class MultipleListbox(gtk.ScrolledWindow):
         self.show_all()
 
 
-    def prepare_view(self, hprop, multiple): # TODO get hprop right
+    def prepare_view(self, hprop, multiple, tactile): # TODO get hprop right
 
         lista = gtk.ListStore(str) 
         view = gtk.TreeView() 
@@ -281,8 +281,9 @@ class MultipleListbox(gtk.ScrolledWindow):
             view.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
             def force_ctrl(iv, ev):
                 ev.state = gtk.gdk.CONTROL_MASK
-            view.connect('key-press-event', force_ctrl)
-            view.connect('button-press-event', force_ctrl)
+            if tactile:
+                view.connect('key-press-event', force_ctrl)
+                view.connect('button-press-event', force_ctrl)
 
         view.set_headers_visible(False)
         view.columns_autosize()
