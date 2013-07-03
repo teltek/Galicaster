@@ -183,14 +183,37 @@ class ManagerUI(gtk.Box):
         if not self.conf.get_boolean('basic', 'archive'):
             return self.on_delete(store, rows)
 
-        logger.info("Archive Dialog")
+        packages = []
+        for c in rows:
+            iterator = store.get_iter(c)
+            packages += [ store[iterator][0] ]
 
-        t1 = "{0} recording{1} {2} going to be deleted.".format(len(rows),
-                                                                 "s" if len(rows)>1 else '',
-                                                                 "are" if len(rows)>1 else 'is')
+        not_deletable = self.get_deletable( packages )
+        
+        logger.info("Archive Dialog")
+        deletable = len(rows)-len(not_deletable)
+        if not deletable:
+            thetext = {
+                "title" : "Operations",
+                "text" : "There are pending operations",
+                "main" : "The recording{0} won't be deleted".format("s" if len(not_deletable)>1 else '')
+                }
+            buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
+            message.PopUp(message.WARNING, thetext, 
+                          context.get_mainwindow(),
+                          buttons)
+            return True
+
+        t1 = "{0} recording{1} {2} going to be deleted.".format(deletable,
+                                                                 "s" if deletable>1 else '',
+                                                                 "are" if deletable>1 else 'is')
+        
+        t2= "{0} recording{1} ha{2} pending operations and won't be deleted.".format(len(not_deletable),
+                                                                 "s" if len(not_deletable)>1 else '',
+                                                                 "ve" if len(not_deletable)>1 else 's')
         text = {"title" : "Media Manager",
                 "main" : "Are you sure you want to delete?",
-                "text" : t1
+                "text" : "{0}{1}{2}".format(t1,'\n' if not_deletable else '', t2 if not_deletable else '')
                 }
 
         buttons = ( gtk.STOCK_DELETE, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
@@ -201,13 +224,15 @@ class ManagerUI(gtk.Box):
         if not warning.response in message.POSITIVE:
             return False
 
-        iterators = []
         for c in rows:
             iterators += [ store.get_iter(c) ]
         for i in iterators:
             mp = store[i][0]
-            self.deleting(mp)
-            self.lista.remove(i)
+            if mp not in not_deletable:
+                self.deleting(mp)
+                self.lista.remove(i)
+            else:
+                print mp.getTitle(),"not deletable"
 
         self.vista.get_selection().select_path(0)
 	return True
@@ -255,14 +280,24 @@ class ManagerUI(gtk.Box):
         message.PopUp(message.WARNING, text, 
                       context.get_mainwindow(),
                       buttons)
-
         return True
 
     def on_no_available(self):
-	"""Pops up a warning dialog"""
+	"""Pops up a warning dialog when no active operation is present"""
         text = {"title" : "Operations",
 		    "main" : "There is not any active operation.",
 		    }
+        buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
+        message.PopUp(message.WARNING, text, 
+                      context.get_mainwindow(),
+                      buttons)
+        return True
+
+    def on_pendingoperation(self):
+	"""Pops up a warning dialog when recordings can't be delted"""
+        text = {"title" : "Operations",
+                "main" : "There are pending operations and the recordings won't be deleted",
+                }
         buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
         message.PopUp(message.WARNING, text, 
                       context.get_mainwindow(),

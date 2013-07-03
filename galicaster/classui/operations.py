@@ -43,7 +43,7 @@ class OperationsUI(SelectorUI):
 
         #configuration data
         self.mediapackage = mediapackage # TODO take into account single or multiple MPs
-        tactile = context.get_conf().get('mediamanager', 'selection').lower().count("touch")
+        tactile = context.get_conf().get('mediamanager', 'selection').lower() == "touch"
         self.list = OperationList(self, size, "Operation Information", UItype, tactile)
         self.add_main_tab("Operation Selector", self.list)
 

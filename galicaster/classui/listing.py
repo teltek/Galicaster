@@ -247,6 +247,20 @@ class ListingClassUI(ManagerUI):
         # self refresh_row()
         self.refresh_treeview()
 	return True
+
+    def get_deletable(self, packages):
+        ops = loader.get_operations()
+        shortnames = []
+        for op in ops:
+            shortnames += [ op[0][1].get("shortname") ]
+
+        not_deletable = set()
+        for mp in packages:
+            for op in shortnames:
+                if mp.getOpStatus(op) not in [0,4]:
+                    not_deletable.update([mp])
+
+        return list(not_deletable)
 	
 #---------------------------- MOUSE AND SELECTION MANAGMENT --------------------
 
@@ -408,7 +422,7 @@ class ListingClassUI(ManagerUI):
 
         def force_ctrl(iv, ev):
             ev.state = gtk.gdk.CONTROL_MASK
-        if context.get_conf().get('mediamanager', 'selection').lower().count('touch'):
+        if context.get_conf().get('mediamanager', 'selection').lower() == 'touch':
             self.vista.connect('key-press-event', force_ctrl)
             self.vista.connect('button-press-event', force_ctrl)
 

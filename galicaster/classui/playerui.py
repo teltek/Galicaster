@@ -31,12 +31,14 @@ except ImportError:
 from galicaster.player import Player
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
+from galicaster.operations import loader
 from galicaster.classui.managerui import ManagerUI
 from galicaster.classui.statusbar import StatusBarClass
 from galicaster.classui.audiobar import AudioBarClass
 from galicaster.classui import get_ui_path
 from galicaster.classui import message
 from galicaster.classui.operations import OperationsUI
+
 
 
 gtk.gdk.threads_init()
@@ -284,11 +286,39 @@ class PlayerClassUI(ManagerUI):
         OperationsUI( mediapackage=packages, UItype=0 )
 	return True
 
+    def get_deletable(self, packages):
+        ops = loader.get_operations()
+        shortnames = []
+        for op in ops:
+            shortnames += [ op[0][1].get("shortname") ]
+
+        not_deletable = set()
+        for mp in packages:
+            for op in shortnames:
+                if mp.getOpStatus(op) not in [0,4]:
+                    not_deletable.update([mp])
+
+        return list(not_deletable)
+
     def on_delete(self, key):
         """ Pops up a dialog.
         If response is positive the mediapackage is deleted and the focus goes to the previous area"""
         key = self.mediapackage.identifier
         log.info("Delete Dialog")
+
+        not_deletable = self.get_deletable( [self.mediapackage] )
+        if not_deletable:
+            thetext = {
+                "title" : "Operations",
+                "text" : "There are pending operations",
+                "main" : "The recording won't be deleted"
+                }
+            buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
+            message.PopUp(message.WARNING, thetext, 
+                          context.get_mainwindow(),
+                          buttons)
+            return True
+
         t1 = '"{0}" is going to be deleted.'.format(self.mediapackage.getTitle())
         if not self.conf.get_boolean('basic', 'archive'):
             t2 = "\n\nThis action will remove the recording from the hard disk"
