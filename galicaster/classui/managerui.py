@@ -281,7 +281,7 @@ class ManagerUI(gtk.Box):
 	t1 = "All recordings will be permanently deleted from the hard disk."
 
         text = {"title" : "Media Manager",
-                "main" : "Are you sure you want to empty the archive?",
+                "main" : "Are you sure?",
                 "text" : t1
                 }
 
