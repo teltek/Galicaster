@@ -268,6 +268,9 @@ class ListingClassUI(ManagerUI):
             if op == "Play": # TODO get attribute on_$operation
                 last = store.get_iter(rows[len(rows)-1])
                 self.on_play(store, None, last)
+            if op == "Play2":
+                last = store.get_iter(rows[len(rows)-1])
+                self.on_play(store, None, last)
             elif op == "Edit":
                 last = store.get_iter(rows[len(rows)-1])
                 self.on_edit(store, None, last)
@@ -356,9 +359,9 @@ class ListingClassUI(ManagerUI):
 
     def on_play(self, store, reference, iterator):
         """ Retrieve mediapackage and send videos to player"""
+        package = store[iterator][0]
 	key = store[iterator][0].getIdentifier()
 	logger.info("Play: " + str(key))
-	package = self.repository.get(key)
 
 	if package.status == mediapackage.RECORDED:
 	    self.dispatcher.emit("play-list", package, self.reference)
@@ -603,7 +606,7 @@ class ArchiveUI(ListingClassUI):
 
     def define_buttons(self):
         self.buttonlist = []
-        self.add_button(self.buttonbox, "media-playback-start", "Play") 
+        self.add_button(self.buttonbox, "media-playback-start", "Play2") 
         self.add_button(self.buttonbox, "edit-undo", "Restore") 
         self.add_button(self.buttonbox, "user-trash", "Empty Trash")
 

@@ -43,9 +43,10 @@ class OperationsUI(SelectorUI):
 
         #configuration data
         self.mediapackage = mediapackage # TODO take into account single or multiple MPs
-        self.list = OperationList(self, size, "Operation Information", UItype)
+        tactile = context.get_conf().get('mediamanager', 'selection').lower().count("touch")
+        self.list = OperationList(self, size, "Operation Information", UItype, tactile)
         self.add_main_tab("Operation Selector", self.list)
-        self.tactile = context.get_conf().get('mediamanager', 'selection').lower().count("touch")
+
         self.show_all()
         
 
@@ -54,7 +55,7 @@ class OperationList(MainList):
     List of available operations with some handy information
     """
 
-    def __init__(self, parent, size, sidelabel, UItype): # "Could be common
+    def __init__(self, parent, size, sidelabel, UItype, tactile): # "Could be common
         MainList.__init__(self, parent, size, sidelabel, UItype)
         self.chooser = []
         if UItype == CREATE:
@@ -65,11 +66,11 @@ class OperationList(MainList):
         elif UItype == CLEAR:
             self.add_button("Clear",self.clear)
             self.add_button("Cancel",self.close, True)
-            self.chooser += [self.append_clear()]
+            self.chooser += [self.append_clear(tactile)]
         elif UItype == EXECUTE:
             self.add_button("Execute",self.execute)
             self.add_button("Cancel",self.close, True)
-            self.chooser += [self.append_clear()]
+            self.chooser += [self.append_clear(tactile)]
         self.show_all()
         
     def select(self, button=None):
@@ -156,7 +157,7 @@ class OperationList(MainList):
         #selectorUI.resize(1)
         return selectorUI
 
-    def append_clear(self):  
+    def append_clear(self, tactile):  
         # TODO the list should be available on operations
         """Lists the available operations"""
 
@@ -175,7 +176,7 @@ class OperationList(MainList):
                              available_list,
                              preselection = None,                             
                              fontsize = 15,
-                             extra = self.tactile )
+                             extra = tactile )
 
         self.pack_start(selectorUI, False, False, 0)
         self.reorder_child(selectorUI,0)

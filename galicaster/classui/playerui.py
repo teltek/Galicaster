@@ -152,7 +152,8 @@ class PlayerClassUI(ManagerUI):
         """Takes a MP from the listing area and plays it"""
         self.strip.back_page = backto
         self.dispatcher.emit("change-mode", 2)
-        self.init_player(None, package)          
+        self.init_player(None, package)
+        
 
 
 #------------------------- PLAYER ACTIONS ------------------------
@@ -308,7 +309,7 @@ class PlayerClassUI(ManagerUI):
             return False
 
         else:
-            self.deleting(self.mediapacakge) # TODO deactivate on Trash Player, activate restore
+            self.deleting(self.mediapackage) # TODO deactivate on Trash Player, activate restore
             self.thread_id = None
             self.player.stop()
             self.statusbar.SetVideo(None, "")
@@ -389,7 +390,8 @@ class PlayerClassUI(ManagerUI):
         pause=self.gui.get_object("pausebutton")
         stop=self.gui.get_object("stopbutton")
         editb=self.gui.get_object("editbutton")       
-        deleteb=self.gui.get_object("deletebutton")       
+        deleteb=self.gui.get_object("deletebutton")
+        ingestb=self.gui.get_object("ingestbutton")
 
         self.previous,self.status = self.status,state
 
@@ -426,6 +428,10 @@ class PlayerClassUI(ManagerUI):
             play.set_sensitive(False)
             pause.set_sensitive(False)
             stop.set_sensitive(False)
+        if self.strip.back_page == 4:
+            editb.set_sensitive(False)
+            deleteb.set_sensitive(False)
+            ingestb.set_sensitive(False)        
 
     def close(self, signal):
         """Close player UI, stopping threads and reproduction"""
