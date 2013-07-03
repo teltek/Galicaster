@@ -20,7 +20,6 @@ from os import path
 
 from elements.__init__ import Chooser
 from selector import SelectorUI, MainList
-from elements.clock import Clock
 
 from galicaster.operations import loader
 from galicaster.core import context
@@ -38,7 +37,13 @@ class OperationsUI(SelectorUI):
     
     __gtype_name__ = 'OperationsUI'
 
-    def __init__(self, parent=None, size = [1920,1080], mediapackage = None, UItype = 0):
+    def __init__(self, parent=None, size = None, mediapackage = None, UItype = 0):
+        if not parent:
+            parent = context.get_mainwindow()
+        if not size:
+            size = context.get_mainwindow().get_size()
+        self.size = size
+
         SelectorUI.__init__(self, parent, size)
 
         #configuration data
@@ -130,12 +135,14 @@ class OperationList(MainList):
 
         available_list = loader.get_operations()
         variable = "operation"
+        hprop = self.size[1]/1080.0
+        font = int(15 * hprop)
         selectorUI = Chooser(variable,
                              variable.capitalize(),
                              "tree",
                              available_list,
                              preselection = available_list[0],
-                             fontsize = 15)
+                             fontsize = font)
 
         self.pack_start(selectorUI, False, False, 0)
         self.reorder_child(selectorUI,0)
@@ -144,7 +151,7 @@ class OperationList(MainList):
 
     def append_schedule(self): # TODO get size from class
         variable = "schedule" 
-        font = 15
+        font = int (15 * self.size[1]/1080.0)
         selectorUI = Chooser(variable,
                              variable.capitalize(),
                              "tree-single", 
@@ -168,14 +175,14 @@ class OperationList(MainList):
         if not len(available_list):
             print "No active operations for this packages"
             return None
-
+        font = int (15 * self.size[1]/1080.0)
         variable = "operation"
         selectorUI = Chooser(variable,
                              "Active Operations",
                              "tree-multiple",
                              available_list,
                              preselection = None,                             
-                             fontsize = 15,
+                             fontsize = font,
                              extra = tactile )
 
         self.pack_start(selectorUI, False, False, 0)

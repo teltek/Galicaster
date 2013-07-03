@@ -35,15 +35,15 @@ class SelectorUI(gtk.Window):
             size = context.get_mainwindow().get_size()
         self.size=size
         width = int(size[0]/3.0) # Former 2.2
-        height = int(size[1]/3.0)
+        height = int(size[1]/3.3)
 
         gtk.Window.__init__(self)
         self.set_title(" ")
         self.set_position(gtk.WIN_POS_CENTER_ALWAYS)
         self.set_default_size(width,height)
         self.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
-        #self.set_skip_taskbar_hint(True)
-        #self.set_modal(True) # TODO ensure this is neessary
+        self.set_skip_taskbar_hint(True)
+        self.set_modal(True) # TODO ensure this is neessary
         if parent: # parent is always created?
             #self.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DIALOG)
             self.set_transient_for(parent)

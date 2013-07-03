@@ -17,9 +17,6 @@ This module holds different elements to provide selection interface for single v
 import gtk
 import pango
 
-from tracks import Tracks
-from clock import Clock
-
 class Chooser(gtk.VBox):
     # TODO made it resizable
     
@@ -38,7 +35,7 @@ class Chooser(gtk.VBox):
         self.pack_start(self.title, False, True, 0)
         self.title.set_alignment(0.5,0.0)
         self.selector = self.prepare_selector(self.text, selector_type, values, preselection, fontsize, extra)
-        self.pack_start(self.selector, False, True, 15) # TODO proportional separation
+        self.pack_start(self.selector, False, True, fontsize)
         # It was False, True, so ask for more space
 
     def getTitle(self):
@@ -58,7 +55,7 @@ class Chooser(gtk.VBox):
 
     def prepare_selector(self, title, selector_type, values, selection, fontsize, extra):
         if selector_type == "combo":
-            return Combo(values, selection, fontsize)
+            return Combo(values, selection)
         if selector_type == "list":
             return Tracks(values, selection, fontsize)
         if selector_type == "boolean":
@@ -68,11 +65,11 @@ class Chooser(gtk.VBox):
         if selector_type == "toogle":
             return Togglebox(values, selection)
         if selector_type == "tree": # TODO make it for several data combinations
-            return Listbox(values, selection)
+            return Listbox(values, selection, fontsize)
         if selector_type == "tree-single":
-            return MultipleListbox(values, selection, False, extra)
+            return MultipleListbox(values, selection, False, extra, fontsize)
         if selector_type == "tree-multiple":
-            return MultipleListbox(values, selection, True, extra)
+            return MultipleListbox(values, selection, True, extra, fontsize)
 
     def resize(self, wprop=1, hprop=1):
         self.selector.resize(wprop, hprop)
@@ -80,7 +77,7 @@ class Chooser(gtk.VBox):
 
 class Combo(gtk.ComboBox): # WILL BE USED
     
-    def __init__(self, values, preselection, font):
+    def __init__(self, values, preselection):
         liststore = gtk.ListStore(str,str) # real value, showable value
         gtk.ComboBox.__init__(self, liststore)
         for value in values:
@@ -200,15 +197,14 @@ class Togglebox(gtk.VButtonBox):
 
 class Listbox(gtk.ScrolledWindow):
 
-    def __init__(self, values, preselection):
-        
+    def __init__(self, values, preselection, fontsize):
         gtk.ScrolledWindow.__init__(self)
         self.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         rows = len(values) if len(values)<5 else 5
-        self.set_size_request(-1,len(values)*69) # TODO get size from parents
+        self.set_size_request(-1,int(len(values)*69*fontsize/16)) # TODO get size from parents
         
 
-        lista, self.view = self.prepare_view(1)# TODO get size from parent
+        lista, self.view = self.prepare_view(fontsize/15.0)
         for value in values:
             lista.append(self.prepare_data(value))
         self.add(self.view)
@@ -253,14 +249,14 @@ class Listbox(gtk.ScrolledWindow):
 
 class MultipleListbox(gtk.ScrolledWindow):
 
-    def __init__(self, values, preselection, multiple, tactile):
+    def __init__(self, values, preselection, multiple, tactile, fontsize):
         
         gtk.ScrolledWindow.__init__(self)
         self.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         rows = len(values) if len(values)<5 else 5
         self.set_size_request(-1,len(values)*69) # TODO get size from parents
 
-        lista, self.view = self.prepare_view(1, multiple, tactile)# TODO get size from parent
+        lista, self.view = self.prepare_view(fontsize/15.0, multiple, tactile)# TODO get size from parent
         for value in values:
             lista.append(self.prepare_data(value))
         self.add(self.view)

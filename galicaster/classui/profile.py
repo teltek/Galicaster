@@ -51,7 +51,7 @@ class ProfileUI(gtk.Window):
             parent = context.get_mainwindow()
         size = context.get_mainwindow().get_size()
         width = int(size[0]/2.2)
-        height = int(size[1]/2.0)
+        height = int(size[1]/2.5)
         hprop = size[1]/1080.0
         gtk.Window.__init__(self)
         self.set_transient_for(parent)
@@ -62,6 +62,7 @@ class ProfileUI(gtk.Window):
         self.set_default_size(width,height)
         self.set_skip_taskbar_hint(True)
         self.set_keep_above(True)
+        self.set_modal(True)
 
         strip = Header(size=size,title="Profile Selector")
 
