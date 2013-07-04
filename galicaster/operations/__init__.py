@@ -71,20 +71,20 @@ class Operation(object):
         self.setCreationTime()
         mp.setOp(self.name, mediapackage.OP_PENDING, self.creation_time)
         self.context[0].info("Creating {0} for {1}".format(self.name, mp.getIdentifier() ))
-        self.context[1].emit('refresh-row', mp.getIdentifier())
         self.context[2].update(mp)
+        self.context[1].emit('refresh-row', mp.getIdentifier())
 
     def logNightly(self, mp):
         self.context[0].info("Nightly {0} for {1}".format(self.name, mp.getIdentifier() ))
         mp.setOp(self.name, mediapackage.OP_NIGHTLY, self.creation_time)
+        self.context[2].update(mp)
         self.context[1].emit('refresh-row', mp.getIdentifier())
-        self.context[2].update(mp)        
 
     def logCancelNightly(self, mp):
         self.context[0].info("Canceled {0} for {1}".format(self.name, mp.getIdentifier() ))
         mp.setOp(self.name,mediapackage.OP_IDLE, 0)
-        self.context[1].emit('refresh-row', mp.getIdentifier())
         self.context[2].update(mp)
+        self.context[1].emit('refresh-row', mp.getIdentifier())
 
     def logStart(self, mp):
         """Leaves log when operation starts"""
@@ -92,8 +92,8 @@ class Operation(object):
         self.context[0].info("Executing {0} for {1}".format(self.name, mp.getIdentifier() ))
         mp.setOp(self.name, mediapackage.OP_PROCESSING, self.start_time)
         self.context[1].emit('start-operation', self.name, mp.getIdentifier())
-        self.context[1].emit('refresh-row', mp.getIdentifier())
         self.context[2].update(mp)
+        self.context[1].emit('refresh-row', mp.getIdentifier())
 
     def logEnd(self, mp, success):
         """Leaves log when opeartaion ends or fails"""

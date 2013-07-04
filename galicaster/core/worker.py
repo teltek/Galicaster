@@ -107,14 +107,14 @@ class Worker(object):
         return True
 
     def cancel_nightly_operations(self, op, mps):
+        pop = []
         for mp in mps:
-            pop = None
             for operation, package in self.nightJobs:
-                if mp == package and op==operation.name:
-                    pop = (operation, package)
-            if pop != None:
-                self.nightJobs.pop( self.nightJobs.index(pop) )
-                pop[0].logCancelNightly( pop[1] )
+                if mp.getIdentifier() == package.getIdentifier() and op==operation.name:
+                    pop += [(operation, package)]
+        for popped in pop:
+            self.nightJobs.pop( self.nightJobs.index(popped) )
+            popped[0].logCancelNightly( popped[1] )
                 
     def do_now_nightly_operations(self, op, mps):
         for mp in mps:

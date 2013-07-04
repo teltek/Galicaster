@@ -217,10 +217,9 @@ class ListingClassUI(ManagerUI):
 	# Search Iter to the liststore
         if self.reference != reference:
             return True
-        
 	i = None
 	for row in self.lista:
-	    if row[0] == identifier:
+	    if row[0].getIdentifier() == identifier:
                 i = row.iter
 
         mp = self.repository.get(identifier)
