@@ -117,14 +117,14 @@ class Worker(object):
             popped[0].logCancelNightly( popped[1] )
                 
     def do_now_nightly_operations(self, op, mps):
+        pop = []
         for mp in mps:
-            pop = None
             for operation, package in self.nightJobs:
-                if mp == package and op==operation.name:
-                    pop = ( operation, package )
-            if pop != None:
-                self.nightJobs.pop( self.nightJobs.index(pop) )
-                self.enqueueJob(pop[0], pop[1])
+                if mp.getIdentifier() == package.getIdentifier() and op==operation.name:
+                    pop += [ (operation, package) ]
+        for popped in pop:
+            self.nightJobs.pop( self.nightJobs.index(popped) )
+            self.enqueueJob(popped[0], popped[1])
 
     def enqueue_operations(self, operation, packages):
         for package in packages: # TODO perform them in order
