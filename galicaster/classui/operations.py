@@ -16,6 +16,7 @@ UI for the operation manager
 
 import gtk
 import pango
+import gobject
 from os import path
 
 from elements.__init__ import Chooser
@@ -52,7 +53,8 @@ class OperationsUI(SelectorUI):
         self.list = OperationList(self, size, "Operation Information", UItype, tactile)
         self.add_main_tab("Operation Selector", self.list)
 
-        self.show_all()
+        self.dialog.show_all()
+
         
 
 class OperationList(MainList):
@@ -189,3 +191,5 @@ class OperationList(MainList):
         self.reorder_child(selectorUI,0)
         # TODO selector resize(size)
         return selectorUI
+
+gobject.type_register(OperationsUI)

@@ -17,16 +17,19 @@ Base class for creating selector and manager UIs
 
 import gtk
 import pango
+import gobject
 
 from galicaster.core import context
 from galicaster.classui.elements.message_header import Header
 
-class SelectorUI(gtk.Window):
+class SelectorUI(gtk.Widget):
     
     """
     Main window of Selector. 
     It holds at least 3 tabs, list of options, configuration and confirmation
     """
+
+    __gtype_name__ = 'SelectorUI'
 
     def __init__(self, parent=None, size = None):
         if not parent:
@@ -35,27 +38,28 @@ class SelectorUI(gtk.Window):
             size = context.get_mainwindow().get_size()
         self.size=size
         width = int(size[0]/3.0) # Former 2.2
-        height = int(size[1]/3.3)
+        height = int(size[1]/4)
 
-        gtk.Window.__init__(self)
-        self.set_title(" ")
-        self.set_position(gtk.WIN_POS_CENTER_ALWAYS)
-        self.set_default_size(width,height)
-        self.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
-        self.set_skip_taskbar_hint(True)
-        self.set_modal(True) # TODO ensure this is neessary
-        if parent: # parent is always created?
-            #self.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DIALOG)
-            self.set_transient_for(parent)
-            self.set_destroy_with_parent(True)
+        dialog = gtk.Window()
+        dialog.set_title(" ")
+        dialog.set_position(gtk.WIN_POS_CENTER_ALWAYS)
+        dialog.set_default_size(width,height)
+        dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
+        dialog.set_skip_taskbar_hint(True)
+        dialog.set_modal(True) 
+        dialog.set_transient_for(parent)
+        #dialog.destroy_with_parent(True)
+        box = gtk.VBox()
+        dialog.add(box)
+        self.dialog = dialog
 
         strip = Header(size=size, title="Operations")
         self.notebook = gtk.Notebook() # Main object of the selector
         self.notebook.set_show_tabs(False)
-        box = gtk.VBox()
-        self.add(box)
+        
         box.pack_start(strip, False, True, 0)
         box.pack_start(self.notebook, True, True, 0)
+        box.show_all()
 
     def add_main_tab(self, label, options):
         tab1 = gtk.Label(label)
@@ -64,7 +68,7 @@ class SelectorUI(gtk.Window):
     def append_tab(self, widget, label):
         """Add a tab with a new edition area"""
         self.notebook.append_page(widget,label)
-        self.set_title(label.get_text())
+        self.dialog.set_title(label.get_text())
         self.notebook.next_page()
 
     def remove_tab(self):
@@ -84,13 +88,13 @@ class SelectorUI(gtk.Window):
         self.notebook.remove_page(current_num)        
         text=self.notebook.get_tab_label(new).get_text()
         new.refresh()
-        self.set_title(text)
+        self.dialog.set_title(text)
         # Test another sequence if updating is slow
     
     def close(self):
         """Handles UI closure, destroying tabs and updating changes"""
         #TODO eliminates variables and objects 
-        self.destroy()          
+        self.dialog.destroy()          
 
 class MainList(gtk.HBox):
     """
@@ -145,3 +149,5 @@ class MainList(gtk.HBox):
     def close(self,button=None):
         """Leaves and close the profile tab"""
         self.superior.close()
+
+gobject.type_register(SelectorUI)

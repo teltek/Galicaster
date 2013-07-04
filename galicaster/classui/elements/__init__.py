@@ -195,13 +195,13 @@ class Togglebox(gtk.VButtonBox):
             modification = str(int(hprop*20))
             label.modify_font(pango.FontDescription(modification))
 
-class Listbox(gtk.ScrolledWindow):
+class Listbox(gtk.Frame):
 
     def __init__(self, values, preselection, fontsize):
-        gtk.ScrolledWindow.__init__(self)
+        gtk.Frame.__init__(self)
         self.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         rows = len(values) if len(values)<5 else 5
-        self.set_size_request(-1,int(len(values)*69*fontsize/16)) # TODO get size from parents
+        self.set_size_request(-1,int(len(values)*69*fontsize/15)) # TODO get size from parents
         
 
         lista, self.view = self.prepare_view(fontsize/15.0)
@@ -247,11 +247,11 @@ class Listbox(gtk.ScrolledWindow):
         else:
             return "nothing selected"
 
-class MultipleListbox(gtk.ScrolledWindow):
+class MultipleListbox(gtk.Frame):
 
     def __init__(self, values, preselection, multiple, tactile, fontsize):
         
-        gtk.ScrolledWindow.__init__(self)
+        gtk.Frame.__init__(self)
         self.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         rows = len(values) if len(values)<5 else 5
         self.set_size_request(-1,len(values)*69) # TODO get size from parents
