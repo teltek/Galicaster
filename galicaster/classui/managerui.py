@@ -223,7 +223,7 @@ class ManagerUI(gtk.Box):
 
         if not warning.response in message.POSITIVE:
             return False
-
+        iterators = []
         for c in rows:
             iterators += [ store.get_iter(c) ]
         for i in iterators:

@@ -282,24 +282,24 @@ class ListingClassUI(ManagerUI):
             if op == "Play": # TODO get attribute on_$operation
                 last = store.get_iter(rows[len(rows)-1])
                 self.on_play(store, None, last)
-            elif op == "Edit":
+            elif op.count("Edit"):
                 last = store.get_iter(rows[len(rows)-1])
                 self.on_edit(store, None, last)
-            elif op == "Delete":
+            elif op.count("Delete"):
                 if self.reference == 1:
                     self.on_archive(store, rows)
                 elif self.reference == 4:
                     self.on_delete(store, rows)
-            elif op == "Restore":
+            elif op.count("Restore"):
                 self.on_restore(store, rows)
-            elif op in ["Empty", "Empty Trash"]:
+            elif op.count("Empty"):
                 self.on_empty()
             elif op == "Trash":
                 self.on_trash()
             elif op == "Info":
                 last = store.get_iter(rows[len(rows)-1])
                 self.on_info(store, None, last)
-            elif op in ["Operations", "Ingest", "New Ops"]:
+            elif op.count("New"):
                 self.on_operations_question(store, rows, 0)
             elif op.count("Clear"):
                 if available:
@@ -484,14 +484,14 @@ class ListingClassUI(ManagerUI):
 
     def define_buttons(self):
         self.buttonlist = []
-        self.add_button(self.buttonbox, "media-playback-start", "Play") 
-        self.add_button(self.buttonbox, gtk.STOCK_COPY, "Edit") 
-        self.add_button(self.secondarybox, gtk.STOCK_GO_UP, "New Ops") 
-        self.add_button(self.secondarybox, gtk.STOCK_CLEAR, "Clear Ops") 
-        self.add_button(self.secondarybox, gtk.STOCK_EXECUTE, "Execute Ops") 
-        self.add_button(self.buttonbox, gtk.STOCK_CLOSE, "Delete") 
+        self.add_button(self.buttonbox, "media-playback-start", "Play", "Play") 
+        self.add_button(self.buttonbox, gtk.STOCK_COPY, "Edit", "Edit Metadata") 
+        self.add_button(self.secondarybox, gtk.STOCK_GO_UP, "New Ops", "New operations") 
+        self.add_button(self.secondarybox, gtk.STOCK_CLEAR, "Clear Ops", "Clear nightly operations") 
+        self.add_button(self.secondarybox, gtk.STOCK_EXECUTE, "Execute Ops", "Execute nightly operations Now") 
+        self.add_button(self.buttonbox, gtk.STOCK_CLOSE, "Delete", "Delete selected recordings") 
 
-    def add_button(self, box, icon, text):
+    def add_button(self, box, icon, text, tooltip):
         composition = gtk.VBox()
         image = gtk.Image()
         image.set_from_icon_name(icon, gtk.ICON_SIZE_DIALOG)
@@ -501,7 +501,7 @@ class ListingClassUI(ManagerUI):
         composition.pack_start(label)
         button = gtk.Button()
         button.add(composition)
-        button.set_tooltip_text(text)
+        button.set_tooltip_text(tooltip)
         button.set_can_focus(False)
         button.connect('clicked', self.on_action)
         box.pack_start(button)   
@@ -627,9 +627,9 @@ class ArchiveUI(ListingClassUI):
 
     def define_buttons(self):
         self.buttonlist = []
-        self.add_button(self.buttonbox, "media-playback-start", "Play") 
-        self.add_button(self.buttonbox, "edit-undo", "Restore") 
-        self.add_button(self.buttonbox, "user-trash", "Empty Trash")
+        self.add_button(self.buttonbox, "media-playback-start", "Play", "Play") 
+        self.add_button(self.buttonbox, "edit-undo", "Restore", "Restore selected recordings") 
+        self.add_button(self.buttonbox, "user-trash", "Empty Trash", "Delete All recording on Trash" )
 
     def refresh_treeview(self):
 	"""Refresh all the values on the list"""
