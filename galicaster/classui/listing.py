@@ -261,6 +261,14 @@ class ListingClassUI(ManagerUI):
                     not_deletable.update([mp])
 
         return list(not_deletable)
+
+    def get_executable(self, packages, operation):
+        not_exectuble = []
+        for mp in packages:
+            if mp.getOpStatus(operation) not in [0, 4, 5]:
+                not_deletable += [ mp]
+        return not_executable
+
 	
 #---------------------------- MOUSE AND SELECTION MANAGMENT --------------------
 

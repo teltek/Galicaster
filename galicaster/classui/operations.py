@@ -96,8 +96,34 @@ class OperationList(MainList):
                 parameters[element.variable] = element.getSelected()[0]
         operation, defaults = parameters.pop('operation')
         group = (operation, defaults, parameters)
-        context.get_worker().enqueue_operations(group, self.superior.mediapackage) # TODO send a signal better
+        executable = []
+        short = None
+        for item in loader.get_operations():
+            if item[0][0] == operation:
+                short = item[0][1]['shortname']
+                break
+        for mp in self.superior.mediapackage:
+            if mp.getOpStatus(short) in [0,4,5]:
+                executable += [ mp ]
+        context.get_worker().enqueue_operations(group, executable) # TODO send a signal better
+
         self.close(True)
+
+        difference = len(self.superior.mediapackage)-len(executable)
+        if difference:
+            text = {"title" : "New Operations",
+                    "main" : "{0} recording{1} {2} already\nrunning this operation.".format( difference, 
+                                                                                                "s" if difference >1 else "",
+                                                                                                "are" if difference >1 else "is",
+                                                                                                ),
+                    "text" : "{0} operation{1} enqueued.".format("No" if not len(executable) else len(executable),
+                                                                 "" if len(executable)==1 else "s")
+                    }
+            buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK)
+            warning = message.PopUp(message.WARNING, text,
+                                    context.get_mainwindow(),
+                                    buttons)
+
 
     def clear(self, button=None):
         options = {}
