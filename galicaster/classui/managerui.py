@@ -194,9 +194,9 @@ class ManagerUI(gtk.Box):
         deletable = len(rows)-len(not_deletable)
         if not deletable:
             thetext = {
-                "title" : "Operations",
-                "text" : "There are pending operations",
-                "main" : "The recording{0} won't be deleted".format("s" if len(not_deletable)>1 else '')
+                "title" : "Media Manager",
+                "text" : "There are pending operations.",
+                "main" : "The recording{0} won't be deleted.".format("s" if len(not_deletable)>1 else '')
                 }
             buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
             message.PopUp(message.WARNING, thetext, 
@@ -273,8 +273,8 @@ class ManagerUI(gtk.Box):
 
     def on_noselection(self):
 	"""Pops up a warning dialog"""
-        text = {"title" : "Operations",
-		    "main" : "You have not selected any recording",
+        text = {"title" : "Media Manager",
+		    "main" : "You have not selected any recording.",
 		    }
         buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
         message.PopUp(message.WARNING, text, 
@@ -284,9 +284,9 @@ class ManagerUI(gtk.Box):
 
     def on_no_available(self):
 	"""Pops up a warning dialog when no active operation is present"""
-        text = {"title" : "Operations",
-		    "main" : "There is not any active operation.",
-		    }
+        text = {"title" : "Media Manager",
+                "main" : "There is not any active operation.",
+                }
         buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
         message.PopUp(message.WARNING, text, 
                       context.get_mainwindow(),
@@ -294,9 +294,9 @@ class ManagerUI(gtk.Box):
         return True
 
     def on_pendingoperation(self):
-	"""Pops up a warning dialog when recordings can't be delted"""
-        text = {"title" : "Operations",
-                "main" : "There are pending operations and the recordings won't be deleted",
+	"""Pops up a warning dialog when recordings can't be deleted"""
+        text = {"title" : "Media Manager",
+                "main" : "There are pending operations and the recordings won't be deleted.",
                 }
         buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
         message.PopUp(message.WARNING, text, 

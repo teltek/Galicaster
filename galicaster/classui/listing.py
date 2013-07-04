@@ -299,15 +299,15 @@ class ListingClassUI(ManagerUI):
             elif op == "Info":
                 last = store.get_iter(rows[len(rows)-1])
                 self.on_info(store, None, last)
-            elif op in ["Operations", "Ingest"]:
+            elif op in ["Operations", "Ingest", "New Ops"]:
                 self.on_operations_question(store, rows, 0)
-            elif op == "Clear":
+            elif op.count("Clear"):
                 if available:
                     self.on_operations_question(store, rows, 1)
                 else:
                     self.on_no_available()                   
                     
-            elif op == "Execute":
+            elif op.count("Execute"):
                 if available:
                     self.on_operations_question(store, rows, 2)
                 else:
@@ -475,9 +475,9 @@ class ListingClassUI(ManagerUI):
         self.buttonlist = []
         self.add_button(self.buttonbox, "media-playback-start", "Play") 
         self.add_button(self.buttonbox, gtk.STOCK_COPY, "Edit") 
-        self.add_button(self.buttonbox, gtk.STOCK_GO_UP, "Operations") 
-        self.add_button(self.buttonbox, gtk.STOCK_CLEAR, "Clear") 
-        self.add_button(self.buttonbox, gtk.STOCK_EXECUTE, "Execute") 
+        self.add_button(self.buttonbox, gtk.STOCK_GO_UP, "New Ops") 
+        self.add_button(self.buttonbox, gtk.STOCK_CLEAR, "Clear Ops") 
+        self.add_button(self.buttonbox, gtk.STOCK_EXECUTE, "Execute Ops") 
         self.add_button(self.buttonbox, gtk.STOCK_CLOSE, "Delete") 
 
     def add_button(self, box, icon, text):

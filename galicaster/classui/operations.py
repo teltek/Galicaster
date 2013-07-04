@@ -45,7 +45,14 @@ class OperationsUI(SelectorUI):
             size = context.get_mainwindow().get_size()
         self.size = size
 
-        SelectorUI.__init__(self, parent, size)
+        title = ""
+        if UItype == CREATE:
+            title = "New Operations"
+        elif UItype == CLEAR:
+            title = "Clear Operations"
+        elif UItype == EXECUTE:
+            title = "Execute Operations"
+        SelectorUI.__init__(self, parent, size, title)
 
         #configuration data
         self.mediapackage = mediapackage # TODO take into account single or multiple MPs
@@ -99,9 +106,9 @@ class OperationList(MainList):
 
         self.close(True)
 
-        text = {"title" : "Operations",
+        text = {"title" : "Clear Operations",
                 "main" : "Are you sure?",
-                "text" : "The selected operations operations will be cancelled"
+                "text" : "The selected operations  will be cancelled."
                 }
         buttons = ( "Clear", gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
         warning = message.PopUp(message.WARNING, text,
