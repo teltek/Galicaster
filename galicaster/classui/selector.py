@@ -31,7 +31,7 @@ class SelectorUI(gtk.Widget):
 
     __gtype_name__ = 'SelectorUI'
 
-    def __init__(self, parent=None, size = None):
+    def __init__(self, parent=None, size = None, thetitle = "Selector"):
         if not parent:
             parent = context.get_mainwindow()
         if not size:
@@ -53,7 +53,8 @@ class SelectorUI(gtk.Widget):
         dialog.add(box)
         self.dialog = dialog
 
-        strip = Header(size=size, title="Operations")
+        strip = Header(size=size, title=thetitle)
+
         self.notebook = gtk.Notebook() # Main object of the selector
         self.notebook.set_show_tabs(False)
         

@@ -458,10 +458,13 @@ class PlayerClassUI(ManagerUI):
             play.set_sensitive(False)
             pause.set_sensitive(False)
             stop.set_sensitive(False)
+
         if self.strip.back_page == 4:
             editb.set_sensitive(False)
             deleteb.set_sensitive(False)
-            ingestb.set_sensitive(False)        
+            ingestb.set_sensitive(False)
+        else:
+            ingestb.set_sensitive(True)
 
     def close(self, signal):
         """Close player UI, stopping threads and reproduction"""

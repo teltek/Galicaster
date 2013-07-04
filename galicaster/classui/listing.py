@@ -257,7 +257,7 @@ class ListingClassUI(ManagerUI):
         not_deletable = set()
         for mp in packages:
             for op in shortnames:
-                if mp.getOpStatus(op) not in [0,4]:
+                if mp.getOpStatus(op) not in [0, 4, 5]:
                     not_deletable.update([mp])
 
         return list(not_deletable)
@@ -459,7 +459,16 @@ class ListingClassUI(ManagerUI):
         controlbox = gtk.VBox()
         buttonbox = gtk.HButtonBox()
         buttonbox.set_layout(gtk.BUTTONBOX_SPREAD)
-        buttonbox.set_homogeneous(True)        
+        buttonbox.set_homogeneous(True)
+        newbox = gtk.HBox()
+        newbox.pack_start(buttonbox, True, True)
+        if self.reference == 1:
+            secondarybox = gtk.HButtonBox()
+            secondarybox.set_layout(gtk.BUTTONBOX_SPREAD)
+            secondarybox.set_homogeneous(True)   
+            controlbox.set_homogeneous(False)
+            newbox.pack_start(secondarybox, True, True)
+            self.secondarybox = secondarybox
         self.buttonbox = buttonbox
         
         self.box.pack_start(listalign, True, True, 0)
@@ -467,17 +476,19 @@ class ListingClassUI(ManagerUI):
         listbox.pack_start(scrolledw, True, True, 0)
         listbox.pack_start(control_below, False, False, 0)
         listalign.add(listbox)
-        self.box.pack_start(controlbox, False, False, 50) 
-        controlbox.pack_start(buttonbox,True, True, 10)
+        self.box.pack_start(controlbox, False, False, 50) # TODO proportionality
+        #controlbox.pack_start(buttonbox,True, True, 10)
+        #controlbox.pack_start(secondarybox,True, True, 10)
+        controlbox.pack_start(newbox,True, True, 0)
         self.define_buttons()
 
     def define_buttons(self):
         self.buttonlist = []
         self.add_button(self.buttonbox, "media-playback-start", "Play") 
         self.add_button(self.buttonbox, gtk.STOCK_COPY, "Edit") 
-        self.add_button(self.buttonbox, gtk.STOCK_GO_UP, "New Ops") 
-        self.add_button(self.buttonbox, gtk.STOCK_CLEAR, "Clear Ops") 
-        self.add_button(self.buttonbox, gtk.STOCK_EXECUTE, "Execute Ops") 
+        self.add_button(self.secondarybox, gtk.STOCK_GO_UP, "New Ops") 
+        self.add_button(self.secondarybox, gtk.STOCK_CLEAR, "Clear Ops") 
+        self.add_button(self.secondarybox, gtk.STOCK_EXECUTE, "Execute Ops") 
         self.add_button(self.buttonbox, gtk.STOCK_CLOSE, "Delete") 
 
     def add_button(self, box, icon, text):
@@ -493,7 +504,6 @@ class ListingClassUI(ManagerUI):
         button.set_tooltip_text(text)
         button.set_can_focus(False)
         button.connect('clicked', self.on_action)
-        self.buttonlist += [button]
         box.pack_start(button)   
 
 
