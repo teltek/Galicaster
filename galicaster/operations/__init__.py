@@ -68,31 +68,39 @@ class Operation(object):
 
     def logCreation(self, mp):
         """Leaves log when operation is created"""
-        self.setCreationTime()
-        mp.setOp(self.name, mediapackage.OP_PENDING, self.creation_time)
         self.context[0].info("Creating {0} for {1}".format(self.name, mp.getIdentifier() ))
-        self.context[2].update(mp)
+        self.setCreationTime()
+        identifier = mp.getIdentifier()
+        newMP = self.context[2].get(identifier)
+        newMP.setOp(self.name, mediapackage.OP_PENDING, self.creation_time)
+        self.context[2].update(newMP)
         self.context[1].emit('refresh-row', mp.getIdentifier())
 
     def logNightly(self, mp):
         self.context[0].info("Nightly {0} for {1}".format(self.name, mp.getIdentifier() ))
-        mp.setOp(self.name, mediapackage.OP_NIGHTLY, self.creation_time)
-        self.context[2].update(mp)
+        identifier = mp.getIdentifier()
+        newMP = self.context[2].get(identifier)
+        newMP.setOp(self.name, mediapackage.OP_NIGHTLY, self.creation_time)
+        self.context[2].update(newMP)
         self.context[1].emit('refresh-row', mp.getIdentifier())
 
     def logCancelNightly(self, mp):
         self.context[0].info("Canceled {0} for {1}".format(self.name, mp.getIdentifier() ))
-        mp.setOp(self.name,mediapackage.OP_IDLE, 0)
-        self.context[2].update(mp)
+        identifier = mp.getIdentifier()
+        newMP = self.context[2].get(identifier)
+        newMP.setOp(self.name,mediapackage.OP_IDLE, 0)
+        self.context[2].update(newMP)
         self.context[1].emit('refresh-row', mp.getIdentifier())
 
     def logStart(self, mp):
         """Leaves log when operation starts"""
         self.setStartTime()
         self.context[0].info("Executing {0} for {1}".format(self.name, mp.getIdentifier() ))
-        mp.setOp(self.name, mediapackage.OP_PROCESSING, self.start_time)
+        identifier = mp.getIdentifier()
+        newMP = self.context[2].get(identifier)
+        newMP.setOp(self.name, mediapackage.OP_PROCESSING, self.start_time)
+        self.context[2].update(newMP)
         self.context[1].emit('start-operation', self.name, mp.getIdentifier())
-        self.context[2].update(mp)
         self.context[1].emit('refresh-row', mp.getIdentifier())
 
     def logEnd(self, mp, success):
@@ -102,10 +110,12 @@ class Operation(object):
             self.context[0].info("Finalized {0} for {1}".format(self.name, mp.getIdentifier() ))
         else:
             self.context[0].info("Failed {0} for {1}".format(self.name, mp.getIdentifier() ))
-        mp.setOp(self.name, mediapackage.OP_DONE if success else mediapackage.OP_FAILED, self.end_time)
-        self.context[1].emit('stop-operation', self.name, mp, success)
+        identifier = mp.getIdentifier()
+        newMP = self.context[2].get(identifier)
+        newMP.setOp(self.name, mediapackage.OP_DONE if success else mediapackage.OP_FAILED, self.end_time)
+        self.context[2].update(newMP)
+        self.context[1].emit('stop-operation', self.name, newMP, success)
         self.context[1].emit('refresh-row', mp.getIdentifier())
-        self.context[2].update(mp)
 
     def serialize_operation(self):
         """Transform metadata into XML and rewrite"""

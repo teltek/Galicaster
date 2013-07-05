@@ -428,31 +428,29 @@ class Mediapackage(object):
             self.__duration = duration
 
     # Operations
+    def setOp(self, name, value, time):
+        self.operation[name] = (value, time)
+
     def getOp(self, name):
         if name not in self.operation:
-            self.operation[name] = (OP_IDLE, 0)
+            self.setOp(name, OP_IDLE, 0)
         return self.operation[name]
-
-    def setOp(self, name, value, time=0):
-        self.operation[name] = (value, time)
 
     def getOpStatus(self, name):
         if name not in self.operation:
-            self.operation[name] = (OP_IDLE, 0)
+            self.setOp(name, OP_IDLE, 0)
         return self.operation[name][0]
 
     def getOpTime(self, name):
         if name not in self.operation:
-            self.operation[name] = (OP_IDLE, 0)
-        return self.operation[name][2]
+            self.setOp(name, OP_IDLE, 0)
+        return self.operation[name][1]
 
     def setOpStatus(self, name, value):
-        status, time = self.getOp(name)
-        self.operation[name] = (value , time)
+        self.setOp( name, value, self.getOpTime(name) )
 
     def setOpTime( self, name, value):
-        status, time = self.getOp(name)
-        self.operation[name] = (status, value)
+        self.setOp( name, self.getOpStatus(name), value )
     
     def contains(self, element):
         if element == None:

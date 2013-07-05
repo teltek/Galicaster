@@ -234,8 +234,7 @@ class ListingClassUI(ManagerUI):
 	self.refresh_row_from_mp(origin, identifier, self.reference)
 
     def refresh_row(self,reference,i):# FIXME keep the sort id 
-        mp = self.lista[i][0] # FIXME set the id as the first metadata
-	#mp = self.repository.get(mpid)
+        mp = self.lista[i][0]
 	self._refresh(mp,i)
 
     def _refresh(self,mp,i):

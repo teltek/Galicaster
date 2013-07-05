@@ -95,15 +95,11 @@ class OperationList(MainList):
             else: # schedule
                 parameters[element.variable] = element.getSelected()[0]
         operation, defaults = parameters.pop('operation')
+        subtype = defaults['shortname']        
         group = (operation, defaults, parameters)
         executable = []
-        short = None
-        for item in loader.get_operations():
-            if item[0][0] == operation:
-                short = item[0][1]['shortname']
-                break
         for mp in self.superior.mediapackage:
-            if mp.getOpStatus(short) in [0,4,5]:
+            if mp.getOpStatus(subtype) in [0,4,5]:
                 executable += [ mp ]
         context.get_worker().enqueue_operations(group, executable) # TODO send a signal better
 
@@ -142,6 +138,7 @@ class OperationList(MainList):
                                 buttons)
         if not warning.response in message.POSITIVE:
             return False
+
         ops = loader.get_operations()
         for op in options["operation"]:
             for item in ops:
