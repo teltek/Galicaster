@@ -336,10 +336,9 @@ class ListingClassUI(ManagerUI):
     def create_menu(self):
         """Creates a menu to be shown on right-button-click over a MP"""
 	menu = gtk.Menu()
-	if self.conf.get_boolean('ingest', 'active'):
-            operations = ["Play", "Edit", "Operations", "Info", "Delete"]
-	else:
-	    operations = ["Play", "Edit", "Info", "Delete"]
+        operations = ["Play", "Edit", "Info", "Delete"]
+        if self.reference == 4:
+            operations += ["Restore"]
 
         for op in operations:
             item = gtk.MenuItem(op)
