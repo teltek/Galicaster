@@ -636,7 +636,8 @@ class ArchiveUI(ListingClassUI):
         self.buttonlist = []
         self.add_button(self.buttonbox, "media-playback-start", "Play", "Play") 
         self.add_button(self.buttonbox, "edit-undo", "Restore", "Restore selected recordings") 
-        self.add_button(self.buttonbox, "user-trash", "Empty Trash", "Delete All recording on Trash" )
+        # self.add_button(self.buttonbox, gtk.STOCK_CLOSE, "Delete", "Delete selected recordings") 
+        self.add_button(self.buttonbox, "user-trash", "Empty Trash", "Empty the Trash" )
 
     def refresh_treeview(self):
 	"""Refresh all the values on the list"""
