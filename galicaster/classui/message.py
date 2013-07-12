@@ -70,7 +70,10 @@ class PopUp(gtk.Widget):
             a = self.dialog.get_action_area().get_children()[0]
             a.connect('clicked',self.dialog_destroy)            
             self.dialog.show_all()
+            self.dialog.present()
         else:
+            self.dialog.show_all()
+            self.dialog.present()
             self.response = dialog.run()
             dialog.destroy()
         #return None
@@ -327,6 +330,7 @@ class PopUp(gtk.Widget):
         fsize=int(wprop*fontsize)
         font2 = self.set_font(str(fsize)+"px")
         chars = int(wprop*26)
+        
         for button in area.get_children():
             for element in button.get_children():
                 if type(element) == gtk.Label:

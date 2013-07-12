@@ -61,8 +61,7 @@ class OperationsUI(SelectorUI):
         self.add_main_tab("Operation Selector", self.list)
 
         self.dialog.show_all()
-
-        
+        self.dialog.present()        
 
 class OperationList(MainList):
     """
