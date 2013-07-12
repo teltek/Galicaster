@@ -15,33 +15,22 @@ UI for a Metadata Editor Pop UP
 """
 
 import gtk
-import datetime
-from os import path
+import datetime # idem
+from os import path #idem
 import gobject
 import pango
 
-from galicaster.classui.calendarwindow import CalendarWindow
-import galicaster.mediapackage.mediapackage as mediapackage
+from galicaster.classui.calendarwindow import CalendarWindow # idem
+import galicaster.mediapackage.mediapackage as mediapackage # TODO remove dependency when series refactorized
 from galicaster.core import context
-from galicaster.utils import series as listseries
-from galicaster.classui import get_ui_path
+from galicaster.utils import series as listseries # idem
 from galicaster.classui.elements.message_header import Header
-
-
+from galicaster.classui.elements.editors import TextViewer, DatetimeViewer
+from galicaster.classui.elements.editors import TextEditor, SelectEditor, LanguageEditor, DatetimeEditor, SeriesEditor, Editor
+ # TODO load as choosers on operations do
 
 NO_SERIES  = "NO SERIES ASSIGNED"
 DEFAULT_SERIES = "DEFAULT SERIES"
-
-DCTERMS = ["title", "creator", "description", "language", "isPartOf"]
-metadata = { "title": "Title:", "Title:":"title",
-             "creator": "Presenter:", "Presenter:":"creator", 
-             "isPartOf": "Course/Series:", "Course/Series:":"isPartOf",
-             "description": "Description:", "Description:":"description", 
-             "subject": "Subject:", "Subject:":"subject", 
-             "language": "Language:", "Language:":"language", 
-             "identifier": "Identifier:", "Identifier:":"identifier", 
-             "contributor": "Contributor:","Contributor:":"contributor", 
-             "created":"Start Time:", "Start Time:":"created"}  
 
 class MetadataClass(gtk.Widget):
     """
@@ -51,273 +40,162 @@ class MetadataClass(gtk.Widget):
 
     def __init__(self,package = None, parent = None):
 
+        parent = context.get_mainwindow() # TODO get parent from init else get from context
+
+        size = parent.get_size()            
+        self.terms = context.get_conf().get_metadata()
+        self.create_ui()
+        self.fill_metadata(package)
+        self.package = package
+        self.dialog.show_all()
+        self.dialog.present()
+
+    def fill_metadata(self, mp):
+        """
+        Fill the table with available data
+        """  
+
+        metadatum = self.terms.parameters
+        group = "episode"
+        # FORMER fontsize was 16
+
+        for meta in metadatum:
+            if meta.visibility != "hidden":
+                default_value = mp.metadata_episode.get(meta.name) or meta.default # JUST for group episode
+                # TODO check meta.name on series, title or id?
+                
+                if meta.visibility == "edit" and meta.type == "text":
+                    widget = TextEditor(group, meta.name, meta.label, default = default_value)
+                elif meta.visibility == "edit" and meta.type == "select":
+                    widget = SelectEditor(group, meta.name, meta.label, 
+                                          default_value, options = meta.options)
+                elif meta.visibility == "edit" and meta.type == "language":
+                    widget = LanguageEditor(group, meta.name, meta.label, 
+                                          default_value, options = meta.options)
+
+                elif meta.visibility == "edit" and meta.type == "datetime":
+                    widget = DatetimeEditor(group, meta.name, meta.label, default = default_value)
+                elif meta.visibility == "edit" and meta.type == "series":
+                    default_value = mp.getSeriesTitle() or NO_SERIES
+                    widget = SeriesEditor(group, meta.name, meta.label, 
+                                          default_value, options=listseries.get_series())
+                else:
+                    # PARSE language to iso
+                    if isinstance(default_value, datetime.datetime):
+                        default_value = default_value.replace(microsecond=0).isoformat()
+                    widget = TextViewer(group, meta.name, meta.label, default = default_value)
+
+                self.content.pack_start(widget, True, False, 4)
+                widget.show_all()            
+
+                # d = ComboBoxEntryExt(self.par,listseries.get_series(),
+                # d.connect("button-press-event",self.edit_date)
+
+
+    def update_series(self, package, result): # TODO associate to mp before update
+
+        if result != NO_SERIES:
+            series = listseries.getSeriesbyName(result)
+            package.setSeries(series["list"])
+            print "update series:", series
+            if not package.getCatalogs("dublincore/series") and package.getURI():
+                new_series = mediapackage.Catalog(path.join(package.getURI(),"series.xml"),
+                                                  mimetype="text/xml",flavor="dublincore/series")
+                package.add(new_series)
+        else:
+            package.setSeries(None)
+            catalog = package.getCatalogs("dublincore/series")
+            if catalog:
+                package.remove(catalog[0])
+
+    def update_metadata(self, button = None):
+        result = []
+        mp = context.get_repository().get(self.package.getIdentifier())
+        for child in self.content.get_children():
+            if isinstance(child, Editor): # TODO check viewers
+                result += [ child.getValue()]
+        for group, variable, value in result:
+            if group == "episode": # TODO get group reference and update it directly
+                mp.metadata_episode[variable] = value
+                if variable.lower() == "ispartof": # TODO variable comes as ispartof 
+                    self.update_series(mp, value)                
+            elif group == "series":
+                mp.metadata_series[variable] = value
+            if group == "custom":
+                mp.metadata_custom[variable] = value # TODO add to galicaster.mediapackage.mediapackage
+
+        # TODO use update_series before updating the MP
+        context.get_repository().update(mp)
+        context.get_dispatcher().emit('refresh-row', mp.getIdentifier())
+        
+        self.close()
+
+    def refresh_metadata(self):
+        # TODO run through all metadata that changed and setValue
+        # take into account new values made by changing series
+        # some metadata depends on enviroment values like login, place, hostname ...
+        pass
+        
+    def close(self, button = None):
+        self.dialog.destroy()        
+
+    def create_ui(self):                  
         parent = context.get_mainwindow()
         size = parent.get_size()
-            
-        self.par = parent
-        altura = size[1]
-        anchura = size[0]        
-        k1 = anchura / 1920.0                                      
-        k2 = altura / 1080.0
-        self.wprop = k1
-        self.hprop = k2
 
-        gui = gtk.Builder()
-        gui.add_from_file(get_ui_path('metadata.glade'))
+        self.wprop = size[0] / 1920.0
+        self.hprop = size[1] / 1080.0
+        self.prop = size[0] / float(size[1])
 
-        dialog = gui.get_object("metadatadialog")
-        dialog.set_property("width-request",int(anchura/2.2))
-        dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
-        dialog.set_keep_above(True)
+        self.dialog = gtk.Window()
+        self.dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
+        corrector = 1.3 * self.prop # Correction between panoramic and 4:3ish
+        self.dialog.set_property('width-request', int(size[0]/corrector) )
+        self.dialog.set_property('height-request', int(size[1]/2.2) )
+        self.dialog.set_transient_for(parent)                               
+        self.dialog.set_position(gtk.WIN_POS_CENTER_ON_PARENT) # TODO set parent
+        self.dialog.set_modal(True)
+        mainbox = gtk.VBox()
+        self.dialog.add(mainbox)
 
-        #NEW HEADER
-        strip = Header(size=size, title="Edit Metadata")
-        dialog.vbox.pack_start(strip, True, True, 0)
-        dialog.vbox.reorder_child(strip,0)
+        strip = Header(size=size, title="Metadata Editor")
+        mainbox.pack_start(strip, False, True, 0)
 
+        action = gtk.HButtonBox()
+        action.set_layout(gtk.BUTTONBOX_SPREAD)
+        self.content = gtk.VBox()
+        body=gtk.VBox()
+        align = gtk.Alignment(0.5, 1.0, 1.0, 1.0)
+        align.set_padding(int(self.wprop*20), 0, int(self.wprop*90), int(self.wprop*90))
+        align.add(self.content)
+        body.pack_start(align, True, False, 0)
+        body.pack_start(action, False, True, int(self.wprop*20))
 
-        if parent != None:
-            dialog.set_transient_for(parent.get_toplevel())
-
+        #align = gtk.Alignment(0.8, 0.8, 0.5, 0.5)
+        #align.add(body)
+        frame= gtk.Frame()
+        frame.set_shadow_type(gtk.SHADOW_ETCHED_IN)
+        frame.add(body)
+        mainbox.pack_start(frame, True, True, 0)
         
-        table = gui.get_object('infobox')
-        dialog.vbox.set_child_packing(table, True, True, int(self.hprop*25), gtk.PACK_END)    
-        title = gui.get_object('title')
-        sl = gui.get_object('slabel')
-        cl = gui.get_object('clabel')
-        talign = gui.get_object('table_align')
+        save = self.add_button(size, action, "Save")
+        cancel = self.add_button(size, action, "Cancel")
+        save.connect("clicked", self.update_metadata)
+        cancel.connect("clicked", self.close)
 
-        modification = "bold "+str(int(k2*25))+"px"        
-        title.modify_font(pango.FontDescription(modification))
-        title.hide()
-        talign.set_padding(int(k2*40),int(k2*40),0,0)
-        mod2 = str(int(k1*35))+"px"        
-        sl.modify_font(pango.FontDescription(mod2))
-        cl.modify_font(pango.FontDescription(mod2))
-
-
-        self.fill_metadata(table, package)
-        talign.set_padding(int(self.hprop*25), int(self.hprop*10), int(self.hprop*25), int(self.hprop*25))
-        dialog.vbox.set_child_packing(dialog.action_area, True, True, int(self.hprop*25), gtk.PACK_END)   
-        dialog.show_all()
-
-        return_value = dialog.run()
-        if return_value == -8:
-            self.update_metadata(table,package)
-        dialog.destroy()
-		
-    def fill_metadata(self,table,mp):
-        """
-        Fill the table with available data, empty otherwise
-        """        
-        for child in table.get_children():
-            table.remove(child) #FIXME maybe change the glade to avoid removing any widget
-        table.resize(1,2) 
-        row = 1
-
-        for meta in DCTERMS:
-            t=gtk.Label(metadata[meta])
-            t.set_justify(gtk.JUSTIFY_LEFT)
-            t.set_alignment(0,0)
-            modification = str(int(self.hprop*16))+"px"        
-            t.modify_font(pango.FontDescription(modification))
-            t.set_width_chars(15)
-            
-            d=gtk.Entry()
-            d.set_name(meta)
-            try:
-                if meta in ["ispartof", "isPartOf"]:
-                    d = ComboBoxEntryExt(self.par,listseries.get_series(),
-                                         NO_SERIES)
-                    d.set_name(meta)
-                    if mp.getSeriesIdentifier() != None:
-                        d.child.set_text(mp.getSeriesTitle())
-                    else:
-                        d.child.set_text(NO_SERIES)
-                elif mp.metadata_episode.has_key(meta):
-                    d.set_text(mp.metadata_episode[meta] or '')
-                else:
-                    d.set_text('')
-                    
-            except (TypeError, KeyError) as error: 
-                context.get_logger().error("Exception Filling Metadata "+meta)
-            
-            if meta == "created": # currently Unused
-                d.connect("button-press-event",self.edit_date)
-            if meta == "title":
-                d.set_tooltip_text(d.get_text())
-
-            d.modify_font(pango.FontDescription(modification))
-
-            table.attach(t,0,1,row-1,row,False,False,0,0)
-            table.attach(d,1,2,row-1,row,gtk.EXPAND|gtk.FILL,False,0,0)
-            row=row+1
-
-    def strip_spaces(self,value):
-        """Remove spaces before and after a value"""
-        return value.strip()
-
-    def update_metadata(self,table,mp):
-        """Write data back to the mediapackage"""
-        for child in table.get_children():
-            if child.name in DCTERMS:
-                if child.name in ["creator", "contributor", "subject"]:
-                    if child.get_text() == "":
-                        mp.metadata_episode[child.name] = None
-                    else:
-                        mp.metadata_episode[child.name] = child.get_text().strip()
-
-                elif child.name == "ispartof" or child.name == "isPartOf":                 
-                    result=child.get_active_text()
-                    model = child.get_model()
-                    iterator = model.get_iter_first()
-                    while iterator != None:
-                        if model[iterator][0] == result:
-                            break
-                        iterator = model.iter_next(iterator)                        
-                    identifier = model[iterator][1]
-                    series = None
-                    if result != NO_SERIES:
-                        series = listseries.getSeriesbyId(identifier)
-
-                    if series != None:
-                        mp.setSeries(series["list"])
-                        if not mp.getCatalogs("dublincore/series") and mp.getURI():
-                            new_series = mediapackage.Catalog(path.join(mp.getURI(),"series.xml"),mimetype="text/xml",flavor="dublincore/series")
-                            mp.add(new_series)
-                    else: 
-                        mp.setSeries(None)
-
-                        catalog= mp.getCatalogs("dublincore/series")
-                        if catalog:
-                            mp.remove(catalog[0])
-                else:
-                    mp.metadata_episode[child.name]=child.get_text()
-
-
-    def edit_date(self,element,event):
-        """Filter a Rigth button double click, show calendar and update date"""
-      
-        if event.type == gtk.gdk._2BUTTON_PRESS and event.button==1:
-            text= element.get_text()
-            try:
-                date=datetime.datetime.strptime(text,"%Y-%m-%dT%H:%M:%S") 
-            except ValueError:
-                date=0
-            v = CalendarWindow(date)
-            v.run()
-            if v.date != None:
-                element.set_text(v.date.isoformat())
-        return True
-
-class ComboBoxEntryExt(gtk.ComboBoxEntry):
-
-    def __init__(self, parent, listing, text = None):
-        """
-        From a dict of series (series(id)=name) returns a ComboBoxEntry with a customize searcher
-        """
-
-        self.par = parent
-        if text == None:
-            text = " NO_SERIES " 
-        self.text = text
-
-        liststore = gtk.ListStore(str,str)
-        liststore.append([text,None])
-        if listing != None:
-            for key,all_values in listing.iteritems():
-                liststore.append([all_values['title'], key]) # NAME ID
-  
-        liststore.set_sort_func(0,self.sorting,text) # Put text=NO_SERIES first
-        liststore.set_sort_column_id(0,gtk.SORT_ASCENDING)
-
-        self.liststore = liststore # CHECK
-
-        # Filter
-        combofilter = liststore.filter_new()
-        combofilter.set_visible_func(self.filtering) 
-
-        # Completion
-        completion = gtk.EntryCompletion()
-        completion.set_model(liststore)
-        completion.set_match_func(self.filtering_match, completion)
-        completion.set_text_column(0)
-        completion.set_inline_selection(True)
-        
-        super(ComboBoxEntryExt, self).__init__(liststore,0)
-     
-        self.set_model(combofilter)
-        self.child.set_completion(completion)
-
-        # Signals   
-        self.child.connect('changed',self.emit_filter,combofilter)
-        self.child.connect('activate', self.activating)
-        self.child.connect('focus-out-event', self.ensure_match)
-        
-    def ensure_match(self, origin , event):
-        text = self.child.get_text()
-        model = self.get_model()
-        match = False
-        for iterator in model:
-            if not match and text in iterator[0]:
-                match = True
-                self.child.set_text(iterator[0])
-        if not match:
-            self.child.set_text(self.text)
-        return True
-                
-
-    def activating(self, entry):
-        text = entry.get_text()
-        if text:
-            if text not in [row[0] for row in self.liststore]:
-                entry.set_text(self.text)
-        return
-
-    def emit_filter(self, origin, cfilter):
-        cfilter.refilter()
-
-    def filtering_match(self, completion, key_string, iterator, data = None):
-        """Filtering completion"""
-        model = completion.get_model()
-        series = model.get_value(iterator,0)
-        if series == self.text: # always show NO_SERIES
-            return True
-        elif key_string.lower() in series.lower(): # Show coincidence
-            return True
-        elif key_string == self.text:
-            return True
-        else:
-            return False  
-       
-    def filtering(self, model, iterator):
-        """Filtering ComboBox"""
-        key_string = self.child.get_text()
-        series =  model.get_value(iterator,0)
-        if series == self.text: # always show NO_SERIES
-            return True
-        elif key_string.lower() in series.lower(): # Show coincidence
-            return True
-        elif key_string == self.text:
-            return True
-        else:
-            return True
-
-    def sorting(self, treemodel, iter1, iter2, NO_ID = None):
-        """Sorting algorithm, placing first default series and no series"""
-        if treemodel[iter1][0] == NO_ID:
-            return False
-        if treemodel[iter2][0] == NO_ID:
-            return True
-        if  treemodel[iter1][0] >  treemodel[iter2][0]:
-            return True
-        elif treemodel[iter1][0] == treemodel[iter2][0]: 
-            if  treemodel[iter1][1] >  treemodel[iter2][1]:
-                return True
-            else:
-                return False
-        else:
-            return False
+    def add_button(self, size, box, text):
+        button = gtk.Button()
+        button.set_label(text)
+        button.set_property("width-request", int(self.wprop*150) )
+        button.set_property("height-request", int(self.wprop*50) )
+        label = button.get_children()[0]
+        modification = str(int(self.hprop*20)) #+"px"
+        label.modify_font(pango.FontDescription(modification))
+        #padding = self.wprop*20/2.6
+        #label.set_padding(-1, int(padding))
+        #label.set_width_chars(int(self.wprop*10))
+        button.set_can_focus(False)
+        box.pack_start(button) # TODO connect button
+        return button
 
 gobject.type_register(MetadataClass)
-gobject.type_register(ComboBoxEntryExt)

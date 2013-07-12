@@ -13,6 +13,7 @@
 
 
 import os
+import re
 import ConfigParser
 import socket
 from collections import OrderedDict
@@ -327,6 +328,109 @@ class Conf(object): # TODO list get and other ops arround profile
          return [undefined, undefined, undefined, undefined, undefined, undefined] 
       else:
          return [undefined, nightly, pending,processing, done, failed]
+   def get_metadata(self):
+      return get_metadata()
+
+def get_metadata(group="mediapackage"):
+   parser = ConfigParser.ConfigParser()
+   path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'metadata.ini'))
+   parser.read(path)
+   items = dict(parser.items(group))
+   result = MetadataGroup(group, items) 
+   return result
+
+class MetadataParameter(object):
+   """ 
+   Custom object focused on Metadatum parameters for Mediapackage and Matterhorn Series
+   """
+
+   def __init__(self, name, parameters, default_visibility = "view"):
+      self.name = name
+      self.type = parameters.get('type') or "text"
+      self.label = parameters.get('label') or name.capitalize()
+      self.number = parameters.get('number') or "single"      
+      self.default = self.transform(parameters.get('default'))
+      self.visibility = parameters.get("visibility") or default_visibility
+      self.tooltip = parameters.get("description") or ""
+      self.options = self.splitting(parameters.get('options')) # TODO get only if the Metadata needs it
+   
+   def transform(self, value):
+      if self.type == 'text': # "other text
+         return value
+      elif self.type == 'integer': # parse range
+         return int(value)
+      elif self.type == 'language': # parse iso
+         return value
+      elif self.type == 'series': # parse iso
+         return value
+      else:
+         print self.type, "default", value
+         return value
+
+   def splitting(self,value):
+      if value == None:
+         return None
+      value = value.split('-')
+      for v in value:
+         v = v.strip()
+      return value
+   
+
+      # datetime
+      # series
+      # selection
+
+   def show(self):
+      print self.name, "> type:", self.type, "- visible:", self.visibility
+
+class MetadataGroup(OrderedDict):
+   """ 
+   Custom dictionary focused on Metadata parameters for Mediapackage and Matterhorn Series
+   """
+
+   def __init__(self, name, group, default_visibility ="view"):
+      self.name = name
+      self.visibility = group.get("default_visibility") or default_visibility
+      self.order = [ value.strip() for value in group.get("order").split(',') ]  # TODO use order
+      self.parameters = self.get_datum(group.copy()) # MAYBE be a dictionary
+
+   def get_parameter(self, parameter):
+      for pm in self.parameters:
+         if pm.name == parameter:
+            return pm
+
+   def get_datum(self, section):
+      if section.has_key('order'):
+         order = section.pop('order') 
+      if section.has_key('default_visibility'):         
+         visible = section.pop('default_visibility')
+      result = []
+      for key,value in section.iteritems():
+         group = self.parse(value)
+         result += [ MetadataParameter(key, group, self.visibility) ]
+
+      ordered = []
+      for key in self.order: # Add ordered 
+         for parameter in result:
+            if parameter.name == key:
+               ordered += [ parameter ]
+
+      for parameter in result: 
+         if parameter not in ordered: # TODO make a merge or update or use a set
+            ordered += [parameter] 
+      return ordered
+
+   def parse(self, string):
+      # " parameter : value , " {"parameter":"value",}
+      pairs = string.split(',')
+      result = {}
+      for pair in pairs:
+         if not re.match( '\s*$',pair ): # Parse empty string or spaces
+            key,value = [ value.strip() for value in pair.split(':') ]
+            result[key] = value      
+      return result
+      
+
 
 
 class Profile(object):
@@ -418,9 +522,6 @@ class Profile(object):
             areas[index] = track.name
             index +=1                             
       return areas
-
-
-
 
 class Track(OrderedDict):
    """ 
