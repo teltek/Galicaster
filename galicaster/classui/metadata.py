@@ -26,7 +26,7 @@ from galicaster.core import context
 from galicaster.utils import series as listseries # idem
 from galicaster.classui.elements.message_header import Header
 from galicaster.classui.elements.editors import TextViewer, DatetimeViewer
-from galicaster.classui.elements.editors import TextEditor, SelectEditor, LanguageEditor, DatetimeEditor, SeriesEditor, Editor
+from galicaster.classui.elements.editors import TextEditor, SelectEditor, LanguageEditor, DatetimeEditor, SeriesEditor, NumberEditor, Editor
  # TODO load as choosers on operations do
 
 NO_SERIES  = "NO SERIES ASSIGNED"
@@ -72,7 +72,6 @@ class MetadataClass(gtk.Widget):
                 elif meta.visibility == "edit" and meta.type == "language":
                     widget = LanguageEditor(group, meta.name, meta.label, 
                                           default_value, options = meta.options)
-
                 elif meta.visibility == "edit" and meta.type == "datetime":
                     widget = DatetimeEditor(group, meta.name, meta.label, default = default_value)
                 elif meta.visibility == "edit" and meta.type == "series":
@@ -101,6 +100,9 @@ class MetadataClass(gtk.Widget):
                 
                 if meta.visibility == "edit" and meta.type == "text":
                     widget = TextEditor(group, meta.name, meta.label, default = default_value)
+                elif meta.visibility == "edit" and meta.type == "integer":
+                    widget = NumberEditor(group, meta.name, meta.label, 
+                                          default_value, options = meta.options)
                 elif meta.visibility == "edit" and meta.type == "select":
                     widget = SelectEditor(group, meta.name, meta.label, 
                                           default_value, options = meta.options)
@@ -127,7 +129,6 @@ class MetadataClass(gtk.Widget):
         if result != NO_SERIES:
             series = listseries.getSeriesbyName(result)
             package.setSeries(series["list"])
-            print "update series:", series
             if not package.getCatalogs("dublincore/series") and package.getURI():
                 new_series = mediapackage.Catalog(path.join(package.getURI(),"series.xml"),
                                                   mimetype="text/xml",flavor="dublincore/series")
@@ -158,13 +159,11 @@ class MetadataClass(gtk.Widget):
         in_repo = True if mp else False
         if not in_repo:
             mp = self.package # for Recorder edition
-        print "update_metadata", mp
 
         for child in self.content.get_children():
             if isinstance(child, Editor): # TODO check viewers
                 result += [ child.getValue()]
         for group, variable, value in result:
-            print group, variable, value
             if group == "episode": # TODO get group reference and update it directly
                 mp.metadata_episode[variable] = value
                 if variable.lower() == "ispartof": # TODO variable comes as ispartof 
@@ -174,7 +173,7 @@ class MetadataClass(gtk.Widget):
             elif group == "custom":
                 mp.metadata_custom[variable] = value # TODO add to galicaster.mediapackage.mediapackage
                 self.update_custom(mp) # TODO review somehow at the end of all group parameters in every group
-                print "CUSTOM metadata update on METADATA EDITOR", mp.metadata_custom
+
 
         # TODO use update_series before updating the MP
         

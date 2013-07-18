@@ -216,6 +216,83 @@ class DatetimeEditor(Editor):
             self.label.set_text(v.date.isoformat())
         return True
 
+class NumberEditor(Editor):
+
+    def __init__(self, group, variable, label, default, size=[1920, 1080], fontsize = 12, options = []):
+        # TODO include tooltip
+        Editor.__init__(self, group, variable, label, size, fontsize)
+        self.set_size_request(300, -1)
+        self.widget = SpinExt(options[0], options[1], fontsize)
+        self.setValue(default)
+        modification = str(int(self.hprop*fontsize))+"px"   
+        self.widget.modify_font(pango.FontDescription(modification))
+        self.pack_start(self.widget, True, True, 0)
+    
+    def setValue(self, value):
+        self.widget.setValue(value)
+        
+    def getValue(self): # TODO strip spaces 
+        value = self.widget.getValue()
+        return ( self.group, self.variable, value )
+
+class SpinExt(gtk.HBox):
+
+    def __init__(self, minimum, maximum, fontsize=12):
+        gtk.HBox.__init__(self)
+
+
+        down = gtk.Button()
+        img1 = gtk.Image()
+        img1.set_from_icon_name(gtk.STOCK_GO_DOWN, gtk.ICON_SIZE_DIALOG)
+        img1.set_pixel_size(int(15))
+        down.add(img1)
+        down.set_size_request(60,-1)
+        up = gtk.Button()
+        img2 = gtk.Image()
+        img2.set_from_icon_name(gtk.STOCK_GO_UP, gtk.ICON_SIZE_DND)
+        img2.set_pixel_size(int(15))
+        up.add(img2)
+        up.set_size_request(60,-1)
+
+        self.display = gtk.Entry() # Not editable
+        self.pack_start(down, False, False)
+        self.pack_start(self.display, False, False)
+        self.pack_start(up, False, False)
+        self.range = [int(minimum), int(maximum)]
+        modification = str(int(fontsize)+4)+"px" # Proportional
+        self.display.modify_font(pango.FontDescription(modification))
+        # centered, big number
+        
+        self.buttons = [down, up]
+        up.connect('clicked', self.valueUp)
+        down.connect('clicked', self.valueDown)
+
+    def setValue(self, value):
+        value = int(value)
+        self.display.set_text(str(value))
+        if value == self.range[0]:
+            self.buttons[0].set_sensitive(False)
+        elif value == self.range[1]:
+            self.buttons[1].set_sensitive(False)        
+
+    def getValue(self):
+        return int(self.display.get_text())
+
+    def valueUp(self, button):
+        old = self.getValue()
+        new = old + 1
+
+        if old == self.range[0]:
+            self.buttons[0].set_sensitive(True)            
+        self.setValue(new)
+    
+    def valueDown(self, button):
+        old = self.getValue()
+        new = old -1
+
+        if old == self.range[1]:
+            self.buttons[1].set_sensitive(True)
+        self.setValue(new)         
 
 class SeriesEditor(Editor):
     
@@ -249,6 +326,9 @@ class SeriesEditor(Editor):
         pair = self.widget.get_active() 
         value = self.widget.get_model()[pair][0] # MAYBE use Text for showing an ID as valid value
         return ( self.group, self.variable, value)
+
+
+
 
 class ComboBoxEntryExt(gtk.ComboBoxEntry):
 
@@ -358,5 +438,6 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
             return False
 
 gobject.type_register(ComboBoxEntryExt)
+gobject.type_register(SpinExt)
 gobject.type_register(Editor)
 gobject.type_register(Viewer)

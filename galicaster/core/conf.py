@@ -338,7 +338,6 @@ def get_metadata(group="mediapackage"):
    group2 = "custom"
    items = dict(parser.items(group))
    items2 = dict(parser.items(group2))
-   print items2
    result = []
    result += [ MetadataGroup(group, items) ]
    result += [ MetadataGroup(group2, items2) ]
@@ -370,7 +369,7 @@ class MetadataParameter(object):
       elif self.type == 'series': # parse iso
          return value
       else:
-         print self.type, "default", value
+         #print self.type, "default", value
          return value
 
    def splitting(self,value):

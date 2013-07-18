@@ -332,7 +332,7 @@ def set_custom(mp, logger=None):
                 created.appendChild(text)
                 xml.appendChild(created)
             else:
-                print "Creating text node"
+                #print "Creating text node"
                 created = doc.createElement("dcterms:" + name)
                 text = doc.createTextNode(unicode(mp.metadata_custom[name]))
                 created.appendChild(text)
