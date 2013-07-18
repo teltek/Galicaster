@@ -53,9 +53,9 @@ class MetadataClass(gtk.Widget):
     def fill_metadata(self, mp):
         """
         Fill the table with available data
-        """  
+        """
 
-        metadatum = self.terms.parameters
+        metadatum = self.terms[0].parameters
         group = "episode"
         # FORMER fontsize was 16
 
@@ -92,6 +92,36 @@ class MetadataClass(gtk.Widget):
                 # d.connect("button-press-event",self.edit_date)
 
 
+        metadatum = self.terms[1].parameters
+        group = "custom"
+        for meta in metadatum:
+            if meta.visibility != "hidden":
+                default_value = mp.metadata_custom.get(meta.name) or meta.default # JUST for group episode
+               # TODO check meta.name on series, title or id?
+                
+                if meta.visibility == "edit" and meta.type == "text":
+                    widget = TextEditor(group, meta.name, meta.label, default = default_value)
+                elif meta.visibility == "edit" and meta.type == "select":
+                    widget = SelectEditor(group, meta.name, meta.label, 
+                                          default_value, options = meta.options)
+                elif meta.visibility == "edit" and meta.type == "language":
+                    widget = LanguageEditor(group, meta.name, meta.label, 
+                                          default_value, options = meta.options)
+                elif meta.visibility == "edit" and meta.type == "datetime":
+                    widget = DatetimeEditor(group, meta.name, meta.label, default = default_value)
+                elif meta.visibility == "edit" and meta.type == "series":
+                    default_value = mp.getSeriesTitle() or NO_SERIES
+                    widget = SeriesEditor(group, meta.name, meta.label, 
+                                          default_value, options=listseries.get_series())
+                else:
+                    # PARSE language to iso
+                    #if isinstance(default_value, datetime.datetime):
+                    #    default_value = default_value.replace(microsecond=0).isoformat()
+                    widget = TextViewer(group, meta.name, meta.label, default = default_value)
+
+                self.content.pack_start(widget, True, False, 4)
+                widget.show_all() 
+
     def update_series(self, package, result): # TODO associate to mp before update
 
         if result != NO_SERIES:
@@ -108,25 +138,49 @@ class MetadataClass(gtk.Widget):
             if catalog:
                 package.remove(catalog[0])
 
+
+    def update_custom(self, package): # TODO associate to mp before update
+
+        if not package.getCatalogs("dublincore/custom") and package.getURI():
+            new_custom = mediapackage.Catalog(path.join(package.getURI(),"custom.xml"),
+                                              mimetype="text/xml",flavor="dublincore/custom")
+            package.add(new_custom)
+
+        if not package.metadata_custom:
+            catalog = package.getCatalogs("dublincore/custom")
+            if catalog:
+                package.remove(catalog[0])
+
+
     def update_metadata(self, button = None):
         result = []
-        mp = context.get_repository().get(self.package.getIdentifier())
+        mp = context.get_repository().get(self.package.getIdentifier() )
+        in_repo = True if mp else False
+        if not in_repo:
+            mp = self.package # for Recorder edition
+        print "update_metadata", mp
+
         for child in self.content.get_children():
             if isinstance(child, Editor): # TODO check viewers
                 result += [ child.getValue()]
         for group, variable, value in result:
+            print group, variable, value
             if group == "episode": # TODO get group reference and update it directly
                 mp.metadata_episode[variable] = value
                 if variable.lower() == "ispartof": # TODO variable comes as ispartof 
                     self.update_series(mp, value)                
             elif group == "series":
                 mp.metadata_series[variable] = value
-            if group == "custom":
+            elif group == "custom":
                 mp.metadata_custom[variable] = value # TODO add to galicaster.mediapackage.mediapackage
+                self.update_custom(mp) # TODO review somehow at the end of all group parameters in every group
+                print "CUSTOM metadata update on METADATA EDITOR", mp.metadata_custom
 
         # TODO use update_series before updating the MP
-        context.get_repository().update(mp)
-        context.get_dispatcher().emit('refresh-row', mp.getIdentifier())
+        
+        if in_repo:
+            context.get_repository().update(mp)
+            context.get_dispatcher().emit('refresh-row', mp.getIdentifier())
         
         self.close()
 

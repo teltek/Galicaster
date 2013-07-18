@@ -26,6 +26,7 @@ DCTERMS = ['title', 'creator', 'isPartOf', 'description', 'subject',
            'language', 'contributor', 'created', 'temporal']
 
 SERIES_FILE="series.xml"
+CUSTOM_FILE="custom.xml"
 
 def save_in_dir(mp, logger=None):
     assert path.isdir(mp.getURI())
@@ -50,6 +51,13 @@ def save_in_dir(mp, logger=None):
         m3 = open(path.join(mp.getURI(), SERIES_FILE), 'w')
         m3.write(set_series(mp,logger)) #FIXME
         m3.close()        
+
+    # Custom metadata
+    if mp.metadata_custom != None: # add catalog
+        # Create or modify file
+        m4 = open(path.join(mp.getURI(), CUSTOM_FILE), 'w')
+        m4.write(set_custom(mp,logger))
+        m4.close()        
 
     # Manifest
     m = open(path.join(mp.getURI(), 'manifest.xml'), 'w')  
@@ -304,4 +312,32 @@ def set_series(mp, logger=None):
                 if logger:
                     logger.debug("KeyError in serializer.set_series")
                 continue
+    return doc.toxml(encoding="utf-8") #without encoding
+
+def set_custom(mp, logger=None):
+    """
+    Crear un additional catalog XML
+    """
+    doc = minidom.Document()
+    xml = doc.createElement("dublincore")
+    xml.setAttribute("xmlns","http://www.opencastproject.org/xsd/1.0/dublincore/")
+    xml.setAttribute("xmlns:dcterms","http://purl.org/dc/terms/")
+    doc.appendChild(xml)
+
+    for name in mp.metadata_custom.iterkeys():
+        try:
+            if isinstance(mp.metadata_custom[name], datetime):
+                created = doc.createElement("dcterms:" + name)
+                text = doc.createTextNode(mp.metadata_custom[name].isoformat() + "Z")
+                created.appendChild(text)
+                xml.appendChild(created)
+            else:
+                print "Creating text node"
+                created = doc.createElement("dcterms:" + name)
+                text = doc.createTextNode(unicode(mp.metadata_custom[name]))
+                created.appendChild(text)
+                xml.appendChild(created)
+                    
+        except KeyError:
+            continue
     return doc.toxml(encoding="utf-8") #without encoding

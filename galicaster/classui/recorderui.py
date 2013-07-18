@@ -38,6 +38,8 @@ from galicaster.classui.strip import StripUI
 from galicaster.classui import message
 from galicaster.classui import get_ui_path, get_image_path
 from galicaster.utils.resize import relabel, relabel_updating_font
+from galicaster.operations import loader
+from galicaster.operations.ingest import MHIngest
 
 gtk.gdk.threads_init()
 
@@ -444,10 +446,23 @@ class RecorderClassUI(gtk.Box):
                                 close_duration, self.mediapackage.manual)
         
         code = 'manual' if self.mediapackage.manual else 'scheduled'
+
         if self.conf.get_lower('ingest', code) == 'immediately':
-            self.worker.ingest(self.mediapackage)
+            schedule = "immediate"
         elif self.conf.get_lower('ingest', code) == 'nightly':
-            self.worker.ingest_nightly(self.mediapackage)
+            schedule = "nightly"
+        else:
+            schedule = None
+        parameters = {}
+        parameters["schedule"] = schedule
+
+        if schedule:
+            print "scheduling"
+            bound = MHIngest
+            subtype = "mh"
+            defaults = {"shortname" : subtype}
+            group = (bound, defaults, parameters)
+            self.worker.enqueue_operations( group, [self.mediapackage] )
 
         self.timer_thread_id = None
 

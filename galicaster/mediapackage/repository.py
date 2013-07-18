@@ -262,14 +262,14 @@ class Repository(object):
             mp.add(os.path.join(mp.getURI(), 'episode.xml'), mediapackage.TYPE_CATALOG, 'dublincore/episode', 'text/xml')
             if mp.getSeriesIdentifier():
                 mp.add(os.path.join(mp.getURI(), 'series.xml'), mediapackage.TYPE_CATALOG, 'dublincore/series', 'text/xml')
-
-        # ADD MP to repo
+            if mp.metadata_custom:
+                mp.add(os.path.join(mp.getURI(), 'custom.xml'), mediapackage.TYPE_CATALOG, 'dublincore/custom', 'text/xml')
         self.__add(mp) 
 
 
     def hard_delete(self, mp):
         if not self.has(mp):
-            raise KeyError('Key not Exists')
+            raise KeyError('Key does not exist')
 
         del self.__list[mp.getIdentifier()]
         rmtree(mp.getURI())
@@ -277,14 +277,14 @@ class Repository(object):
 
     def send_to_archive(self, mp):
         if not self.has(mp):
-            raise KeyError('Key not Exists')
+            raise KeyError('Key does not exist')
         mp.setProperty("archived", True) # TODO update Trash
         self.update(mp)
         return mp
 
     def restore(self, mp):
         if not self.has(mp):
-            raise KeyError('Key not Exists')
+            raise KeyError('Key does not exists')
         mp.setProperty("archived", False) # TODO update Trash
         self.update(mp)
         return mp
@@ -292,7 +292,7 @@ class Repository(object):
         
     def update(self, mp):
         if not self.has(mp):
-            raise KeyError('Key not Exists')
+            raise KeyError('Key does not exists')
         #Si cambio URI error.
         return self.__add(mp)
 

@@ -193,7 +193,10 @@ class DatetimeEditor(Editor):
         self.pack_start(self.widget, False, True, 0)
     
     def setValue(self, value):
-        self.label.set_text( value.replace(microsecond=0).isoformat() ) # MAYBE Remove T??
+        if isinstance(value, datetime.datetime):
+            self.label.set_text( value.replace(microsecond=0).isoformat() ) # MAYBE Remove T??
+        else:
+            self.label.set_text( value )
         
     def getValue(self): # TODO transform into isoformat
         value = self.label.get_text()

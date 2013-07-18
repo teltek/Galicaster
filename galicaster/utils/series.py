@@ -70,7 +70,7 @@ def getSeriesbyName(seriesname):
     match = None
     for key,series in list_series.iteritems():
         if series['title'] == seriesname:
-            match =  {"id": key, "name": seriesname, "list": list_series[seriesid]}
+            match =  {"id": key, "name": seriesname, "list": list_series[key]}
             break
     return match
 

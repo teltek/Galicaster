@@ -335,8 +335,14 @@ def get_metadata(group="mediapackage"):
    parser = ConfigParser.ConfigParser()
    path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'metadata.ini'))
    parser.read(path)
+   group2 = "custom"
    items = dict(parser.items(group))
-   result = MetadataGroup(group, items) 
+   items2 = dict(parser.items(group2))
+   print items2
+   result = []
+   result += [ MetadataGroup(group, items) ]
+   result += [ MetadataGroup(group2, items2) ]
+
    return result
 
 class MetadataParameter(object):
@@ -391,7 +397,10 @@ class MetadataGroup(OrderedDict):
    def __init__(self, name, group, default_visibility ="view"):
       self.name = name
       self.visibility = group.get("default_visibility") or default_visibility
-      self.order = [ value.strip() for value in group.get("order").split(',') ]  # TODO use order
+      if group.get("order"):
+         self.order = [ value.strip() for value in group.get("order").split(',') ]  # TODO use order
+      else:
+         self.order = None
       self.parameters = self.get_datum(group.copy()) # MAYBE be a dictionary
 
    def get_parameter(self, parameter):

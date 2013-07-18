@@ -243,6 +243,8 @@ class Mediapackage(object):
         self.metadata_series = {'identifier': None, 
                                 'title': None}
 
+        self.metadata_custom = {}
+
         if self.getIdentifier() == None:
             self.setIdentifier(unicode(uuid.uuid4()))
 
@@ -743,6 +745,14 @@ class Mediapackage(object):
                     SERIES_TERMS.append(node.nodeName.split(':')[1])                
                 for name in SERIES_TERMS:
                     self.metadata_series[name] = _checknget(dom, "dcterms:" + name)
+
+            elif i.getFlavor() == "dublincore/custom": # FIXME cover series data and create files if dont exist
+                dom = minidom.parse(i.getURI())
+                CUSTOM_TERMS = []
+                for node in dom.firstChild.childNodes:
+                    CUSTOM_TERMS.append(node.nodeName.split(':')[1])                
+                for name in CUSTOM_TERMS:
+                    self.metadata_custom[name] = _checknget(dom, "dcterms:" + name)
 
         # Parse temporal metadatum
         if self.metadata_episode.has_key('temporal') and self.metadata_episode['temporal'] and not self.hasTracks():
