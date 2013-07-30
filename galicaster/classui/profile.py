@@ -80,6 +80,7 @@ class ProfileUI(gtk.Window):
         tab1 = gtk.Label("Profile Selector")
         self.append_tab(self.list,tab1)
         self.show_all()
+        self.present()
         
 
     def append_tab(self, widget, label):

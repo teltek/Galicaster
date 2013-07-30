@@ -115,6 +115,8 @@ class GCAboutDialog(gtk.AboutDialog):
          #buttons.reorder_child(thanks,0)
          #thanks.show()
          
+         self.show_all()
+         self.present()
          self.run()
          self.destroy()
 

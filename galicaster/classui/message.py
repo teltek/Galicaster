@@ -69,11 +69,13 @@ class PopUp(gtk.Widget):
         if message == ERROR:
             a = self.dialog.get_action_area().get_children()[0]
             a.connect('clicked',self.dialog_destroy)            
-            self.dialog.show_all()
+            dialog.show_all()
+            dialog.present()
         else:
+            dialog.show_all()
+            dialog.present()
             self.response = dialog.run()
             dialog.destroy()
-        #return None
 
     def create_ui_two_lines(self, buttons, secondary, text, message, parent):
         """Creates and additional button box"""
@@ -371,16 +373,6 @@ class PopUp(gtk.Widget):
             self.dialog = None 
     
 gobject.type_register(PopUp)
-
-def main(args):
-    """Launcher for debugging purposes"""
-    print "Running Main Message PopUp"
-    PopUp()
-    gtk.main()
-    return 0
-
-if __name__ == '__main__':
-    sys.exit(main(sys.argv)) 
 
 
 

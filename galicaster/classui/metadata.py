@@ -100,6 +100,7 @@ class MetadataClass(gtk.Widget):
         talign.set_padding(int(self.hprop*25), int(self.hprop*10), int(self.hprop*25), int(self.hprop*25))
         dialog.vbox.set_child_packing(dialog.action_area, True, True, int(self.hprop*25), gtk.PACK_END)   
         dialog.show_all()
+        dialog.present()
 
         return_value = dialog.run()
         if return_value == -8:
