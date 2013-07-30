@@ -12,7 +12,10 @@
 # San Francisco, California, 94105, USA.
 
 """
-
+Plugin that shows a Dialog when audio is muted or too low.
+The dialog is shown in the following circunstances combine: the plugin is active, there is an audio input, the audio level is lower than the threshold, the page has focus and the dialog wasnt blocked or closed
+In case the focus is recovered the dialog may be shown again.
+The dialog blockade is cancelled when the profile is reloaded or changed and when a recording starts.
 """
 
 import gtk
@@ -43,7 +46,6 @@ def init():
     dispatcher.connect('starting-record', deactivate_hidden_and_check)
     dispatcher.connect('upcoming-recording', deactivate_hidden_and_check)
 
-
 def activate_hidden(button, dialog):
     """
     Activates Keep Hidden feature and hides dialog
@@ -54,7 +56,7 @@ def activate_hidden(button, dialog):
 
 def deactivate_hidden_and_check(element=None):
     """
-    When a signal is recived, deactivate the keep hidden feature and shows dialog if necessary
+    When a signal is received, deactivate the keep hidden feature and shows dialog if necessary
     """
     global no_audio
     global no_audio_dialog
@@ -72,7 +74,7 @@ def deactivate_hidden_and_check(element=None):
 
 def clear_data_and_check(element=None):
     global no_audio
-    no_audio = True
+    no_audio = False
     deactivate_hidden_and_check()
     return True
 
