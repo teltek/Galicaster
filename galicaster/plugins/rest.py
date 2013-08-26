@@ -11,7 +11,10 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
+import os
+import time
 import json
+import math
 import threading
 import tempfile
 from bottle import route, run, response
@@ -30,7 +33,6 @@ def init():
     conf = context.get_conf()
     host = conf.get('rest', 'host')
     port = conf.get_int('rest', 'port')
-
     restp = threading.Thread(target=run,kwargs={'host': host, 'port': port, 'quiet': True})
     restp.setDaemon(True)
     restp.start()
@@ -51,7 +53,8 @@ def index():
             "/operation/ingest/:id" : "Ingest MP",
             "/operation/sidebyside/:id"  : "Export MP to side-by-side",
             "/operation/exporttozip/:id" : "Export MP to zip",
-            "/screen" : "get a screenshoot of the active"
+            "/screen" : "get a screenshoot of the active",
+            "/logstale" : "check if log is stale (threads crashed)",
         }    
     return json.dumps(endpoints)
 
@@ -130,3 +133,17 @@ def screen():
         return pb
     else:
         return "Error" 
+
+@route('/logstale')
+def logstale():
+    
+    conf = context.get_conf()
+    
+    filename = conf.get('logger', 'path')
+    stale = conf.get('logger', 'stale') or 300 # 5 minutes
+    if filename:
+        age = int (math.ceil( (time.time() - os.path.getmtime(filename)) ))
+        return "STALE LOG: age: {0} s".format(age)  if age > stale else "OK LOG: age: {0} s".format(age)
+    else:
+        return "Error: no filepath provided" 
+

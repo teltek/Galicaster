@@ -21,7 +21,7 @@ class Logger(logging.Logger):
     def __init__(self, log_path, level="DEBUG", rotate=False, use_syslog=False):
         logging.Logger.__init__(self, "galicaster", level)
 
-        format = [
+        formatting = [
             "%(asctime)s",
             "%(levelname)s",
             "%(module)s",
@@ -32,15 +32,15 @@ class Logger(logging.Logger):
         elif use_syslog:
             from logging.handlers import SysLogHandler
             loghandler = SysLogHandler(address='/dev/log')
-            format[0] = "Galicaster"
-            loghandler.setFormatter(logging.Formatter(" ".join(format)))
+            formatting[0] = "Galicaster"
+            loghandler.setFormatter(logging.Formatter(" ".join(formatting)))
         elif rotate:
             from logging.handlers import TimedRotatingFileHandler
             loghandler = TimedRotatingFileHandler(log_path, "midnight")
-            loghandler.setFormatter(logging.Formatter("\t".join(format)))
+            loghandler.setFormatter(logging.Formatter("\t".join(formatting)))
         else:
             loghandler = logging.FileHandler(log_path, "a")
-            loghandler.setFormatter(logging.Formatter("\t".join(format)))
+            loghandler.setFormatter(logging.Formatter("\t".join(formatting)))
 
 
         self.addHandler(loghandler)
