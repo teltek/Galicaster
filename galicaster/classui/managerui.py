@@ -271,6 +271,8 @@ class ManagerUI(gtk.Box):
 
         if warning.response == 0:               
             return True
+        elif warning.response == -4:
+            return True # Escape key used
         elif warning.response == gtk.RESPONSE_OK: # Warning
             return True
         else:
