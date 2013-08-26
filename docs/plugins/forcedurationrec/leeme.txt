@@ -1,0 +1,24 @@
+forcedurationrec plugin
+=======================
+
+Limita la duración máxima de las grabaciones.
+---------------------------------------------
+
+Este plugin para automaticamente grabaciones manuales, para evitar grabaciones que no se han parado adecuadamente.
+
+Todas las grabaciones se paran cuando alcanzan la duración máxima configurada.
+
+Activación y configuración
+--------------------------
+
+En el archivo de configuración, incluír el siguiente código con los valores apropiados:
+
+[plugins]
+forcedurationrec = True
+
+[forcedurationrec]
+duration = 240
+
+True: Activa el  plugin.
+False: Desactiva el plugin.
+duration: Un entero que representa la duración máxima permitida, en minutos. Por defecto 240 minutos - 4 horas.
