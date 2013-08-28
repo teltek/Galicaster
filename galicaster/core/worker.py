@@ -257,7 +257,7 @@ class Worker(object):
         camera = screen = None
         for track in mp.getTracks():
             if track.getMimeType()[0:5] == 'audio':
-                 audio = track.getURI()
+                audio = track.getURI()
             else:
                 if track.getFlavor()[0:9] == 'presenter' :
                     camera = track.getURI()

@@ -92,7 +92,8 @@ def get_mhclient():
                                     conf.hostname, 
                                     conf.get('ingest', 'address'),
                                     conf.get('ingest', 'workflow'),
-                                    conf.get('ingest', 'workflow-parameters'))
+                                    conf.get('ingest', 'workflow-parameters'),
+                                    get_logger() )
         else:
             mhclient = None
         __galicaster_context['mhclient'] = mhclient
