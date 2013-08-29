@@ -12,16 +12,21 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
+import os
 import sys
 import gtk
 from StringIO import StringIO
 import pycurl
 import time
 
+
+import sys
+
+path = os.environ.get('GALICASTER_PATH', '/usr/share/galicaster')
+sys.path.insert(0, path)
 from galicaster.core import context
 
-sleep_period = 30 
-
+sleep_period = 60
 
 def get_screenshot():
     """makes screenshot of the current root window, yields gtk.Pixbuf"""
