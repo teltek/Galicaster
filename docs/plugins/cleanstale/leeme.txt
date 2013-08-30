@@ -1,0 +1,22 @@
+cleanstale plugin
+=================
+
+Borra grabaciones obsoletas
+---------------------------
+
+Este plugin borra todas las grabaciones que superan una cierta antiguedad. Su propósito es mantener espacio suficiente en disco, asumiendo que las grabaciones almacenadas en la unidad no sirven de copias de seguridad.
+
+Activación y configuración
+--------------------------
+
+En el archivo de configuración, incluír el siguiente código con los valores apropiados:
+
+[plugins]
+cleanstale = True
+
+[cleanstale]
+maxarchivaldays = 30
+
+True: Activa el  plugin.
+False: Desactiva el plugin.
+maxarchivaldays: Un entero que representa el umbral en días que se va a mantener la grabación en memoria. Por defecto 30.

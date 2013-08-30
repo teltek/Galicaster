@@ -1,0 +1,26 @@
+Checkrepo Plugin
+=================
+
+Recupera grabaciones programadas que no se hayan iniciado a tiempo.
+--------------------------------------------------------------------
+
+Si la unidaded Galicaster se enciende despues del inicio de una grabación programada, la grabación se habrá perdido. Este plugin mitiga el problema buscando grabaciones que deberían estar activas en el momento de encendido de la aplicación, iniciándolas para grabar durante el tiempo que reste.
+
+El plugin busca grabaciones que deberían estar activas en ese momento. Si encuentra alguna, las inicia de inmediato, modificado los metadatos - duración y hora de inicio - apropiadamente. La grabación recuperada estará activa por el tiempo restante.
+
+Un ejemplo:
+
+* Una grabación está programada de 10 a 12am
+* La unidad se enciende a las 10:20
+* La grabación será de 10:20 a 12:00 y tendrá una duración de 1 hora y 40 minutos.
+
+Activación
+-----------
+
+Para activar el plugin, añada la siguiente linea en la sección 'plugins' de su archivo de configuración.
+
+[plugins]
+checkrepo = True
+
+True: Activa el plugin.
+False: Desactiva el plugin.

@@ -1,0 +1,38 @@
+REST interface - Experimental
+=============================
+
+Este plugin proporciona una interfaz web REST que sirve para obtener información sobre la aplicación o realizar ciertas acciones en un instancia de Galicaster activa.
+
+Este módulo requiere la instalación de un paquete adicional: python-bottle.
+
+Los "endpoints" disponibles son:
+
+    /state: Muestra valores de estado de la aplicación.
+    /repository: Lista todas las grabaciones all the recordings.
+    /repository/<id>: Muestra el manifiesto del Mediapackage en formato XML, a partir del ID proporcionado.
+    /metadata/<id>: Muestra el manifiesto del Mediapackage en formato JSON, a partir del ID proporcionado.
+    /start: Comienza una grabación manual.
+    /stop: Para la grabación activa.
+    /operation/ingest/<id>: Ingesta el MediaPackage con identificador <id>.
+    /operation/sidebyside/<id>: Exporta la composición side-by-side del MediaPackage con identificador <id>.
+    /operation/exporttozip/<id>: Exporta el Mediapackage con identificador <id> como paquete ZIP.
+    /screen: Devuelve una captura de pantalla del escritorio activo.
+    /logstale": Comprueba si el sistema de logging está bloquedo (hilos bloqueados).
+
+El servidor REST está disponible en el puerto 8080.
+Es posible acceder via localhost:8080 cuando la aplicación está activa. 
+Es posible modificar tanto la dirección como el puerto.
+
+Loading and configuration
+-------------------------
+
+In the configuration file, include the following code with your values of choice:
+
+[plugins]
+rest = True
+
+[rest]
+host = 0.0.0.0
+port = 8080
+
+En el archivo de configuración, incluír el siguiente código con los valores apropiados:

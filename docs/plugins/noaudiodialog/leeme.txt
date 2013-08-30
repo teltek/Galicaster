@@ -1,28 +1,44 @@
-Dialogo avisando de que el audio es bajo
-========================================
+noaudiodialog plugin
+====================
 
-Con este plugin activado, se mostrará un diálogo avisando que el nivel de audio es muy bajo. Este diálogo solo se muestra en la pantalla de grabación. Es útil para que los ponentes se den cuenta del estado de Galicaster de forma fácil, o para que éstos reciban un aviso si hay problemas con el micrófono.
+Muestra un diálogo de aviso cuando el sonido es bajo o el dispositivo está silenciado.
+--------------------------------------------------------------------------------------
 
-Cuando se recupera el audio, el diálogo desaparece.  Se considera que se recupera cuando el nivel supera el umbral mínimo.
+Este plugin muestra un diálogo de aviso en el área Recorder cuando el audio está silenciado, la batería del micrófonoe está descargada o el nivel de sonido es muy bajo.
 
-Ocultar
-La función 'ocultar' ocultará el diálgo hasta que el nível de audio descienda bajo el umbral mínimo de nuevo. Esta función es útil para vaciar la interfaz
+Comportamiento
+---------
 
-Mantener oculto
-La función 'mantener oculto' ocultará el diálogo permanentemente durante una grabación. Esta función se desactivará cuando empiece una grabación, cuando termine o cuando se cargue un perfil.
-Se la función se activa en 'Preview', se desactivará cuando se empiece a grabar.
+El aviso se muestra cuando:
 
+* El dispositivo está silenciado.
+* El dispositivo de audio no está conectado o la batería descargada.
+* El nivel de audio es demasiado bajo. El umbral es configurable y su valor por defecto es -80dB ( ver la sección de configuración).
 
-Para activar/desactivar el aviso:
+El aviso se oculta cuando:
+
+* El nivel de sonido supera en 5 dB el umbral configurado.
+* Se pulsa el botón "Closed". El diálogo permanecerá oculto hasta que el nivel de audio supere el umbral por 5 dB y vuelva a ser considerado demasiado bajo - menor que el umbral.
+* [Desactiva por defecto] Se pulsa el botón "Keep Closed". El diálogo permanecerá cerrado, independientemente del nivel de audio, hasta que:
+  * Empiece una nueva grabación.
+  * Se pare la grabación en curso.
+  * Se cargue Un nuevo perfil.
+  * Se recargue el perfil actual.
+  * Se reinicie la grabación.
+
+Activación y configuración
+-------------------------
+
+En el archivo de configuración, incluír el siguiente código con los valores apropiados:
 
 [plugins]
 noaudiodialog = True
 
-Una vez activado, la configuración por defecto marca los umbrales a 0 -60 dB.
-Esta configuración es común al vumetro, por lo tanto, valores inferiores a -60 db se mostrarán con la barra al mínimo.
+[screensaver]
+min = -80
+keepclosed = False
 
-Para configurar los umbrales añade estas lineas con los valores escogidos en los archivos de configuración, por ejemplo:
-
-[audio]
-min = -40
-max = -10
+True: Activa el  plugin.
+False: Desactiva el plugin.
+min: Un entero negativo que representa el nivel de "silencio" en dB. El rango de valores válidos es -100 a 0. Habitualmente se seleccionan valores entre -100 y -60. Por defecto -80.
+keepclosed: Activa o descativa la opción "keep closed" (mantener cerrado). Activar: True; desactivar: False

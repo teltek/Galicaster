@@ -1,0 +1,39 @@
+pushpic plugin
+=======================
+
+Crea y envia una captura de pantall a Dashboard periodicamente.
+---------------------------------------------------------------
+
+Este plugin está pensado para funcionar con Galicaster Dashboard. El plugin envia una captura de pantalla completa a un endpoint de Galicaster Dashboard.
+La periodicidad está determinada por la señal de período largo del módulo galicaster.core.heartbeat , por defecto cada 60 segundos. Si se ejecuta como script la perodicidad se determina con una varible internas (ver 'Ejecutar y configurar como script')
+
+En cada período se realiza una captura del escritorio activo - independientemente de si la aplicación es visible o está en pantalla completa. La imagen se envía al endpoint correspondiente a dicho agente.
+
+Este plugin puede ser usa con un script presente en el directorio de instalación de Galicaster, docs/scripts/run_dashboard_push.py. Para ejecutar el script hay que copiarlo en la localización deseada y establecer el directio de instalación de Galicaster: 
+- por defecto, el directorio es el correspondiente a una instalación DEB: /usr/share/galicaster
+- establecer el directorio mediante una variable de entorno: GALICASTER_PATH
+- modificar el script para que use una ruta personalizada, en vez de /usr/share/galicaster
+
+Activación y configuración como plugin
+--------------------------------------
+
+En el archivo de configuración, incluir el siguiente código con el valor apropiado:
+
+[plugins]
+pushpic = True
+
+True: Activa el plugin
+False: Desactiva el plugin (opción por defecto).
+
+Activación y configuración como script
+-----------------------------------
+
+El script envía una imagen periodicamente cada 60 segundos, por defecto. Para cambiar la periodicidad, hay que cambiar la variable "sleep_period" en eel script.
+
+Para ejecutar el script:
+
+* python run_dashboard_push.py
+* ./run_dashboard_push.py
+** Se necesitan permisos de ejecución.
+
+El funcionamiento del script es independiente de que exista un instacia de Galicaster ejecutándose. Funcionará incluso cuando Galicaster no esté activo.

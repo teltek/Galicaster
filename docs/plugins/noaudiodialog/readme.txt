@@ -1,27 +1,45 @@
-Dialog warning that the audio is too low
-========================================
+noaudiodialog plugin
+====================
 
-If this plugin is active, a dialog will pop up, warning the audio level is too low. This dialog is only shown in the recording screen. It is useful for the lecturers to notice the state of Galicaster easily, or to let them have a warning when there are problems with the microphone.
+Pops a warning dialog when the audio is low or muted.
+--------------------------------------------
 
-When the audio is recovered, the dialog disappears. The audio is considered recovered when the level rise over the minimum threshold again.
 
-Hide Feature
-The 'hide feature' will hide the dialog till the audio gets below the minimum threshold again. This feature is useful to get the screen clear while manupulating the interface.
+This plugin triggers a pop-up dialog on the Recorder Area when the audio is muted, the microphone batteries are depleted or the audio is too low.
 
-Keep Hidden Feature
-The 'keep hidden' feature will hide the dialog permanently during a recording. The feature will be disabled when a recording starts, when a recording ends or whenever a profile is loaded.
-If the feature was activated during the preview, it will be deactivated whenever the recording is started.
+Behaviour
+---------
 
-To activate/deactivate this warning:
+The dialog shows up when:
+
+* An audio recording device is muted.
+* An audio recording device does not have enough power or battery charge.
+* The audio input level is too low. The threshold is configurable and defaults to -80dB (see the configuration section for details).
+
+The dialog hides when:
+
+* The audio input level goes +5dB above the configured threshold.
+* The "Close" button is clicked. It will stay closed until the audio level goes over the threshold and falls again.
+* [Disabled by default] The "Keep Closed" button is clicked. The dialog will remain closed, regardless the audio level, until:
+  * A new recording is started.
+  * The current recording is stopped.
+  * A new profile is loaded.
+  * The current profile is reloaded.
+  * The application is restarted
+
+Loading and configuration
+-------------------------
+
+In the configuration files, include the following sections with your values of choice:
 
 [plugins]
 noaudiodialog = True
 
-Once activated the default configuration sets the threshold to 0 and -60 dB. 
-This configuration is commom with the vu-meter, so values inferior to -60 dB will be shown as empty bar.
+[screensaver]
+min = -80
+keepclosed = False
 
-To set the threshold values add this lines with your choice levels to the configuration files, for example:
-
-[audio]
-min = -40
-max = -10
+True: Enables plugin.
+False: Disables plugin.
+min: A negative integer representing the 'silence' level in dB. Accepted values range between -100 and 0. Normal values are between -100 and -60. Defaults to -80.
+keepclosed: Wether the "keep closed" feature is active or not. True | False

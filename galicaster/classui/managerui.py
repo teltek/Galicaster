@@ -151,19 +151,21 @@ class ManagerUI(gtk.Box):
     def size_readable(self,column,cell,model,iterador,user_data):
         """Generates human readable string for a number.
         Returns: A string form of the number using size abbreviations (KB, MB, etc.) """
-        resultado = readable.size(cell.get_property('text'))
+        value = model.get_value(iterador, 4)
+        resultado = readable.size(value)
         cell.set_property('text',resultado)
         return resultado
 
     def date_readable(self,column,cell,model,iterador,user_data):
         """ Generates date readable string from an isoformat datetime. """		
-        novo=readable.date(cell.get_property('text'))
+        value = model.get_value(iterador, 6)
+        novo=readable.date(value)
         cell.set_property('text',novo)		
         return novo
 
     def time_readable(self,column,cell,model,iterador,user_data):
         """Generates date hout:minute:seconds from seconds."""		
-        ms = cell.get_property('text')
+        ms = model.get_value(iterador, 5)
         novo = readable.time(int(ms)/1000)
         cell.set_property('text',novo)		
         return novo
@@ -271,6 +273,8 @@ class ManagerUI(gtk.Box):
 
         if warning.response == 0:               
             return True
+        elif warning.response == -4:
+            return True # Escape key used
         elif warning.response == gtk.RESPONSE_OK: # Warning
             return True
         else:

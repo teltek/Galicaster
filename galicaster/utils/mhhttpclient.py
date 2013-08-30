@@ -11,6 +11,7 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
+import re
 import json
 import urllib
 import socket
@@ -26,11 +27,14 @@ SETSTATE_ENDPOINT = '/capture-admin/agents/{hostname}'
 SETCONF_ENDPOINT = '/capture-admin/agents/{hostname}/configuration'
 INGEST_ENDPOINT = '/ingest/addZippedMediaPackage'
 ICAL_ENDPOINT = '/recordings/calendars?agentid={hostname}'
-SERIES_ENDPOINT = '/series/series.json?count={count}'
+SERIES_ENDPOINT = '/series/series.json?count={count}' 
+SERVICE_REGISTRY_ENDPOINT = '/services/available.json?serviceType={serviceType}'
+
+
 
 class MHHTTPClient(object):
     
-    def __init__(self, server, user, password, hostname='galicaster', address=None, 
+    def __init__(self, server, user, password, hostname='galicaster', address=None, multiple_ingest=False, 
                  workflow='full', workflow_parameters={'trimHold':'true'}, logger=None):
         """
         Arguments:
@@ -48,6 +52,7 @@ class MHHTTPClient(object):
         self.password = password
         self.hostname = hostname
         self.address = address or socket.gethostbyname(socket.gethostname())
+        self.multiple_ingest = multiple_ingest
         self.workflow = workflow
         self.logger = logger
         if isinstance(workflow_parameters, basestring):
@@ -56,10 +61,12 @@ class MHHTTPClient(object):
             self.workflow_parameters = workflow_parameters
 
 
-    def __call(self, method, endpoint, params={}, postfield={}, urlencode=True, timeout=True):
+    def __call(self, method, endpoint, params={}, postfield={}, urlencode=True, server=None, timeout=True):
+
+        theServer = server or self.server
         c = pycurl.Curl()
         b = StringIO()
-        c.setopt(pycurl.URL, self.server + endpoint.format(**params))
+        c.setopt(pycurl.URL, theServer + endpoint.format(**params))
         c.setopt(pycurl.FOLLOWLOCATION, False)
         c.setopt(pycurl.CONNECTTIMEOUT, 2)
         if timeout: 
@@ -86,7 +93,7 @@ class MHHTTPClient(object):
         if status_code != 200:
             if self.logger:
                 self.logger.error('call error in %s, status code {%r}', 
-                                  self.server + endpoint.format(**params), status_code)
+                                  theServer + endpoint.format(**params), status_code)
             raise IOError, 'Error in Matterhorn client'
         return b.getvalue()
 
@@ -174,14 +181,55 @@ class MHHTTPClient(object):
         elif isinstance(workflow_parameters, dict) and workflow_parameters:
             postdict.update(workflow_parameters)
         else:
-           postdict.update(self.workflow_parameters)
+            postdict.update(self.workflow_parameters)
         postdict[u'track'] = (pycurl.FORM_FILE, mp_file)
         return postdict
 
+    def verify_ingest_server(self, server):
+        """ if we have multiple ingest servers the get_ingest_server should never 
+        return the admin node to ingest to, This is verified by the IP address so 
+        we can meke sure that it doesn't come up through a DNS alias, If all ingest 
+        services are offline the ingest will still fall back to the server provided 
+        to Galicaster as then None will be returned by get_ingest_server  """   
+    
+        p = '(?:http.*://)?(?P<host>[^:/ ]+).?(?P<port>[0-9]*).*'
+        m = re.search(p,server['host'])
+        host=m.group('host')
+        m = re.search(p,self.server)
+        adminHost=m.group('host')
+        if (not server['online']):
+            return False
+        if (server['maintenance']):
+            return False
+        adminIP = socket.gethostbyname(adminHost);
+        hostIP = socket.gethostbyname(host)
+        if (adminIP != hostIP):
+            return True
+        return False
 
+
+    def get_ingest_server(self):
+        """ get the ingest server information from the admin node: 
+        if there are more than one ingest servers the first from the list will be used
+        as they are returned in order of their load, if there is only one returned this 
+        will be the admin node, so we can use the information we already have """ 
+        servers = self.__call('GET', SERVICE_REGISTRY_ENDPOINT, {'serviceType':'org.opencastproject.ingest'}, {}, 
+                              True, None, True)
+        servers_avail = json.loads(servers)
+        all_servers = servers_avail['services']['service']
+        if type(all_servers) is list:
+            for serv in all_servers:
+                if self.verify_ingest_server(serv):
+                    return str(serv['host']) # Returns less loaded served
+        if self.verify_ingest_server(all_servers):
+            return str(all_servers['host']) # There's only one server
+        return None # it will use the admin server
+ 
     def ingest(self, mp_file, workflow=None, workflow_instance=None, workflow_parameters=None):
         postdict = self._prepare_ingest(mp_file, workflow, workflow_instance, workflow_parameters)
-        return self.__call('POST', INGEST_ENDPOINT, {}, postdict.items(), False, False)
+        server = self.server if not self.multiple_ingest else self.get_ingest_server()
+        self.logger.info( 'Ingesting to Server {0}'.format(server) ) 
+        return self.__call('POST', INGEST_ENDPOINT, {}, postdict.items(), False, server, False)
 
 
     def getseries(self):

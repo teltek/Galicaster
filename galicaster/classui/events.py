@@ -50,7 +50,6 @@ class EventManager(gtk.Widget):
         gui.add_from_file(get_ui_path('next.glade'))
         dialog = gui.get_object("dialog")
         table = gui.get_object("infobox")
-        title = gui.get_object("titlelabel")
         okl = gui.get_object("oklabel")
         okb = gui.get_object("okbutton")
 
@@ -62,15 +61,11 @@ class EventManager(gtk.Widget):
         dialog.set_keep_above(True)
 
         strip = Header(size=size, title="Next Recordings")
-        title.hide()
 
         dialog.vbox.pack_start(strip, False, True, 0)
         dialog.vbox.reorder_child(strip,0)
-        strip.show()
-
 
         modification = "bold "+str(int(k2*30))+"px"        
-        title.modify_font(pango.FontDescription(modification))
         okl.modify_font(pango.FontDescription(modification))
 
         # mediapackages
@@ -121,19 +116,13 @@ class EventManager(gtk.Widget):
             table.attach(d,1,2,row-1,row,gtk.EXPAND|gtk.FILL,False,0,0)
             table.attach(h,2,3,row-1,row,gtk.EXPAND|gtk.FILL,False,0,0)
             table.attach(b,3,4,row-1,row,gtk.EXPAND|gtk.FILL,False,0,0)
-            t.show()
-            h.show()
-            d.show()
-            b.show()
             row += 1
             if row >= number+1 :
                 break  
 
         okb.connect("button-press-event",self.destroy)
-
-        dialog.run()
-
-        return None
+        dialog.show_all()
+        dialog.present()
 
     def send_start(self,origin, event, data):
         context.get_dispatcher().emit("start-before", data)

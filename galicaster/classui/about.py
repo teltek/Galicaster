@@ -115,6 +115,8 @@ class GCAboutDialog(gtk.AboutDialog):
          #buttons.reorder_child(thanks,0)
          #thanks.show()
          
+         self.show_all()
+         self.present()
          self.run()
          self.destroy()
 
@@ -123,7 +125,7 @@ class GCAboutDialog(gtk.AboutDialog):
          dialog.set_title("Special thanks to...")
          dialog.add_button("Close",gtk.RESPONSE_CLOSE)
          dialog.set_default_size(350,150)
-         dilog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_SPLASHSCREEN)
+         dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_SPLASHSCREEN)
          box = dialog.get_content_area()
          textbuffer= gtk.TextBuffer()
          textbuffer.set_text("")
