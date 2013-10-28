@@ -4,10 +4,22 @@ Checkrepo Plugin
 Checks for a non-started scheduled recording
 --------------------------------------------
 
-If the Galicaster unit is turned on after a scheduled recording should had been started, the recording will be lost. This pluging helps mitigating this problem by checking for a recording that should have already been started and starting it immediately for the remaining time.
+If the Galicaster unit is turned on after a scheduled recording should had been started, 
+the recording will be lost. This pluging helps mitigating this problem by checking for a 
+recording that should have already been started and starting it immediately for the 
+remaining time. The plugin also prepares the recovery of the recording in the end.
+Once the recording is complete the merge_recordings function attempts to recombine parts 
+of the recording. This helps to recover from situations when galicaster crashes half way 
+through a recording.
+
 Behaviour
 
-The plugin looks for recordings that should be currently running. If there is any, it is started immediately with its metadata - duration and start time - modified appropriately. The recovered recording will run for the remaining time only. 
+The plugin looks for recordings that should be currently running. If there is any, it is 
+started immediately with its metadata - duration and start time - modified appropriately. 
+While modifying the metadata check_repo also marks the recording that it was modified 
+keeping the original start- and end-time for possible recovery purposes. Once the recording 
+is complete the merge_recordings function attempts to find parts of the recording in the 
+crash-Repository and combines them into a single mp4 file. 
 
 An example:
 
