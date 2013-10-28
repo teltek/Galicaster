@@ -78,9 +78,10 @@ class Main():
 
         self.recorder.go_ahead() # allows record area to load devices and show preview
 
-        if 'media_manager' in self.modules:            
-            self.window.set_current_page(DIS)
-            self.state.area = DIS
+        if 'media_manager' in self.modules:
+            # UOM:Always start on the recorder screen            
+            self.window.set_current_page(REC)
+            self.state.area = REC
         else:
             self.window.set_current_page(REC)
             self.state.area = REC
