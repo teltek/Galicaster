@@ -20,7 +20,7 @@ from StringIO import StringIO
 import pycurl
 from collections import OrderedDict
 
-INIT_ENDPOINT = '/welcome.html'
+INIT_ENDPOINT = '/info/me.json'
 ME_ENDPOINT = '/info/me.json'
 SETRECORDINGSTATE_ENDPOINT = '/capture-admin/recordings/{id}'
 SETSTATE_ENDPOINT = '/capture-admin/agents/{hostname}'
@@ -220,7 +220,7 @@ class MHHTTPClient(object):
         if type(all_servers) is list:
             for serv in all_servers:
                 if self.verify_ingest_server(serv):
-                    return str(serv['host']) # Returns less loaded served
+                    return str(serv['host']) # Returns least loaded served
         if self.verify_ingest_server(all_servers):
             return str(all_servers['host']) # There's only one server
         return None # it will use the admin server

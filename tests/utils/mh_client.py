@@ -176,3 +176,64 @@ class TestFunctions(TestCase):
         client = MHHTTPClient(server, user, password)
 
         self.assertRaises(RuntimeError, client.welcome)
+
+    def test_verify_ingest_server(self):
+        server = 'http://admin.mh.man.ac.uk'
+        user = 'matterhorn_system_account'
+        password = 'CHANGE_ME';
+
+        adm  = {'host': u"https://admin.mhorn.manchester.ac.uk", 'online':True, 'maintenance':False}
+        s1 = {'host': u"https://admin.mhorn.manchester.ac.uk", 'online':False, 'maintenance':False}
+        s2 = {'host': u"https://admin.mhorn.manchester.ac.uk", 'online':True, 'maintenance':False}
+        s3 = {'host': u"https://admin.mhorn.manchester.ac.uk", 'online':False, 'maintenance':True}
+        s4 = {'host': u"https://admin.mhorn.manchester.ac.uk", 'online':True, 'maintenance':True}
+        s5 = {'host': u"http://ingest00.mhorn.manchester.ac.uk", 'online':False, 'maintenance':False}
+        s6 = {'host': u"http://ingest00.mhorn.manchester.ac.uk", 'online':True, 'maintenance':False}
+        s7 = {'host': u"http://ingest00.mhorn.manchester.ac.uk", 'online':False, 'maintenance':True}
+        s8 = {'host': u"http://ingest00.mhorn.manchester.ac.uk", 'online':True, 'maintenance':True}
+        
+        client = MHHTTPClient(server, user, password)
+        res = client.verify_ingest_server(adm);
+        self.assertFalse(res)
+        res = client.verify_ingest_server(s1);
+        self.assertFalse(res)
+        res = client.verify_ingest_server(s2);
+        self.assertFalse(res)
+        res = client.verify_ingest_server(s3);
+        self.assertFalse(res)
+        res = client.verify_ingest_server(s4);
+        self.assertFalse(res)
+        res = client.verify_ingest_server(s5);
+        self.assertFalse(res)
+        res = client.verify_ingest_server(s6);
+        self.assertTrue(res)
+        res = client.verify_ingest_server(s7);
+        self.assertFalse(res)
+        res = client.verify_ingest_server(s8);
+        self.assertFalse(res)
+      
+
+    def test_get_ingest_server(self):
+        server = 'http://demo.opencastproject.org'
+        user = 'matterhorn_system_account';
+        password = 'CHANGE_ME';
+        
+        client = MHHTTPClient(server, user, password)
+        self.assertEqual(client.server, server)
+        self.assertEqual(client.user, user)
+        
+        ingest_server = client.get_ingest_server()
+        if (ingest_server != None):
+            self.assertTrue(isinstance(ingest_server, basestring))
+   
+    def no_test_get_ingest_server_multi(self):
+        server = 'http://10.10.10.10:10'    # change to your cluster admin box
+        user = 'matterhorn_system_account';
+        password = 'CHANGE_ME';
+        
+        client = MHHTTPClient(server, user, password)
+        self.assertEqual(client.server, server)
+        self.assertEqual(client.user, user)
+        
+        ingest_server = client.get_ingest_server()
+        self.assertTrue(isinstance(ingest_server, basestring))

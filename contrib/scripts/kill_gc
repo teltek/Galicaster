@@ -1,0 +1,18 @@
+#!/bin/bash
+
+reason=$1
+restart=$2
+
+export PATH=/usr/lib/lightdm/lightdm:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games
+export DISPLAY=:0
+
+logfile=/var/log/galicaster/galicaster-restarts.log
+
+x=`ps -eo pid,args | grep run_galicaster.py | grep -v grep | awk '{ print $1 }'`
+echo "galicaster error: $reason -> killed `date`" >> $logfile
+kill -9 $x
+
+if [ "${restart}" != "false" ] ; then
+  echo galicaster restarted `date` >> $logfile
+  /usr/bin/galicaster
+fi

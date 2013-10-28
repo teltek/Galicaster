@@ -1,0 +1,77 @@
+#!/bin/bash
+
+## Move files: mp rectemppat
+segloc=$2
+lastsegloc=$1
+
+tmpdir=`mktemp -d /home/galicaster/gc_merge-XXXXXXXXXXXX`
+cp $segloc $tmpdir
+echo $lastsegloc >>$tmpdir/CHECK_REPO
+
+n=1
+for d in `cat ${segloc} | sort` ${lastsegloc}; do
+ cp ${d}/presentation.avi $tmpdir/${n}_presentation.avi
+
+ if [ -f ${d}/presenter.mp3 ]; then 
+     cp ${d}/presenter.mp3 $tmpdir/${n}_presenter.mp3
+ fi
+
+ if [ -f ${d}/presenter.aac ]; then 
+     cp ${d}/presenter.aac $tmpdir/${n}_presenter.aac
+ fi
+ n=$((n+1))
+done
+
+olddir=$PWD
+cd $tmpdir
+
+# Assumes files:
+# N_presentation.avi
+# N_presenter.[mp3|aac]
+# where N = 1...M
+
+## Mux recovered recording segment
+n=1
+for f in *_presentation.avi; do
+  if [ -f ${n}_presenter.aac ] ; then
+      audio_track="-i ${n}_presenter.aac -absf aac_adtstoasc -acodec copy"
+  elif [ -f ${n}_presenter.mp3 ] ; then
+      audio_track="-i ${n}_presenter.mp3 -strict experimental"
+  else
+      audio_track="-strict experimental"
+  fi
+
+  ffmpeg -strict unofficial -i ${n}_presentation.avi ${audio_track} -sameq -shortest -vcodec copy ${n}_segment.mp4
+  n=$((n + 1)) 
+done;
+
+## Mux final recording if unnumbered
+#if [ -f ${n}_presenter.aac ] ; then
+#    audio_track="-i presenter.aac -absf aac_adtstoasc -acodec copy"
+#else
+#    audio_track="-i presenter.mp3 -strict experimental"
+#fi
+#ffmpeg -strict unofficial -i presentation.avi ${audio_track} -sameq -shortest -vcodec copy ${n}_segment.mp4
+
+## Use MP4Box (from package gpac) to concatenate mp4 files
+concat_files=`for f in *_segment.mp4; do echo -n " -cat ${f}"; done`
+rm -rf output.mp4 # MP$Box will concat to any exisiting output file
+MP4Box ${concat_files} output.mp4
+
+## Use MP4Box to calculate duration
+a=`MP4Box -info output.mp4 2>&1 | grep "\- Duration"| head -n 1`
+time=${a##* }
+c=${time##*.}
+d=`echo $time | sed -e "s/[.:]/ /g"`
+s=`date -d $time +%s`
+b=`date -d 00:00:00 +%s`
+duration=$((s-b))$c
+echo $duration > ${lastsegloc}/DURATION.txt
+echo $duration > $tmpdir/DURATION.txt
+
+mv output.mp4 ${lastsegloc}/presentation.mp4
+
+## Clean up
+#rm -rf $tmpdir
+
+cd ${olddir}
