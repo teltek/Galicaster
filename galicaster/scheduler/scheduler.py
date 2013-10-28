@@ -102,6 +102,8 @@ class Scheduler(object):
 
     def proccess_ical(self):
         self.logger.info('Proccess ical')
+        if self.ca_status == 'capturing' :
+            return
         try:
             ical_data = self.client.ical()
         except:
