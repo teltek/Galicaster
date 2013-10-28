@@ -100,7 +100,7 @@ class ListingClassUI(ManagerUI):
 
     def populate_treeview(self, mp):
 	"""Establishes which values to be shown, its properties"""
-	self.lista = gtk.ListStore(str,str, str, str, long, int, str, int, str, int, int, int)
+	self.lista = gtk.ListStore(str,str, str, str, float, int, str, int, str, int, int, int)
 	# gobject.TYPE_PYOBJECT
 	self.insert_data_in_list(self.lista, mp)
 
