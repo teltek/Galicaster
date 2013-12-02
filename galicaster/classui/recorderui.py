@@ -415,11 +415,12 @@ class RecorderClassUI(gtk.Box):
                     duration = self.mediapackage.getDuration()
                     logger.info("updated mediapackage: %s to duration %s", uid , str(duration))
                     break
-        code = 'manual' if self.mediapackage.manual else 'scheduled'
-        if self.conf.get_lower('ingest', code) == 'immediately':
-            self.worker.ingest(self.mediapackage)
-        elif self.conf.get_lower('ingest', code) == 'nightly':
-            self.worker.ingest_nightly(self.mediapackage)
+        if self.status != GC_RECORDING : 
+            code = 'manual' if self.mediapackage.manual else 'scheduled'
+            if self.conf.get_lower('ingest', code) == 'immediately':
+                self.worker.ingest(self.mediapackage)
+            elif self.conf.get_lower('ingest', code) == 'nightly':
+                self.worker.ingest_nightly(self.mediapackage)
 
         context.get_state().is_recording = False
         self.timer_thread_id = None
