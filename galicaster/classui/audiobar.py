@@ -30,14 +30,24 @@ class Vumeter(gtk.Table):
         self.set_homogeneous(True)
         self.mute = False
         self.vumeter=gtk.ProgressBar()
-        #numbers
-        minimum = gtk.Label("-100")
-        maximum = gtk.Label("0dB")
-        mark = gtk.Label("-10")
-        sixty = gtk.Label("-60")
-        thirty = gtk.Label("-30")
-
-        labels= [minimum,sixty,thirty,mark,maximum]
+        
+	    #numbers
+        label0 = gtk.Label("0 dB")
+        label1 = gtk.Label("-3")
+        label2 = gtk.Label("-6")
+        label3 = gtk.Label("-12")
+        label4 = gtk.Label("-24")
+        label5 = gtk.Label("-40")	
+	
+        # set number's colour	
+        label0.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse("#D9211D")) 	#Red		
+        label1.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse("#D95E1D")) 	#Orange
+        label2.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse("#D95E1D")) 	#Orange
+        label3.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse("#068629")) 	#Green
+        label4.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse("#068629")) 	#Green
+        label5.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse("#068629")) 	#Green
+	
+        labels= [label0,label1,label2,label3,label4,label5]
         for label in labels:
             label.set_justify(gtk.JUSTIFY_CENTER)
             alist = pango.AttrList()
@@ -46,25 +56,29 @@ class Vumeter(gtk.Table):
             alist.insert(attr)
             label.set_attributes(alist)
 
-        #marks
-        mark100=gtk.VSeparator()
-        mark60=gtk.VSeparator()
-        mark30=gtk.VSeparator()
-        mark10=gtk.VSeparator()
-        mark0=gtk.VSeparator()
+        # set number's position
+        self.attach(label0,100,110,0,1,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)	#0
+        self.attach(label1,92,102,0,1,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)	#-3
+        self.attach(label2,85,95,0,1,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)	#-6
+        self.attach(label3,70,80,0,1,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)	#-12
+        self.attach(label4,40,50,0,1,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)	#-24
+        self.attach(label5,0,10,0,1,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)	#-40
 
-        # attach to widget
-        self.attach(mark100,5,6,1,2,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)#-100
-        self.attach(mark60,45,46,1,2,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)#-60
-        self.attach(mark30,75,76,1,2,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)#-30
-        self.attach(mark10,95,96,1,2,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)#-10
-        self.attach(mark0,105,106,1,2,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)#0       
-        
-        self.attach(minimum,0,10,0,1,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)#-100
-        self.attach(sixty,40,50,0,1,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)#-60
-        self.attach(thirty,70,80,0,1,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)#-30
-        self.attach(mark,90,100,0,1,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)#-10
-        self.attach(maximum,100,110,0,1,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)#0
+        #marks
+        mark0=gtk.VSeparator()
+        mark1=gtk.VSeparator()
+        mark2=gtk.VSeparator()
+        mark3=gtk.VSeparator()
+        mark4=gtk.VSeparator()
+        mark5=gtk.VSeparator()
+
+        # attach marks to widget   
+        self.attach(mark0,105,106,1,2,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)	#0dB
+        self.attach(mark1,97,98,1,2,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)	#-3
+        self.attach(mark2,90,91,1,2,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)	#-6
+        self.attach(mark3,75,76,1,2,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)	#-12
+        self.attach(mark4,45,46,1,2,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)	#-24
+        self.attach(mark5,5,6,1,2,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)		#-40
 
         self.attach(self.vumeter,5,105,2,4,gtk.EXPAND|gtk.FILL,gtk.EXPAND|gtk.FILL,0,0)
 
@@ -76,6 +90,8 @@ class Vumeter(gtk.Table):
         self.vumeter.set_fraction(0)
 
     def scale_vumeter(self,data):
+	rangeVum = 40
+        data_aux = data
         conf = context.get_conf()
         dispatcher = context.get_dispatcher()
         minimum= float(conf.get('audio','min') or -70)
@@ -83,20 +99,19 @@ class Vumeter(gtk.Table):
         if data == "Inf":
             valor = 0
         else:
-            if data < -100:
-                data = -100
+            if data < -40:
+                data = -40
             elif data > 0:
                 data = 0
-            valor=(data+100)/100.0
-
+	    valor=(data+rangeVum)/float(rangeVum)
+	    print data, valor
         if not self.mute:
-            if data == "Inf" or data < minimum:
+	    if data_aux == "Inf" or data_aux < minimum:
                 dispatcher.emit("audio-mute")
                 self.mute = True
-        if self.mute and data > minimum+5.0:
+	if self.mute and data_aux > minimum+5.0:
             dispatcher.emit("audio-recovered")
             self.mute = False 
-
         return valor
 
 class AudioBarClass(gtk.Box):
