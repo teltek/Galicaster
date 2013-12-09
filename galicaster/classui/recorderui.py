@@ -421,9 +421,41 @@ class RecorderClassUI(gtk.Box):
         self.conf.reload()
         self.current_mediapackage = identifier
         self.scheduled_recording = True
-        a=thread(target=self.start_thread, args=(identifier,))
-        a.daemon = False
-        a.start()
+        #a=thread(target=self.start_thread, args=(identifier,))
+        #a.daemon = False
+        #a.start()
+        if self.status == GC_PREVIEW: # Record directly
+            self.mediapackage = self.repo.get(self.current_mediapackage)
+            self.on_rec() 
+        
+        elif self.status in [ GC_RECORDING, GC_PAUSED ] :
+
+            if self.allow_overlap:
+                pass
+                # TODO: dont stop and extend recording until the end of the new interval
+                # In case of stop, restart with the overlapped job
+
+            else: # Stop current recording, wait until prewiew restarted and record
+                self.restarting = True
+                self.close_recording()                
+                while self.restarting:
+                    time.sleep(0.1) 
+                    #if self.start_thread_id == None:
+                    #    return
+                self.mediapackage = self.repo.get(self.current_mediapackage)   
+                self.on_rec()       
+                      
+        elif self.status == GC_INIT:  # Start Preview and Record
+            self.on_start_button()
+            while self.record.get_status() != gst.STATE_PLAYING:
+                time.sleep(0.2)
+                if self.start_thread_id == None:
+                    return
+            self.mediapackage = self.repo.get(self.current_mediapackage)
+            self.on_rec()
+
+        title = self.repo.get(identifier).title
+        self.dispatcher.emit("update-video", title)
 
     def start_thread(self,identifier):
         """Thread handling a scheduled recording"""
