@@ -104,7 +104,6 @@ class Vumeter(gtk.Table):
             elif data > 0:
                 data = 0
 	    valor=(data+rangeVum)/float(rangeVum)
-	    print data, valor
         if not self.mute:
 	    if data_aux == "Inf" or data_aux < minimum:
                 dispatcher.emit("audio-mute")
