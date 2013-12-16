@@ -99,8 +99,8 @@ class Vumeter(gtk.Table):
         if data == "Inf":
             valor = 0
         else:
-            if data < -40:
-                data = -40
+            if data < -rangeVum:
+                data = -rangeVum
             elif data > 0:
                 data = 0
 	    valor=(data+rangeVum)/float(rangeVum)
@@ -144,14 +144,14 @@ class AudioBarClass(gtk.Box):
         self.vumeter.set_fraction(0)
 
     def scale_vumeter(self,data):
-
+        rangeVum = 40
         if data == "Inf":
             data = -100
-        elif data < -100:
-            data = -100
+        elif data < -rangeVum:
+            data = -rangeVum
         elif data > 0:
             data = 0
-        valor = (data+100)/100
+        valor = (data+rangeVum)/float(rangeVum)
         return valor
 
     def resize(self,size):
