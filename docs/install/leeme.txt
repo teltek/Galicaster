@@ -77,9 +77,9 @@ Apartados:
    * manual: Configura el método de ingestión automática de las grabaciones manuales. Las opciones posibles son: desactivar la ingestión automática (none), ingestar inmediatamente después de la grabación (immediately) o realizar una ingestión nocturna de todas las grabaciones de ese día (nightly). Por defecto 'none'. (none|immediately|nightly)
    * scheduled: Configura el método de ingestión automática de las grabaciones programadas. Las opciones posibles son: desactivar la ingestión automática (none), ingestar inmediatamente después de la grabación (immediately) o realizar una ingestión nocturna de todas las grabaciones de ese día (nightly). Por defecto 'none'. (none|immediately|nightly)
    * host: URL del servidor matterhorn
-   * username: Nombre del equipo Galicaster. Por defecto se usa el nombre del equipo en el sistema operativo, precedido de "GC-" si es Galicaster Class o "GCMobile-" si es Galicaster Mobile.
-   * password: Contraseña del la cuenta Matterhorn para realizar llamadas a los REST endpoints.
-   * hostname: Nombre del equipo galicaster. Por defecto se obtiene del sistema operativo
+   * username: Nombre de usuario de la cuenta Matterhorn para realizar llamadas a los REST endpoints.
+   * password: Contraseña de la cuenta Matterhorn para realizar llamadas a los REST endpoints.
+   * hostname: Nombre del equipo Galicaster. Por defecto se usa el nombre del equipo en el sistema operativo, precedido de "GC-" si es Galicaster Class o "GCMobile-" si es Galicaster Mobile.
    * workflow: Nombre del Workflow Matterhon usado para ingestar los videos grabados
    * workflow-parameters: secuencia de pares parámetro y valor (parametro:valor) para ser procesados por el workflow de Matterhorn, separados por punto y coma.
 

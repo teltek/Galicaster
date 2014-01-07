@@ -78,9 +78,9 @@ Sections:
    * manual: Configure the method to automatically ingest the manual recordings. The possible options are: disable the automatic ingestion (none), ingest immediately after the recording (immediately) or ingest nightly all the recordings of the previous day (nightly). Defaults to 'none'. (none|immediately|nightly)
    * scheduled: Configure the method to automatically ingest the scheduled recordings. The possible options are: disable the automatic ingestion (none), ingest immediately after the recording (immediately) or ingest nightly all the recordings of the previous day (nightly). Defaults to 'none'. (none|immediately|nightly)
    * host: Matterhorn server URL.
-   * username: Name of the Galicaster unit. Defaults to the host name as defined in the OS, prepended by "GC-" if it is a Galicaster Class or "GCMobile-" if it is a Galicaster Mobile.
+   * username: Username for the account used to operate the Matterhorn REST endpoints service.
    * password: Password for the account  used to operate the Matterhorn REST endpoints service.
-   * hostname: Nombre del equipo galicaster. Por defacto se obtiene del sistema operativo
+   * hostname: Name of the Galicaster unit. Defaults to the host name as defined in the OS, prepended by "GC-" if it is a Galicaster Class or "GCMobile-" if it is a Galicaster Mobile.
    * workflow: name of the workflow used to ingest the recordings.
    * workflow-parameters: pairs of parameter and value (parameter:value) to be parsed on the Matterhorn workflow, separated by semicolon.
 
