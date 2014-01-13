@@ -30,7 +30,7 @@ class Vumeter(gtk.Table):
         self.set_homogeneous(True)
         self.mute = False
         self.vumeter=gtk.ProgressBar()
-        
+        self.rangeVum = 40
 	    #numbers
         label0 = gtk.Label("0 dB")
         label1 = gtk.Label("-3")
@@ -39,14 +39,14 @@ class Vumeter(gtk.Table):
         label4 = gtk.Label("-24")
         label5 = gtk.Label("-40")	
 	
-        # set number's colour	
-        label0.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse("#D9211D")) 	#Red		
-        label1.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse("#D95E1D")) 	#Orange
-        label2.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse("#D95E1D")) 	#Orange
-        label3.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse("#068629")) 	#Green
-        label4.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse("#068629")) 	#Green
-        label5.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse("#068629")) 	#Green
-	
+        # set number's colour
+	self.modify_widget_fgcolor (label0, gtk.gdk.color_parse("#D9211D")) # Red
+	self.modify_widget_fgcolor (label1, gtk.gdk.color_parse("#D95E1D")) # Orange
+	self.modify_widget_fgcolor (label2, gtk.gdk.color_parse("#D95E1D")) # Orange
+	self.modify_widget_fgcolor (label3, gtk.gdk.color_parse("#068629")) # Green
+	self.modify_widget_fgcolor (label4, gtk.gdk.color_parse("#068629")) # Green
+	self.modify_widget_fgcolor (label5, gtk.gdk.color_parse("#068629")) # Green
+    	
         labels= [label0,label1,label2,label3,label4,label5]
         for label in labels:
             label.set_justify(gtk.JUSTIFY_CENTER)
@@ -90,7 +90,7 @@ class Vumeter(gtk.Table):
         self.vumeter.set_fraction(0)
 
     def scale_vumeter(self,data):
-	rangeVum = 40
+	
         data_aux = data
         conf = context.get_conf()
         dispatcher = context.get_dispatcher()
@@ -99,11 +99,11 @@ class Vumeter(gtk.Table):
         if data == "Inf":
             valor = 0
         else:
-            if data < -rangeVum:
-                data = -rangeVum
+            if data < -self.rangeVum:
+                data = -self.rangeVum
             elif data > 0:
                 data = 0
-	    valor=(data+rangeVum)/float(rangeVum)
+	    valor=(data+self.rangeVum)/float(self.rangeVum)
         if not self.mute:
 	    if data_aux == "Inf" or data_aux < minimum:
                 dispatcher.emit("audio-mute")
@@ -112,6 +112,13 @@ class Vumeter(gtk.Table):
             dispatcher.emit("audio-recovered")
             self.mute = False 
         return valor
+
+
+    def modify_widget_fgcolor(self, widget, color):
+        widget.modify_fg(gtk.STATE_NORMAL, color)
+        widget.modify_fg(gtk.STATE_ACTIVE, color)
+        widget.modify_fg(gtk.STATE_PRELIGHT, color)
+        widget.modify_fg(gtk.STATE_SELECTED, color)
 
 class AudioBarClass(gtk.Box):
     """
@@ -132,6 +139,7 @@ class AudioBarClass(gtk.Box):
         box.pack_end(self.volume,False,True,0)
         builder.connect_signals(self)
         self.vumeter=builder.get_object("vumeter")
+        self.rangeVum = 40
 
     def GetVumeter(self):
         return self.vumeter.get_fraction()
@@ -144,14 +152,14 @@ class AudioBarClass(gtk.Box):
         self.vumeter.set_fraction(0)
 
     def scale_vumeter(self,data):
-        rangeVum = 40
+
         if data == "Inf":
             data = -100
-        elif data < -rangeVum:
-            data = -rangeVum
+        elif data < -self.rangeVum:
+            data = -self.rangeVum
         elif data > 0:
             data = 0
-        valor = (data+rangeVum)/float(rangeVum)
+        valor = (data+self.rangeVum)/float(self.rangeVum)
         return valor
 
     def resize(self,size):
