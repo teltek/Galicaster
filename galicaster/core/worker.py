@@ -162,12 +162,27 @@ class Worker(object):
         self.dispatcher.emit('start-operation', 'ingest', mp)
         self.dispatcher.emit('refresh-row', mp.identifier)
 
-        ifile = tempfile.NamedTemporaryFile(dir=self.tmp_path)
-        self._export_to_zip(mp, ifile, is_action=False)
+        
+        mp_manifest = ('<?xml version="1.0" encoding="utf-8"?>'
+                       '<mediapackage duration="' +  unicode(mp.getDuration()) + '" id="' + mp.getIdentifier() +'" start="' + mp.getDate().isoformat() + '" xmlns="http://mediapackage.opencastproject.org">'
+                       '<media></media><metadata></metadata><attachments/></mediapackage>')
+        
+        # tracks
+        for track in mp.getTracks():
+            if os.path.isfile(track.getURI()):
+                mp_manifest = self.mh_client.ingest_add_track(mp_manifest, track.getURI(), track.getFlavor())
 
+        for catalog in mp.getCatalogs():
+            if os.path.isfile(catalog.getURI()):
+                mp_manifest = self.mh_client.ingest_add_catalog(mp_manifest, catalog.getURI(), catalog.getFlavor())
+
+        for attach in mp.getAttachments():
+            if os.path.isfile(attach.getURI()):
+                mp_manifest = self.mh_client.ingest_add_attach(mp_manifest, attach.getURI(), attach.getFlavor())
+        
         if mp.manual:
             try:
-                self.mh_client.ingest(ifile.name)
+                self.mh_client.ingest_ingest(mp_manifest)
                 self.logger.info("Finalized Ingest for MP {0}".format(mp.getIdentifier()))
                 mp.setOpStatus('ingest',mediapackage.OP_DONE)
                 self.dispatcher.emit('stop-operation', 'ingest', mp, True)
@@ -188,7 +203,7 @@ class Worker(object):
                 if k[0:36] == 'org.opencastproject.workflow.config.':
                     workflow_parameters[k[36:]] = v
             try:
-                self.mh_client.ingest(ifile.name, workflow, mp.getIdentifier(), workflow_parameters)
+                self.mh_client.ingest_ingest(mp_manifest, workflow, mp.getIdentifier(), workflow_parameters)
                 self.logger.info("Finalized Ingest for MP {0}".format(mp.getIdentifier()))
                 mp.setOpStatus("ingest",mediapackage.OP_DONE)
                 self.dispatcher.emit('stop-operation', 'ingest', mp, True)
@@ -197,7 +212,6 @@ class Worker(object):
                 mp.setOpStatus("ingest",mediapackage.OP_FAILED)
                 self.dispatcher.emit('stop-operation', 'ingest', mp, False)
             
-        ifile.close()
         self.repo.update(mp)
             
         self.dispatcher.emit('refresh-row', mp.identifier)
