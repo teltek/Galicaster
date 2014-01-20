@@ -177,7 +177,7 @@ class Worker(object):
                 mp_manifest = self.mh_client.ingest_add_catalog(mp_manifest, catalog.getURI(), catalog.getFlavor())
 
         for attach in mp.getAttachments():
-            if os.path.isfile(attach.getURI()):
+            if os.path.isfile(attach.getURI()) and attach.getFlavor(): #TODO check org.opencastproject.capture.agent.properties
                 mp_manifest = self.mh_client.ingest_add_attach(mp_manifest, attach.getURI(), attach.getFlavor())
         
         if mp.manual:
