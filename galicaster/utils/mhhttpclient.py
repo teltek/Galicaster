@@ -236,7 +236,7 @@ class MHHTTPClient(object):
         return self.__call('POST', INGEST_ENDPOINT, {}, postdict.items(), False, server, False)
 
 
-    def ingest_add_attachment(self, mp, from_file, flavor):
+    def ingest_add_attach(self, mp, from_file, flavor):
         postdict = OrderedDict()
         postdict[u'flavor'] = str(flavor)
         postdict[u'mediaPackage'] = str(mp)
