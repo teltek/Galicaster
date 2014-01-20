@@ -5,6 +5,15 @@ Web version of the changelog in http://wiki.teltek.es/display/Galicaster/Release
 To get the diff for a specific change, go to https://github.com/teltek/galicaster/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/teltek/galicaster/compare/1.2.1...1.2.3
 
+* 1.3.1 (2014-01-20)
+
+ * Ingest to a Opencast Matterhorn cluster with multiple ingest servers.
+ * New Pushpic plugin: Send screenshoots periodically for monitoring with Galicaster Dashboard
+ * Improved VU-meter dynamic range
+ * Fixed bug on dialog modality and focus.
+ * Fixed a bug on No-audio-dialog when reloading a profile.
+ * Fixed serious bug that crashed GC when using Datapath capture cards.
+
 * 1.3.0 (2013-06-21)
 
  * New RTP device module - to support RTP network devices such as Axis cameras. (mpeg4 and h264)
