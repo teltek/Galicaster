@@ -29,6 +29,10 @@ INGEST_ENDPOINT = '/ingest/addZippedMediaPackage'
 ICAL_ENDPOINT = '/recordings/calendars?agentid={hostname}'
 SERIES_ENDPOINT = '/series/series.json?count={count}' 
 SERVICE_REGISTRY_ENDPOINT = '/services/available.json?serviceType={serviceType}'
+INGEST_ADDTRACK_ENDPOINT = '/ingest/addTrack'
+INGEST_ADDCATALOG_ENDPOINT = '/ingest/addCatalog'
+INGEST_ADDATTACHMENT_ENDPOINT = '/ingest/addAttachment'
+INGEST_INGEST_ENDPOINT = '/ingest/ingest'
 
 
 
@@ -170,7 +174,7 @@ class MHHTTPClient(object):
         return self.__call('POST', SETCONF_ENDPOINT, {'hostname': self.hostname}, {'configuration': client_conf})
 
 
-    def _prepare_ingest(self, mp_file, workflow=None, workflow_instance=None, workflow_parameters=None):
+    def _prepare_ingest(self, workflow=None, workflow_instance=None, workflow_parameters=None):
         "refactor of ingest to unit test"
         postdict = OrderedDict()
         postdict[u'workflowDefinitionId'] = workflow or self.workflow
@@ -182,7 +186,6 @@ class MHHTTPClient(object):
             postdict.update(workflow_parameters)
         else:
             postdict.update(self.workflow_parameters)
-        postdict[u'track'] = (pycurl.FORM_FILE, mp_file)
         return postdict
 
     def verify_ingest_server(self, server):
@@ -226,11 +229,46 @@ class MHHTTPClient(object):
         return None # it will use the admin server
  
     def ingest(self, mp_file, workflow=None, workflow_instance=None, workflow_parameters=None):
-        postdict = self._prepare_ingest(mp_file, workflow, workflow_instance, workflow_parameters)
+        postdict = self._prepare_ingest(workflow, workflow_instance, workflow_parameters)
+        postdict[u'track'] = (pycurl.FORM_FILE, mp_file)
         server = self.server if not self.multiple_ingest else self.get_ingest_server()
         self.logger.info( 'Ingesting to Server {0}'.format(server) ) 
         return self.__call('POST', INGEST_ENDPOINT, {}, postdict.items(), False, server, False)
 
+
+    def ingest_add_attachment(self, mp, from_file, flavor):
+        postdict = OrderedDict()
+        postdict[u'flavor'] = str(flavor)
+        postdict[u'mediaPackage'] = str(mp)
+        postdict[u'track'] = (pycurl.FORM_FILE, str(from_file))
+        server = self.server if not self.multiple_ingest else self.get_ingest_server()
+        self.logger.info( 'Ingesting to Server {0}'.format(server) ) 
+        return self.__call('POST', INGEST_ADDATTACHMENT_ENDPOINT, {}, postdict.items(), False, server, False)
+
+    def ingest_add_catalog(self, mp, from_file, flavor):
+        postdict = OrderedDict()
+        postdict[u'flavor'] = str(flavor)
+        postdict[u'mediaPackage'] = str(mp)
+        postdict[u'track'] = (pycurl.FORM_FILE, str(from_file))
+        server = self.server if not self.multiple_ingest else self.get_ingest_server()
+        self.logger.info( 'Ingesting to Server {0}'.format(server) ) 
+        return self.__call('POST', INGEST_ADDCATALOG_ENDPOINT, {}, postdict.items(), False, server, False)
+
+    def ingest_add_track(self, mp, from_file, flavor):
+        postdict = OrderedDict()
+        postdict[u'flavor'] = str(flavor)
+        postdict[u'mediaPackage'] = str(mp)
+        postdict[u'track'] = (pycurl.FORM_FILE, str(from_file))
+        server = self.server if not self.multiple_ingest else self.get_ingest_server()
+        self.logger.info( 'Ingesting to Server {0}'.format(server) ) 
+        return self.__call('POST', INGEST_ADDTRACK_ENDPOINT, {}, postdict.items(), False, server, False)
+
+    def ingest_ingest(self, mp, workflow=None, workflow_instance=None, workflow_parameters=None):
+        postdict = self._prepare_ingest(workflow, workflow_instance, workflow_parameters)
+        postdict[u'mediaPackage'] = str(mp)
+        server = self.server if not self.multiple_ingest else self.get_ingest_server()
+        self.logger.info( 'Ingesting to Server {0}'.format(server) ) 
+        return self.__call('POST', INGEST_INGEST_ENDPOINT, {}, postdict.items(), True, server, True)
 
     def getseries(self):
         """ Get all series upto 100"""
