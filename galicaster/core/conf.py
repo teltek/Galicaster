@@ -88,7 +88,10 @@ class Conf(object): # TODO list get and other ops arround profile
        """
        Returns a dictionay instead of a list
        """
-       return dict(self.__conf.items(sect))
+       try:
+          return dict(self.__conf.items(sect))
+       except ConfigParser.NoSectionError:
+          return {}
 
 
    def set(self, sect, opt, value):

@@ -12,16 +12,18 @@
 # San Francisco, California, 94105, USA.
 
 """
-Logger Proxy class to use in galciaster.
+Logger Proxy class to use in Galciaster.
 """
 
 import logging
+import getpass
 
 class Logger(logging.Logger):
     def __init__(self, log_path, level="DEBUG", rotate=False, use_syslog=False):
         logging.Logger.__init__(self, "galicaster", level)
 
         formatting = [
+            "%(user)s",
             "%(asctime)s",
             "%(levelname)s",
             "%(module)s",
@@ -32,6 +34,8 @@ class Logger(logging.Logger):
         elif use_syslog:
             from logging.handlers import SysLogHandler
             loghandler = SysLogHandler(address='/dev/log')
+            formatting.inser(0, "Galicaster")                                                                                                                                                             
+            del(formatting[2]) 
             formatting[0] = "Galicaster"
             loghandler.setFormatter(logging.Formatter(" ".join(formatting)))
         elif rotate:
@@ -42,6 +46,17 @@ class Logger(logging.Logger):
             loghandler = logging.FileHandler(log_path, "a")
             loghandler.setFormatter(logging.Formatter("\t".join(formatting)))
 
-
+        self.addFilter(GalicasterFilter())
         self.addHandler(loghandler)
 
+class GalicasterFilter(logging.Filter):
+    """
+    This filter injects contextual information in the log.
+    (Namely, the user running Galicaster)
+    """
+    CURRENT_USER = getpass.getuser()
+
+    def filter(self, record):
+        # Insert the username in a parameter named 'user'
+        record.user = GalicasterFilter.CURRENT_USER
+        return True
