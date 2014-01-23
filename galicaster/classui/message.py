@@ -112,7 +112,7 @@ class PopUp(gtk.Widget):
         
         dialog.set_skip_taskbar_hint(True)
         dialog.set_modal(True)
-        dialog.set_keep_above(True)
+        dialog.set_keep_above(False)
         #Taskbar
         strip = Header(size=self.size, title=text.get("title","Galicaster"))
         dialog.vbox.pack_start(strip, True, True, 0)

@@ -58,7 +58,7 @@ class EventManager(gtk.Widget):
         dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
         dialog.set_skip_taskbar_hint(True)
         dialog.set_modal(True)
-        dialog.set_keep_above(True)
+        dialog.set_keep_above(False)
 
         strip = Header(size=size, title="Next Recordings")
 

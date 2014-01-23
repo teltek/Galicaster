@@ -61,7 +61,8 @@ class ProfileUI(gtk.Window):
         self.set_position(gtk.WIN_POS_CENTER_ALWAYS)
         self.set_default_size(width,height)
         self.set_skip_taskbar_hint(True)
-        self.set_keep_above(True)
+        self.set_modal(True)
+        self.set_keep_above(False)
 
         strip = Header(size=size,title="Profile Selector")
 

@@ -343,7 +343,8 @@ class RecorderClassUI(gtk.Box):
         dialog = gui.get_object("dialog") 
         dialog.set_transient_for(parent)
         dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
-        dialog.set_keep_above(True)
+        dialog.set_modal(True)
+        dialog.set_keep_above(False)
         dialog.set_skip_taskbar_hint(True)
         size = context.get_mainwindow().get_size()
         k2 = size[1] / 1080.0
