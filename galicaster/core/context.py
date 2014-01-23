@@ -142,6 +142,7 @@ def get_worker():
         __galicaster_context['worker'] = Worker(get_dispatcher(),
                                                 get_repository(),
                                                 get_logger(),
+                                                get_conf(),
                                                 get_mhclient(),
                                                 get_conf().get('basic', 'export'),
                                                 get_conf().get('basic', 'tmp'),
