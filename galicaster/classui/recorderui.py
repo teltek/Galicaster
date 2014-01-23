@@ -319,10 +319,12 @@ class RecorderClassUI(gtk.Box):
     def on_pause(self,button):
         """Pauses or resumes a recording"""
         if self.status == GC_PAUSED:
+            self.dispatcher.emit("enable-no-audio")
             logger.debug("Resuming Recording")
             self.change_state(GC_RECORDING)
             self.recorder.resume()
         elif self.status == GC_RECORDING:
+            self.dispatcher.emit("disable-no-audio")
             logger.debug("Pausing Recording")
             self.change_state(GC_PAUSED)
             self.recorder.pause()
@@ -362,6 +364,7 @@ class RecorderClassUI(gtk.Box):
             
     def on_ask_stop(self,button):
         """Stops preview or recording and closes the Mediapakage"""
+        self.dispatcher.emit("disable-no-audio")
         if self.conf.get_boolean("basic", "stopdialog"):
             text = {"title" : "Recorder",
                     "main" : "Are you sure you want to\nstop the recording?",
@@ -370,7 +373,7 @@ class RecorderClassUI(gtk.Box):
             warning = message.PopUp(message.WARNING, text,
               context.get_mainwindow(), buttons
             )
-
+            self.dispatcher.emit("enable-no-audio")
             if warning.response not in message.POSITIVE:
                 return False
             else:
@@ -875,6 +878,7 @@ class RecorderClassUI(gtk.Box):
 
     def on_edit_meta(self,button):
         """Pops up the  Metadata editor of the active Mediapackage"""
+        self.dispatcher.emit("disable-no-audio")
         #self.change_state(GC_BLOCKED)
         if not self.scheduled_recording:
             Metadata(self.mediapackage, parent=self)
@@ -882,19 +886,33 @@ class RecorderClassUI(gtk.Box):
             self.statusbar.SetVideo(None,mp.getTitle())
             if self.mediapackage.getCreator() != None:
                 self.statusbar.SetPresenter(None,mp.getCreator() if mp.getCreator() != None else '')
+            self.dispatcher.emit("enable-no-audio")
         #self.change_state(self.previous)  
         return True 
 
     def show_next(self,button=None,tipe = None):   
         """Pops up the Event Manager"""
+        self.dispatcher.emit("disable-no-audio")
         EventManager()
+        self.dispatcher.emit("enable-no-audio")
         return True
 
     def show_about(self,button=None,tipe = None):
         """Pops up de About Dialgo"""
-        GCAboutDialog()
-
+        about_dialog = GCAboutDialog()
+        self.dispatcher.emit("disable-no-audio")
+        about_dialog.set_transient_for(context.get_mainwindow())
+        about_dialog.set_modal(True)
+        about_dialog.set_keep_above(False)
+        about_dialog.show()
+        about_dialog.connect('response', self.on_about_dialog_response)
     
+    def on_about_dialog_response(self, origin, response_id):
+        if response_id == gtk.RESPONSE_CLOSE or response_id == gtk.RESPONSE_CANCEL:
+            self.dispatcher.emit("enable-no-audio") 
+            origin.hide()
+
+
     # -------------------------- UI ACTIONS -----------------------------
 
     def create_drawing_areas(self, source):

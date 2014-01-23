@@ -65,7 +65,7 @@ class GCAboutDialog(gtk.AboutDialog):
          k = size[0]/1920.0
          self.set_resizable(True)
          self.set_default_size(int(0.3*size[0]),int(0.4*size[1]))
-         self.set_title("About Galicaster "+__version__)
+         self.set_title("About Galicaster {version}".format(version = __version__))
          
          strip = Header(size=size, title="About")
          self.vbox.pack_start(strip, False, True, 0)
@@ -115,10 +115,8 @@ class GCAboutDialog(gtk.AboutDialog):
          #buttons.reorder_child(thanks,0)
          #thanks.show()
          
-         self.show_all()
-         self.present()
-         self.run()
-         self.destroy()
+         #self.run()
+         #self.destroy()
 
      def show_thanks(self, orgin):
          dialog = gtk.Dialog()
@@ -136,8 +134,8 @@ class GCAboutDialog(gtk.AboutDialog):
          box.pack_start(align, True, True, 0)
          align.show()
          label.show()
-         dialog.run()
-         dialog.destroy()
+         #dialog.run()
+         #dialog.destroy()
 
 
 
