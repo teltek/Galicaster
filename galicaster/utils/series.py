@@ -14,48 +14,97 @@
 from os import path
 from galicaster.core import context
 import json
+import getpass
+
+
+NAMESP = 'http://purl.org/dc/terms/'
+DISALLOWED_QUERIES = [ 'q', 'edit', 'sort', 'startPage', 'count', 'default' ]
+RESULTS_PER_PAGE = 100
+MAPPINGS = { 'user': getpass.getuser() }
+
 
 def get_series():
     repo = context.get_repository() 
     mhclient = context.get_mhclient()
-    
-    try:
-        series_json = mhclient.getseries()
-        repo.save_attach('series.json', series_json)
-    except:
-        try:
-            series_json = repo.get_attach('series.json').read()
-        except:
-            series_json = '{"totalCount":"0","catalogs":[]}'  
 
-    series_json = json.loads(series_json)
-    # convert JSON in ARRAY
-    out = {}
+    # Import the 'series' section as a dictionary
+    series_conf = context.get_conf().get_section('series')
 
+    # Init 'queries' dictionary
+    queries = {'startPage': 0, 'count': RESULTS_PER_PAGE}
 
-    for series in series_json['catalogs']:
-        k = series['http://purl.org/dc/terms/']['identifier'][0]['value']
-        group = {}
-        for parameter in series['http://purl.org/dc/terms/'].iterkeys():
+    # Filter out keys that do not refer to a certain series property
+    # Also, substitute any placeholder(s) used to filter the series
+    # TODO Currently the only placeholder is {user}
+    for key in series_conf.keys():
+        if key not in DISALLOWED_QUERIES:
             try:
-                group[parameter] = series['http://purl.org/dc/terms/'][parameter][0]['value']
-            except:
-                group[parameter] = None
-        out[k] = group
-        
-    return out
+                queries[key] = series_conf[key].format(**MAPPINGS)
+            except KeyError:
+                # If the placeholder does not exist, log the issue but ignore it
+                # TODO Log the exception
+                pass
+            
+    try:
+        series_list = []
+        check_default = True
+        while True:
+            series_json = json.loads(mhclient.getseries(**queries))
+            for catalog in series_json['catalogs']:
+                try:
+                    series_list.append(parse_json_series(catalog))
+                except KeyError:
+                    # Ignore ill-formated series
+                    pass
+            if len(series_list) >= int(series_json['totalCount']):
+                # Check the default series is present, otherwise query for it
+                if 'default' in series_conf and check_default and series_conf['default'] not in dict(series_list):
+                    check_default = False
+                    queries = { "seriesId": series_conf['default'] }
+                else:
+                    break
+            else:
+                queries['startPage'] += 1
+
+        repo.save_attach('series.json', json.dumps(series_list))
+
+    except (ValueError, IOError, RuntimeError, AttributeError) as e:
+        #TODO Log the exception
+        try:
+            series_list = json.load(repo.get_attach('series.json'))
+        except (ValueError, IOError) as sub_e:
+            #TODO Log the exception
+            series_list = []
+
+    return series_list
+
     
+def parse_json_series(json_series):
+    series = {}
+    for term in json_series[NAMESP].iterkeys():
+        try:
+            series[term] = json_series[NAMESP][term][0]['value']
+        except (KeyError, IndexError) as error:
+            # Ignore non-existant items
+            # TODO Log the exception
+            pass
     
+    return (series['identifier'], series )
+
+
 def transform(a):
     return a.strip()
 
+
+def get_default_series():
+    return context.get_conf().get('series', 'default')
 
 def getSeriesbyId(seriesid):
     #TODO
     """
     Generate a list with the series value name, shortname and id
     """
-    list_series = get_series()
+    list_series = dict(get_series())
     try:
         match = {"id": seriesid, "name": list_series[seriesid]['title'], "list": list_series[seriesid]}
         return match
@@ -66,7 +115,7 @@ def getSeriesbyName(seriesname):
     """
     Generate a list with the series value name, shortname and id
     """
-    list_series = get_series()
+    list_series = dict(get_series())
     match = None
     for key,series in list_series.iteritems():
         if series['title'] == seriesname:
