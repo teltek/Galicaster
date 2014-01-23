@@ -112,6 +112,8 @@ class RecorderClassUI(gtk.Box):
         self.error_text = None
         self.error_dialog = None
         self.ok_to_show = False
+        self.swap_active = None
+        self.swap = False
 
         # BUILD
         self.recorderui = builder.get_object("recorderbox")
@@ -194,6 +196,22 @@ class RecorderClassUI(gtk.Box):
         self.clock_thread.start() 
         self.dispatcher.emit("galicaster-init")
 
+        # SHOW OR HIDE SWAP BUTTON
+        if self.conf.get_boolean('basic', 'swapvideos'):
+            self.swap_active = True
+        else:
+            self.swap_active = False
+
+    # Handle for swap videos button
+    def swap_videos(self, button=None):
+        if self.swap:
+            self.swap = False
+        else:
+            self.swap = True
+        self.dispatcher.emit("reload-profile")
+        self.audiobar.mute = False        
+        self.audiobar.SetVumeter
+
     def select_devices(self):
         """Loads the bins and creates the preview areas for the active profile, creating a new mediapacakge."""
         self.configure_profile()
@@ -202,6 +220,12 @@ class RecorderClassUI(gtk.Box):
         self.mediapackage = mediapackage.Mediapackage(title="Recording started at " + now.isoformat())
 
         context.get_state().mp=self.mediapackage.identifier
+
+        # profile load depending of the swap value 
+        if self.swap:
+            self.conf.reverse_current_profile()
+        else:
+            self.conf.orde_current_profile()
 
         current_profile = self.conf.get_current_profile()
         bins = current_profile.tracks
@@ -1102,7 +1126,7 @@ class RecorderClassUI(gtk.Box):
         relabel(l2,k1*20,False)
         relabel(l3,k1*20,False)
 
-        for name  in ["recbutton","pausebutton","stopbutton","editbutton","helpbutton"]:
+        for name  in ["recbutton","pausebutton","stopbutton","editbutton","swapbutton","helpbutton"]:
             button = self.gui.get_object(name)
             button.set_property("width-request", int(k1*100) )
             button.set_property("height-request", int(k1*100) )
@@ -1155,8 +1179,10 @@ class RecorderClassUI(gtk.Box):
         helpb = self.gui.get_object("helpbutton")
         editb = self.gui.get_object("editbutton")
         prevb = self.gui.get_object("previousbutton")
+        swapb = self.gui.get_object("swapbutton")
+        if not self.swap_active:
+            swapb.hide()
 
-  
         if state != self.status:
             self.previous,self.status = self.status,state
 
@@ -1167,6 +1193,7 @@ class RecorderClassUI(gtk.Box):
             helpb.set_sensitive(True)
             prevb.set_sensitive(True)
             editb.set_sensitive(False)
+            swapb.set_sensitive(False)
             self.dispatcher.emit("update-rec-status", "Initialization")            
 
         elif state == GC_PREVIEW:    
@@ -1177,6 +1204,7 @@ class RecorderClassUI(gtk.Box):
             helpb.set_sensitive(True)
             prevb.set_sensitive(True)
             editb.set_sensitive(False)
+            swapb.set_sensitive(True)
             if self.next == None:
                 self.dispatcher.emit("update-rec-status", "Idle")            
             else:
@@ -1188,6 +1216,7 @@ class RecorderClassUI(gtk.Box):
             stop.set_sensitive( (self.allow_stop or self.allow_manual) )
             helpb.set_sensitive(True)
             prevb.set_sensitive(False)
+            swapb.set_sensitive(False)
             editb.set_sensitive(True and not self.scheduled_recording)    
             self.dispatcher.emit("update-rec-status", "  Recording  ")
        

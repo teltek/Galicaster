@@ -636,6 +636,30 @@
                           </packing>
                         </child>
                         <child>
+                          <object class="GtkToggleButton" id="swapbutton">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="use_action_appearance">False</property>
+                            <property name="focus_on_click">False</property>
+                            <signal name="toggled" handler="swap_videos" swapped="no"/>
+                            <child>
+                              <object class="GtkImage" id="image2b">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="pixel_size">0</property>
+                                <property name="icon_name">object-rotate-left</property>
+                                <property name="icon-size">6</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">4</property>
+                          </packing>
+                        </child>
+                        <child>
                           <object class="GtkButton" id="helpbutton">
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>

@@ -272,6 +272,11 @@ class Conf(object): # TODO list get and other ops arround profile
    def get_current_profile(self):      
       return self.__current_profile
 
+   def reverse_current_profile(self):
+      self.__current_profile.tracks.reverse()      
+
+   def orde_current_profile(self):
+      self.__current_profile.tracks.sort() 
 
    def change_current_profile(self,name):
       if name != self.__current_profile.name:
