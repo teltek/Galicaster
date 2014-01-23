@@ -265,16 +265,16 @@ class ListingClassUI(ManagerUI):
 #---------------------------- MOUSE AND SELECTION MANAGMENT --------------------
 
 
-    def on_action(self, action):
+    def on_action(self, widget):
         """When an action its selected calls the function associated"""	
-	op=action.get_property("tooltip-text")
-	if not isinstance(op,str):
-            op=action.get_label()
+	action=widget.get_name()
+	#if not isinstance(op,str):
+        #    op=action.get_label()
 
-	logger.info("ON_action >> "+op)
+	logger.info("ON_action >> {0}".format(action))
 
 
-	if op == "Delete":
+	if action == "delete_action":
 	    #self.vista.get_selection().selected_foreach(self.delete)
 	    model, selected = self.vista.get_selection().get_selected_rows()
 	    iters = []
@@ -284,13 +284,13 @@ class ListingClassUI(ManagerUI):
 	    for i in iters:
                 self.on_delete(self.lista,i)
 		#TODO connect "row-deleted" to delete package
-	elif op == "Operations" or op == "Ingest":
+	elif action == "operations_action":
             self.vista.get_selection().selected_foreach(self.on_ingest_question)
-	elif op == "Play":
+	elif action == "play_action":
 	    self.vista.get_selection().selected_foreach(self.on_play)# FIX single operation
-	elif op == "Edit":
+	elif action == "edit_action":
 	    self.vista.get_selection().selected_foreach(self.on_edit)# FIX single operation
-	elif op == "Info":
+	elif action == "info_action":
 	    self.vista.get_selection().selected_foreach(self.on_info)
 	else:
             logger.debug('Invalid action')
@@ -300,12 +300,20 @@ class ListingClassUI(ManagerUI):
         """Creates a menu to be shown on right-button-click over a MP"""
 	menu = gtk.Menu()
 	if self.conf.get_boolean('ingest', 'active'):
-            operations = ["Play", "Edit", "Operations", "Info", "Delete"]
+            operations = [ ("Play", "play_action"),
+                           ("Edit", "edit_action"),
+                           ("Operations", "operations_action"), 
+                           ("Info", "info_action"),
+                           ("Delete", "delete_action")]
 	else:
-	    operations = ["Play", "Edit", "Info", "Delete"]
+            operations = [ ("Play", "play_action"),
+                           ("Edit", "edit_action"),
+                           ("Info", "info_action"),
+                           ("Delete", "delete_action")]
 
 	for op in operations:
-            item = gtk.MenuItem(op)
+            item = gtk.MenuItem(op[0])
+            item.set_name(op[1])
 	    menu.append(item)
 	    item.connect("activate", self.on_action)
 	    item.show()

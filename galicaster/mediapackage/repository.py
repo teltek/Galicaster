@@ -232,7 +232,7 @@ class Repository(object):
         for bin in bins:
             # TODO rec all and ingest 
             capture_dev_names = mp.getOCCaptureAgentProperty('capture.device.names')
-            if mp.manual or not capture_dev_names or capture_dev_names == 'defaults' or bin['name'] in capture_dev_names:
+            if mp.manual or len(capture_dev_names) == 0 or capture_dev_names == 'defaults' or bin['name'] in capture_dev_names:
                 filename = os.path.join(bin['path'], bin['file'])
                 dest = os.path.join(mp.getURI(), os.path.basename(filename))
                 os.rename(filename, dest)
@@ -267,9 +267,8 @@ class Repository(object):
 
 
     def save_attach(self, name, data):
-        m = open(os.path.join(self.root, self.attach_dir, name), 'w')  
-        m.write(data)  
-        m.close()
+        with open(os.path.join(self.root, self.attach_dir, name), 'w') as m:
+            m.write(data)  
         
 
     def get_attach(self, name):
@@ -322,12 +321,20 @@ class Repository(object):
             folder_name = (base + "_" + str(next(count)))
 
         return os.path.join(self.root, folder_name)
-
-
-    def __add(self, mp):
-        self.__list[mp.getIdentifier()] = mp
-        serializer.save_in_dir(mp, self.logger)
-        #FIXME write new XML metadata, episode, series
-        return mp
         
     
+    def __add(self, mp):
+        self.__list[mp.getIdentifier()] = mp
+
+        # This makes sure the series gets properly included/removed from the manifest                                                                                                                              
+        # FIXME: Probably shouldn't go here                                                                                                                                                                        
+        catalogs = mp.getCatalogs("dublincore/series")
+        if mp.getSeriesIdentifier() and not catalogs:
+                mp.add(os.path.join(mp.getURI(), 'series.xml'), mediapackage.TYPE_CATALOG, 'dublincore/series', 'text/xml')
+        elif not mp.getSeriesIdentifier() and catalogs:
+            mp.remove(catalogs[0])
+            # FIXME: Remove the file from disk?                                                                                                                                                                     
+        # Save the mediapackage in the repo
+        serializer.save_in_dir(mp, self.logger)
+        #FIXME write new XML metadata, episode, series                                                                                                                                                              
+        return mp

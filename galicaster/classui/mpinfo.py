@@ -23,6 +23,38 @@ from galicaster.core import context
 from galicaster.utils import readable
 from galicaster.utils.nautilus import open_folder
 
+EPISODE_NAMES = { 'title': 'Title:',
+            'identifier': 'Identifier:',
+            'folder': 'Folder:',
+            'duration': 'Duration:',
+            'size': 'Size:',
+            'created': 'Recorded on:',
+            'license': 'License:',
+            'temporal': 'Temporal:',
+            'spatial': 'Agent name:',
+            'isPartOf': 'Series:',
+            'contributor': 'Contributor:',
+            'creator': 'Presenter:',
+            'subject': 'Subject:',
+            'language': 'Language:',
+            'description': 'Description:',
+            'rights': 'Rights:',
+             }
+
+SERIES_NAMES = { 'title': 'Title:',
+            'identifier': 'Identifier:',
+            'creator': 'Creator:',
+            'contributor': 'Contributor:',
+            'subject': 'Subject:',
+            'language': 'Language:',
+            'license': 'License:',
+            'description': 'Description:',
+             }
+
+ORDER_EPISODES = [ 'title', 'identifier', 'folder', 'duration', 'size', 'created' , 'license', 'temporal', 'spatial', 'isPartOf', 'contributor', 'creator', 'subject', 'language', 'description', 'rights']
+
+ORDER_SERIES = [ 'title', 'identifier','creator', 'contributor', 'subject', 'language', 'license', 'decription']
+
 class MPinfo(gtk.Window):
 
     __gtype_name__ = 'MPinfoUI'
@@ -49,21 +81,24 @@ class MPinfo(gtk.Window):
         # INFO       
 	mp = context.get_repository().get(key)
 
-        # Basic info
-        basic, basic_table = self.add_framed_table("Basic")
-        self.add_data(basic_table,"Title:",mp.title)
-        self.add_data(basic_table,"Identifier:",mp.identifier)
-        self.add_data(basic_table,"Folder:",mp.getURI())
-        self.add_data(basic_table,"Duration:",
-                      readable.time(int(mp.getDuration())/1000))
-        self.add_data(basic_table,"Size:",
-                      readable.size(mp.getSize()))
-        self.add_data(basic_table,"Recorded on:",
-                      readable.date(mp.getStartDateAsString(),
-                                    "%B %d, %Y - %H:%M").replace(' 0',' '))
-        for parameter in mp.metadata_episode:
-            if mp.metadata_episode[parameter] and parameter != 'title':
-                self.add_data(basic_table,parameter.capitalize(),mp.metadata_episode[parameter])
+        
+
+        # Metadata info
+        data = {}
+        data['title'] = mp.title
+        data['identifier'] = mp.identifier
+        data['folder'] = mp.getURI()
+        data['duration'] = readable.time(int(mp.getDuration())/1000)
+        data['size'] = readable.size(mp.getSize())
+        data['created'] = readable.date(mp.getStartDateAsString(),
+                                   "%B %d, %Y - %H:%M").replace(' 0',' ')
+
+        basic, basic_table = self.add_framed_table("Basic")    
+        for item in ORDER_EPISODES:
+            if item in data:
+                self.add_data(basic_table,EPISODE_NAMES[item], data[item])
+            elif item in mp.metadata_episode:
+                self.add_data(basic_table,EPISODE_NAMES[item], mp.metadata_episode[item])                
 
         # Operations info
         ops, ops_table = self.add_framed_table("Operations")
@@ -74,11 +109,13 @@ class MPinfo(gtk.Window):
         self.add_data(ops_table,"Side by Side:",
                       mediapackage.op_status[mp.getOpStatus("sidebyside")])
 
+        
         # Series info
         if mp.getSeries():
             series, series_table = self.add_framed_table("Series")
-            for parameter in mp.metadata_series:
-                self.add_data(series_table,parameter.capitalize(),mp.metadata_series[parameter])
+            for item in ORDER_SERIES:
+                if item in mp.metadata_series:
+                    self.add_data(series_table,SERIES_NAMES[item], mp.metadata_series[item])
 
         # Track info
         tracks, track_table = self.add_framed_table("Tracks", True)
@@ -90,11 +127,11 @@ class MPinfo(gtk.Window):
             self.add_data(track_table,"Name:",track.getIdentifier())
             self.add_data(track_table,"Flavor:",track.getFlavor())
             self.add_data(track_table,"Type:",track.getMimeType())
-            filename = str(path.split(track.getURI())[1])
+            filename = str(os.path.split(track.getURI())[1])
             self.add_data(track_table,"File:",filename)
 
         # Catalog info
-        cats, cat_table = self.add_framed_table("Catalogs", True)
+        cats, cat_table = self.add_framed_table(_("Catalogs"), True)
         first = True
         for cat in mp.getCatalogs():
             if not first:
@@ -103,7 +140,7 @@ class MPinfo(gtk.Window):
             self.add_data(cat_table,"Name:",cat.getIdentifier())
             self.add_data(cat_table,"Flavor:",cat.getFlavor())
             self.add_data(cat_table,"Type:",cat.getMimeType())
-            filename = str(path.split(cat.getURI())[1])
+            filename = str(os.path.split(cat.getURI())[1])
             self.add_data(cat_table,"File:",filename)
 
         #PACKING

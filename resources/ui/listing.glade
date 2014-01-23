@@ -53,6 +53,7 @@
             <property name="layout_style">spread</property>
             <child>
               <object class="GtkButton" id="playbutton">
+		<property name="name">play_action</property>
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -78,6 +79,7 @@
             </child>
             <child>
               <object class="GtkButton" id="editbutton">
+		<property name="name">edit_action</property>
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -126,6 +128,7 @@
             </child>
             <child>
               <object class="GtkButton" id="ingestbutton">
+		<property name="name">operations_action</property>
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -174,6 +177,7 @@
             </child>
             <child>
               <object class="GtkButton" id="deletebutton">
+		<property name="name">delete_action</property>
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
