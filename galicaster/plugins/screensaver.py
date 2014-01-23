@@ -36,7 +36,7 @@ def init():
     dispatcher.connect('starting-record', deactivate_and_poke)
     dispatcher.connect('restart-preview', configure)
     dispatcher.connect('galicaster-notify-quit', configure_quit)
-    default_configuration()
+    configure()
 
 def get_screensaver_method(method):
     dbus_loop = DBusGMainLoop()
@@ -50,7 +50,7 @@ def activate_screensaver(signal=None):
     configure()
 
 def deactivate_screensaver(signal=None):
-    os.system('xset s off')
+    os.system('xset dpms 0 0 0')
 
 def deactivate_and_poke(signal=None):
     deactivate_screensaver()
@@ -58,16 +58,11 @@ def deactivate_and_poke(signal=None):
 
 def configure(signal=None):
     global inactivity
-    os.system('xset s on')
-    os.system('xset s '+inactivity)
+    os.system('xset +dpms')
+    os.system('xset dpms 0 0'+inactivity)
 
 def configure_quit(signal=None):
-    os.system('xset s off')
-    
-def default_configuration():
-    configure()
-    os.system('xset s blank')
-    os.system('xset s expose')
+    os.system('xset -dpms')
 
 def poke_screen(signal=None):
     poke = get_screensaver_method('SimulateUserActivity')
