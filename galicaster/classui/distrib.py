@@ -82,7 +82,16 @@ class DistribUI(gtk.Box):
             dispatcher.emit(signal)
 
     def show_about_dialog(self,origin, button):
-        GCAboutDialog()
+        about_dialog = GCAboutDialog()
+        about_dialog.set_transient_for(context.get_mainwindow())
+        about_dialog.set_modal(True)
+        about_dialog.set_keep_above(False)
+        about_dialog.show()
+        about_dialog.connect('response', self.on_about_dialog_response)
+                
+    def on_about_dialog_response(self, origin, response_id):
+        if response_id == gtk.RESPONSE_CLOSE or response_id == gtk.RESPONSE_CANCEL:
+            origin.hide()  
 
     def resize(self): 
         size = context.get_mainwindow().get_size()
