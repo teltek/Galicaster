@@ -25,6 +25,8 @@ from galicaster.classui import get_ui_path, get_image_path
 from galicaster.classui.elements.message_header import Header
 from threading import Lock
 
+from galicaster.utils.i18n import _
+
 lock = Lock()
 
 no_audio = False
@@ -176,7 +178,7 @@ def create_ui():
     """
     Creates the No Audio Dialog interface
     """
-    parent =  context.get_mainwindow()
+    parent =  context.get_mainwindow().get_toplevel()
     ui = gtk.Dialog("Warning", parent)
 
     #Properties
@@ -202,7 +204,7 @@ def create_ui():
     if keep_closed_feature:
         keep_button = ui.add_button("Keep Closed",1)
         keep_button.connect("clicked",activate_hidden, ui)
-    hide_button = ui.add_button("Close",2)
+    hide_button = ui.add_button(_("Close"),2)
     hide_button.connect("clicked",lambda l:ui.hide())
     for child in ui.action_area.get_children():
         child.set_property("width-request", int(wprop*170) )
@@ -210,13 +212,13 @@ def create_ui():
         child.set_can_focus(False)
 
     #Taskbar with logo
-    strip = Header(size=size, title="Warning")
+    strip = Header(size=size, title=_("Warning"))
     ui.vbox.pack_start(strip, False, True, 0)
     strip.show()
 
     #Labels
-    label1 = gtk.Label("No Audio!!")
-    label2 = gtk.Label("Pick up the microphone\nPress the mute button")
+    label1 = gtk.Label(_("No Audio!!"))
+    label2 = gtk.Label(_("Pick up the microphone\nPress the mute button"))
     desc1 = "bold " + str(int(hprop*64))+"px"
     desc2 = "bold " + str(int(hprop*24))+"px"
     font1=pango.FontDescription(desc1)

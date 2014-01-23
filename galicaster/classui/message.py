@@ -17,6 +17,8 @@ import gobject
 from galicaster.classui import get_image_path
 from galicaster.classui.elements.message_header import Header
 
+from galicaster.utils.i18n import _
+
 TEXT = {'title': None, 'main': None, 'text': None}
 INFO = gtk.STOCK_DIALOG_INFO
 QUESTION = gtk.STOCK_DIALOG_QUESTION
@@ -26,16 +28,16 @@ ACTION = gtk.STOCK_DIALOG_QUESTION
 POSITIVE = [gtk.RESPONSE_ACCEPT, gtk.RESPONSE_OK, gtk.RESPONSE_YES, gtk.RESPONSE_APPLY]
 NEGATIVE = [gtk.RESPONSE_REJECT, gtk.RESPONSE_DELETE_EVENT, gtk.RESPONSE_CANCEL, gtk.RESPONSE_CLOSE, gtk.RESPONSE_NO]
 
-OPERATION_NAMES = { 'Export to Zip': 'Export to Zip',
-            'Export to Zip Nightly': 'Export to Zip Nightly',
-            'Cancel Export to Zip Nightly': 'Cancel Zip Nightly',
-            'Ingest': 'Ingest',
-            'Ingest Nightly': 'Ingest Nightly',
-            'Cancel Ingest Nightly': 'Cancel Ingest Nightly:',
-            'Side by Side': 'Side by Side',
-            'Side by Side Nightly': 'Side by Side Nightly',
-            'Cancel Side by Side Nightly': 'Cancel SbS Nightly',            
-            'Cancel': 'Cancel',
+OPERATION_NAMES = { 'Export to Zip': _('Export to Zip'),
+            'Export to Zip Nightly': _('Export to Zip Nightly'),
+            'Cancel Export to Zip Nightly': _('Cancel Zip Nightly'),
+            'Ingest': _('Ingest'),
+            'Ingest Nightly': _('Ingest Nightly'),
+            'Cancel Ingest Nightly': _('Cancel Ingest Nightly:'),
+            'Side by Side': _('Side by Side'),
+            'Side by Side Nightly': _('Side by Side Nightly'),
+            'Cancel Side by Side Nightly': _('Cancel SbS Nightly'),            
+            'Cancel': _('Cancel'),
              }
 
 class PopUp(gtk.Widget):
@@ -276,7 +278,7 @@ class PopUp(gtk.Widget):
                     break
 
         if has_ingest:
-            ingest = gtk.Frame("Ingest")
+            ingest = gtk.Frame(_("Ingest"))
             ingest.set_label_align(0.5,0.5)
             ing_align = gtk.Alignment(0.5,0.5,0.6,0.6)
             ing_align.set_padding(0,0,int(self.wprop*10),int(self.wprop*10))
@@ -287,7 +289,7 @@ class PopUp(gtk.Widget):
 
 
         if has_export:
-            export = gtk.Frame("Export")
+            export = gtk.Frame(_("Export"))
             exp_align = gtk.Alignment(0.5,0.5,0.7,0.7)
             exp_align.set_padding(0,0,int(self.wprop*10),int(self.wprop*10))
             export.set_label_align(0.5,0.5)

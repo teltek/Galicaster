@@ -24,6 +24,9 @@ $ sudo apt-get install python-pycurl
 # Herramientas de configuración de tarjetas capturadoras
 $ sudo apt-get install v4l-conf v4l-utils guvcview
 
+# Paquete para usar glade en Python
+$ sudo apt-get install python-glade2
+
   * Nota: Hasta la versión 10.10 de Ubuntu (incluida) debe usarse "ivtv-utils" en lugar de "v4l-utils".
 
 # (Opcional) pyGst

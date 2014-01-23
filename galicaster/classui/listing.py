@@ -20,6 +20,8 @@ from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 from galicaster.classui import get_ui_path
 
+from galicaster.utils.i18n import _
+
 logger = context.get_logger()
 
 rcstring = """
@@ -128,17 +130,17 @@ class ListingClassUI(ManagerUI):
 	# Create each column
 	#columna5 = gtk.TreeViewColumn("Id",render5,text = 0, background= 8) 
 	# column5 wont be append to the treeview
-	columna1 = gtk.TreeViewColumn("Name",render1,text = 1, background= 8)
-	columna6 = gtk.TreeViewColumn("Presenter", render6, text = 2, background= 8)
-	columna7 = gtk.TreeViewColumn("Series", render7, text = 3, background= 8)
-	columna2 = gtk.TreeViewColumn("Size", render2, text = 4, background= 8)
-	columna3 = gtk.TreeViewColumn("Duration", render3, text = 5, background= 8)
-	columna4 = gtk.TreeViewColumn("Date", render4, text = 6, background= 8)
+	columna1 = gtk.TreeViewColumn(_("Name"),render1,text = 1, background= 8)
+	columna6 = gtk.TreeViewColumn(_("Presenter"), render6, text = 2, background= 8)
+	columna7 = gtk.TreeViewColumn(_("Series"), render7, text = 3, background= 8)
+	columna2 = gtk.TreeViewColumn(_("Size"), render2, text = 4, background= 8)
+	columna3 = gtk.TreeViewColumn(_("Duration"), render3, text = 5, background= 8)
+	columna4 = gtk.TreeViewColumn(_("Date"), render4, text = 6, background= 8)
 	
 	#columna8 = gtk.TreeViewColumn("Status", render8, text = 7, background= 8)
-	columna9 = gtk.TreeViewColumn("Ingest", render9)
-	columna10 = gtk.TreeViewColumn("Zip", render9)
-	columna11 = gtk.TreeViewColumn("SbS", render9)		
+	columna9 = gtk.TreeViewColumn(_("Ingest"), render9)
+	columna10 = gtk.TreeViewColumn(_("Zip"), render9)
+	columna11 = gtk.TreeViewColumn(_("SbS"), render9)		
 	
 	#columna8 = gtk.TreeViewColumn("Status", render8, text = 7, background= 8)
 	#columna9 = gtk.TreeViewColumn("Operations", render9, text = 9, background= 8)
@@ -300,16 +302,16 @@ class ListingClassUI(ManagerUI):
         """Creates a menu to be shown on right-button-click over a MP"""
 	menu = gtk.Menu()
 	if self.conf.get_boolean('ingest', 'active'):
-            operations = [ ("Play", "play_action"),
-                           ("Edit", "edit_action"),
-                           ("Operations", "operations_action"), 
-                           ("Info", "info_action"),
-                           ("Delete", "delete_action")]
+            operations = [ (_("Play"), "play_action"),
+                           (_("Edit"), "edit_action"),
+                           (_("Operations"), "operations_action"), 
+                           (_("Info"), "info_action"),
+                           (_("Delete"), "delete_action")]
 	else:
-            operations = [ ("Play", "play_action"),
-                           ("Edit", "edit_action"),
-                           ("Info", "info_action"),
-                           ("Delete", "delete_action")]
+            operations = [ (_("Play"), "play_action"),
+                           (_("Edit"), "edit_action"),
+                           (_("Info"), "info_action"),
+                           (_("Delete"), "delete_action")]
 
 	for op in operations:
             item = gtk.MenuItem(op[0])
@@ -365,9 +367,9 @@ class ListingClassUI(ManagerUI):
 	if package.status == mediapackage.RECORDED:
 	    self.dispatcher.emit("play-list", package)
 	else:			
-	    text = {"title" : "Media Manager",
-		    "main" : "This recording can't be played",
-		    }
+	    text = {"title" : _("Media Manager"),
+		    "main" : _("This recording can't be played"),
+		   }
 	    buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
 	    message.PopUp(message.WARNING, text, 
                           context.get_mainwindow(),

@@ -15,10 +15,10 @@ Recording Area GUI
 """
 
 import os
-from os import path
 import gobject
 import gst
 import gtk
+import gtk.glade
 import pango
 import re
 import time
@@ -29,6 +29,7 @@ from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 from galicaster.recorder import Recorder
 
+from galicaster.utils import series
 from galicaster.classui.metadata import MetadataClass as Metadata
 from galicaster.classui import statusbar as status_bar
 from galicaster.classui.audiobar import Vumeter
@@ -38,6 +39,8 @@ from galicaster.classui.about import GCAboutDialog
 from galicaster.classui import message
 from galicaster.classui import get_ui_path, get_image_path
 from galicaster.utils.resize import relabel, relabel_updating_font
+
+from galicaster.utils.i18n import _
 
 gtk.gdk.threads_init()
 
@@ -56,18 +59,19 @@ GC_STOP = 6
 GC_BLOCKED = 7
 GC_ERROR = 9
 
+# No-op function for i18n
+def N_(string): return string
 
-
-STATUS = [  ["Initialization","#F7F6F6"],
-            ["Ready","#F7F6F6"],
-            ["Preview","#F7F6F6"],
-            ["Recording","#FF0000"],
-            ["Recording","#F7F6F6"],
-            ["Paused","#F7F6F6"],
-            ["Stopped","#F7F6F6"],
-            ["Blocked","#F7F6F6"],
-            ["Waiting","#F7F6F6"],
-            ["Error","#FF0000"],
+STATUS = [  [N_("Initialization"),"#F7F6F6"],
+            [N_("Ready"),"#F7F6F6"],
+            [N_("Preview"),"#F7F6F6"],
+            [N_("Recording"),"#FF0000"],
+            [N_("Recording"),"#F7F6F6"],
+            [N_("Paused"),"#F7F6F6"],
+            [N_("Stopped"),"#F7F6F6"],
+            [N_("Blocked"),"#F7F6F6"],
+            [N_("Waiting"),"#F7F6F6"],
+            [N_("Error"),"#FF0000"],
             ]
 
 
@@ -77,8 +81,8 @@ TIME_RED_START = 50
 TIME_RED_STOP = 50
 TIME_UPCOMING = 60
 
-NEXT_TEXT = "Upcoming"
-CURRENT_TEXT = "Current"
+NEXT_TEXT = _("Upcoming")
+CURRENT_TEXT = _("Current")
 
 
 class RecorderClassUI(gtk.Box):
@@ -217,7 +221,7 @@ class RecorderClassUI(gtk.Box):
         self.configure_profile()
         logger.info("Setting Devices the new way")
         now = datetime.datetime.now().replace(microsecond=0)
-        self.mediapackage = mediapackage.Mediapackage(title="Recording started at " + now.isoformat())
+        self.mediapackage = mediapackage.Mediapackage(title=_("Recording started at {0}").format(now.isoformat()))
 
         context.get_state().mp=self.mediapackage.identifier
 
@@ -390,10 +394,10 @@ class RecorderClassUI(gtk.Box):
         """Stops preview or recording and closes the Mediapakage"""
         self.dispatcher.emit("disable-no-audio")
         if self.conf.get_boolean("basic", "stopdialog"):
-            text = {"title" : "Recorder",
-                    "main" : "Are you sure you want to\nstop the recording?",
+            text = {"title" : _("Recorder"),
+                    "main" : _("Are you sure you want to\nstop the recording?"),
             }
-            buttons = ( "Stop", gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
+            buttons = ( gtk.STOCK_STOP, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
             warning = message.PopUp(message.WARNING, text,
               context.get_mainwindow(), buttons
             )
@@ -577,10 +581,10 @@ class RecorderClassUI(gtk.Box):
         """Triggers a pop-up when Help button is clicked"""
         logger.info("Help requested")   
 
-        text = {"title" : "Help",
-                "main" : " Visit galicaster.teltek.es",
-                "text" : " ...or contact us on our community list."
-			}
+        text = {"title" : _("Help"),
+                "main" : _(" Visit galicaster.teltek.es"),
+                "text" : _(" ...or contact us on our community list.")
+		}
         buttons = None
         message.PopUp(message.INFO, text,
                       context.get_mainwindow(), buttons)
@@ -617,8 +621,8 @@ class RecorderClassUI(gtk.Box):
     def launch_error_message(self, error_message):
         """Shows an active error message."""
         text = {
-            "title" : "Recorder",
-            "main" : " Please review your configuration \nor load another profile",                
+            "title" : _("Recorder"),
+            "main" : _(" Please review your configuration \nor load another profile"),                
             "text" : error_message
 			}
         self.error_dialog = message.PopUp(message.ERROR, text, 
@@ -716,7 +720,7 @@ class RecorderClassUI(gtk.Box):
                 self.statusbar.SetTimer(timer)
                 if rec_title.get_text() != self.mediapackage.getTitle():
                     rec_title.set_text(self.mediapackage.getTitle())
-                rec_elapsed.set_text("Elapsed Time: " + self.time_readable(dif))
+                rec_elapsed.set_text(_("Elapsed Time: ") + self.time_readable(dif))
                 gtk.gdk.threads_leave()
             time.sleep(0.2)          
         return True
@@ -781,7 +785,7 @@ class RecorderClassUI(gtk.Box):
                     self.current_mediapackage = None
                     status.set_text("")
                 else:
-                    status.set_text("Stopping in "+self.time_readable(dif+one_second))
+                    status.set_text(_("Stopping in {0}").format(self.time_readable(dif+one_second)))
                     if event_type.get_text() != CURRENT_TEXT:
                         event_type.set_text(CURRENT_TEXT) 
                     if title.get_text() != self.current.title:
@@ -805,7 +809,7 @@ class RecorderClassUI(gtk.Box):
                     event_type.set_text(NEXT_TEXT)
                 if title.get_text() != self.next.title:
                     title.set_text(self.next.title)
-                status.set_text("Starting in " + self.time_readable(dif))
+                status.set_text(_("Starting in {0}").format(self.time_readable(dif)))
 
                 if dif < datetime.timedelta(0,TIME_RED_START):
                     if not changed:
@@ -835,8 +839,8 @@ class RecorderClassUI(gtk.Box):
                     event_type.set_text("")
                 if status.get_text():
                     status.set_text("")
-                if title.get_text() != "No upcoming events":
-                    title.set_text("No upcoming events")
+                if title.get_text() != _("No upcoming events"):
+                    title.set_text(_("No upcoming events"))
                 
             time.sleep(0.5)
             self.check_schedule()            
@@ -905,7 +909,7 @@ class RecorderClassUI(gtk.Box):
         self.dispatcher.emit("disable-no-audio")
         #self.change_state(GC_BLOCKED)
         if not self.scheduled_recording:
-            Metadata(self.mediapackage, parent=self)
+            Metadata(self.mediapackage, series.get_series(), parent=self)
             mp = self.mediapackage
             self.statusbar.SetVideo(None,mp.getTitle())
             if self.mediapackage.getCreator() != None:
@@ -998,9 +1002,9 @@ class RecorderClassUI(gtk.Box):
 
         for i in STATUS:
             if i[0] in ["Recording", "Error"]:
-                l.append([i[0], i[1], fgcolor])
+                l.append([_(i[0]), i[1], fgcolor])
             else:            
-                l.append([i[0], bgcolor, fgcolor])
+                l.append([_(i[0]), bgcolor, fgcolor])
 
         v = gtk.CellView()
         v.set_model(l)
@@ -1034,7 +1038,7 @@ class RecorderClassUI(gtk.Box):
         s1.set_text(text_space)
         four_gb = 4000000000.0
         hours = int(freespace/four_gb)
-        s2.set_text(str(hours) + " hours left")
+        s2.set_text(_("{0} hours left").format(str(hours)))
         agent = context.get_state().hostname # TODO just consult it once
         if s4.get_text() != agent:
             s4.set_text(agent)
@@ -1059,7 +1063,7 @@ class RecorderClassUI(gtk.Box):
             s3.set_text("Disabled")
             s3.set_attributes(attr1)
         else:
-            net = status or context.get_state().net
+            net = status
             try:
                 if net:
                     s3.set_text("Up")

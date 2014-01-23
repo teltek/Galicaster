@@ -22,6 +22,8 @@ from galicaster.classui.metadata import MetadataClass, DCTERMS, EQUIV
 
 import os
 
+from galicaster.utils.i18n import _
+
 #DCTERMS = ["title", "creator", "description", "language", "isPartOf"]
 MAPPINGS = { 'user': getpass.getuser() }
 
@@ -58,6 +60,8 @@ def init():
     rec_button.handler_block_by_func(recorder_ui.on_rec)
     
 def on_rec(button):
+    dispatcher = context.get_dispatcher()    
+    dispatcher.emit("disable-no-audio")
     global recorder_ui
     global metadata
 
@@ -78,9 +82,9 @@ def on_rec(button):
 
     arguments = { 'package': mp,
                   'series_list': series_list,
-                  'title': "New Recording",
-                  'subtitle': "New Recording",
-                  'ok_label': "Start",
+                  'title': _("New Recording"),
+                  'subtitle': _("New Recording"),
+                  'ok_label': _("Start"),
                   }
     
     if len(series_list) <= 1:
@@ -90,4 +94,5 @@ def on_rec(button):
     
     if popup.return_value == -8:
         recorder_ui.on_rec()
+    dispatcher.emit("enable-no-audio")
     

@@ -23,6 +23,7 @@ from galicaster.core import context
 from galicaster.classui import get_ui_path
 from galicaster.classui.elements.message_header import Header
 
+from galicaster.utils.i18n import _
 
 HOW_MANY=5
 
@@ -61,7 +62,7 @@ class EventManager(gtk.Widget):
         dialog.set_modal(True)
         dialog.set_keep_above(False)
 
-        strip = Header(size=size, title="Next Recordings")
+        strip = Header(size=size, title=_("Next Recordings"))
         title.hide()
 
         dialog.vbox.pack_start(strip, False, True, 0)
@@ -106,12 +107,12 @@ class EventManager(gtk.Widget):
 
             #l = self.big_label("Record Now", int(k1*30))
 
-            b = gtk.Button("Record Now")
+            b = gtk.Button(_("Record Now"))
             l = b.get_child()
             tamanho = pango.FontDescription(str(int(k1*25))+"px")
             l.modify_font(tamanho)
             b.set_alignment(0.5,0.5)
-            b.set_property("tooltip-text","Record Now")
+            b.set_property("tooltip-text",_("Record Now"))
             b.connect("button-press-event",self.send_start, mp.identifier)
             b.set_property("width-request", int (k1*180))
             b.set_property("height-request", int (k2*70))

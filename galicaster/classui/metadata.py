@@ -27,7 +27,7 @@ from galicaster.utils import series as listseries
 from galicaster.classui import get_ui_path
 from galicaster.classui.elements.message_header import Header
 
-
+from galicaster.utils.i18n import _
 
 NO_SERIES  = "** NO SERIES SELECTED **"
 DEFAULT_SERIES = "DEFAULT SERIES"
@@ -35,15 +35,15 @@ DEFAULT_SERIES = "DEFAULT SERIES"
 DCTERMS = ["title", "creator", "description", "language", "isPartOf"]
 EQUIV = { "presenter":"creator", "ispartof": "isPartOf", "series":"isPartOf" }
 
-metadata = { "title": "Title:", "Title:":"title",
-             "creator": "Presenter:", "Presenter:":"creator", 
-             "isPartOf": "Course/Series:", "Course/Series:":"isPartOf",
-             "description": "Description:", "Description:":"description", 
-             "subject": "Subject:", "Subject:":"subject", 
-             "language": "Language:", "Language:":"language", 
-             "identifier": "Identifier:", "Identifier:":"identifier", 
-             "contributor": "Contributor:","Contributor:":"contributor", 
-             "created":"Start Time:", "Start Time:":"created"}  
+metadata = { "title": _("Title:"), _("Title:"):"title",
+             "creator": _("Presenter:"), _("Presenter:"):"creator", 
+             "isPartOf": _("Course/Series:"), _("Course/Series:"):"isPartOf",
+             "description": _("Description:"), _("Description:"):"description", 
+             "subject": _("Subject:"), _("Subject:"):"subject", 
+             "language": _("Language:"), _("Language:"):"language", 
+             "identifier": _("Identifier:"), _("Identifier:"):"identifier", 
+             "contributor": _("Contributor:"),_("Contributor:"):"contributor", 
+             "created":_("Start Time:"), _("Start Time:"):"created"} 
 
 class MetadataClass(gtk.Widget):
     """
@@ -52,7 +52,7 @@ class MetadataClass(gtk.Widget):
     __gtype_name__ = 'MetadataClass'
 
     def __init__(self, package = None, series_list = None, parent = None,
-                 title="Edit Metadata", subtitle="Edit Metadata", ok_label = "Save", ko_label = "Cancel",
+                 title=_("Edit Metadata"), subtitle=_("Edit Metadata"), ok_label = _("Save"), ko_label = _("Cancel"),
                  empty_series_label = NO_SERIES):
         """
         """

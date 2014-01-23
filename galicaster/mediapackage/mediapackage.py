@@ -28,6 +28,8 @@ from datetime import datetime
 from xml.dom import minidom
 from galicaster.mediapackage.utils import _checknget, read_ini
 
+from galicaster.utils.i18n import _
+
 # Mediapackage Status
 NEW = 0
 UNSCHEDULED = 1
@@ -64,12 +66,12 @@ mp_status = {
 }
 
 op_status = {
-    0: 'No',
-    1: 'Nightly',
-    2: 'Pending',
-    3: 'Processing',
-    4: 'Done',
-    5: 'Failed',
+    0: _('No'),
+    1: _('Nightly'),
+    2: _('Pending'),
+    3: _('Processing'),
+    4: _('Done'),
+    5: _('Failed'),
 
 }
 

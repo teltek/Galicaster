@@ -22,6 +22,9 @@ $ sudo pip install icalendar=
 # Capture card configuration tools
 $ sudo apt-get install v4l-conf v4l-utils guvcview
 
+# Glade package to use it on Python
+$ sudo apt-get install phyton-glade2
+
   * N.B.: Until Ubuntu 10.10 (included), "ivtv-utils" must be used instead of "v4l-utils".
 
 # (optional)pyGst

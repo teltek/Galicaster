@@ -23,6 +23,8 @@ from galicaster.classui.profile import ProfileUI as ListProfile
 from galicaster.classui.about import GCAboutDialog
 from galicaster.utils.resize import relabel
 
+from galicaster.utils.i18n import _
+
 class DistribUI(gtk.Box):
     """
     GUI for the Welcoming - Distribution Screen
@@ -72,7 +74,7 @@ class DistribUI(gtk.Box):
         profile = context.get_conf().get_current_profile()
              
         if self.selected.get_text() != profile.name:
-            self.selected.set_text("Profile: "+profile.name)          
+            self.selected.set_text(_("Profile: {profileName}").format(profileName = profile.name))          
 
     def emit_signal(origin, button, signal, value=None):
         dispatcher = context.get_dispatcher()

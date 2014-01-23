@@ -20,6 +20,7 @@ from galicaster.classui import get_ui_path, get_image_path
 from galicaster.classui.elements.message_header import Header
 
 from galicaster import __version__
+from galicaster.utils.i18n import _
 
 PROGRAM = "Galicaster"
 COPY1 = "Copyright © 2011 Teltek"
@@ -65,9 +66,9 @@ class GCAboutDialog(gtk.AboutDialog):
          k = size[0]/1920.0
          self.set_resizable(True)
          self.set_default_size(int(0.3*size[0]),int(0.4*size[1]))
-         self.set_title("About Galicaster {version}".format(version = __version__))
+         self.set_title(_("About Galicaster {version}").format(version = __version__))
          
-         strip = Header(size=size, title="About")
+         strip = Header(size=size, title=_("About"))
          self.vbox.pack_start(strip, False, True, 0)
          self.vbox.reorder_child(strip,0)
          strip.show()
@@ -79,7 +80,7 @@ class GCAboutDialog(gtk.AboutDialog):
          self.set_program_name(PROGRAM)
          self.set_version(__version__)
          self.set_website(WEB)
-         self.set_website_label("Galicaster Website")
+         self.set_website_label(_("Galicaster Website"))
          self.set_authors(AUTHORS)
          self.set_documenters(DOCS)
          self.set_artists(ARTISTS)
@@ -120,7 +121,7 @@ class GCAboutDialog(gtk.AboutDialog):
 
      def show_thanks(self, orgin):
          dialog = gtk.Dialog()
-         dialog.set_title("Special thanks to...")
+         dialog.set_title(_("Special thanks to..."))
          dialog.add_button("Close",gtk.RESPONSE_CLOSE)
          dialog.set_default_size(350,150)
          dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_SPLASHSCREEN)
