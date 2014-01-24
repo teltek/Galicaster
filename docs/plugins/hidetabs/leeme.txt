@@ -1,0 +1,24 @@
+Ocultar determinadas pestañas en la interfaz de grabación
+==========================================================
+
+El plugin 'hidetabs' permite la ocultación de las pestañas de la interfaz de grabación, así como la selección de la pestaña que se muestra por defecto al entrar en la interfaz por primera vez. 
+
+Las pestañas que NO deben mostrarse se especifican con el parámetro 'hide'. Este parámetro admite los valores (sin comillas):
+   - 'events' para la pestaña "Eventos"
+   - 'recording' para la pestaña "Grabación"
+   - 'status' para la pestaña "Estado"
+Se pueden especificar una o más de estas etiquetas, separadas por espacios.
+
+La pestaña que se muestra por defecto al iniciar Galicaster se especifica con el parámetro 'default'. Este parámetro puede contener una (y sólo una) de las etiquetas definidas en el párrafo anterior.
+
+Ejemplo de uso:
+
+[hidetabs]
+hide = events
+default = recording
+
+
+Para activar este plugin:
+
+[plugins]
+hidetabs = True
