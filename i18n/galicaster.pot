@@ -660,78 +660,6 @@ msgstr ""
 msgid "Shutdown"
 msgstr ""
 
-#: resources/ui/help.glade:35 resources/ui/help.glade:185
-#: resources/ui/help.glade:337
-#msgid "INICIO DA GRAVACIÓN"
-#msgstr ""
-
-#: resources/ui/help.glade:61 resources/ui/help.glade:211
-#: resources/ui/help.glade:363
-#msgid "GRAVACIÓN"
-#msgstr ""
-
-#: resources/ui/help.glade:87 resources/ui/help.glade:237
-#: resources/ui/help.glade:389
-#msgid "FIN DA GRAVACIÓN"
-#msgstr ""
-
-#: resources/ui/help.glade:113 resources/ui/help.glade:263
-#: resources/ui/help.glade:415
-#msgid "PUBLICACIÓN"
-#msgstr ""
-
-#: resources/ui/help.glade:139 resources/ui/help.glade:289
-#: resources/ui/help.glade:441
-#msgid "CONTACTO"
-#msgstr ""
-
-#: resources/ui/help.glade:168
-#msgid " Galego "
-#msgstr ""
-
-#: resources/ui/help.glade:319
-#msgid " Español "
-#msgstr ""
-
-#: resources/ui/help.glade:471
-#msgid " English "
-#msgstr ""
-
-#: resources/ui/help.glade:500
-#msgid "   OK   "
-#msgstr ""
-
-#: resources/ui/help.glade:557
-#msgid ""
-#"A gravación será publicada no menor tempo posible. \n"
-#"Se desexa ser avisado da súa publicación contacte co seu responsable de "
-#"Máster ou Grado.\n"
-#"Se existe algún problema cunha gravación contacte con Teltek no e-mail "
-#"galicaster@teltek.es\n"
-#msgstr ""
-
-#: resources/ui/ingest2.glade:7 resources/ui/ingest.glade:7
-#msgid "Send Recording"
-#msgstr ""
-
-#: resources/ui/ingest2.glade:42 resources/ui/ingest.glade:42
-#msgid ""
-#"Do you want to enqueue \n"
-#"this recording for ingesting?"
-#msgstr ""
-
-#: resources/ui/ingest2.glade:72
-#msgid "Cancel Ingest"
-#msgstr ""
-
-#: resources/ui/ingest2.glade:95 resources/ui/ingest.glade:95
-#msgid "Ingest now"
-#msgstr ""
-
-#: resources/ui/ingest.glade:72
-#msgid "Yes"
-#msgstr ""
-
 #: resources/ui/listing.glade:161 resources/ui/player.glade:345
 msgid "Operation"
 msgstr ""
@@ -767,11 +695,6 @@ msgstr ""
 #: resources/ui/openfile.glade:7
 msgid "Open mediapackage..."
 msgstr ""
-
-#: resources/ui/player.glade:130 resources/ui/player.glade:448
-#: resources/ui/recorder.glade:698
-#msgid "page 1"
-#msgstr "página 1"
 
 #: resources/ui/quit.glade:47
 msgid "Are you sure you want to QUIT?"
@@ -824,14 +747,6 @@ msgstr ""
 #: resources/ui/recorder.glade:674
 msgid "HELP"
 msgstr ""
-
-#: resources/ui/recorder.glade:711
-#msgid "page 2"
-#msgstr ""
-
-#: resources/ui/recorder.glade:725
-#msgid "page 3"
-#msgstr ""
 
 #: resources/ui/stop.glade:43
 msgid "Are you sure you want to stop the recording?"
