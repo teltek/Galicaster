@@ -74,7 +74,7 @@ def on_rec(button):
     try:
         del(mp.metadata_episode['isPartOf'])
         mp.metadata_series = list_series.getSeriesbyId(metadata['isPartOf'])['list']
-    except KeyError:
+    except (TypeError, KeyError):
         # There was no series specified, so no change was needed
         pass
 

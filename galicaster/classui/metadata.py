@@ -19,6 +19,7 @@ import datetime
 from os import path
 import gobject
 import pango
+import os
 
 from galicaster.classui.calendarwindow import CalendarWindow
 import galicaster.mediapackage.mediapackage as mediapackage

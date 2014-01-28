@@ -11,4 +11,4 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-__version__ = 'Dev'
+__version__ = '1.4.x'
