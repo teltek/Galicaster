@@ -227,8 +227,10 @@ class RecorderClassUI(gtk.Box):
 
         # profile load depending of the swap value 
         if self.swap:
+            self.conf.orde_current_profile()            
             self.conf.reverse_current_profile()
         else:
+            self.conf.reverse_current_profile()
             self.conf.orde_current_profile()
 
         current_profile = self.conf.get_current_profile()
