@@ -28,7 +28,7 @@ def init():
     try:
         dispatcher = context.get_dispatcher()
         dispatcher.connect('after-process-ical', check_repository)  
-        dispatcher.connect('collect_recordings', merge_recordings)
+        dispatcher.connect('collect-recordings', merge_recordings)
         dispatcher.connect('recorder-error', restart_galicaster)
 
     except ValueError:
