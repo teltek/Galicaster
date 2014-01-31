@@ -1,0 +1,782 @@
+# GALICASTER GUI STRINGS
+# Copyright (C) 2014 Teltek Video Research
+# This file is distributed under the same license as the Galicaster package.
+# Rubén González <rubenrua@teltek.es>, 2014.
+# Hugo Caloto <hcaloto@teltek.es>, 2014.
+# Rubén Pérez <rubenperez@teltek.es>, 2014.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: galicaster 1.3.1\n"
+"Report-Msgid-Bugs-To: galicaster@teltek.es\n"
+"POT-Creation-Date: 2014-01-22 10:11+0100\n"
+"PO-Revision-Date: 2014-01-31 15:31+0200\n"
+"Last-Translator: Sebastjan Mislej<sebastjan@lecturehub.com>\n"
+"Language-Team: sebastjan@lecturehub.com\n"
+"Language: sl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+
+#: galicaster/mediapackage/mediapackage.py:69
+msgid "No"
+msgstr "Ne"
+
+#: galicaster/mediapackage/mediapackage.py:70
+msgid "Nightly"
+msgstr "Nočno"
+
+#: galicaster/mediapackage/mediapackage.py:71
+msgid "Pending"
+msgstr "V pričakovanju"
+
+#: galicaster/mediapackage/mediapackage.py:72
+msgid "Processing"
+msgstr "Procesiranje"
+
+#: galicaster/mediapackage/mediapackage.py:73
+msgid "Done"
+msgstr "Končano"
+
+#: galicaster/mediapackage/mediapackage.py:74
+msgid "Failed"
+msgstr "Neuspešno"
+
+#: galicaster/classui/message.py:33 galicaster/classui/managerui.py:35
+msgid "Export to Zip"
+msgstr "Izvozi kot Zip datoteko"
+
+#: galicaster/classui/message.py:34 galicaster/classui/managerui.py:36
+msgid "Export to Zip Nightly"
+msgstr "Izvozi v Nočni Zip - datoteko"
+
+#: galicaster/classui/message.py:35 galicaster/classui/managerui.py:37
+msgid "Cancel Zip Nightly"
+msgstr "Prekini Nočni Zip"
+
+#: galicaster/classui/message.py:36 galicaster/classui/message.py:283
+#: galicaster/classui/managerui.py:38 galicaster/classui/listing.py:143
+#: resources/ui/conf.glade:476 resources/ui/listing.glade:136
+#: resources/ui/player.glade:331
+msgid "Ingest"
+msgstr "Uvozi"
+
+#: galicaster/classui/message.py:37 galicaster/classui/managerui.py:39
+msgid "Ingest Nightly"
+msgstr "Izvozi ponoči"
+
+#: galicaster/classui/message.py:38 galicaster/classui/managerui.py:40
+msgid "Cancel Ingest Nightly:"
+msgstr "Prekini nočni izvoz"
+
+#: galicaster/classui/message.py:39 galicaster/classui/managerui.py:41
+msgid "Side by Side"
+msgstr "Drug ob drugem (video+prezentacija)"
+
+#: galicaster/classui/message.py:40 galicaster/classui/managerui.py:42
+msgid "Side by Side Nightly"
+msgstr "Drug ob drugem ponoči"
+
+#: galicaster/classui/message.py:41 galicaster/classui/managerui.py:43
+msgid "Cancel SbS Nightly"
+msgstr "Prekini DoD nočni"
+
+#: galicaster/classui/message.py:42 galicaster/classui/managerui.py:44
+#: galicaster/classui/metadata.py:57 galicaster/classui/profile.py:416
+#: galicaster/classui/profile.py:514 resources/ui/conf.glade:1471
+#: resources/ui/ingest2.glade:118 resources/ui/ingest.glade:118
+#: resources/ui/metadata.glade:298 resources/ui/openfile.glade:38
+#: resources/ui/stop.glade:97
+msgid "Cancel"
+msgstr "Prekini"
+
+#: galicaster/classui/message.py:293
+msgid "Export"
+msgstr "Izvozi"
+
+#: galicaster/classui/recorderui.py:65
+msgid "Initialization"
+msgstr "Inicializacija"
+
+#: galicaster/classui/recorderui.py:66
+msgid "Ready"
+msgstr "Pripravljen"
+
+#: galicaster/classui/recorderui.py:67
+msgid "Preview"
+msgstr "Predogled"
+
+#: galicaster/classui/recorderui.py:70
+msgid "Paused"
+msgstr "Začasno ustavljeno"
+
+#: galicaster/classui/recorderui.py:71
+msgid "Stopped"
+msgstr "Ustavljeno"
+
+#: galicaster/classui/recorderui.py:72
+msgid "Blocked"
+msgstr "Blokirano"
+
+#: galicaster/classui/recorderui.py:73
+msgid "Waiting"
+msgstr "Čakanje"
+
+#: galicaster/classui/recorderui.py:74
+msgid "Error"
+msgstr "Napaka"
+
+#: galicaster/classui/recorderui.py:84
+msgid "Upcoming"
+msgstr "Prihajajoče"
+
+#: galicaster/classui/recorderui.py:85
+msgid "Current"
+msgstr "Trenutno"
+
+#: galicaster/classui/recorderui.py:217
+msgid "Recording started at {0}"
+msgstr "Snemanje pričelo ob {0}"
+
+#: galicaster/classui/recorderui.py:392 galicaster/classui/recorderui.py:623
+#: resources/ui/conf.glade:182 resources/ui/distrib.glade:102
+msgid "Recorder"
+msgstr "Snemalnik"
+
+#: galicaster/classui/recorderui.py:393
+msgid ""
+"Are you sure you want to\n"
+"stop the recording?"
+msgstr "Ali ste prepričani, \n"
+"da želite snemanje prekiniti?"
+
+#: galicaster/classui/recorderui.py:583 resources/ui/help.glade:7
+msgid "Help"
+msgstr "Pomoč"
+
+#: galicaster/classui/recorderui.py:584
+msgid " Visit galicaster.teltek.es"
+msgstr " Obišči galicaster.teltek.es"
+
+#: galicaster/classui/recorderui.py:585
+msgid " ...or contact us on our community list."
+msgstr "...ali pa nam pišite na naš forum."
+
+#: galicaster/classui/recorderui.py:624
+msgid ""
+" Please review your configuration \n"
+"or load another profile"
+msgstr "Prosimo preverite sistemske\n"
+"nastavitve snemalnika ali\n"
+"pa izberite drug snemalni profil\n"
+"Opis napake:"
+
+#: galicaster/classui/recorderui.py:721
+msgid "Elapsed Time: "
+msgstr "Pretečeni čas: "
+
+#: galicaster/classui/recorderui.py:786
+msgid "Stopping in {0}"
+msgstr "Zaustavitev v {0}"
+
+#: galicaster/classui/recorderui.py:810
+msgid "Starting in {0}"
+msgstr "Pričetek v {0}"
+
+#: galicaster/classui/recorderui.py:841 galicaster/classui/recorderui.py:842
+msgid "No upcoming events"
+msgstr "Ni naslednjih dogodkov"
+
+#: galicaster/classui/recorderui.py:1043
+msgid "{0} hours left"
+msgstr " na voljo še {0} ur"
+
+#: galicaster/classui/managerui.py:232 galicaster/classui/managerui.py:367
+#: galicaster/classui/listing.py:371 resources/ui/distrib.glade:211
+msgid "Media Manager"
+msgstr "Urejevalnik\n"
+"posnetkov"
+
+#: galicaster/classui/managerui.py:233
+msgid "Which operation do you want to perform?"
+msgstr "Katero operacijo želite izvesti?"
+
+#: galicaster/classui/managerui.py:239
+msgid "The ingest service is disabled."
+msgstr "Servis za uvoz podatkov je onemogočen."
+
+#: galicaster/classui/managerui.py:242
+msgid "Ingest disabled because of network problems. "
+msgstr "Uvoz je onemogočen zaradi težav z mrežno povezavo."
+
+#: galicaster/classui/managerui.py:256
+msgid "{0} already performed"
+msgstr "{0} že izvedeno"
+
+#: galicaster/classui/managerui.py:258
+msgid "{0} will be performed tonight"
+msgstr "{0} bo izvedeno danes ponoči"
+
+#: galicaster/classui/managerui.py:365
+msgid "This action will remove the recording from the hard disk."
+msgstr "Tale akcija bo izbrisala posnetek iz trdega diska"
+
+#: galicaster/classui/managerui.py:366
+msgid "Recording: \"{0}\""
+msgstr "Snemanje : \"{0}\""
+
+#: galicaster/classui/managerui.py:368 resources/ui/delete.glade:117
+msgid "Are you sure you want to delete?"
+msgstr "Ali si prepričan, da želiš \n"
+"posnetek dokončno izbrisati?"
+
+#: galicaster/classui/about.py:71
+msgid "About Galicaster {version}"
+msgstr "O Galicaster-ju {verzija}"
+
+#: galicaster/classui/about.py:73
+msgid "About"
+msgstr "O nas"
+
+#: galicaster/classui/about.py:85
+msgid "Galicaster Website"
+msgstr "Galicaster spletna stran"
+
+#: galicaster/classui/about.py:128
+msgid "Special thanks to..."
+msgstr "Posebne zahvale..."
+
+#: galicaster/classui/mainwindow.py:58
+msgid "GaliCASTER {0}"
+msgstr "GaliCASTER {0}"
+
+#: galicaster/classui/mainwindow.py:154 resources/ui/distrib.glade:303
+#: resources/ui/quit.glade:7 resources/ui/quit.glade:97
+msgid "Quit"
+msgstr "Prekini"
+
+#: galicaster/classui/mainwindow.py:155
+msgid "Are you sure you want to QUIT? "
+msgstr "Ali ste prepričani, \n"
+"da želite zapreti program?"
+
+#: galicaster/classui/mainwindow.py:174
+msgid "Shutdwon"
+msgstr "Ugasni računalnik"
+
+#: galicaster/classui/mainwindow.py:175
+msgid "Are you sure you want to SHUTDOWN? "
+msgstr "Ali ste prepričani, \n"
+"da želite ugasniti računalnik?"
+
+#: galicaster/classui/mpinfo.py:30 galicaster/classui/mpinfo.py:48
+#: galicaster/classui/metadata.py:40 resources/ui/metadata.glade:41
+msgid "Title:"
+msgstr "Naslov:"
+
+#: galicaster/classui/mpinfo.py:31 galicaster/classui/mpinfo.py:49
+#: galicaster/classui/metadata.py:46 resources/ui/metadata.glade:215
+msgid "Identifier:"
+msgstr "Identifikator:"
+
+#: galicaster/classui/mpinfo.py:32
+msgid "Folder:"
+msgstr "Mapa:"
+
+#: galicaster/classui/mpinfo.py:33
+msgid "Duration:"
+msgstr "Trajanje:"
+
+#: galicaster/classui/mpinfo.py:34
+msgid "Size:"
+msgstr "Velikost:"
+
+#: galicaster/classui/mpinfo.py:35
+msgid "Recorded on:"
+msgstr "Posneto dne:"
+
+#: galicaster/classui/mpinfo.py:36 galicaster/classui/mpinfo.py:54
+msgid "License:"
+msgstr "Licenca:"
+
+#: galicaster/classui/mpinfo.py:37
+msgid "Temporal:"
+msgstr "Začasno:"
+
+#: galicaster/classui/mpinfo.py:38
+msgid "Agent name:"
+msgstr "Ime agenta:"
+
+#: galicaster/classui/mpinfo.py:39
+msgid "Series:"
+msgstr "Serija:"
+
+#: galicaster/classui/mpinfo.py:40 galicaster/classui/mpinfo.py:51
+#: galicaster/classui/metadata.py:47 resources/ui/metadata.glade:239
+msgid "Contributor:"
+msgstr "Sodelavec:"
+
+#: galicaster/classui/mpinfo.py:41 galicaster/classui/metadata.py:41
+#: resources/ui/metadata.glade:51
+msgid "Presenter:"
+msgstr "Predavatelj:"
+
+#: galicaster/classui/mpinfo.py:42 galicaster/classui/mpinfo.py:52
+#: galicaster/classui/metadata.py:44 resources/ui/metadata.glade:98
+msgid "Subject:"
+msgstr "Predmet:"
+
+#: galicaster/classui/mpinfo.py:43 galicaster/classui/mpinfo.py:53
+#: galicaster/classui/metadata.py:45 resources/ui/metadata.glade:87
+msgid "Language:"
+msgstr "Jezik:"
+
+#: galicaster/classui/mpinfo.py:44 galicaster/classui/mpinfo.py:55
+#: galicaster/classui/metadata.py:43 resources/ui/metadata.glade:204
+msgid "Description:"
+msgstr "Opis:"
+
+#: galicaster/classui/mpinfo.py:45
+msgid "Rights:"
+msgstr "Pravice:"
+
+#: galicaster/classui/mpinfo.py:50
+msgid "Creator:"
+msgstr "Ustvarjalec:"
+
+#: galicaster/classui/mpinfo.py:76
+msgid "Mediapackage Info "
+msgstr "Mediapackage informacije "
+
+#: galicaster/classui/mpinfo.py:100
+msgid "Basic"
+msgstr "Osnovno"
+
+#: galicaster/classui/mpinfo.py:108 galicaster/classui/listing.py:308
+msgid "Operations"
+msgstr "Proces"
+
+#: galicaster/classui/mpinfo.py:109
+msgid "Ingest:"
+msgstr "Uvozi:"
+
+#: galicaster/classui/mpinfo.py:111
+msgid "Zipping:"
+msgstr "Skrči podatke:"
+
+#: galicaster/classui/mpinfo.py:113
+msgid "Side by Side:"
+msgstr "Drug ob drugemu:"
+
+#: galicaster/classui/mpinfo.py:119 galicaster/classui/listing.py:137
+msgid "Series"
+msgstr "Serija"
+
+#: galicaster/classui/mpinfo.py:125
+msgid "Tracks"
+msgstr "Steza:"
+
+#: galicaster/classui/mpinfo.py:131 galicaster/classui/mpinfo.py:144
+msgid "Name:"
+msgstr "Ime:"
+
+#: galicaster/classui/mpinfo.py:132 galicaster/classui/mpinfo.py:145
+msgid "Flavor:"
+msgstr ""
+
+#: galicaster/classui/mpinfo.py:133 galicaster/classui/mpinfo.py:146
+msgid "Type:"
+msgstr "Tip:"
+
+#: galicaster/classui/mpinfo.py:135 galicaster/classui/mpinfo.py:148
+msgid "File:"
+msgstr "Datoteka:"
+
+#: galicaster/classui/mpinfo.py:138
+msgid "Catalogs"
+msgstr "Katalogi"
+
+#: galicaster/classui/mpinfo.py:167 galicaster/classui/profile.py:256
+#: galicaster/plugins/noaudiodialog.py:209
+msgid "Close"
+msgstr "Zapri:"
+
+#: galicaster/classui/mpinfo.py:168
+msgid "Open Folder"
+msgstr "Odpri mapo"
+
+#: galicaster/classui/metadata.py:42 resources/ui/metadata.glade:63
+msgid "Course/Series:"
+msgstr "Predmet/Serija"
+
+#: galicaster/classui/metadata.py:48 resources/ui/metadata.glade:75
+msgid "Start Time:"
+msgstr "Čas pričetka:"
+
+#: galicaster/classui/metadata.py:57 resources/ui/metadata.glade:22
+msgid "Edit Metadata"
+msgstr "Uredi meta podatke:"
+
+#: galicaster/classui/metadata.py:57 galicaster/classui/profile.py:412
+#: galicaster/classui/profile.py:512 resources/ui/conf.glade:1458
+#: resources/ui/metadata.glade:280
+msgid "Save"
+msgstr "Shrani"
+
+#: galicaster/classui/profile.py:64 galicaster/classui/profile.py:71
+#: galicaster/classui/profile.py:85
+msgid "Profile Selector"
+msgstr "Izbira snemalnega profila:"
+
+#: galicaster/classui/profile.py:151
+msgid "Profile Tracks"
+msgstr "Seznam profilov"
+
+#: galicaster/classui/profile.py:250 resources/ui/openfile.glade:25
+msgid "Select"
+msgstr "Izberi"
+
+#: galicaster/classui/profile.py:252 galicaster/classui/profile.py:413
+#: galicaster/classui/listing.py:307 galicaster/classui/listing.py:313
+#: resources/ui/listing.glade:87 resources/ui/listing.glade:112
+#: resources/ui/player.glade:298 resources/ui/recorder.glade:622
+msgid "Edit"
+msgstr "Uredi"
+
+#: galicaster/classui/profile.py:253
+msgid "New"
+msgstr "Nov"
+
+#: galicaster/classui/profile.py:254
+msgid "Duplicate"
+msgstr "Dupliciraj"
+
+#: galicaster/classui/profile.py:255 galicaster/classui/listing.py:310
+#: galicaster/classui/listing.py:315 resources/ui/delete.glade:7
+#: resources/ui/delete.glade:38 resources/ui/listing.glade:185
+#: resources/ui/listing.glade:210 resources/ui/player.glade:390
+msgid "Delete"
+msgstr "Izbriši"
+
+#: galicaster/classui/profile.py:414
+msgid "New track"
+msgstr "Nov posnetek"
+
+#: galicaster/classui/profile.py:415
+msgid "Delete track"
+msgstr "Izbriši posnetek"
+
+#: galicaster/classui/profile.py:457
+msgid "New Track"
+msgstr "Nov posnetek"
+
+#: galicaster/classui/listing.py:135
+msgid "Name"
+msgstr "Ime"
+
+#: galicaster/classui/listing.py:136 resources/ui/conf.glade:201
+#: resources/ui/conf.glade:239
+msgid "Presenter"
+msgstr "Avtor:"
+
+#: galicaster/classui/listing.py:138
+msgid "Size"
+msgstr "Velikost"
+
+#: galicaster/classui/listing.py:139
+msgid "Duration"
+msgstr "Trajanje"
+
+#: galicaster/classui/listing.py:140
+msgid "Date"
+msgstr "Datum"
+
+#: galicaster/classui/listing.py:144
+msgid "Zip"
+msgstr "Zip"
+
+#: galicaster/classui/listing.py:145
+msgid "SbS"
+msgstr "DoD"
+
+#: galicaster/classui/listing.py:306 galicaster/classui/listing.py:312
+#: resources/ui/listing.glade:61
+msgid "Play"
+msgstr "Igraj"
+
+#: galicaster/classui/listing.py:309 galicaster/classui/listing.py:314
+msgid "Info"
+msgstr "Informacije"
+
+#: galicaster/classui/listing.py:372
+msgid "This recording can't be played"
+msgstr "Ta posnetek ne deluje"
+
+#: galicaster/classui/events.py:66
+msgid "Next Recordings"
+msgstr "Naslednje snemanje"
+
+#: galicaster/classui/events.py:111 galicaster/classui/events.py:116
+msgid "Record Now"
+msgstr "Prični snemanje"
+
+#: galicaster/classui/distrib.py:78
+msgid "Profile: {profileName}"
+msgstr "Profil snemanja: {profileName}"
+
+#: galicaster/plugins/noaudiodialog.py:217
+msgid "Warning"
+msgstr "Opozorilo"
+
+#: galicaster/plugins/noaudiodialog.py:222 resources/ui/warning.glade:41
+msgid "No Audio!!"
+msgstr "Ni zvoka!"
+
+#: galicaster/plugins/noaudiodialog.py:223
+msgid ""
+"Pick up the microphone\n"
+"Press the mute button"
+msgstr ""
+"Preveri mikrofon\n"
+"Pritisni gumb za utišanje"
+
+#: galicaster/plugins/setuprecording.py:86
+#: galicaster/plugins/setuprecording.py:87
+msgid "New Recording"
+msgstr "Novo snemanje"
+
+#: galicaster/plugins/setuprecording.py:88
+msgid "Start"
+msgstr "Start"
+
+#: resources/ui/adminbar.glade:9
+msgid "Configure"
+msgstr "Konfiguriraj"
+
+#: resources/ui/adminbar.glade:21
+msgid "Volume"
+msgstr "Glasnost"
+
+#: resources/ui/adminbar.glade:33
+msgid "Metadata"
+msgstr "Meta podatki"
+
+#: resources/ui/adminbar.glade:45
+msgid "Restart Preview"
+msgstr "Ponovno zaženi predogled"
+
+#: resources/ui/adminbar.glade:57
+msgid "Fullscreen"
+msgstr "Celozaslonski pogled"
+
+#: resources/ui/conf.glade:37
+msgid "Repository Folder"
+msgstr "Mapa za shranjevanje"
+
+#: resources/ui/conf.glade:74
+msgid "Codec"
+msgstr "Kodek"
+
+#: resources/ui/conf.glade:120
+msgid "General"
+msgstr "Generalno"
+
+#: resources/ui/conf.glade:141
+msgid "Player"
+msgstr "Predvajalnik"
+
+#: resources/ui/conf.glade:212 resources/ui/conf.glade:250
+msgid "Presentation"
+msgstr "Prezentacija"
+
+#: resources/ui/conf.glade:279
+msgid "Screen"
+msgstr "Ekran"
+
+#: resources/ui/conf.glade:303
+msgid "Host"
+msgstr "Gostitelj"
+
+#: resources/ui/conf.glade:314
+msgid "Username"
+msgstr "Uporabniško ime"
+
+#: resources/ui/conf.glade:327
+msgid "Password"
+msgstr "Geslo"
+
+#: resources/ui/conf.glade:416
+msgid "Workflow"
+msgstr "Potek dela"
+
+#: resources/ui/conf.glade:496
+msgid "Device 1"
+msgstr "Naprava 1"
+
+#: resources/ui/conf.glade:512 resources/ui/conf.glade:744
+#: resources/ui/conf.glade:958 resources/ui/conf.glade:994
+#: resources/ui/conf.glade:1226
+msgid "Device"
+msgstr "Naprava"
+
+#: resources/ui/conf.glade:523 resources/ui/conf.glade:755
+#: resources/ui/conf.glade:1005 resources/ui/conf.glade:1237
+msgid "Location"
+msgstr "Lokacija"
+
+#: resources/ui/conf.glade:536 resources/ui/conf.glade:768
+#: resources/ui/conf.glade:1018 resources/ui/conf.glade:1250
+msgid "Flavor"
+msgstr ""
+
+#: resources/ui/conf.glade:625 resources/ui/conf.glade:857
+#: resources/ui/conf.glade:1107 resources/ui/conf.glade:1339
+msgid "File"
+msgstr "Datoteka"
+
+#: resources/ui/conf.glade:688 resources/ui/conf.glade:920
+#: resources/ui/conf.glade:1170 resources/ui/conf.glade:1402
+msgid "Active"
+msgstr "Aktivno"
+
+#: resources/ui/conf.glade:728
+msgid "Device 2"
+msgstr "Naprava 2"
+
+#: resources/ui/conf.glade:978
+msgid "Device 3"
+msgstr "Naprava 3"
+
+#: resources/ui/conf.glade:1210
+msgid "Device 4"
+msgstr "Naprava 4"
+
+#: resources/ui/conf.glade:1440
+msgid "Audio"
+msgstr "Zvok"
+
+#: resources/ui/delete.glade:64 resources/ui/quit.glade:120
+msgid " Cancel "
+msgstr " Prekini "
+
+#: resources/ui/distrib.glade:150
+msgid "label"
+msgstr "oznaka"
+
+#: resources/ui/distrib.glade:271
+msgid "Galicaster Release 1 .3"
+msgstr "Galicaster verzija 1 .3"
+
+#: resources/ui/distrib.glade:354
+msgid "Shutdown"
+msgstr "Zaustavitev sistema"
+
+#: resources/ui/listing.glade:161 resources/ui/player.glade:345
+msgid "Operation"
+msgstr "Proces"
+
+#: resources/ui/metadata.glade:7
+msgid "Edit Metadata..."
+msgstr "Uredi meta-podatke..."
+
+#: resources/ui/next.glade:7
+msgid " Event Manager"
+msgstr "Urejevalnik dogodkov"
+
+#: resources/ui/next.glade:34
+msgid "    OK    "
+msgstr "    OK    "
+
+#: resources/ui/next.glade:61
+msgid "Next recordings"
+msgstr "Naslednje snemanje"
+
+#: resources/ui/okwarning.glade:7 resources/ui/stop.glade:7
+msgid "Stop Recording"
+msgstr "Prekini snemanje"
+
+#: resources/ui/okwarning.glade:43
+msgid "This recording can't be ingested yet?"
+msgstr "Tale posnetek ne more biti uvožen?"
+
+#: resources/ui/okwarning.glade:73
+msgid "OK"
+msgstr "OK"
+
+#: resources/ui/openfile.glade:7
+msgid "Open mediapackage..."
+msgstr "Odpri mediapackage .."
+
+#: resources/ui/quit.glade:47
+msgid "Are you sure you want to QUIT?"
+msgstr "Ali ste prepričani, da želite IZHOD?"
+
+#: resources/ui/recorder.glade:188
+msgid "Next REC"
+msgstr "Naslednji REC"
+
+#: resources/ui/recorder.glade:232
+msgid "Very long title, this is always for sure"
+msgstr "Zelo dolg naslov"
+
+#: resources/ui/recorder.glade:247
+msgid "scheduled"
+msgstr "načrtovan"
+
+#: resources/ui/recorder.glade:266
+msgid "Events"
+msgstr "Dogodki"
+
+#: resources/ui/recorder.glade:287
+msgid "Not recording"
+msgstr "Trenutno ne snema"
+
+#: resources/ui/recorder.glade:323
+msgid "Recording"
+msgstr "Snemanje"
+
+#: resources/ui/recorder.glade:406
+msgid "Storage space left:  "
+msgstr "Preostanek prostora:  "
+
+#: resources/ui/recorder.glade:420
+msgid "Agent name:  "
+msgstr "Ime agenta:  "
+
+#: resources/ui/recorder.glade:435
+msgid "Recording space:  "
+msgstr "Prostor za snemanje:  "
+
+#: resources/ui/recorder.glade:450
+msgid "Core connectivity:  "
+msgstr "Povezljivost s strežnikom:  "
+
+#: resources/ui/recorder.glade:472
+msgid "Status"
+msgstr "Status"
+
+#: resources/ui/recorder.glade:674
+msgid "HELP"
+msgstr "POMOČ"
+
+#: resources/ui/stop.glade:43
+msgid "Are you sure you want to stop the recording?"
+msgstr "Ali ste prepričani, \n"
+"da želite zaustaviti snemanje?"
+
+#: resources/ui/stop.glade:74
+msgid "Stop"
+msgstr "Stop"
+
+#: resources/ui/warning.glade:6
+msgid "Warning!"
+msgstr "Opozorilo!"
+
+#: resources/ui/warning.glade:66
+msgid ""
+"Pick up the microphone\n"
+"Pulse the mute button"
+msgstr ""
+"Preveri mikrofon\n"
+"Večkrat zapored pritisnite na gumb na mikrofonu"
