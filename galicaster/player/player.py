@@ -205,7 +205,7 @@ class Player(object):
             #if element_name == 'presenter' or len(self.files) == 1:
             if not self.has_audio:
                 self.has_audio = True
-                self.audio_sink = gst.element_factory_make('pulsesink', 'audio')
+                self.audio_sink = gst.element_factory_make('autoaudiosink', 'audio')
                 vumeter = gst.element_factory_make('level', 'level') 
                 vumeter.set_property('message', True)
                 vumeter.set_property('interval', 100000000) # 100 ms
