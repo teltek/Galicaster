@@ -21,18 +21,20 @@ from galicaster.recorder import base
 from galicaster.recorder import module_register
 
 
-pipestr = (' ximagesrc endx=gc-endx name=gc-screen-src ! capsfilter name=gc-screen-filter ! '
+
+
+pipestr = (' ximagesrc endx=gc-endx endy=gc-endy name=gc-screen-src use-damage=0 ! '
            ' queue ! tee name=tee-vt  ! '
-           ' queue !  ffmpegcolorspace ! queue ! xvimagesink sync=false async=false qos=false name=gc-screen-preview'
-           ' tee-vt. ! queue ! valve drop=false name=gc-screen-valve ! ffmpegcolorspace ! queue ! '
-           ' gc-screen-enc ! '
+           ' queue !  ffmpegcolorspace  ! xvimagesink sync=false async=false qos=false name=gc-screen-preview'
+           ' tee-vt. ! queue ! valve drop=false name=gc-screen-valve ! ffmpegcolorspace ! videorate ! video/x-raw-yuv,framerate=5/1 ! ffmpegcolorspace !'
+           ' x264enc ! queue ! mp4mux ! '
            ' queue ! filesink name=gc-screen-sink async=false')
 
 
 class GCscreen(gst.Bin, base.Base):
 
     order = ["name","flavor","location","file","caps", 
-             "pattern","color1","color2", "videoencoder", "muxer", "endx"
+             "muxer", "endx"
              ]
  
     gc_parameters = {
@@ -58,23 +60,16 @@ class GCscreen(gst.Bin, base.Base):
              },
         "endx":{
             "type": "text",
-            "default": "1920",
-            "description": "bottom right",
+            "default": "1919",
+            "description": "bottom right. Must be odd (since we start at 0)",
         },
-      
-        "caps": {
+        "endy":{
             "type": "text",
-            "default": "video/x-raw,framerate=30/1", 
-            "description": "Forced capabilities", 
-            },
-        "videoencoder": {
-            "type": "text",
-            "default": "xvidenc bitrate=5000000",
-            # "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000",
-            # "x264enc pass=5 quantizer=22 speed-preset=4 profile=1"
-            "description": "Gstreamer encoder element used in the bin",
-            }
-        }
+            "default": "1079",
+            "description": "bottom right.  Must be odd (since we start at 0)",
+        }    
+       
+    }
     
     is_pausable = True
     has_audio   = False
@@ -83,7 +78,7 @@ class GCscreen(gst.Bin, base.Base):
     __gstdetails__ = (
         "Galicaster Video Test Bin",
         "Generic/Video",
-        "Bint to capture screen for screencast",
+        "Bin to capture screen for screencast",
         "University of Bergen",
         )
 
@@ -94,7 +89,7 @@ class GCscreen(gst.Bin, base.Base):
 
         aux = (pipestr.replace('gc-screen-preview', 'sink-' + self.options['name'])
                       .replace('gc-endx', self.options['endx'])
-                      .replace('gc-screen-enc', self.options['videoencoder']))
+                      .replace('gc-endy', self.options['endy']))
 
         #bin = gst.parse_bin_from_description(aux, False)
         bin = gst.parse_launch("( {} )".format(aux))
@@ -108,7 +103,7 @@ class GCscreen(gst.Bin, base.Base):
         #fr = re.findall("framerate *= *[0-9]+/[0-9]+", self.options['caps'])
         #if fr:
         #    newcaps = 'video/x-raw-yuv,' + fr[0]
-            #self.get_by_name('gc-screen-vrate').set_property('caps', gst.Caps(newcaps))
+        #    self.get_by_name('gc-screen-caps').set_property('caps', gst.Caps(newcaps))
      
     def changeValve(self, value):
         valve1=self.get_by_name('gc-screen-valve')
