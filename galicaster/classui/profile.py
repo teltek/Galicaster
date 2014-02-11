@@ -295,7 +295,7 @@ class ListProfileBox(ProfileDialog):
         lista = gtk.ListStore(object, str)
         view = gtk.TreeView() 
         view.set_model(lista)
-	view.get_selection().set_mode(gtk.SELECTION_SINGLE)
+        view.get_selection().set_mode(gtk.SELECTION_SINGLE)
         view.set_headers_visible(False)
         view.columns_autosize()
 
@@ -309,15 +309,15 @@ class ListProfileBox(ProfileDialog):
 
         image = gtk.CellRendererPixbuf()
 
-	column0 = gtk.TreeViewColumn("Profile", render, text = 1)
-	column1 = gtk.TreeViewColumn("Current", image)
+        column0 = gtk.TreeViewColumn("Profile", render, text = 1)
+        column1 = gtk.TreeViewColumn("Current", image)
         column1.set_cell_data_func(image, self.show_current_image)
         view.append_column(column1)
         view.append_column(column0)
 
         column0.set_sort_column_id(1)
         lista.set_sort_func(1,self.sorting)
-	lista.set_sort_column_id(1,gtk.SORT_ASCENDING)          
+        lista.set_sort_column_id(1,gtk.SORT_ASCENDING)          
         return lista,view  
 
     def sorting(self, treemodel, iter1, iter2):
@@ -426,12 +426,12 @@ class ProfileBox(ProfileDialog):
         lista = gtk.ListStore(gobject.TYPE_PYOBJECT, str)
         view = gtk.TreeView() 
         view.set_model(lista)
-	view.get_selection().set_mode(gtk.SELECTION_SINGLE)
+        view.get_selection().set_mode(gtk.SELECTION_SINGLE)
         render = gtk.CellRendererText()
-	column0 = gtk.TreeViewColumn("Tracks", render, text = 1)
-	#column1 = gtk.TreeViewColumn("Presenter", render, text = 1)
-	#column2 = gtk.TreeViewColumn("Presentation", render, text = 2)
-	#column3 = gtk.TreeViewColumn("Other", render, text = 3)
+        column0 = gtk.TreeViewColumn("Tracks", render, text = 1)
+        #column1 = gtk.TreeViewColumn("Presenter", render, text = 1)
+        #column2 = gtk.TreeViewColumn("Presentation", render, text = 2)
+        #column3 = gtk.TreeViewColumn("Other", render, text = 3)
         view.append_column(column0)
         #view.append_column(column1)
         #view.append_column(column2)
