@@ -5,6 +5,15 @@ Web version of the changelog in http://wiki.teltek.es/display/Galicaster/Release
 To get the diff for a specific change, go to https://github.com/teltek/galicaster/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/teltek/galicaster/compare/1.2.1...1.2.3
 
+
+* DEV (YYYY-MM-DD)
+ 
+ * ...
+ * New plugin to reingest recordings where the ingest has failed. (ppettit)
+ * New screen device module to record the screencast. (olabri)
+ * New autoaudio device module to automatically detect audio source and sink. (oaubert)
+ * Using autoaudiosink instead of hardcoding pulsesink in player. (oaubert)
+
 * 1.4.0 (YYYY-MM-DD)
 
  * Galicaster UI internationalization.
