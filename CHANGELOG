@@ -5,6 +5,17 @@ Web version of the changelog in http://wiki.teltek.es/display/Galicaster/Release
 To get the diff for a specific change, go to https://github.com/teltek/galicaster/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/teltek/galicaster/compare/1.2.1...1.2.3
 
+* 1.4.0 (YYYY-MM-DD)
+
+ * Galicaster UI internationalization.
+ * New Plugin (hidetabs) to customize the tabs displayed on the recording UI.
+ * New plugin (setuprecording) to enter a manual recording's metadata before starting it, set default values and mark some fields as required.
+ * First version of "hide operations" feature (still in development).
+ * A button in the recorder UI to swap the video streams, so that the user can customize where are they shown in the preview.
+ * Fixed bug: Galicaster doesn't crash anymore when a webcam is unplugged. Now you can go back and reload the profile.
+ * Fixed bug on forced users to click twice in pop-ups when using distributions like Xubuntu. 
+ * Corrected some bad interactions between the no-audio dialog and other popups.
+
 * 1.3.1 (2014-01-20)
 
  * Ingest to a Opencast Matterhorn cluster with multiple ingest servers.
