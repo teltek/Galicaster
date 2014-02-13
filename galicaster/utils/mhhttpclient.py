@@ -31,7 +31,10 @@ INGEST_ENDPOINT = '/ingest/addZippedMediaPackage'
 ICAL_ENDPOINT = '/recordings/calendars'
 SERIES_ENDPOINT = '/series/series.json'
 SERVICE_REGISTRY_ENDPOINT = '/services/available.json'
+SEARCH_ENDPOINT = '/search/episode.json'
 
+SEARCH_SERVICE_TYPE = 'org.opencastproject.search'
+INGEST_SERVICE_TYPE = 'org.opencastproject.ingest'
 
 
 class MHHTTPClient(object):
@@ -61,6 +64,7 @@ class MHHTTPClient(object):
             self.workflow_parameters = dict(item.split(":") for item in workflow_parameters.split(";"))
         else:
             self.workflow_parameters = workflow_parameters
+        self.search_server = None
 
 
     def __call(self, method, endpoint, path_params={}, query_params={}, postfield={}, urlencode=True, server=None, timeout=True):
@@ -193,6 +197,26 @@ class MHHTTPClient(object):
         postdict[u'track'] = (pycurl.FORM_FILE, mp_file)
         return postdict
 
+    def _get_endpoints(self, service_type):
+        self.logger.debug('Looking up Matterhorn endpoint for %s', service_type)
+        services = self.__call('GET', SERVICE_REGISTRY_ENDPOINT, {}, {'serviceType': service_type})
+        services = json.loads(services)
+        return services['services']['service']
+
+    def _get_search_server(self):
+        if not self.search_server:
+            service = self._get_endpoints(SEARCH_SERVICE_TYPE)
+            self.search_server = str(service['host'])
+        return self.search_server
+
+    def search_by_mp_id(self, mp_id):
+        """ Returns search result from matterhorn """
+        search_server = self._get_search_server()
+        result = self.__call('GET', SEARCH_ENDPOINT, {}, {'id': mp_id}, {}, True, search_server, True)
+        search_result = json.loads(result)
+        return search_result['search-results']
+
+
     def verify_ingest_server(self, server):
         """ if we have multiple ingest servers the get_ingest_server should never 
         return the admin node to ingest to, This is verified by the IP address so 
@@ -221,10 +245,7 @@ class MHHTTPClient(object):
         if there are more than one ingest servers the first from the list will be used
         as they are returned in order of their load, if there is only one returned this 
         will be the admin node, so we can use the information we already have """ 
-        servers = self.__call('GET', SERVICE_REGISTRY_ENDPOINT, {}, {'serviceType':'org.opencastproject.ingest'}, {},
-                              True, None, True)
-        servers_avail = json.loads(servers)
-        all_servers = servers_avail['services']['service']
+        all_servers = self._get_endpoints(INGEST_SERVICE_TYPE)
         if type(all_servers) is list:
             for serv in all_servers:
                 if self.verify_ingest_server(serv):
