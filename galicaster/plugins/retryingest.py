@@ -28,10 +28,14 @@ from galicaster.mediapackage import mediapackage
 
 logger = context.get_logger()
 conf = context.get_conf()
+mhclient = context.get_mhclient()
+repo = context.get_repository()
 
+check_published = conf.get_boolean('retryingest', 'check_published') or True
 check_after = conf.get_int('retryingest', 'check_after') or 300
-last_checked = 0
+last_checked = time.time()
 
+logger.debug('check_published set to %s', check_published)
 logger.debug('check_after set to %i', check_after)
 
 def init():        
@@ -41,6 +45,19 @@ def init():
     except ValueError:
         pass
 
+def is_published(mp_id, mp):
+    # check if the mediapackage is published to the search index
+    search_result = mhclient.search_by_mp_id(mp_id)
+    if int(search_result['total']):
+        logger.debug('mediapackage %s is already published', mp_id)
+        # mediapackage has actually been ingested successfully at some point
+        # as it is published in matterhorn so set the state to "done"
+        mp.setOpStatus('ingest', mediapackage.OP_DONE)
+        repo.update(mp)
+        return True
+    logger.debug('mediapackage %s is not published', mp_id)
+    return False
+
 def reingest(sender=None):
     global last_checked
 
@@ -48,14 +65,14 @@ def reingest(sender=None):
     if (last_checked + check_after) >= time.time():
         return
 
-    repo = context.get_repository()
     worker = context.get_worker()
-
     for mp_id, mp in repo.iteritems():
         logger.debug('reingest checking: %s status: %s', 
                      mp_id, mediapackage.op_status[mp.getOpStatus('ingest')])
         if mp.getOpStatus('ingest') == mediapackage.OP_FAILED:
-            logger.info('Starting reingest of failed mediapackage: %s', mp_id)
-            worker.ingest(mp)
-
+            # check mediapackage status on matterhorn if needed
+            if (check_published and not is_published(mp_id, mp)) or not check_published:
+                logger.info('Starting reingest of failed mediapackage: %s', mp_id)
+                worker.ingest(mp)
     last_checked = time.time()
+
