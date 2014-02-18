@@ -130,7 +130,7 @@ class MPinfo(gtk.Window):
             self.add_data(track_table,_("Name:"),track.getIdentifier())
             self.add_data(track_table,_("Flavor:"),track.getFlavor())
             self.add_data(track_table,_("Type:"),track.getMimeType())
-            filename = str(os.path.split(track.getURI())[1])
+            filename = str(path.split(track.getURI())[1])
             self.add_data(track_table,_("File:"),filename)
 
         # Catalog info
@@ -143,7 +143,7 @@ class MPinfo(gtk.Window):
             self.add_data(cat_table,_("Name:"),cat.getIdentifier())
             self.add_data(cat_table,_("Flavor:"),cat.getFlavor())
             self.add_data(cat_table,_("Type:"),cat.getMimeType())
-            filename = str(os.path.split(cat.getURI())[1])
+            filename = str(path.split(cat.getURI())[1])
             self.add_data(cat_table,_("File:"),filename)
 
         #PACKING
