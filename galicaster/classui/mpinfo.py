@@ -15,7 +15,7 @@ Pop Up with exhaustive information of a Mediapackage
 """
 
 import gtk
-from os import path
+import os
 import pango
 
 import galicaster.mediapackage.mediapackage as mediapackage
