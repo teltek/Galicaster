@@ -21,13 +21,14 @@ from galicaster.mediapackage import mediapackage
 
 class Scheduler(object):
 
-    def __init__(self, repo, conf, disp, mhclient, logger):
+    def __init__(self, repo, conf, disp, mhclient, logger, state):
         """
         Arguments:
         repo -- the galicaster mediapackage repository
         conf -- galicaster configuration
         disp -- the galicaster event-dispatcher to emit signals
         mhclient -- matterhorn HTTP client
+        state -- galicaster state
         """
         self.ca_status = 'idle'
 
@@ -36,6 +37,7 @@ class Scheduler(object):
         self.dispatcher = disp
         self.client     = mhclient
         self.logger     = logger
+        self.state      = state
 
         self.dispatcher.connect('galicaster-notify-timer-short', self.do_timers_short)
         self.dispatcher.connect('galicaster-notify-timer-long',  self.do_timers_long)
@@ -87,6 +89,7 @@ class Scheduler(object):
 
 
     def set_state(self):
+        self.ca_status = 'capturing' if self.state.is_recording else 'idle'
         self.logger.info('Set status %s to server', self.ca_status)
         try:
             self.client.setstate(self.ca_status)
