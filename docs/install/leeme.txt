@@ -32,6 +32,9 @@ $ sudo apt-get install python-glade2
 # (Opcional) pyGst
 $ sudo pip install pygst
 
+# (Opcional) python-bottle para el plugin REST
+$ sudo apt-get install python-bottle
+
 Configuracion
 -------------
 Se encuentra en los archivos conf.ini y conf-dist.ini. Los valores en conf.ini prevalecen sobre los de conf-dist.ini. Así es posible mantener una configuración por defecto separada de la actual, modificando apenas conf.ini.
