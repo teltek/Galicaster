@@ -30,6 +30,8 @@ $ sudo apt-get install phyton-glade2
 # (optional)pyGst
 $ sudo pip install pygst
 
+# (optional) python-bottle for the REST plugin
+$ sudo apt-get install python-bottle
 
 Configuration
 -------------
