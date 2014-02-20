@@ -8,7 +8,8 @@ To get the diff between two versions, go to https://github.com/teltek/galicaster
 
 * DEV (YYYY-MM-DD)
  
- * ...
+ * Fixed bug: Set recording state on matterhorn server when doing manual recording (ppettit)
+ * Fixed bug: Allow any case for plugin config values (JamesUoM)
  * New plugin to reingest recordings where the ingest has failed. (ppettit)
  * New screen device module to record the screencast. (olabri)
  * New autoaudio device module to automatically detect audio source and sink. (oaubert)
