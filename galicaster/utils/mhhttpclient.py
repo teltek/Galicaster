@@ -40,13 +40,15 @@ INGEST_SERVICE_TYPE = 'org.opencastproject.ingest'
 class MHHTTPClient(object):
     
     def __init__(self, server, user, password, hostname='galicaster', address=None, multiple_ingest=False, 
-                 workflow='full', workflow_parameters={'trimHold':'true'}, logger=None):
+        connect_timeout=2, timeout=2, workflow='full', workflow_parameters={'trimHold':'true'}, logger=None):
         """
         Arguments:
 
         server -- Matterhorn server URL.
         user -- Account used to operate the Matterhorn REST endpoints service.
         password -- Password for the account  used to operate the Matterhorn REST endpoints service.
+        connect_timeout -- connection timeout for curl in seconds
+        timeout -- total timeout for curl in seconds 
         hostname -- Capture agent hostname, optional galicaster by default.
         address -- Capture agent IP address, optional socket.gethostbyname(socket.gethostname()) by default.
         workflow -- Name of the workflow used to ingest the recordings., optional `full` by default.
@@ -58,6 +60,8 @@ class MHHTTPClient(object):
         self.hostname = hostname
         self.address = address or socket.gethostbyname(socket.gethostname())
         self.multiple_ingest = multiple_ingest
+        self.connect_timeout = connect_timeout
+        self.timeout = timeout
         self.workflow = workflow
         self.logger = logger
         if isinstance(workflow_parameters, basestring):
@@ -79,9 +83,9 @@ class MHHTTPClient(object):
         c.setopt(pycurl.URL, urlparse.urlunparse(url))
 
         c.setopt(pycurl.FOLLOWLOCATION, False)
-        c.setopt(pycurl.CONNECTTIMEOUT, 2)
+        c.setopt(pycurl.CONNECTTIMEOUT, self.connect_timeout)
         if timeout: 
-            c.setopt(pycurl.TIMEOUT, 2)
+            c.setopt(pycurl.TIMEOUT, self.timeout)
         c.setopt(pycurl.NOSIGNAL, 1)
         c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_DIGEST)
         c.setopt(pycurl.USERPWD, self.user + ':' + self.password)
