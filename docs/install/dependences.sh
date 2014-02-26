@@ -12,6 +12,6 @@ sudo apt-get install --yes python-pycurl
 # Herramientas de configuración de tarjetas capturadoras
 sudo apt-get install --yes v4l-conf v4l-utils guvcview
 # Paquete para usar glade en python (i18n)
-sudo apt-get install --yes phyton-glade2
+sudo apt-get install --yes python-glade2
 # Python-bottle for the REST plugin
 sudo apt-get install --yes python-bottle
