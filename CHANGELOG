@@ -18,8 +18,13 @@ To get the diff between two versions, go to https://github.com/teltek/galicaster
 
 * 1.4.0 (YYYY-MM-DD)
 
+ * Feature: Allow configuration of MHHTTPClient timeouts (ppettit)
+ * Fixed bug: Allow any case for plugin config values (JamesUoM)
+ * Fixed bug: Set recording state on matterhorn server when doing manual recording (ppettit)
+ * New rtpraw device module to record re-encoded RTP flow.
+ * Fixed Bug with relative log and i18n paths.
  * Galicaster UI internationalization.
- * New Plugin (hidetabs) to customize the tabs displayed on the recording UI.
+ * New plugin (hidetabs) to customize the tabs displayed on the recording UI.
  * New plugin (setuprecording) to enter a manual recording's metadata before starting it, set default values and mark some fields as required.
  * First version of "hide operations" feature (still in development).
  * A button in the recorder UI to swap the video streams, so that the user can customize where are they shown in the preview.

@@ -17,9 +17,11 @@ import gtk
 import gtk.glade
 
 
-t = gettext.translation('galicaster', 'i18n', fallback=True)
+i18n_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "i18n"))
+
+t = gettext.translation("galicaster", i18n_path, fallback=True)
 _ = t.ugettext
 
-gtk.glade.bindtextdomain('galicaster', os.path.join(os.getcwd(), 'i18n'))
-gtk.glade.textdomain('galicaster')
+gtk.glade.bindtextdomain("galicaster", i18n_path)
+gtk.glade.textdomain("galicaster")
 

@@ -14,9 +14,11 @@
 """
 Logger Proxy class to use in Galciaster.
 """
-
+import sys
 import logging
 import getpass
+
+from os import path
 
 class Logger(logging.Logger):
     def __init__(self, log_path, level="DEBUG", rotate=False, use_syslog=False):
@@ -29,25 +31,36 @@ class Logger(logging.Logger):
             "%(module)s",
             "%(message)s"]
 
-        if log_path == None:
-            loghandler = logging.NullHandler()
-        elif use_syslog:
+        if use_syslog:
             from logging.handlers import SysLogHandler
             loghandler = SysLogHandler(address='/dev/log')
-            formatting.inser(0, "Galicaster")                                                                                                                                                             
+            formatting.inser(0, "Galicaster") 
             del(formatting[2]) 
             formatting[0] = "Galicaster"
             loghandler.setFormatter(logging.Formatter(" ".join(formatting)))
-        elif rotate:
-            from logging.handlers import TimedRotatingFileHandler
-            loghandler = TimedRotatingFileHandler(log_path, "midnight")
-            loghandler.setFormatter(logging.Formatter("\t".join(formatting)))
+        elif log_path == None or len(log_path) == 0:
+            loghandler = logging.NullHandler()
         else:
-            loghandler = logging.FileHandler(log_path, "a")
+            if log_path[0] != "/":
+                log_path = path.abspath(path.join(path.dirname(__file__), "..", "..", log_path))
+            if rotate:
+                from logging.handlers import TimedRotatingFileHandler
+                loghandler = TimedRotatingFileHandler(log_path, "midnight")
+            else:
+                try:
+                    loghandler = logging.FileHandler(log_path, "a")
+                except IOError:
+                    fallback_log_path = path.expanduser('~/.galicaster.log')
+                    sys.stderr.write("Error writing in the log in '{0}', using '{1}'\n".format(log_path, fallback_log_path))
+                    loghandler = logging.FileHandler(fallback_log_path, "a")
+
             loghandler.setFormatter(logging.Formatter("\t".join(formatting)))
 
         self.addFilter(GalicasterFilter())
         self.addHandler(loghandler)
+
+
+
 
 class GalicasterFilter(logging.Filter):
     """
