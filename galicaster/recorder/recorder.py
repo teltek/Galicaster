@@ -46,7 +46,7 @@ class Recorder(object):
                 )
 
         self.dispatcher = context.get_dispatcher() 
-        self.bins_desc = bins
+        self.bins_desc = []
         self.players = players
         self.restart = False
         self.mute = False
@@ -69,19 +69,10 @@ class Recorder(object):
 
         for bin in bins:
             name = bin['name']
-
-            try:
-                mod_name = 'galicaster.recorder.bins.' + bin['device']
-                __import__(mod_name)
-                mod = sys.modules[mod_name]
-                Klass = getattr(mod, "GC" + bin['device'])
-            except:
-                raise NameError(
-                    'Invalid track type %s for %s track' % (mod_name, name)
-                    )
-
-            logger.debug("Init bin %s %s", name, mod_name)
-            self.bins[name] = Klass(bin)
+            self.bins[name] = Recorder.get_gst_bin(bin)
+            bin.has_audio = self.bins[name].has_audio
+            bin.has_video = self.bins[name].has_video
+            self.bins_desc.append(bin)
             self.pipeline.add(self.bins[name])
 
     def get_status(self):
@@ -261,3 +252,18 @@ class Recorder(object):
         for bin_name, bin in self.bins.iteritems():
             if bin.has_audio:
                 bin.mute_preview(value)
+
+    @staticmethod
+    def get_gst_bin(bin):
+        try:
+            mod_name = 'galicaster.recorder.bins.' + bin['device']
+            __import__(mod_name)
+            mod = sys.modules[mod_name]
+            Klass = getattr(mod, "GC" + bin['device'])
+        except:
+            raise NameError(
+                'Invalid track type %s for %s track' % (mod_name, bin['name'])
+                )
+
+        logger.debug("Init bin %s %s", bin['name'], mod_name)
+        return Klass(bin)
