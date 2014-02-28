@@ -63,8 +63,6 @@ class TestFunctions(TestCase):
         self.assertEqual('full', self.conf.get('ingest', 'workflow'))
         # GET data in conf
         self.assertEqual('track1', self.conf.get('track1', 'name'))
-        # GET data in conf (and conf-dist)
-        self.assertEqual('presentation', self.conf.get('screen', 'left'))
         # SET
         self.conf.set('section', 'key', 'value')
         self.assertEqual('value', self.conf.get('section', 'key'))

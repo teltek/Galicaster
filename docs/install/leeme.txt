@@ -71,10 +71,6 @@ Apartados:
       - {utcsecond}: Segundo de grabacion UTC del MP como un numero decimal [00,59].
       
 
--- screen
-   * right: Nombre del dispositivo de vídeo en las lista de tracks que se mostrará en la pantalla derecha (None para desactivar).
-   * left: Nombre del dispositivo de vídeo en las lista de tracks que se mostrará en la pantalla izquierda (None para desactivar).
-
 -- ingest
    Los datos para conectar Galicaster a un servidor Opencast-Matterhorn.
    * active: Activa o desactiva la conexion al servidor Opencast-Matterhorn (True|False)
