@@ -22,7 +22,6 @@ from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 from galicaster.classui import message
 from galicaster.classui.metadata import MetadataClass as Metadata
-from galicaster.utils import readable
 from galicaster.classui.strip import StripUI
 from galicaster.classui.mpinfo import MPinfo
 
@@ -159,65 +158,6 @@ class ManagerUI(gtk.Box):
         else:
             return -1 * ascending
         
-
-#-------------------------------- DATA PRESENTATION --------------------------------
-
-
-    def size_readable(self,column,cell,model,iterador,user_data):
-        """Generates human readable string for a number.
-        Returns: A string form of the number using size abbreviations (KB, MB, etc.) """
-        resultado = readable.size(cell.get_property('text'))
-        cell.set_property('text',resultado)
-        return resultado
-
-    def date_readable(self,column,cell,model,iterador,user_data):
-        """ Generates date readable string from an isoformat datetime. """		
-        novo=readable.date(cell.get_property('text'))
-        cell.set_property('text',novo)		
-        return novo
-
-    def time_readable(self,column,cell,model,iterador,user_data):
-        """Generates date hout:minute:seconds from seconds."""		
-        ms = cell.get_property('text')
-        novo = readable.time(int(ms)/1000)
-        cell.set_property('text',novo)		
-        return novo
-
-    def list_readable(self,listed):
-        """Generates a string of items from a list, separated by commas."""		
-        novo = readable.list(listed)
-        return novo
-
-    def status_readable(self,column,cell,model,iterator,user_data):
-        """Set text equivalent for numeric status of mediapackages."""	
-        ms = cell.get_property('text')
-        novo = mediapackage.mp_status[int(ms)]
-        cell.set_property('text',novo)
-
-    def operation_readable(self,column,cell,model,iterator,operation):
-        """Sets text equivalent for numeric operation status of mediapackages."""	
-        mp=self.repository.get((model[iterator])[0])
-        status=mp.getOpStatus(operation)
-        out = mediapackage.op_status[status]
-        cell.set_property('text', out)
-        old_style = context.get_conf().get_color_style()
-        if old_style:
-            color = model[iterator][8]
-        else:
-            palette = context.get_conf().get_palette()
-            color = palette[status]
-        cell.set_property('background', color)
-     
-
-    def series_readable(self,column,cell,model,iterator,user_data):
-        """Sets text equivalent for numeric status of mediapackages."""	
-        ms = cell.get_property('text')
-        if ms == None:
-            novo=""
-        else: 
-            novo=self.repository.get((model[iterator])[0]).series_title
-        cell.set_property('text',novo)
-        return novo
 
 #---------------------------------------- ACTION CALLBACKS ------------------
 

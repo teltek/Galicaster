@@ -19,6 +19,7 @@ from galicaster.classui.managerui import ManagerUI
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 from galicaster.classui import get_ui_path
+from galicaster.utils import readable
 
 from galicaster.utils.i18n import _
 
@@ -102,7 +103,7 @@ class ListingClassUI(ManagerUI):
 
     def populate_treeview(self, mp):
 	"""Establishes which values to be shown, its properties"""
-	self.lista = gtk.ListStore(str,str, str, str, float, int, str, int, str, int, int, int)
+	self.lista = gtk.ListStore(str, str, str, str, float, int, str, int, str, int, int, int)
 	# gobject.TYPE_PYOBJECT
 	self.insert_data_in_list(self.lista, mp)
 
@@ -150,14 +151,13 @@ class ListingClassUI(ManagerUI):
 	columna1.set_expand(True)
 
 	# Edit content
-	columna2.set_cell_data_func(render2,self.size_readable,None)	
-	columna3.set_cell_data_func(render3,self.time_readable,None)
-	columna4.set_cell_data_func(render4,self.date_readable,None)
+	columna2.set_cell_data_func(render2, self.size_readable, 4)	
+	columna3.set_cell_data_func(render3, self.time_readable, 5)
+	columna4.set_cell_data_func(render4, self.date_readable, 6)
 	#columna8.set_cell_data_func(render8,self.status_readable,None)
 	columna9.set_cell_data_func(render9,self.operation_readable,"ingest")
 	columna10.set_cell_data_func(render9,self.operation_readable,"exporttozip")
 	columna11.set_cell_data_func(render9,self.operation_readable,"sidebyside")
-	#columna7.set_cell_data_func(render7,self.series_readable,None)
 	# Columns 6 and 7 are not edited
 
 	# Set Treeview Model
@@ -375,6 +375,49 @@ class ListingClassUI(ManagerUI):
                           context.get_mainwindow(),
                           buttons)
 	return True	
+
+#-------------------------------- DATA PRESENTATION --------------------------------
+
+
+    def size_readable(self, column, cell, model, iterator, index):
+        """Generates human readable string for a number.
+        Returns: A string form of the number using size abbreviations (KB, MB, etc.) """
+        value = readable.size(model.get_value(iterator, index))
+        cell.set_property('text', value)
+
+    def date_readable(self, column, cell, model, iterator, index):
+        """ Generates date readable string from an isoformat datetime. """
+        value = readable.date(model.get_value(iterator, index))
+        cell.set_property('text', value)
+
+    def time_readable(self, column, cell, model, iterator, index):
+        """Generates date hour:minute:seconds from seconds."""		
+        value = readable.time(model.get_value(iterator, index)/1000)
+        cell.set_property('text', value)
+
+    def list_readable(self,listed):
+        """Generates a string of items from a list, separated by commas."""		
+        novo = readable.list(listed)
+        return novo
+
+    def status_readable(self, column, cell, model, iterator, index):
+        """Set text equivalent for numeric status of mediapackages."""	
+        value = mediapackage.mp_status.get(model.get_value(iterator, index))
+        cell.set_property('text', value)
+
+    def operation_readable(self, column, cell, model, iterator, operation):
+        """Sets text equivalent for numeric operation status of mediapackages."""	
+        mp=self.repository.get((model[iterator])[0])
+        status=mp.getOpStatus(operation)
+        out = mediapackage.op_status[status]
+        cell.set_property('text', out)
+        old_style = context.get_conf().get_color_style()
+        if old_style:
+            color = model[iterator][8]
+        else:
+            palette = context.get_conf().get_palette()
+            color = palette[status]
+        cell.set_property('background', color)
 
 #--------------------------------------- Edit METADATA -----------------------------
 	
