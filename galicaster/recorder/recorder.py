@@ -46,7 +46,6 @@ class Recorder(object):
                 )
 
         self.dispatcher = context.get_dispatcher() 
-        self.bins_desc = bins
         self.players = players
         self.restart = False
         self.mute = False
@@ -266,9 +265,16 @@ class Recorder(object):
         self.players = players        
 
     def get_display_areas_info(self):
-        display_area_info = []
+        display_areas_info = []
         for bin_name, bin in self.bins.iteritems():
-            display_area_info.extend(bin.get_display_areas_info())
-        return display_area_info
+            display_areas_info.extend(bin.get_display_areas_info())
+        return display_areas_info
+
+    def get_bins_info(self):
+        bins_info = []
+        for bin_name, bin in self.bins.iteritems():
+            bins_info.extend(bin.get_bins_info())
+        return bins_info
+        
 
             

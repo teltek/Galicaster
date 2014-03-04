@@ -140,6 +140,9 @@ class Base(object):
             return ['sink-' + self.options['name']]
         return []
 
+    def get_bins_info(self):
+        return [self.options]
+
     @classmethod
     def get_gc_parameters(klass):
         ps = {}
