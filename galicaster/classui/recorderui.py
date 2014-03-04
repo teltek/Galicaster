@@ -223,39 +223,8 @@ class RecorderClassUI(gtk.Box):
         now = datetime.datetime.now().replace(microsecond=0)
         self.mediapackage = mediapackage.Mediapackage(title=_("Recording started at {0}").format(now.isoformat()))
 
-        context.get_state().mp=self.mediapackage.identifier
+        context.get_state().mp = self.mediapackage.identifier
 
-        # profile load depending of the swap value 
-        if self.swap:
-            self.conf.orde_current_profile()            
-            self.conf.reverse_current_profile()
-        else:
-            self.conf.reverse_current_profile()
-            self.conf.orde_current_profile()
-
-        current_profile = self.conf.get_current_profile()
-        bins = current_profile.tracks
-
-        for objectbin in bins:
-            objectbin['path']=self.repo.get_rectemp_path()
-        devices = current_profile.get_video_areas()
-        areas = self.create_drawing_areas(devices)  
-
-        self.bins = bins
-        self.areas = areas
-        
-        if self.error_dialog:
-            if self.error_id:
-                self.dispatcher.disconnect(self.error_id)
-                self.error_id = None
-            self.error_dialog.dialog_destroy()
-            self.error_dialog = None
-            self.error_text = None
-
-        self.error_id = self.dispatcher.connect(
-            "recorder-error",
-            self.handle_pipeline_error)
-        self.audiobar.ClearVumeter()
         if self.ok_to_show:
             self.init_recorder()
         return True
@@ -277,10 +246,32 @@ class RecorderClassUI(gtk.Box):
         self.select_devices()
 
     def init_recorder(self):
-        self.recorder = Recorder(self.bins, self.areas) 
+        if self.error_dialog:
+            if self.error_id:
+                self.dispatcher.disconnect(self.error_id)
+                self.error_id = None
+            self.error_dialog.dialog_destroy()
+            self.error_dialog = None
+            self.error_text = None
+        self.error_id = self.dispatcher.connect(
+            "recorder-error",
+            self.handle_pipeline_error)
+        self.audiobar.ClearVumeter()
+
+        current_profile = self.conf.get_current_profile()
+        bins = current_profile.tracks
+        for objectbin in bins:
+            objectbin['path'] = self.repo.get_rectemp_path()
+
+        self.recorder = Recorder(bins) 
         self.recorder.mute_preview(not self.focus_is_active)   
-        ok = self.recorder.preview()
-        if ok :
+        info = self.recorder.get_display_areas_info()
+        if self.swap: 
+            info.reverse()
+        areas = self.create_drawing_areas(info)
+        self.recorder.set_drawing_areas(areas)
+
+        if self.recorder.preview():
             if self.mediapackage.manual:
                 self.change_state(GC_PREVIEW)
         else:
@@ -288,8 +279,7 @@ class RecorderClassUI(gtk.Box):
                 logger.error("Restarting Preview Failed")
             self.change_state(GC_ERROR)
             if self.scheduled_recording:
-                self.on_failed_scheduled(self.current_mediapackage)
-                
+                self.on_failed_scheduled(self.current_mediapackage)    
             # TODO kill counter in case of error and scheduler
 
     def go_ahead(self):
@@ -945,26 +935,27 @@ class RecorderClassUI(gtk.Box):
 
     # -------------------------- UI ACTIONS -----------------------------
 
-    def create_drawing_areas(self, source):
+    def create_drawing_areas(self, sources):
         """Create as preview areas as video sources exits"""
         main = self.main_area
 
         for child in main.get_children():
             main.remove(child)
             child.destroy()        
-        areas = None
+
         areas = dict()
-        for key,value in source.iteritems():
+        for source in sources:
             new_area = gtk.DrawingArea()
-            new_area.set_name("videoarea"+str(key))
+            new_area.set_name(source)
             new_area.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse("black"))
-            areas[re.sub(r'\W+', '', value)]=new_area
-            main.pack_start(new_area,True,True,int(self.proportion*3))
+            areas[source] = new_area
+            main.pack_start(new_area, True, True, int(self.proportion*3))
 
         for child in main.get_children():
             child.show()
          
         return areas
+
 
     def event_change_mode(self, orig, old_state, new_state):
         """Handles the focus or the Rercording Area, launching messages when focus is recoverde"""

@@ -275,11 +275,6 @@ class Conf(object): # TODO list get and other ops arround profile
    def get_current_profile(self):      
       return self.__current_profile
 
-   def reverse_current_profile(self):
-      self.__current_profile.tracks.reverse()      
-
-   def orde_current_profile(self):
-      self.__current_profile.tracks.sort() 
 
    def change_current_profile(self,name):
       if name != self.__current_profile.name:
@@ -414,16 +409,6 @@ class Profile(object):
       configfile = open(filepath, 'wb')
       parser.write(configfile)
       configfile.close()
-
-   def get_video_areas(self):
-      # TODO filter not showable areas
-      areas = {}
-      index = 1
-      for track in self.tracks:
-         if track.device not in ['pulse', 'autoaudio', 'audiotest']:
-            areas[index] = track.name
-            index +=1                             
-      return areas
 
 
 
