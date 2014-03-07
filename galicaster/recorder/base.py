@@ -141,6 +141,9 @@ class Base(object):
         return []
 
     def get_bins_info(self):
+        if not self.options.has_key('mimetype'):
+            ext = self.options['file'].split('.')[1].lower()
+            self.options['mimetype'] = 'audio/' + ext if self.has_audio and not self.has_video else 'video/' + ext
         return [self.options]
 
     @classmethod
