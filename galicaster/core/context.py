@@ -98,7 +98,7 @@ def get_mhclient():
                                     connect_timeout,
                                     timeout,
                                     conf.get('ingest', 'workflow'),
-                                    conf.get('ingest', 'workflow-parameters'),
+                                    conf.get_dict('ingest', 'workflow-parameters'),
                                     get_logger() )
         else:
             mhclient = None

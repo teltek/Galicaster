@@ -52,7 +52,7 @@ class MHHTTPClient(object):
         hostname -- Capture agent hostname, optional galicaster by default.
         address -- Capture agent IP address, optional socket.gethostbyname(socket.gethostname()) by default.
         workflow -- Name of the workflow used to ingest the recordings., optional `full` by default.
-        workflow_parameters -- string (k1=v1;k2=v2) or dict of parameters used to ingest, opcional {'trimHold':'true'} by default.
+        workflow_parameters -- Dict of parameters used to ingest, opcional {'trimHold':'true'} by default.
         """
         self.server = server
         self.user = user
@@ -64,10 +64,7 @@ class MHHTTPClient(object):
         self.timeout = timeout
         self.workflow = workflow
         self.logger = logger
-        if isinstance(workflow_parameters, basestring):
-            self.workflow_parameters = dict(item.split(":") for item in workflow_parameters.split(";"))
-        else:
-            self.workflow_parameters = workflow_parameters
+        self.workflow_parameters = workflow_parameters
         self.search_server = None
 
 
