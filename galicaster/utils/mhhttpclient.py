@@ -40,19 +40,23 @@ INGEST_SERVICE_TYPE = 'org.opencastproject.ingest'
 class MHHTTPClient(object):
     
     def __init__(self, server, user, password, hostname='galicaster', address=None, multiple_ingest=False, 
-        connect_timeout=2, timeout=2, workflow='full', workflow_parameters={'trimHold':'true'}, logger=None):
+                 connect_timeout=2, timeout=2, workflow='full', workflow_parameters={'trimHold':'true'}, 
+                 ca_parameters={}, logger=None):
         """
         Arguments:
 
         server -- Matterhorn server URL.
         user -- Account used to operate the Matterhorn REST endpoints service.
         password -- Password for the account  used to operate the Matterhorn REST endpoints service.
-        connect_timeout -- connection timeout for curl in seconds
-        timeout -- total timeout for curl in seconds 
         hostname -- Capture agent hostname, optional galicaster by default.
         address -- Capture agent IP address, optional socket.gethostbyname(socket.gethostname()) by default.
+        multiple_ingest -- Use an ingest node, optional False by default.
+        connect_timeout -- Connection timeout for curl in seconds.
+        timeout -- Total timeout for curl in seconds .
         workflow -- Name of the workflow used to ingest the recordings., optional `full` by default.
         workflow_parameters -- Dict of parameters used to ingest, opcional {'trimHold':'true'} by default.
+        ca_parameters -- Dict of parameters used as configuration, optional empty by default.
+        logger -- Logger service
         """
         self.server = server
         self.user = user
@@ -65,6 +69,7 @@ class MHHTTPClient(object):
         self.workflow = workflow
         self.logger = logger
         self.workflow_parameters = workflow_parameters
+        self.ca_parameters = ca_parameters
         self.search_server = None
 
 
@@ -175,6 +180,7 @@ class MHHTTPClient(object):
             }
         
         client_conf.update(capture_devices)
+        client_conf.update(self.ca_parameters)
 
         xml = ""
         for k, v in client_conf.iteritems():
