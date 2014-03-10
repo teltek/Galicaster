@@ -167,7 +167,7 @@ class TestFunctions(TestCase):
         self.assertEqual(1, len(profile.tracks))
                 
 
-    def test_get_boolean_int_lower(self):
+    def test_get_boolean(self):
         conf = Conf()
         for yes in ['True', 'true', 'yes', 'si', 'y', 'OK', 'Y', 'TRUE']:
             conf.set('s', 'k', yes)
@@ -177,14 +177,38 @@ class TestFunctions(TestCase):
             conf.set('s', 'k', no)
             self.assertFalse(conf.get_boolean('s', 'k'), 'Check if {0} is False'.format(no))
         
+    def test_get_lower(self):
+        conf = Conf()
         for lower in ['RUBENRUA', 'RubenRua', 'RubenruA', 'rubenrua']:
             conf.set('s', 'k', lower)
             self.assertEqual(conf.get_lower('s', 'k'), 'rubenrua')
 
         self.assertEqual(conf.get_lower('s', 'k_not_exists'), None)
 
+
+    def test_get_int(self):
+        conf = Conf()
         conf.set('s', 'k', '10')
         self.assertEqual(conf.get_int('s', 'k'), 10)
+
+
+    def test_get_list(self):
+        conf = Conf()
+        self.assertEqual(conf.get_list('s', 'k'), [])
+
+        conf.set('s', 'k', '1 2 3 4 5 6')
+        self.assertEqual(conf.get_list('s', 'k'), ['1', '2', '3', '4', '5', '6'])
+
+        conf.set('s', 'k', 'one two three')
+        self.assertEqual(conf.get_list('s', 'k'), ['one', 'two', 'three'])
+
+
+    def test_get_dict(self):
+        conf = Conf()
+        self.assertEqual(conf.get_dict('s', 'k'), {})
+
+        conf.set('s', 'k', 'k1:v1;k2:v2;k3:v3')
+        self.assertEqual(conf.get_dict('s', 'k'), {'k1': 'v1', 'k2': 'v2', 'k3': 'v3'})
 
 
     def test_track_property(self):
