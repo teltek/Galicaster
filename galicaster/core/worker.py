@@ -47,8 +47,8 @@ class Worker(object):
                 self.queue.task_done()
     
 
-    def __init__(self, dispatcher, repo, logger, conf=None, mh_client=None, export_path=None, tmp_path=None, 
-                 use_namespace=True, sbs_layout='sbs'):
+    def __init__(self, dispatcher, repo, logger, mh_client=None, export_path=None, tmp_path=None, 
+                 use_namespace=True, sbs_layout='sbs', hide_ops=[], hide_nightly=[]):
         """
         Arguments:
 
@@ -68,7 +68,8 @@ class Worker(object):
         self.sbs_layout = sbs_layout
         self.dispatcher = dispatcher
         self.logger = logger
-        self.conf = conf
+        self.hide_ops = hide_ops
+        self.hide_nightly = hide_nightly
 
         for dir_path in (self.export_path, self.tmp_path):
             if not os.path.isdir(dir_path):
@@ -92,29 +93,17 @@ class Worker(object):
         jobs = []
         jobs_night = []
 
-        # Get a config property to filter the operations
-        if self.conf:
-            hide_ops = self.conf.get('operations', 'hide') or ""
-            hide_nightly = self.conf.get('operations', 'hide_nightly') or ""
-        else:
-            hide_ops = ""
-            hide_nightly = ""
-
-        # Parse the configuration keys and filter only the ones containing valid values
-        hide_ops = set( op for op in hide_ops.split() if op in JOBS.values() )
-        hide_nightly = set( op for op in hide_nightly.split() if op in JOBS.values() )
-
         for key,value in JOBS.iteritems():
             if key==INGEST and not self.mh_client:
                 continue
             if mp.getOpStatus(value) not in [mediapackage.OP_PENDING, mediapackage.OP_PROCESSING]:
-                if value not in hide_ops:
+                if value not in self.hide_ops:
                     jobs.append(key)
-                if value not in hide_nightly:
+                if value not in self.hide_nightly:
                     night = cc+key+nn if mp.getOpStatus(value) == mediapackage.OP_NIGHTLY else key+nn
                     jobs_night.append(night)            
 
-        return jobs,jobs_night
+        return jobs, jobs_night
     
     def do_job_by_name(self, name, mp_id):
         f_operation = {
