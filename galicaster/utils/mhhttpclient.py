@@ -202,7 +202,8 @@ class MHHTTPClient(object):
         return postdict
 
     def _get_endpoints(self, service_type):
-        self.logger.debug('Looking up Matterhorn endpoint for %s', service_type)
+        if self.logger:
+            self.logger.debug('Looking up Matterhorn endpoint for %s', service_type)
         services = self.__call('GET', SERVICE_REGISTRY_ENDPOINT, {}, {'serviceType': service_type})
         services = json.loads(services)
         return services['services']['service']
@@ -261,7 +262,8 @@ class MHHTTPClient(object):
     def ingest(self, mp_file, workflow=None, workflow_instance=None, workflow_parameters=None):
         postdict = self._prepare_ingest(mp_file, workflow, workflow_instance, workflow_parameters)
         server = self.server if not self.multiple_ingest else self.get_ingest_server()
-        self.logger.info( 'Ingesting to Server {0}'.format(server) ) 
+        if self.logger:
+            self.logger.info( 'Ingesting to Server {0}'.format(server) ) 
         return self.__call('POST', INGEST_ENDPOINT, {}, {}, postdict.items(), False, server, False)
 
 
