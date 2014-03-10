@@ -289,6 +289,11 @@ class Repository(object):
             return os.path.join(self.root, self.rectemp_dir)
 
 
+    def get_free_space(self):
+        s = os.statvfs(self.root)
+        return s.f_bsize * s.f_bavail
+
+
     def __get_folder_name(self, mp):
         utcdate = mp.getDate()
         date = mp.getLocalDate()
