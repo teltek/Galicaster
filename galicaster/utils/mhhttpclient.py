@@ -41,7 +41,7 @@ class MHHTTPClient(object):
     
     def __init__(self, server, user, password, hostname='galicaster', address=None, multiple_ingest=False, 
                  connect_timeout=2, timeout=2, workflow='full', workflow_parameters={'trimHold':'true'}, 
-                 ca_parameters={}, logger=None):
+                 ca_parameters={}, repo=None, logger=None):
         """
         Arguments:
 
@@ -56,7 +56,8 @@ class MHHTTPClient(object):
         workflow -- Name of the workflow used to ingest the recordings., optional `full` by default.
         workflow_parameters -- Dict of parameters used to ingest, opcional {'trimHold':'true'} by default.
         ca_parameters -- Dict of parameters used as configuration, optional empty by default.
-        logger -- Logger service
+        logger -- Logger service.
+        repo -- Repository service.
         """
         self.server = server
         self.user = user
@@ -68,6 +69,7 @@ class MHHTTPClient(object):
         self.timeout = timeout
         self.workflow = workflow
         self.logger = logger
+        self.repo = repo
         self.workflow_parameters = workflow_parameters
         self.ca_parameters = ca_parameters
         self.search_server = None
@@ -171,7 +173,7 @@ class MHHTTPClient(object):
             'capture.ingest.pause.time': '3600',
             'capture.cleaner.interval': '3600',
             'capture.cleaner.maxarchivaldays': '30',
-            'capture.cleaner.mindiskspace': '536870912',
+            'capture.cleaner.mindiskspace': '0',
             'capture.error.messagebody': '&quot;Capture agent was not running, and was just started.&quot;',
             'capture.error.subject': '&quot;%hostname capture agent started at %date&quot;',
             'org.opencastproject.server.url': 'http://172.20.209.88:8080',
@@ -179,6 +181,9 @@ class MHHTTPClient(object):
             'capture.max.length': '28800'
             }
         
+        if self.repo:
+            client_conf['capture.cleaner.mindiskspace'] = self.repo.get_free_space()
+
         client_conf.update(capture_devices)
         client_conf.update(self.ca_parameters)
 
