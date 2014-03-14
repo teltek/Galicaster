@@ -227,3 +227,14 @@ class TestFunctions(TestCase):
         self.assertEqual({'capture.device.names': 'defaults'}, conf.get_tracks_in_mh_dict())
         conf.set('basic', 'admin', 'False')
         self.assertEqual('GC-' + socket.gethostname(), conf.get_hostname())
+
+
+    def test_active_tag_default_profile(self):
+        conf_file = get_resource('conf/conf_active.ini')
+        dist_file = get_resource('conf/conf-dist.ini')
+        conf = Conf(conf_file, dist_file)
+
+        profile = conf.get_current_profile()
+
+        print profile.tracks
+        self.assertEqual(1, len(profile.tracks))
