@@ -220,9 +220,8 @@ class Conf(object): # TODO list get and other ops arround profile
       profile.name = 'Default'
       profile.import_tracks_from_parser(parser)
       if activated:
-         for track in profile.tracks:
-            if track['active'].lower() not in YES:
-               profile.tracks.remove(track)
+         def f(x): return x.get('active', 'true').lower() in YES
+         profile.tracks = filter(f, profile.tracks)
       return profile
 
 
