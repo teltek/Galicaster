@@ -47,7 +47,7 @@ class Repository(object):
         self.logger = logger
 
         self.__list = dict()
-        self.refresh(True)
+        self.__refresh(True)
 
 
     def create_repo(self, hostname):
@@ -78,7 +78,10 @@ class Repository(object):
                 os.rename(full_path, os.path.join(backup_dir, temp_file))
 
 
-    def refresh(self, check_inconsistencies=False):
+    def __refresh(self, check_inconsistencies=False):
+        if self.logger:
+            self.logger.info("Creating repository from {}".format(self.root))
+
         self.__list.clear()
         if self.root != None:
             for folder in os.listdir(self.root):
