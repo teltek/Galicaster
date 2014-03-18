@@ -706,7 +706,9 @@ class RecorderClassUI(gtk.Box):
         # status_hours = self.gui.get_object("status2")
         # status_mh = self.gui.get_object("status3")
 
+        gtk.gdk.threads_enter()
         self.check_schedule()
+        gtk.gdk.threads_leave()
         parpadeo = True
         changed = False
         signalized = False
@@ -722,7 +724,7 @@ class RecorderClassUI(gtk.Box):
         bold = pango.AttrWeight(700, 0, -1)
         red = pango.AttrForeground(65535, 0, 0, 0, -1)        
         black = pango.AttrForeground(17753, 17753, 17753, 0, -1)
-        font=pango.AttrFontDesc(self.font, 0, -1)
+        font = pango.AttrFontDesc(self.font, 0, -1)
 
         attr_red = pango.AttrList()
         attr_black = pango.AttrList()
@@ -735,9 +737,13 @@ class RecorderClassUI(gtk.Box):
         attr_black.insert(font)
         attr_black.insert(bold)
 
+        gtk.gdk.threads_enter()
         status.set_attributes(attr_black)
-        one_second=datetime.timedelta(seconds=1)
+        gtk.gdk.threads_leave()
+
+        one_second = datetime.timedelta(seconds=1)
         while thread_id == self.scheduler_thread_id: 
+            gtk.gdk.threads_enter()
             if self.font != changing_font:
                 attr_black.insert(pango.AttrFontDesc(self.font, 0, -1))
                 attr_red.insert(pango.AttrFontDesc(self.font, 0, -1))
@@ -809,9 +815,12 @@ class RecorderClassUI(gtk.Box):
                     status.set_text("")
                 if title.get_text() != "No upcoming events":
                     title.set_text("No upcoming events")
+            gtk.gdk.threads_leave()
                 
             time.sleep(0.5)
-            self.check_schedule()            
+            gtk.gdk.threads_enter()
+            self.check_schedule()  
+            gtk.gdk.threads_leave()          
         return True
 
 
@@ -825,7 +834,9 @@ class RecorderClassUI(gtk.Box):
         while thread_id == self.clock_thread_id:            
             if thread_id==self.clock_thread_id:
                 clocktime = datetime.datetime.now().time().strftime("%H:%M")
-                clock.set_label(clocktime)           
+                gtk.gdk.threads_enter()
+                clock.set_label(clocktime)
+                gtk.gdk.threads_leave()
             time.sleep(1)          
         return True
 
