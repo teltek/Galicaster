@@ -12,6 +12,7 @@
 # San Francisco, California, 94105, USA.
 
 import datetime
+import gobject
 from os import path
 from threading import Timer, _Timer
 
@@ -68,7 +69,7 @@ class Scheduler(object):
     def do_timers_long(self, sender):
         if self.net:
             self.proccess_ical()
-            self.dispatcher.emit('after-process-ical')
+            self.emit('after-process-ical')
         for mp in self.repo.get_next_mediapackages():
             self.create_new_timer(mp)
 
@@ -81,10 +82,10 @@ class Scheduler(object):
         except:
             self.logger.warning('Unable to connect to matterhorn server')
             self.net = False
-            self.dispatcher.emit('net-down')
+            self.emit('net-down')
         else:
             self.net = True
-            self.dispatcher.emit('net-up')
+            self.emit('net-up')
 
 
 
@@ -95,11 +96,11 @@ class Scheduler(object):
             self.client.setstate(self.ca_status)
             self.client.setconfiguration(self.conf.get_tracks_in_mh_dict()) 
             self.net = True
-            self.dispatcher.emit('net-up')
+            self.emit('net-up')
         except:
             self.logger.warning('Problems to connect to matterhorn server ')
             self.net = False
-            self.dispatcher.emit('net-down')
+            self.emit('net-down')
             return
 
 
@@ -110,7 +111,7 @@ class Scheduler(object):
         except:
             self.logger.warning('Problems to connect to matterhorn server ')
             self.net = False
-            self.dispatcher.emit('net-down')
+            self.emit('net-down')
             return
 
         try:
@@ -168,7 +169,7 @@ class Scheduler(object):
 
             self.t_stop = Timer(mp.getDuration()/1000, self.stop_record, [mp.getIdentifier()])
             self.t_stop.start()
-            self.dispatcher.emit('start-record', mp.getIdentifier())
+            self.emit('start-record', mp.getIdentifier())
 
             try:
                 self.client.setrecordingstate(key, 'capturing')
@@ -186,14 +187,19 @@ class Scheduler(object):
 
         mp = self.repo.get(key)
         if mp.status == mediapackage.RECORDING:
-            self.dispatcher.emit('stop-record', key)
+            self.emit('stop-record', key)
             try:
                 self.client.setrecordingstate(key, 'capture_finished')
             except:
                 self.logger.warning('Problems to connect to matterhorn server ')
                 self.net = False
-                self.dispatcher.emit('net-down')
+                self.emit('net-down')
             
         self.t_stop = None
 
 
+    def emit(self, *args, **kwargs):
+        # self.dispatcher.emit(*args, **kwargs)
+        #Allow only the main thread to touch the GUI
+        gobject.idle_add(self.dispatcher.emit, *args, **kwargs)
+        
