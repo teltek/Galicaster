@@ -32,6 +32,10 @@ To get the diff between two versions, go to https://github.com/teltek/galicaster
  * Fixed bug on forced users to click twice in pop-ups when using distributions like Xubuntu. 
  * Corrected some bad interactions between the no-audio dialog and other popups.
 
+* 1.3.2 (2014-03-25)
+
+ * Fixed Galicaster UI stability issue (Issue #93)
+
 * 1.3.1 (2014-01-20)
 
  * Ingest to a Opencast Matterhorn cluster with multiple ingest servers.
