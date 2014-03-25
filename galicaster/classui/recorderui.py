@@ -299,6 +299,21 @@ class RecorderClassUI(gtk.Box):
     def on_restart_preview(self, button=None, element=None): 
         """Restarting preview, commanded by record""" 
         logger.info("Restarting Preview")
+
+        paused = self.paused_time.total_seconds()*1000000000 # pass to ns
+        close_duration = int((self.recorder.get_time()-self.initial_time-paused)*1000/gst.SECOND)
+
+        self.mediapackage.status = mediapackage.RECORDED
+        self.mediapackage.properties['origin'] = self.conf.hostname
+        self.repo.add_after_rec(self.mediapackage, self.recorder.bins_desc, 
+                                close_duration, self.mediapackage.manual)
+        
+        code = 'manual' if self.mediapackage.manual else 'scheduled'
+        if self.conf.get_lower('ingest', code) == 'immediately':
+            self.worker.ingest(self.mediapackage)
+        elif self.conf.get_lower('ingest', code) == 'nightly':
+            self.worker.ingest_nightly(self.mediapackage)
+
         self.conf.reload()
         #self.configure_profile()
         self.select_devices()
@@ -420,8 +435,6 @@ class RecorderClassUI(gtk.Box):
 
     def close_recording(self):
         """Set the final data on the mediapackage, stop the record and restart the preview"""
-        paused = self.paused_time.total_seconds()*1000000000 # pass to ns
-        close_duration = int((self.recorder.get_time()-self.initial_time-paused)*1000/gst.SECOND)
         # To avoid error messages on stopping pipelines
         if self.error_dialog:
             if self.error_id:
@@ -432,17 +445,6 @@ class RecorderClassUI(gtk.Box):
             self.error_text = None
         self.recorder.stop_record_and_restart_preview()
         self.change_state(GC_STOP)
-
-        self.mediapackage.status = mediapackage.RECORDED
-        self.mediapackage.properties['origin'] = self.conf.hostname
-        self.repo.add_after_rec(self.mediapackage, self.recorder.bins_desc, 
-                                close_duration, self.mediapackage.manual)
-        
-        code = 'manual' if self.mediapackage.manual else 'scheduled'
-        if self.conf.get_lower('ingest', code) == 'immediately':
-            self.worker.ingest(self.mediapackage)
-        elif self.conf.get_lower('ingest', code) == 'nightly':
-            self.worker.ingest_nightly(self.mediapackage)
 
         context.get_state().is_recording = False
         self.timer_thread_id = None
