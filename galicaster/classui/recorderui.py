@@ -190,7 +190,6 @@ class RecorderClassUI(gtk.Box):
         # SCHEDULER FEEDBACK
         self.scheduler_thread_id = 1
         self.clock_thread_id = 1
-        self.start_thread_id = None
 
         self.scheduler_thread = thread(target=self.scheduler_launch_thread)
         self.clock_thread = thread(target=self.clock_launch_thread)
@@ -214,7 +213,6 @@ class RecorderClassUI(gtk.Box):
             self.swap = True
         self.dispatcher.emit("reload-profile")
         self.audiobar.mute = False        
-        self.audiobar.SetVumeter
 
     def select_devices(self):
         """Loads the bins and creates the preview areas for the active profile, creating a new mediapacakge."""
@@ -455,9 +453,7 @@ class RecorderClassUI(gtk.Box):
         self.conf.reload()
         self.current_mediapackage = identifier
         self.scheduled_recording = True
-        #a=thread(target=self.start_thread, args=(identifier,))
-        #a.daemon = False
-        #a.start()
+
         if self.status == GC_PREVIEW: # Record directly
             self.mediapackage = self.repo.get(self.current_mediapackage)
             self.on_rec() 
@@ -474,76 +470,18 @@ class RecorderClassUI(gtk.Box):
                 self.close_recording()                
                 while self.restarting:
                     time.sleep(0.1) 
-                    #if self.start_thread_id == None:
-                    #    return
                 self.mediapackage = self.repo.get(self.current_mediapackage)   
                 self.on_rec()       
                       
         elif self.status == GC_INIT:  # Start Preview and Record
             self.on_start_button()
-            while self.record.get_status() != gst.STATE_PLAYING:
+            while self.recorder.get_status() != gst.STATE_PLAYING:
                 time.sleep(0.2)
-                if self.start_thread_id == None:
-                    return
             self.mediapackage = self.repo.get(self.current_mediapackage)
             self.on_rec()
 
         title = self.repo.get(identifier).title
         self.dispatcher.emit("update-video", title)
-
-    def start_thread(self,identifier):
-        """Thread handling a scheduled recording"""
-        self.start_thread_id = 1        
-        if self.status == GC_PREVIEW: # Record directly
-            self.mediapackage = self.repo.get(self.current_mediapackage)
-            context.get_state().mp = self.mediapackage.identifier
-            self.on_rec() 
-        
-        elif self.status in [ GC_RECORDING, GC_PAUSED ] :
-
-            if self.allow_overlap:
-                pass
-                # TODO: dont stop and extend recording until the end of the new interval
-                # In case of stop, restart with the overlapped job
-
-            else: # Stop current recording, wait until prewiew restarted and record
-                self.restarting = True
-                self.close_recording()                
-                while self.restarting:
-                    time.sleep(0.1) 
-                    if self.start_thread_id == None:
-                        return
-                self.mediapackage = self.repo.get(self.current_mediapackage)   
-                self.on_rec()       
-                      
-        elif self.status == GC_INIT:  # Start Preview and Record
-            self.on_start_button()
-            while self.recorder.get_status() != gst.STATE_PLAYING:
-                time.sleep(0.2)
-                if self.start_thread_id == None:
-                    return
-            self.mediapackage = self.repo.get(self.current_mediapackage)
-            self.on_rec()
-
-        elif self.status == GC_ERROR:
-            if self.error_dialog:
-                if self.error_id:
-                    self.dispatcher.disconnect(self.error_id)
-                    self.error_id = None
-                self.error_dialog.dialog_destroy()
-                self.error_dialog = None
-                self.error_text = None
-            self.on_start_button()
-            while self.recorder.get_status() != gst.STATE_PLAYING:
-                time.sleep(0.2)
-                if self.start_thread_id == None:
-                    return
-            self.mediapackage = self.repo.get(self.current_mediapackage)
-            self.on_rec()              
-
-        title = self.repo.get(identifier).title
-        self.dispatcher.emit("update-video", title)        
-        return None
 
     def on_scheduled_stop(self,source,identifier):
         """Updates the mediapackage information after a scheduled recoring."""
@@ -560,8 +498,6 @@ class RecorderClassUI(gtk.Box):
         self.current_mediapackage = None
         self.current = None
         self.scheduled_recording = False
-        self.start_thread_id = None
-
 
     def reload_state_and_permissions(self):
         """Force a state review in case permissions had changed."""
@@ -1304,7 +1240,6 @@ class RecorderClassUI(gtk.Box):
             self.close_recording() 
         self.scheduler_thread_id = None
         self.clock_thread_id = None
-        self.start_thread_id = None
         if self.status in [GC_PREVIEW]:
             self.recorder.stop_preview()        
         return True        
