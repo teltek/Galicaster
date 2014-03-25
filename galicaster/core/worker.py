@@ -143,6 +143,12 @@ class Worker(object):
         else:
             self.operation_nightly(mp, name)      
 
+    def gen_location(self, extension):
+        name = datetime.now().replace(microsecond=0).isoformat()
+        while os.path.exists(os.path.join(self.export_path, name + '.' + extension)):
+            name += '_2'
+        return os.path.join(self.export_path, name + '.' + extension)
+
     def ingest_nightly(self, mp):
         self.operation_nightly(mp, INGEST_CODE)
 
@@ -215,9 +221,7 @@ class Worker(object):
 
 
     def _export_to_zip(self, mp, location=None, is_action=True):
-        if not location:
-            name = datetime.now().replace(microsecond=0).isoformat()
-            location = location or os.path.join(self.export_path, name + '.zip')
+        location = location or self.gen_location('zip')
         if is_action:
             self.logger.info("Executing ExportToZIP for MP {0}".format(mp.getIdentifier()))
             mp.setOpStatus('exporttozip',mediapackage.OP_PROCESSING)
@@ -249,11 +253,9 @@ class Worker(object):
 
 
     def _side_by_side(self, mp, location=None):
+        location = location or self.gen_location('mp4')
         self.logger.info('Executing SideBySide for MP {0}'.format(mp.getIdentifier()))
         mp.setOpStatus('sidebyside',mediapackage.OP_PROCESSING)
-        if not location:
-            name = datetime.now().replace(microsecond=0).isoformat()
-            location = location or os.path.join(self.export_path, name + '.mp4')
         self.repo.update(mp)
         self.dispatcher.emit('start-operation', 'sidebyside', mp)
 
