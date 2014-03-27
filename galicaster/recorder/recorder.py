@@ -93,11 +93,19 @@ class Recorder(object):
 
     def preview(self):
         logger.debug("recorder preview")
+        return self.__start(gst.STATE_PAUSED)
+
+    def preview_and_record(self):
+        logger.debug("recorder preview and record")
+        self.__on_start_only_preview = False
+        return self.__start(gst.STATE_PLAYING)
+
+    def __start(self, new_state=gst.STATE_PAUSED):
         if not len(self.bins):
             self.dispatcher.emit("recorder-error", "No tracks on profile")
             return False
         
-        change = self.pipeline.set_state(gst.STATE_PAUSED)
+        change = self.pipeline.set_state(new_state)
             
         if change == gst.STATE_CHANGE_FAILURE:
             text = None
@@ -119,13 +127,6 @@ class Recorder(object):
             self.bus.post(message)
             #self.dispatcher.emit("recorder-error","Driver error")
             return False
-        return True
-
-    def preview_and_record(self):
-        logger.debug("recorder preview and record")
-        self.__on_start_only_preview = False
-        self.pipeline.set_state(gst.STATE_PLAYING)
-        #FIXME CHECH ERRROR
         return True
 
     def stop_preview(self):
