@@ -106,7 +106,7 @@ class RecorderClassUI(gtk.Box):
         self.current_mediapackage = None
         self.current = None
         self.next = None
-        self.restarting = False
+        self.start_recording = False
         self.font = None
         self.scheduled_recording = False
         self.focus_is_active = False
@@ -277,13 +277,19 @@ class RecorderClassUI(gtk.Box):
     def init_recorder(self):
         self.recorder = Recorder(self.bins, self.areas) 
         self.recorder.mute_preview(not self.focus_is_active)   
-        ok = self.recorder.preview()
+        if self.start_recording:
+            self.start_recording = False
+            ok = self.recorder.preview_and_record()
+            self.mediapackage = self.repo.get(self.current_mediapackage)
+            # NOTE only call on_rec to update UI. Recorder is already recording.
+            self.on_rec()
+        else:
+            ok = self.recorder.preview()
         if ok :
             if self.mediapackage.manual:
                 self.change_state(GC_PREVIEW)
         else:
-            if self.restarting:
-                logger.error("Restarting Preview Failed")
+            logger.error("Restarting Preview Failed")
             self.change_state(GC_ERROR)
             if self.scheduled_recording:
                 self.on_failed_scheduled(self.current_mediapackage)
@@ -317,7 +323,6 @@ class RecorderClassUI(gtk.Box):
         self.conf.reload()
         #self.configure_profile()
         self.select_devices()
-        self.restarting = False
         return True
 
     def configure_profile(self):
@@ -468,12 +473,8 @@ class RecorderClassUI(gtk.Box):
                 # In case of stop, restart with the overlapped job
 
             else: # Stop current recording, wait until prewiew restarted and record
-                self.restarting = True
+                self.start_recording = True
                 self.close_recording()                
-                while self.restarting:
-                    time.sleep(0.1) 
-                self.mediapackage = self.repo.get(self.current_mediapackage)   
-                self.on_rec()       
                       
         elif self.status == GC_INIT:  # Start Preview and Record
             self.on_start_button()
