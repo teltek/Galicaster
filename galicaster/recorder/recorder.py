@@ -51,6 +51,7 @@ class Recorder(object):
         self.restart = False
         self.mute = False
         self.error = False
+        self.__on_start_only_preview = True
 
         self.pipeline = gst.Pipeline("galicaster_recorder")
         self.bus = self.pipeline.get_bus()
@@ -93,34 +94,39 @@ class Recorder(object):
     def preview(self):
         logger.debug("recorder preview")
         if not len(self.bins):
-            self.dispatcher.emit("recorder-error","No tracks on profile")
+            self.dispatcher.emit("recorder-error", "No tracks on profile")
             return False
-        else:
-            change=self.pipeline.set_state(gst.STATE_PAUSED)
+        
+        change = self.pipeline.set_state(gst.STATE_PAUSED)
             
-            if change == gst.STATE_CHANGE_FAILURE:
-                text = None
-                random_bin = None
-                for key,value in self.bins.iteritems():
-                    if not value.getSource():
-                        random_bin = value
-                        text = "Error on track : "+ key
-                    if not random_bin:
-                        random_bin = value
-                        text = "Error on unknow track"
+        if change == gst.STATE_CHANGE_FAILURE:
+            text = None
+            random_bin = None
+            for key, value in self.bins.iteritems():
+                if not value.getSource():
+                    random_bin = value
+                    text = "Error on track : "+ key
+                if not random_bin:
+                    random_bin = value
+                    text = "Error on unknow track"
 
-                src = random_bin
-                error = gst.GError(gst.RESOURCE_ERROR,
-                                   gst.RESOURCE_ERROR_FAILED, text)
+            src = random_bin
+            error = gst.GError(gst.RESOURCE_ERROR, gst.RESOURCE_ERROR_FAILED, text)
                 
-                message = gst.message_new_error(
-                    src, error, 
-                    str(random_bin)+"\nunknown system_error")
-                self.bus.post(message)
-                #self.dispatcher.emit("recorder-error","Driver error")
-                return False
-            else:          
-                return True
+            message = gst.message_new_error(
+                src, error, 
+                str(random_bin)+"\nunknown system_error")
+            self.bus.post(message)
+            #self.dispatcher.emit("recorder-error","Driver error")
+            return False
+        return True
+
+    def preview_and_record(self):
+        logger.debug("recorder preview and record")
+        self.__on_start_only_preview = False
+        self.pipeline.set_state(gst.STATE_PLAYING)
+        #FIXME CHECH ERRROR
+        return True
 
     def stop_preview(self):
         #FIXME send EOS
@@ -212,7 +218,8 @@ class Recorder(object):
     def _on_state_changed(self, bus, message):
         old, new, pending = message.parse_state_changed()
         if (isinstance(message.src, gst.Pipeline) and 
-            (old, new) == (gst.STATE_READY, gst.STATE_PAUSED) ):
+            (old, new) == (gst.STATE_READY, gst.STATE_PAUSED) and
+            self.__on_start_only_preview):
             for bin_name, bin in self.bins.iteritems():
                 valve = bin.changeValve(True) 
             self.pipeline.set_state(gst.STATE_PLAYING)
