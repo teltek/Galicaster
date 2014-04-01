@@ -139,7 +139,6 @@ class RecorderClassUI(gtk.Box):
         self.dispatcher.connect("restart-preview", self.check_status_area)
         self.dispatcher.connect("net-up", self.check_net, True)        
         self.dispatcher.connect("net-down", self.check_net, False)        
-        self.statusbar.SetTimer(0)
 
         # VUMETER
         self.audiobar=Vumeter()
@@ -640,25 +639,18 @@ class RecorderClassUI(gtk.Box):
         thread_id= self.timer_thread_id
         self.initial_time=self.recorder.get_time()
         self.initial_datetime=datetime.datetime.utcnow().replace(microsecond = 0)
-        gtk.gdk.threads_enter()
-        self.statusbar.SetTimer(0)
-        gtk.gdk.threads_leave()
         self.paused_time = datetime.timedelta(0,0)
 
         rec_title = self.gui.get_object("recording1")
         rec_elapsed = self.gui.get_object("recording3")
               
         while thread_id == self.timer_thread_id:            
-        #while True:
-            actual_time=self.recorder.get_time()               
-            timer=(actual_time-self.initial_time)/gst.SECOND
             if self.status==GC_PAUSED:
                 self.paused_time = self.paused_time + datetime.timedelta(0,0,200000)               
             dif = datetime.datetime.utcnow() - self.initial_datetime - self.paused_time
 
             if thread_id==self.timer_thread_id:
                 gtk.gdk.threads_enter()
-                self.statusbar.SetTimer(timer)
                 if rec_title.get_text() != self.mediapackage.getTitle():
                     rec_title.set_text(self.mediapackage.getTitle())
                 rec_elapsed.set_text(_("Elapsed Time: ") + self.time_readable(dif))
