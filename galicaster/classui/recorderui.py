@@ -305,8 +305,7 @@ class RecorderClassUI(gtk.Box):
         """Restarting preview, commanded by record""" 
         logger.info("Restarting Preview")
 
-        paused = self.paused_time.total_seconds()*1000000000 # pass to ns
-        close_duration = int((self.recorder.get_time()-self.initial_time-paused)*1000/gst.SECOND)
+        close_duration = self.recorder.get_recorded_time() / gst.MSECOND
 
         self.mediapackage.status = mediapackage.RECORDED
         self.mediapackage.properties['origin'] = self.conf.hostname
@@ -633,28 +632,17 @@ class RecorderClassUI(gtk.Box):
 
     def timer_launch_thread(self):
         """Thread handling the recording elapsed time timer."""
-        
-        # Based on: http://pygstdocs.berlios.de/pygst-tutorial/seeking.html
-        
         thread_id= self.timer_thread_id
-        self.initial_time=self.recorder.get_time()
-        self.initial_datetime=datetime.datetime.utcnow().replace(microsecond = 0)
-        self.paused_time = datetime.timedelta(0,0)
-
         rec_title = self.gui.get_object("recording1")
         rec_elapsed = self.gui.get_object("recording3")
-              
+             
         while thread_id == self.timer_thread_id:            
-            if self.status==GC_PAUSED:
-                self.paused_time = self.paused_time + datetime.timedelta(0,0,200000)               
-            dif = datetime.datetime.utcnow() - self.initial_datetime - self.paused_time
-
-            if thread_id==self.timer_thread_id:
-                gtk.gdk.threads_enter()
-                if rec_title.get_text() != self.mediapackage.getTitle():
-                    rec_title.set_text(self.mediapackage.getTitle())
-                rec_elapsed.set_text(_("Elapsed Time: ") + self.time_readable(dif))
-                gtk.gdk.threads_leave()
+            gtk.gdk.threads_enter()
+            if rec_title.get_text() != self.mediapackage.getTitle():
+                rec_title.set_text(self.mediapackage.getTitle())
+            rec_elapsed.set_text(_("Elapsed Time: ") + 
+                                 self.time_readable(datetime.timedelta(microseconds=(self.recorder.get_recorded_time()/1000))))
+            gtk.gdk.threads_leave()
             time.sleep(0.2)          
         return True
 
