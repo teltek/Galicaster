@@ -120,7 +120,6 @@ def clear_data_and_check(element=None):
     global no_audio
 
     with lock:
-        no_audio = False
         __check_dialog()
 
     return True
