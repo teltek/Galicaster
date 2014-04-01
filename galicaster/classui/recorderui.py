@@ -640,8 +640,8 @@ class RecorderClassUI(gtk.Box):
             gtk.gdk.threads_enter()
             if rec_title.get_text() != self.mediapackage.getTitle():
                 rec_title.set_text(self.mediapackage.getTitle())
-            rec_elapsed.set_text(_("Elapsed Time: ") + 
-                                 self.time_readable(datetime.timedelta(microseconds=(self.recorder.get_recorded_time()/1000))))
+            msec = datetime.timedelta(microseconds=(self.recorder.get_recorded_time()/1000))
+            rec_elapsed.set_text(_("Elapsed Time: ") + self.time_readable(msec))
             gtk.gdk.threads_leave()
             time.sleep(0.2)          
         return True
