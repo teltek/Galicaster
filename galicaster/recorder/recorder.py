@@ -52,6 +52,7 @@ class Recorder(object):
         self.mute = False
         self.error = False
         self.__on_start_only_preview = True
+        self.__start_record_time = 0
 
         self.pipeline = gst.Pipeline("galicaster_recorder")
         self.bus = self.pipeline.get_bus()
@@ -91,6 +92,9 @@ class Recorder(object):
     def get_time(self):
         return self.pipeline.get_clock().get_time()
 
+    def get_recorded_time(self):
+        return self.get_time() - self.__start_record_time
+
     def preview(self):
         logger.debug("recorder preview")
         return self.__start(gst.STATE_PAUSED)
@@ -98,6 +102,7 @@ class Recorder(object):
     def preview_and_record(self):
         logger.debug("recorder preview and record")
         self.__on_start_only_preview = False
+        self.__start_record_time = self.get_time()
         return self.__start(gst.STATE_PLAYING)
 
     def __start(self, new_state=gst.STATE_PAUSED):
@@ -138,8 +143,8 @@ class Recorder(object):
     def record(self):
         if self.pipeline.get_state()[1] == gst.STATE_PLAYING:
             for bin_name, bin in self.bins.iteritems():
-                valve = bin.changeValve(False)                
-            # Get clock
+                valve = bin.changeValve(False)
+        self.__start_record_time = self.get_time()
 
     def stop_record(self):                
         a = gst.structure_from_string('letpass')
