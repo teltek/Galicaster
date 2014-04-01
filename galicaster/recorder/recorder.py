@@ -93,7 +93,15 @@ class Recorder(object):
         return self.pipeline.get_clock().get_time()
 
     def get_recorded_time(self):
-        return self.get_time() - self.__start_record_time
+        duration = self.__query_position()
+        return duration - self.__start_record_time
+
+    def __query_position(self):
+        try:
+            duration = self.pipeline.query_position(gst.FORMAT_TIME)[0]
+        except:
+            duration = 0
+        return duration
 
     def preview(self):
         logger.debug("recorder preview")
@@ -102,7 +110,7 @@ class Recorder(object):
     def preview_and_record(self):
         logger.debug("recorder preview and record")
         self.__on_start_only_preview = False
-        self.__start_record_time = self.get_time()
+        self.__start_record_time = self.__query_position()
         return self.__start(gst.STATE_PLAYING)
 
     def __start(self, new_state=gst.STATE_PAUSED):
@@ -144,7 +152,7 @@ class Recorder(object):
         if self.pipeline.get_state()[1] == gst.STATE_PLAYING:
             for bin_name, bin in self.bins.iteritems():
                 valve = bin.changeValve(False)
-        self.__start_record_time = self.get_time()
+        self.__start_record_time = self.__query_position()
 
     def stop_record(self):                
         a = gst.structure_from_string('letpass')
