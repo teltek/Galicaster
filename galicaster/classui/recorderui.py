@@ -643,7 +643,7 @@ class RecorderClassUI(gtk.Box):
             msec = datetime.timedelta(microseconds=(self.recorder.get_recorded_time()/1000))
             rec_elapsed.set_text(_("Elapsed Time: ") + self.time_readable(msec))
             gtk.gdk.threads_leave()
-            time.sleep(0.2)          
+            time.sleep(0.5)          
         return True
 
     def scheduler_launch_thread(self):
