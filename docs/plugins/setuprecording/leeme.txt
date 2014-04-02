@@ -1,0 +1,38 @@
+Muestra un editor para confirmar/modificar los metadatos de una grabación antes de iniciarla
+============================================================================================
+
+El plugin 'setuprecording' muestra un editor de metadatos al pulsar el botón "REC". Este editor puede usarse para confirmar y/o editar los metadatos antes de iniciar la grabación.
+
+Además, el plugin se puede configurar para que se establezca un valor por defecto para cada uno de los tipos de metadatos disponibles, evitando que el usuario tenga que introducirlos una y otra vez.
+
+Combinado con la habilidad para bloquear la edición de ciertos metadatos (ver la sección 'metadata'), esta funcionalidad puede usarse para forzar el valor de algunos metadatos (ya que el metadato específico toma el valor por defecto, pero no puede ser editado por el usuario).
+
+Se pueden utilizar los siguientes parámetros de configuración (sin comillas):
+   - 'title': Establece el título por defecto de la grabación.
+   - 'presenter' or 'creator': Establece el "Presentador" por defecto.
+   - 'description': Contiene la "Descripción" por defecto
+   - 'language': Especifica el lenguaje por defecto de la grabación
+   - 'series', 'ispartof' or 'isPartOf': Indica el identificador de la serie por defecto a la que pertenecerá la grabación.
+                                         Ese identificador tiene que existir en el sistema Matterhorn asociado, o se ignorará.
+
+Todos los parámetros anteriores (excepto 'series' y sus equivalentes) pueden incluír "comodines", es decir, etiquetas que, en tiempo de ejecución, se sustituyen automáticamente por otros valores. De momento sólo se ha definido uno de estos comodines:
+   - '{user}': Cada vez que aparezca esta etiqueta en alguno de los parámetros anteriores, se sustituirá por el nombre del usuario de U(nix actual.
+
+
+Por ejemplo, para forzar que el metadato "Presentador" tome por defecto el nombre del usuario de Unix actual, se podría utilizar el siguiente fragmento en el archivo 'conf.ini':
+
+[setuprecording]
+presenter = {user}
+
+Un ejemplo más complejo:
+
+[setuprecording]
+title = Grabación de {user}
+description = Descripción por defecto
+presenter = {user}
+
+
+Para activar este plugin:
+
+[plugins]
+setuprecording = True

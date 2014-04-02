@@ -48,7 +48,7 @@ def push_pic(sender=None):
     postfield = [ ("snapshot", get_screenshot() ) ]
     
     try:
-        aux = mhclient._MHHTTPClient__call('POST', endpoint, {}, postfield, False, False)
+        aux = mhclient._MHHTTPClient__call('POST', endpoint, {}, {}, postfield, False, None, False)
     except IOError as e:
         # This endpoint return 204, not 200.
         aux = None

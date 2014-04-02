@@ -34,6 +34,8 @@ from galicaster.recorder.bins import audiotest
 from galicaster.recorder.bins import oldblackmagic
 from galicaster.recorder.bins import rtpvideo
 
+from galicaster.utils.i18n import _
+
 FLAVORS = ["presentation","presenter","other"]
 
 
@@ -57,13 +59,14 @@ class ProfileUI(gtk.Window):
         self.set_transient_for(parent)
         self.set_destroy_with_parent(True)
         self.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
-        self.set_title("Profile Selector")
+        self.set_title(_("Profile Selector"))
         self.set_position(gtk.WIN_POS_CENTER_ALWAYS)
         self.set_default_size(width,height)
         self.set_skip_taskbar_hint(True)
-        self.set_keep_above(True)
+        self.set_modal(True)
+        self.set_keep_above(False)
 
-        strip = Header(size=size,title="Profile Selector")
+        strip = Header(size=size,title=_("Profile Selector"))
 
         self.notebook = gtk.Notebook()
         self.notebook.set_show_tabs(False)
@@ -77,7 +80,7 @@ class ProfileUI(gtk.Window):
         self.profile=None
         self.track=None       
 
-        tab1 = gtk.Label("Profile Selector")
+        tab1 = gtk.Label(_("Profile Selector"))
         self.append_tab(self.list,tab1)
         self.show_all()
         self.present()
@@ -144,7 +147,7 @@ class ProfileDialog(gtk.HBox):
         sidebox = gtk.VBox(False,0)  
         frame = gtk.Frame()
 
-        label= gtk.Label("Profile Tracks")
+        label= gtk.Label(_("Profile Tracks"))
         alist = pango.AttrList()
         font = pango.FontDescription("bold "+str(int(self.hprop*15)))
         attr=pango.AttrFontDesc(font,0,-1)
@@ -243,13 +246,13 @@ class ListProfileBox(ProfileDialog):
     def __init__(self, parent, size, tester = False):
         ProfileDialog.__init__(self, parent, size)
 
-        self.add_button("Select",self.change_selected_profile)
+        self.add_button(_("Select"),self.change_selected_profile)
         if tester:
-            self.add_button("Edit",self.show_tracks)        
-            self.add_button("New", self.new_profile)                                         
-            self.add_button("Duplicate", self.duplicate_profile)
-            self.add_button("Delete", self.delete_profile)
-        self.add_button("Close",self.close, True)
+            self.add_button(_("Edit"),self.show_tracks)        
+            self.add_button(_("New"), self.new_profile)                                         
+            self.add_button(_("Duplicate"), self.duplicate_profile)
+            self.add_button(_("Delete"), self.delete_profile)
+        self.add_button(_("Close"),self.close, True)
 
         self.append_profiles()
         self.select_current_profile()
@@ -292,7 +295,7 @@ class ListProfileBox(ProfileDialog):
         lista = gtk.ListStore(object, str)
         view = gtk.TreeView() 
         view.set_model(lista)
-	view.get_selection().set_mode(gtk.SELECTION_SINGLE)
+        view.get_selection().set_mode(gtk.SELECTION_SINGLE)
         view.set_headers_visible(False)
         view.columns_autosize()
 
@@ -306,15 +309,15 @@ class ListProfileBox(ProfileDialog):
 
         image = gtk.CellRendererPixbuf()
 
-	column0 = gtk.TreeViewColumn("Profile", render, text = 1)
-	column1 = gtk.TreeViewColumn("Current", image)
+        column0 = gtk.TreeViewColumn("Profile", render, text = 1)
+        column1 = gtk.TreeViewColumn("Current", image)
         column1.set_cell_data_func(image, self.show_current_image)
         view.append_column(column1)
         view.append_column(column0)
 
         column0.set_sort_column_id(1)
         lista.set_sort_func(1,self.sorting)
-	lista.set_sort_column_id(1,gtk.SORT_ASCENDING)          
+        lista.set_sort_column_id(1,gtk.SORT_ASCENDING)          
         return lista,view  
 
     def sorting(self, treemodel, iter1, iter2):
@@ -405,11 +408,11 @@ class ProfileBox(ProfileDialog):
         """
         ProfileDialog.__init__(self, parent)
         self.profile = profile
-        self.add_button("Save", self.save_profile)        
-        self.add_button("Edit", self.edit_track)        
-        self.add_button("New track", self.new_track)  
-        self.add_button("Delete track",self.delete_track) 
-        self.add_button("Cancel", self.close, True)    
+        self.add_button(_("Save"), self.save_profile)        
+        self.add_button(_("Edit"), self.edit_track)        
+        self.add_button(_("New track"), self.new_track)  
+        self.add_button(_("Delete track"),self.delete_track) 
+        self.add_button(_("Cancel"), self.close, True)    
 
         self.append_tracks(profile)
         self.profile_name = gtk.Entry()
@@ -423,12 +426,12 @@ class ProfileBox(ProfileDialog):
         lista = gtk.ListStore(gobject.TYPE_PYOBJECT, str)
         view = gtk.TreeView() 
         view.set_model(lista)
-	view.get_selection().set_mode(gtk.SELECTION_SINGLE)
+        view.get_selection().set_mode(gtk.SELECTION_SINGLE)
         render = gtk.CellRendererText()
-	column0 = gtk.TreeViewColumn("Tracks", render, text = 1)
-	#column1 = gtk.TreeViewColumn("Presenter", render, text = 1)
-	#column2 = gtk.TreeViewColumn("Presentation", render, text = 2)
-	#column3 = gtk.TreeViewColumn("Other", render, text = 3)
+        column0 = gtk.TreeViewColumn("Tracks", render, text = 1)
+        #column1 = gtk.TreeViewColumn("Presenter", render, text = 1)
+        #column2 = gtk.TreeViewColumn("Presentation", render, text = 2)
+        #column3 = gtk.TreeViewColumn("Other", render, text = 3)
         view.append_column(column0)
         #view.append_column(column1)
         #view.append_column(column2)
@@ -450,7 +453,7 @@ class ProfileBox(ProfileDialog):
     def new_track(self, origin):
         """Creates a new track on a given profile and pops up the editor"""
         new=conf.Track()
-        tab3=gtk.Label(self.superior.get_title()+" > "+"New Track")
+        tab3=gtk.Label(self.superior.get_title()+" > "+_("New Track"))
         self.superior.track=TrackBox(self.profile,new, self.superior)
         self.superior.append_tab(self.superior.track,tab3)
         return new
@@ -505,9 +508,9 @@ class TrackBox(gtk.HBox):
         self.buttons.set_layout(gtk.BUTTONBOX_START)
         self.buttons.set_spacing(5)
 
-        self.add_button("Save", self.retrieve_data)        
+        self.add_button(_("Save"), self.retrieve_data)        
         #self.add_button("Test", self.test_track, True)      
-        self.add_button("Cancel", self.close, True)  
+        self.add_button(_("Cancel"), self.close, True)  
 
         self.table = None
         self.model = None

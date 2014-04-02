@@ -262,6 +262,7 @@
                     <property name="can_focus">False</property>
                     <property name="xalign">0</property>
                     <property name="xpad">10</property>
+                    <property name="ypad">10</property>
                     <property name="label" translatable="yes">Events</property>
                   </object>
                   <packing>
@@ -270,13 +271,13 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkAlignment" id="alignment1">
+                  <object class="GtkAlignment" id="rec_panel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="xscale">0.89999997615814209</property>
                     <property name="yscale">0.89999997615814209</property>
                     <child>
-                      <object class="GtkVBox" id="rec_panel">
+                      <object class="GtkVBox" id="rec_panel1">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <child>
@@ -318,6 +319,7 @@
                     <property name="can_focus">False</property>
                     <property name="xalign">0</property>
                     <property name="xpad">10</property>
+                    <property name="ypad">10</property>
                     <property name="label" translatable="yes">Recording</property>
                   </object>
                   <packing>
@@ -466,6 +468,7 @@
                     <property name="can_focus">False</property>
                     <property name="xalign">0</property>
                     <property name="xpad">10</property>
+                    <property name="ypad">10</property>
                     <property name="label" translatable="yes">Status</property>
                   </object>
                   <packing>
@@ -630,6 +633,30 @@
                             <property name="expand">False</property>
                             <property name="fill">False</property>
                             <property name="position">3</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkToggleButton" id="swapbutton">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="use_action_appearance">False</property>
+                            <property name="focus_on_click">False</property>
+                            <signal name="toggled" handler="swap_videos" swapped="no"/>
+                            <child>
+                              <object class="GtkImage" id="image2b">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="pixel_size">0</property>
+                                <property name="icon_name">object-rotate-left</property>
+                                <property name="icon-size">6</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">4</property>
                           </packing>
                         </child>
                         <child>

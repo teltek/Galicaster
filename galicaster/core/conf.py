@@ -84,11 +84,29 @@ class Conf(object): # TODO list get and other ops arround profile
        return True if self.get_lower(sect, opt) in YES else False
 
 
+   def get_list(self, sect, opt):
+       """
+       Return list value of option in section
+       key = value1 value2 value2
+       """
+       return self.get(sect, opt).split() if self.get(sect, opt) else []
+
+
+   def get_dict(self, sect, opt):
+       """
+       Return dict value of option in section
+       key = key1:value1;key2:value2
+       """
+       return dict(item.split(":") for item in self.get(sect, opt).split(";")) if self.get(sect, opt) else {}
+
    def get_section(self, sect):
        """
        Returns a dictionay instead of a list
        """
-       return dict(self.__conf.items(sect))
+       try:
+          return dict(self.__conf.items(sect))
+       except ConfigParser.NoSectionError:
+          return {}
 
 
    def set(self, sect, opt, value):
@@ -202,9 +220,8 @@ class Conf(object): # TODO list get and other ops arround profile
       profile.name = 'Default'
       profile.import_tracks_from_parser(parser)
       if activated:
-         for track in profile.tracks:
-            if track['active'].lower() not in YES:
-               profile.tracks.remove(track)
+         def f(x): return x.get('active', 'true').lower() in YES
+         profile.tracks = filter(f, profile.tracks)
       return profile
 
 
@@ -272,6 +289,11 @@ class Conf(object): # TODO list get and other ops arround profile
    def get_current_profile(self):      
       return self.__current_profile
 
+   def reverse_current_profile(self):
+      self.__current_profile.tracks.reverse()      
+
+   def orde_current_profile(self):
+      self.__current_profile.tracks.sort() 
 
    def change_current_profile(self,name):
       if name != self.__current_profile.name:
@@ -412,7 +434,7 @@ class Profile(object):
       areas = {}
       index = 1
       for track in self.tracks:
-         if track.device not in ['pulse', 'audiotest']:
+         if track.device not in ['pulse', 'autoaudio', 'audiotest']:
             areas[index] = track.name
             index +=1                             
       return areas

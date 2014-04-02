@@ -22,11 +22,16 @@ $ sudo pip install icalendar=
 # Capture card configuration tools
 $ sudo apt-get install v4l-conf v4l-utils guvcview
 
+# Glade package to use it on Python
+$ sudo apt-get install phyton-glade2
+
   * N.B.: Until Ubuntu 10.10 (included), "ivtv-utils" must be used instead of "v4l-utils".
 
 # (optional)pyGst
 $ sudo pip install pygst
 
+# (optional) python-bottle for the REST plugin
+$ sudo apt-get install python-bottle
 
 Configuration
 -------------
@@ -64,11 +69,6 @@ Sections:
       - {utchour}: MP's UTC hour of recording, as a decimal number [00,23].
       - {utcminute}: MP's UTC minute of recording, as a decimal number [00,59].
       - {utc second}: MP's UTC second of recording, as a decimal number [00,59].
-
--- screen
-   * left: Name of the video device in the track list to be shown in the left screen (None to deactivate).
-   * right: Name of the video device in the track list to be shown in the right screen (None to deactivate).
-   Note that if a profile differnt from default is selected, they will be ordered automatically via track position
 
 -- ingest
    The data to connect Galicaster to an Opencast-Matterhorn server.

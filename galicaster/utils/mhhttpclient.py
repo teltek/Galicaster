@@ -19,6 +19,8 @@ import socket
 from StringIO import StringIO
 import pycurl
 from collections import OrderedDict
+import urlparse
+import urllib
 
 INIT_ENDPOINT = '/welcome.html'
 ME_ENDPOINT = '/info/me.json'
@@ -26,16 +28,20 @@ SETRECORDINGSTATE_ENDPOINT = '/capture-admin/recordings/{id}'
 SETSTATE_ENDPOINT = '/capture-admin/agents/{hostname}'
 SETCONF_ENDPOINT = '/capture-admin/agents/{hostname}/configuration'
 INGEST_ENDPOINT = '/ingest/addZippedMediaPackage'
-ICAL_ENDPOINT = '/recordings/calendars?agentid={hostname}'
-SERIES_ENDPOINT = '/series/series.json?count={count}' 
-SERVICE_REGISTRY_ENDPOINT = '/services/available.json?serviceType={serviceType}'
+ICAL_ENDPOINT = '/recordings/calendars'
+SERIES_ENDPOINT = '/series/series.json'
+SERVICE_REGISTRY_ENDPOINT = '/services/available.json'
+SEARCH_ENDPOINT = '/search/episode.json'
 
+SEARCH_SERVICE_TYPE = 'org.opencastproject.search'
+INGEST_SERVICE_TYPE = 'org.opencastproject.ingest'
 
 
 class MHHTTPClient(object):
     
     def __init__(self, server, user, password, hostname='galicaster', address=None, multiple_ingest=False, 
-                 workflow='full', workflow_parameters={'trimHold':'true'}, logger=None):
+                 connect_timeout=2, timeout=2, workflow='full', workflow_parameters={'trimHold':'true'}, 
+                 ca_parameters={}, repo=None, logger=None):
         """
         Arguments:
 
@@ -44,8 +50,14 @@ class MHHTTPClient(object):
         password -- Password for the account  used to operate the Matterhorn REST endpoints service.
         hostname -- Capture agent hostname, optional galicaster by default.
         address -- Capture agent IP address, optional socket.gethostbyname(socket.gethostname()) by default.
+        multiple_ingest -- Use an ingest node, optional False by default.
+        connect_timeout -- Connection timeout for curl in seconds.
+        timeout -- Total timeout for curl in seconds .
         workflow -- Name of the workflow used to ingest the recordings., optional `full` by default.
-        workflow_parameters -- string (k1=v1;k2=v2) or dict of parameters used to ingest, opcional {'trimHold':'true'} by default.
+        workflow_parameters -- Dict of parameters used to ingest, opcional {'trimHold':'true'} by default.
+        ca_parameters -- Dict of parameters used as configuration, optional empty by default.
+        logger -- Logger service.
+        repo -- Repository service.
         """
         self.server = server
         self.user = user
@@ -53,29 +65,37 @@ class MHHTTPClient(object):
         self.hostname = hostname
         self.address = address or socket.gethostbyname(socket.gethostname())
         self.multiple_ingest = multiple_ingest
+        self.connect_timeout = connect_timeout
+        self.timeout = timeout
         self.workflow = workflow
         self.logger = logger
-        if isinstance(workflow_parameters, basestring):
-            self.workflow_parameters = dict(item.split(":") for item in workflow_parameters.split(";"))
-        else:
-            self.workflow_parameters = workflow_parameters
+        self.repo = repo
+        self.workflow_parameters = workflow_parameters
+        self.ca_parameters = ca_parameters
+        self.search_server = None
 
 
-    def __call(self, method, endpoint, params={}, postfield={}, urlencode=True, server=None, timeout=True):
+    def __call(self, method, endpoint, path_params={}, query_params={}, postfield={}, urlencode=True, server=None, timeout=True):
 
         theServer = server or self.server
         c = pycurl.Curl()
         b = StringIO()
-        c.setopt(pycurl.URL, theServer + endpoint.format(**params))
+
+        url = list(urlparse.urlparse(theServer, 'http'))
+        url[2] = endpoint.format(**path_params)
+        url[4] = urllib.urlencode(query_params)
+        c.setopt(pycurl.URL, urlparse.urlunparse(url))
+
         c.setopt(pycurl.FOLLOWLOCATION, False)
-        c.setopt(pycurl.CONNECTTIMEOUT, 2)
+        c.setopt(pycurl.CONNECTTIMEOUT, self.connect_timeout)
         if timeout: 
-            c.setopt(pycurl.TIMEOUT, 2)
+            c.setopt(pycurl.TIMEOUT, self.timeout)
         c.setopt(pycurl.NOSIGNAL, 1)
         c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_DIGEST)
         c.setopt(pycurl.USERPWD, self.user + ':' + self.password)
-        c.setopt(pycurl.HTTPHEADER, ['X-Requested-Auth: Digest'])
+        c.setopt(pycurl.HTTPHEADER, ['X-Requested-Auth: Digest', 'X-Opencast-Matterhorn-Authorization: true'])
         c.setopt(pycurl.USERAGENT, 'Galicaster')
+       
         if (method == 'POST'):
             if urlencode:
                 c.setopt(pycurl.POST, 1) 
@@ -83,6 +103,7 @@ class MHHTTPClient(object):
             else:
                 c.setopt(pycurl.HTTPPOST, postfield)
         c.setopt(pycurl.WRITEFUNCTION, b.write)
+
         #c.setopt(pycurl.VERBOSE, True)
         try:
             c.perform()
@@ -92,8 +113,8 @@ class MHHTTPClient(object):
         c.close() 
         if status_code != 200:
             if self.logger:
-                self.logger.error('call error in %s, status code {%r}', 
-                                  theServer + endpoint.format(**params), status_code)
+                self.logger.error('call error in %s, status code {%r}: %s', 
+                                  urlparse.urlunparse(url), status_code, b.getvalue())   
             raise IOError, 'Error in Matterhorn client'
         return b.getvalue()
 
@@ -106,15 +127,15 @@ class MHHTTPClient(object):
 
 
     def ical(self):
-        return self.__call('GET', ICAL_ENDPOINT, {'hostname': self.hostname})
+        return self.__call('GET', ICAL_ENDPOINT, query_params = {'agentid': self.hostname})
 
 
     def setstate(self, state):
         """
         Los posibles estados son: shutting_down, capturing, uploading, unknown, idle
         """
-        return self.__call('POST', SETSTATE_ENDPOINT, {'hostname': self.hostname}, 
-                           {'address': self.address, 'state': state})
+        return self.__call('POST', SETSTATE_ENDPOINT, {'hostname': self.hostname},
+                           postfield={'address': self.address, 'state': state})
 
 
     def setrecordingstate(self, recording_id, state):
@@ -122,7 +143,7 @@ class MHHTTPClient(object):
         Los posibles estados son: unknown, capturing, capture_finished, capture_error, manifest, 
         manifest_error, manifest_finished, compressing, compressing_error, uploading, upload_finished, upload_error
         """
-        return self.__call('POST', SETRECORDINGSTATE_ENDPOINT, {'id': recording_id}, {'state': state})
+        return self.__call('POST', SETRECORDINGSTATE_ENDPOINT, {'id': recording_id}, postfield={'state': state})
 
 
     def setconfiguration(self, capture_devices):
@@ -152,7 +173,7 @@ class MHHTTPClient(object):
             'capture.ingest.pause.time': '3600',
             'capture.cleaner.interval': '3600',
             'capture.cleaner.maxarchivaldays': '30',
-            'capture.cleaner.mindiskspace': '536870912',
+            'capture.cleaner.mindiskspace': '0',
             'capture.error.messagebody': '&quot;Capture agent was not running, and was just started.&quot;',
             'capture.error.subject': '&quot;%hostname capture agent started at %date&quot;',
             'org.opencastproject.server.url': 'http://172.20.209.88:8080',
@@ -160,14 +181,17 @@ class MHHTTPClient(object):
             'capture.max.length': '28800'
             }
         
+        if self.repo:
+            client_conf['capture.cleaner.mindiskspace'] = self.repo.get_free_space()
+
         client_conf.update(capture_devices)
+        client_conf.update(self.ca_parameters)
 
         xml = ""
         for k, v in client_conf.iteritems():
             xml = xml + client_conf_xml_body.format(key=k, value=v)
         client_conf = client_conf_xml.format(xml)
-
-        return self.__call('POST', SETCONF_ENDPOINT, {'hostname': self.hostname}, {'configuration': client_conf})
+        return self.__call('POST', SETCONF_ENDPOINT, {'hostname': self.hostname}, postfield={'configuration': client_conf})
 
 
     def _prepare_ingest(self, mp_file, workflow=None, workflow_instance=None, workflow_parameters=None):
@@ -184,6 +208,27 @@ class MHHTTPClient(object):
             postdict.update(self.workflow_parameters)
         postdict[u'track'] = (pycurl.FORM_FILE, mp_file)
         return postdict
+
+    def _get_endpoints(self, service_type):
+        if self.logger:
+            self.logger.debug('Looking up Matterhorn endpoint for %s', service_type)
+        services = self.__call('GET', SERVICE_REGISTRY_ENDPOINT, {}, {'serviceType': service_type})
+        services = json.loads(services)
+        return services['services']['service']
+
+    def _get_search_server(self):
+        if not self.search_server:
+            service = self._get_endpoints(SEARCH_SERVICE_TYPE)
+            self.search_server = str(service['host'])
+        return self.search_server
+
+    def search_by_mp_id(self, mp_id):
+        """ Returns search result from matterhorn """
+        search_server = self._get_search_server()
+        result = self.__call('GET', SEARCH_ENDPOINT, {}, {'id': mp_id}, {}, True, search_server, True)
+        search_result = json.loads(result)
+        return search_result['search-results']
+
 
     def verify_ingest_server(self, server):
         """ if we have multiple ingest servers the get_ingest_server should never 
@@ -213,10 +258,7 @@ class MHHTTPClient(object):
         if there are more than one ingest servers the first from the list will be used
         as they are returned in order of their load, if there is only one returned this 
         will be the admin node, so we can use the information we already have """ 
-        servers = self.__call('GET', SERVICE_REGISTRY_ENDPOINT, {'serviceType':'org.opencastproject.ingest'}, {}, 
-                              True, None, True)
-        servers_avail = json.loads(servers)
-        all_servers = servers_avail['services']['service']
+        all_servers = self._get_endpoints(INGEST_SERVICE_TYPE)
         if type(all_servers) is list:
             for serv in all_servers:
                 if self.verify_ingest_server(serv):
@@ -228,12 +270,13 @@ class MHHTTPClient(object):
     def ingest(self, mp_file, workflow=None, workflow_instance=None, workflow_parameters=None):
         postdict = self._prepare_ingest(mp_file, workflow, workflow_instance, workflow_parameters)
         server = self.server if not self.multiple_ingest else self.get_ingest_server()
-        self.logger.info( 'Ingesting to Server {0}'.format(server) ) 
-        return self.__call('POST', INGEST_ENDPOINT, {}, postdict.items(), False, server, False)
+        if self.logger:
+            self.logger.info( 'Ingesting to Server {0}'.format(server) ) 
+        return self.__call('POST', INGEST_ENDPOINT, {}, {}, postdict.items(), False, server, False)
 
 
-    def getseries(self):
-        """ Get all series upto 100"""
-        # TODO No limit, to get all
-        return self.__call('GET', SERIES_ENDPOINT, {'count': 100})
+    def getseries(self, **query):
+        """ Get series according to the page count and offset provided"""
+
+        return self.__call('GET', SERIES_ENDPOINT, query_params = query)
         

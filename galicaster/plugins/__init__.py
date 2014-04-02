@@ -21,7 +21,7 @@ def init():
 
     list_plugins = conf.get_section('plugins')
     for plugin, v in list_plugins.iteritems():
-        if v == 'True':
+        if v.lower() == 'true':
             try:
                 name = 'galicaster.plugins.' + plugin
                 __import__(name)

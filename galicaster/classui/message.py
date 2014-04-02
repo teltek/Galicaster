@@ -17,6 +17,8 @@ import gobject
 from galicaster.classui import get_image_path
 from galicaster.classui.elements.message_header import Header
 
+from galicaster.utils.i18n import _
+
 TEXT = {'title': None, 'main': None, 'text': None}
 INFO = gtk.STOCK_DIALOG_INFO
 QUESTION = gtk.STOCK_DIALOG_QUESTION
@@ -25,6 +27,18 @@ ERROR = gtk.STOCK_DIALOG_ERROR
 ACTION = gtk.STOCK_DIALOG_QUESTION
 POSITIVE = [gtk.RESPONSE_ACCEPT, gtk.RESPONSE_OK, gtk.RESPONSE_YES, gtk.RESPONSE_APPLY]
 NEGATIVE = [gtk.RESPONSE_REJECT, gtk.RESPONSE_DELETE_EVENT, gtk.RESPONSE_CANCEL, gtk.RESPONSE_CLOSE, gtk.RESPONSE_NO]
+
+OPERATION_NAMES = { 'Export to Zip': _('Export to Zip'),
+            'Export to Zip Nightly': _('Export to Zip Nightly'),
+            'Cancel Export to Zip Nightly': _('Cancel Zip Nightly'),
+            'Ingest': _('Ingest'),
+            'Ingest Nightly': _('Ingest Nightly'),
+            'Cancel Ingest Nightly': _('Cancel Ingest Nightly:'),
+            'Side by Side': _('Side by Side'),
+            'Side by Side Nightly': _('Side by Side Nightly'),
+            'Cancel Side by Side Nightly': _('Cancel SbS Nightly'),            
+            'Cancel': _('Cancel'),
+             }
 
 class PopUp(gtk.Widget):
     """Handle a pop up for warnings and questions"""
@@ -69,11 +83,8 @@ class PopUp(gtk.Widget):
         if message == ERROR:
             a = self.dialog.get_action_area().get_children()[0]
             a.connect('clicked',self.dialog_destroy)            
-            dialog.show_all()
-            dialog.present()
+            self.dialog.show_all()
         else:
-            dialog.show_all()
-            dialog.present()
             self.response = dialog.run()
             dialog.destroy()
 
@@ -112,7 +123,7 @@ class PopUp(gtk.Widget):
         
         dialog.set_skip_taskbar_hint(True)
         dialog.set_modal(True)
-        dialog.set_keep_above(True)
+        dialog.set_keep_above(False)
         #Taskbar
         strip = Header(size=self.size, title=text.get("title","Galicaster"))
         dialog.vbox.pack_start(strip, True, True, 0)
@@ -255,11 +266,19 @@ class PopUp(gtk.Widget):
         has_ingest = False
         for element in buttons:
             if type(element) is str:
-                if element.count("Ingest"):
+                if "Ingest" in element:
                     has_ingest = True
+                    break
+
+        has_export = False
+        for element in buttons:
+            if type(element) is str:
+                if "Export" in element or "Side" in element:
+                    has_export = True
+                    break
 
         if has_ingest:
-            ingest = gtk.Frame("Ingest")
+            ingest = gtk.Frame(_("Ingest"))
             ingest.set_label_align(0.5,0.5)
             ing_align = gtk.Alignment(0.5,0.5,0.6,0.6)
             ing_align.set_padding(0,0,int(self.wprop*10),int(self.wprop*10))
@@ -269,13 +288,14 @@ class PopUp(gtk.Widget):
             ingest.add(ing_align)
 
 
-        export = gtk.Frame("Export")
-        exp_align = gtk.Alignment(0.5,0.5,0.7,0.7)
-        exp_align.set_padding(0,0,int(self.wprop*10),int(self.wprop*10))
-        export.set_label_align(0.5,0.5)
-        export_box = gtk.Table(2,2,homogeneous=True)       
-        exp_align.add(export_box)
-        export.add(exp_align)
+        if has_export:
+            export = gtk.Frame(_("Export"))
+            exp_align = gtk.Alignment(0.5,0.5,0.7,0.7)
+            exp_align.set_padding(0,0,int(self.wprop*10),int(self.wprop*10))
+            export.set_label_align(0.5,0.5)
+            export_box = gtk.Table(2,2,homogeneous=True)       
+            exp_align.add(export_box)
+            export.add(exp_align)
 
         cancel_frame = gtk.Frame(" ")
         cancel_align = gtk.Alignment(0.5,0.5,0.7,0.7)
@@ -289,20 +309,21 @@ class PopUp(gtk.Widget):
         for element in buttons:
             if type(element) is str:
                 response = buttons[buttons.index(element)+1]
-                button = gtk.Button(element)
+                button = gtk.Button(OPERATION_NAMES[element])
+
                 #PATCH
                 if element == "Cancel Export to Zip Nightly":
-                    button.set_label("Cancel Zip Nightly")
+                    button.set_label(OPERATION_NAMES[element])
                 if element == "Cancel Side by Side Nightly":
-                    button.set_label("Cancel SbS Nightly")
+                    button.set_label(OPERATION_NAMES[element])
 
                 button.connect("clicked",self.force_response,response)
-                if element.count("Ingest"):
+                if "Ingest" in element:
                     ing_buttons.pack_start(button, True, True, int(self.hprop*20))
                 elif element ==("Cancel"):
                     cancel_buttons.pack_start(button, True, True,int(self.hprop*20))
-                else:
-                    if element.count("Nightly"):
+                elif "Export" in element or "Side" in element:
+                    if "Nightly" in element:
                         export_box.attach(button,index_down,index_down+1,1,2,gtk.FILL|gtk.EXPAND,0,
                                           int(self.wprop*5),int(self.hprop*5))
                         index_down+=1
@@ -313,8 +334,8 @@ class PopUp(gtk.Widget):
 
         if has_ingest:
             options.pack_start(ingest, True, False, 0)
-
-        options.pack_start(export, True, False, 0)
+        if has_export:
+            options.pack_start(export, True, False, 0)
         options.pack_start(cancel_frame, True, False,  0)
 
         dialog.vbox.pack_start(options, False, False , 0)
@@ -374,5 +395,13 @@ class PopUp(gtk.Widget):
     
 gobject.type_register(PopUp)
 
+def main(args):
+    """Launcher for debugging purposes"""
+    print "Running Main Message PopUp"
+    PopUp()
+    gtk.main()
+    return 0
 
+if __name__ == '__main__':
+    sys.exit(main(sys.argv)) 
 

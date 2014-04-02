@@ -1,0 +1,901 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-01-23 18:48+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: galicaster/mediapackage/mediapackage.py:69
+#: galicaster/mediapackage/mediapackage.py:69
+msgid "No"
+msgstr "No"
+
+#: galicaster/mediapackage/mediapackage.py:70
+#: galicaster/mediapackage/mediapackage.py:70
+msgid "Nightly"
+msgstr "Nocturno"
+
+#: galicaster/mediapackage/mediapackage.py:71
+#: galicaster/mediapackage/mediapackage.py:71
+msgid "Pending"
+msgstr "Pendiente"
+
+#: galicaster/mediapackage/mediapackage.py:72
+#: galicaster/mediapackage/mediapackage.py:72
+msgid "Processing"
+msgstr "Procesando"
+
+#: galicaster/mediapackage/mediapackage.py:73
+#: galicaster/mediapackage/mediapackage.py:73
+msgid "Done"
+msgstr "Hecho"
+
+#: galicaster/mediapackage/mediapackage.py:74
+#: galicaster/mediapackage/mediapackage.py:74
+msgid "Failed"
+msgstr "Error"
+
+#: galicaster/classui/message.py:33 galicaster/classui/managerui.py:35
+#: galicaster/classui/message.py:31 galicaster/classui/managerui.py:33
+msgid "Export to Zip"
+msgstr "Exportar Zip"
+
+#: galicaster/classui/message.py:34 galicaster/classui/managerui.py:36
+#: galicaster/classui/message.py:32 galicaster/classui/managerui.py:34
+msgid "Export to Zip Nightly"
+msgstr "Exportar Zip Nocturno"
+
+#: galicaster/classui/message.py:35 galicaster/classui/managerui.py:37
+#: galicaster/classui/message.py:33 galicaster/classui/managerui.py:35
+msgid "Cancel Zip Nightly"
+msgstr "Cancelar Zip Nocturno"
+
+#: galicaster/classui/message.py:36 galicaster/classui/message.py:283
+#: galicaster/classui/managerui.py:38 galicaster/classui/listing.py:143
+#: resources/ui/conf.glade:476 resources/ui/listing.glade:136
+#: resources/ui/player.glade:331 galicaster/classui/message.py:34
+#: galicaster/classui/message.py:281 galicaster/classui/managerui.py:36
+#: galicaster/classui/listing.py:141
+msgid "Ingest"
+msgstr "Subir"
+
+#: galicaster/classui/message.py:37 galicaster/classui/managerui.py:39
+#: galicaster/classui/message.py:35 galicaster/classui/managerui.py:37
+msgid "Ingest Nightly"
+msgstr "Subir de noche"
+
+#: galicaster/classui/message.py:38 galicaster/classui/managerui.py:40
+#: galicaster/classui/message.py:36 galicaster/classui/managerui.py:38
+msgid "Cancel Ingest Nightly:"
+msgstr "Cancelar Subida Nocturna"
+
+#: galicaster/classui/message.py:39 galicaster/classui/managerui.py:41
+#: galicaster/classui/message.py:37 galicaster/classui/managerui.py:39
+msgid "Side by Side"
+msgstr "Side by Side"
+
+#: galicaster/classui/message.py:40 galicaster/classui/managerui.py:42
+#: galicaster/classui/message.py:38 galicaster/classui/managerui.py:40
+msgid "Side by Side Nightly"
+msgstr "Side by Side Nocturno"
+
+#: galicaster/classui/message.py:41 galicaster/classui/managerui.py:43
+#: galicaster/classui/message.py:39 galicaster/classui/managerui.py:41
+msgid "Cancel SbS Nightly"
+msgstr "Cancelar Sbs Nocturno"
+
+#: galicaster/classui/message.py:42 galicaster/classui/managerui.py:44
+#: galicaster/classui/metadata.py:57 galicaster/classui/profile.py:416
+#: galicaster/classui/profile.py:514 resources/ui/conf.glade:1471
+#: resources/ui/ingest2.glade:118 resources/ui/ingest.glade:118
+#: resources/ui/metadata.glade:298 resources/ui/openfile.glade:38
+#: resources/ui/stop.glade:97 galicaster/classui/message.py:40
+#: galicaster/classui/managerui.py:42 galicaster/classui/metadata.py:55
+#: galicaster/classui/profile.py:415 galicaster/classui/profile.py:513
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: galicaster/classui/message.py:293 galicaster/classui/message.py:292
+msgid "Export"
+msgstr "Exportar"
+
+#: galicaster/classui/recorderui.py:65
+msgid "Initialization"
+msgstr "Inicialización"
+
+#: galicaster/classui/recorderui.py:66
+msgid "Ready"
+msgstr "Preparado"
+
+#: galicaster/classui/recorderui.py:67
+msgid "Preview"
+msgstr "Vista Previa"
+
+#: galicaster/classui/recorderui.py:70
+msgid "Paused"
+msgstr "Pausado"
+
+#: galicaster/classui/recorderui.py:71
+msgid "Stopped"
+msgstr "Parado"
+
+#: galicaster/classui/recorderui.py:72
+msgid "Blocked"
+msgstr "Bloqueado"
+
+#: galicaster/classui/recorderui.py:73
+msgid "Waiting"
+msgstr "Esperando"
+
+#: galicaster/classui/recorderui.py:74
+msgid "Error"
+msgstr "Error"
+
+#: galicaster/classui/recorderui.py:84 galicaster/classui/recorderui.py:84
+msgid "Upcoming"
+msgstr "Siguiente"
+
+#: galicaster/classui/recorderui.py:85 galicaster/classui/recorderui.py:85
+msgid "Current"
+msgstr "Actual"
+
+#: galicaster/classui/recorderui.py:217 galicaster/classui/recorderui.py:224
+msgid "Recording started at {0}"
+msgstr "Grabación iniciada el {0}"
+
+#: galicaster/classui/recorderui.py:392 galicaster/classui/recorderui.py:623
+#: resources/ui/conf.glade:182 resources/ui/distrib.glade:102
+#: galicaster/classui/recorderui.py:397 galicaster/classui/recorderui.py:624
+msgid "Recorder"
+msgstr "Grabador"
+
+#: galicaster/classui/recorderui.py:393 galicaster/classui/recorderui.py:398
+msgid ""
+"Are you sure you want to\n"
+"stop the recording?"
+msgstr ""
+"¿Estás seguro de que deseas?\n"
+"parar la grabación?"
+
+#: galicaster/classui/recorderui.py:583 resources/ui/help.glade:7
+#: galicaster/classui/recorderui.py:584
+msgid "Help"
+msgstr "Ayuda"
+
+#: galicaster/classui/recorderui.py:584 galicaster/classui/recorderui.py:585
+msgid " Visit galicaster.teltek.es"
+msgstr " Visitar galicaster.teltek.es"
+
+#: galicaster/classui/recorderui.py:585 galicaster/classui/recorderui.py:586
+msgid " ...or contact us on our community list."
+msgstr " ... o contante con nosotros en nuestra comunidad"
+
+#: galicaster/classui/recorderui.py:624 galicaster/classui/recorderui.py:625
+msgid ""
+" Please review your configuration \n"
+"or load another profile"
+msgstr ""
+"Por favor, revisa tu configuracion \n"
+"o carga otro perfil"
+
+#: galicaster/classui/recorderui.py:721 galicaster/classui/recorderui.py:723
+msgid "Elapsed Time: "
+msgstr "Duración: "
+
+#: galicaster/classui/recorderui.py:786 galicaster/classui/recorderui.py:788
+msgid "Stopping in {0}"
+msgstr "Parando en {0}"
+
+#: galicaster/classui/recorderui.py:810 galicaster/classui/recorderui.py:812
+msgid "Starting in {0}"
+msgstr "Iniciando en {0}"
+
+#: galicaster/classui/recorderui.py:841 galicaster/classui/recorderui.py:842
+#: galicaster/classui/recorderui.py:842 galicaster/classui/recorderui.py:843
+msgid "No upcoming events"
+msgstr "No hay próximos eventos"
+
+#: galicaster/classui/recorderui.py:1043 galicaster/classui/recorderui.py:1041
+msgid "{0} hours left"
+msgstr "{0} horas restantes"
+
+#: galicaster/classui/managerui.py:232 galicaster/classui/managerui.py:367
+#: galicaster/classui/listing.py:371 resources/ui/distrib.glade:211
+#: galicaster/classui/managerui.py:230 galicaster/classui/managerui.py:365
+#: galicaster/classui/listing.py:370
+msgid "Media Manager"
+msgstr ""
+"Gestor de\n"
+"contenidos"
+
+#: galicaster/classui/managerui.py:233 galicaster/classui/managerui.py:231
+msgid "Which operation do you want to perform?"
+msgstr "¿Qué operación desea realizar?"
+
+#: galicaster/classui/managerui.py:239 galicaster/classui/managerui.py:237
+msgid "The ingest service is disabled."
+msgstr "El servicio de subida está desactivado."
+
+#: galicaster/classui/managerui.py:242 galicaster/classui/managerui.py:240
+msgid "Ingest disabled because of network problems. "
+msgstr "Subida desactivada debido a problemas de red. "
+
+#: galicaster/classui/managerui.py:256 galicaster/classui/managerui.py:254
+msgid "{0} already performed"
+msgstr "Realizado ya: {0}"
+
+#: galicaster/classui/managerui.py:258 galicaster/classui/managerui.py:256
+msgid "{0} will be performed tonight"
+msgstr "{0} será realizado esta noche."
+
+#: galicaster/classui/managerui.py:365 galicaster/classui/managerui.py:363
+msgid "This action will remove the recording from the hard disk."
+msgstr "Esta acción borrará la grabación del disco duro."
+
+#: galicaster/classui/managerui.py:366 galicaster/classui/managerui.py:364
+msgid "Recording: \"{0}\""
+msgstr "Grabación: \"{0}\""
+
+#: galicaster/classui/managerui.py:368 resources/ui/delete.glade:117
+#: galicaster/classui/managerui.py:366
+msgid "Are you sure you want to delete?"
+msgstr "¿Estás seguro de que deseas eliminarlo?"
+
+#: galicaster/classui/about.py:71 galicaster/classui/about.py:69
+msgid "About Galicaster {version}"
+msgstr "Acerca de Galicaster {version}"
+
+#: galicaster/classui/about.py:73 galicaster/classui/about.py:71
+msgid "About"
+msgstr "Acerca de"
+
+#: galicaster/classui/about.py:85 galicaster/classui/about.py:83
+msgid "Galicaster Website"
+msgstr "Web Galicaster"
+
+#: galicaster/classui/about.py:128 galicaster/classui/about.py:124
+msgid "Special thanks to..."
+msgstr "Agradecimientos a..."
+
+#: galicaster/classui/mainwindow.py:58 galicaster/classui/mainwindow.py:56
+msgid "GaliCASTER {0}"
+msgstr "GaliCASTER {0}"
+
+#: galicaster/classui/mainwindow.py:154 resources/ui/distrib.glade:303
+#: resources/ui/quit.glade:7 resources/ui/quit.glade:97
+#: galicaster/classui/mainwindow.py:152
+msgid "Quit"
+msgstr "Salir"
+
+#: galicaster/classui/mainwindow.py:155 galicaster/classui/mainwindow.py:153
+msgid "Are you sure you want to QUIT? "
+msgstr "¿Estás seguro de que deseas SALIR?"
+
+#: galicaster/classui/mainwindow.py:174 galicaster/classui/mainwindow.py:172
+msgid "Shutdwon"
+msgstr "Apagar"
+
+#: galicaster/classui/mainwindow.py:175 galicaster/classui/mainwindow.py:173
+msgid "Are you sure you want to SHUTDOWN? "
+msgstr "¿Estás seguro de que deseas APAGAR?"
+
+#: galicaster/classui/mpinfo.py:30 galicaster/classui/mpinfo.py:48
+#: galicaster/classui/metadata.py:40 resources/ui/metadata.glade:41
+#: galicaster/classui/mpinfo.py:28 galicaster/classui/mpinfo.py:46
+#: galicaster/classui/metadata.py:38
+msgid "Title:"
+msgstr "Titulo:"
+
+#: galicaster/classui/mpinfo.py:31 galicaster/classui/mpinfo.py:49
+#: galicaster/classui/metadata.py:46 resources/ui/metadata.glade:215
+#: galicaster/classui/mpinfo.py:29 galicaster/classui/mpinfo.py:47
+#: galicaster/classui/metadata.py:44
+msgid "Identifier:"
+msgstr "Identificador:"
+
+#: galicaster/classui/mpinfo.py:32 galicaster/classui/mpinfo.py:30
+msgid "Folder:"
+msgstr "Carpeta:"
+
+#: galicaster/classui/mpinfo.py:33 galicaster/classui/mpinfo.py:31
+msgid "Duration:"
+msgstr "Duración:"
+
+#: galicaster/classui/mpinfo.py:34 galicaster/classui/mpinfo.py:32
+msgid "Size:"
+msgstr "Tamaño:"
+
+#: galicaster/classui/mpinfo.py:35 galicaster/classui/mpinfo.py:33
+msgid "Recorded on:"
+msgstr "Fecha grabación:"
+
+#: galicaster/classui/mpinfo.py:36 galicaster/classui/mpinfo.py:54
+#: galicaster/classui/mpinfo.py:34 galicaster/classui/mpinfo.py:52
+msgid "License:"
+msgstr "Licencia:"
+
+#: galicaster/classui/mpinfo.py:37 galicaster/classui/mpinfo.py:35
+msgid "Temporal:"
+msgstr "Temporal"
+
+#: galicaster/classui/mpinfo.py:38 galicaster/classui/mpinfo.py:36
+msgid "Agent name:"
+msgstr "Agente:"
+
+#: galicaster/classui/mpinfo.py:39 galicaster/classui/mpinfo.py:37
+msgid "Series:"
+msgstr "Series:"
+
+#: galicaster/classui/mpinfo.py:40 galicaster/classui/mpinfo.py:51
+#: galicaster/classui/metadata.py:47 resources/ui/metadata.glade:239
+#: galicaster/classui/mpinfo.py:38 galicaster/classui/mpinfo.py:49
+#: galicaster/classui/metadata.py:45
+msgid "Contributor:"
+msgstr "Contribuye:"
+
+#: galicaster/classui/mpinfo.py:41 galicaster/classui/metadata.py:41
+#: resources/ui/metadata.glade:51 galicaster/classui/mpinfo.py:39
+#: galicaster/classui/metadata.py:39
+msgid "Presenter:"
+msgstr "Ponente:"
+
+#: galicaster/classui/mpinfo.py:42 galicaster/classui/mpinfo.py:52
+#: galicaster/classui/metadata.py:44 resources/ui/metadata.glade:98
+#: galicaster/classui/mpinfo.py:40 galicaster/classui/mpinfo.py:50
+#: galicaster/classui/metadata.py:42
+msgid "Subject:"
+msgstr "Tema:"
+
+#: galicaster/classui/mpinfo.py:43 galicaster/classui/mpinfo.py:53
+#: galicaster/classui/metadata.py:45 resources/ui/metadata.glade:87
+#: galicaster/classui/mpinfo.py:41 galicaster/classui/mpinfo.py:51
+#: galicaster/classui/metadata.py:43
+msgid "Language:"
+msgstr "Idioma:"
+
+#: galicaster/classui/mpinfo.py:44 galicaster/classui/mpinfo.py:55
+#: galicaster/classui/metadata.py:43 resources/ui/metadata.glade:204
+#: galicaster/classui/mpinfo.py:42 galicaster/classui/mpinfo.py:53
+#: galicaster/classui/metadata.py:41
+msgid "Description:"
+msgstr "Descripción:"
+
+#: galicaster/classui/mpinfo.py:45 galicaster/classui/mpinfo.py:43
+msgid "Rights:"
+msgstr "Derechos:"
+
+#: galicaster/classui/mpinfo.py:50 galicaster/classui/mpinfo.py:48
+msgid "Creator:"
+msgstr "Creador:"
+
+#: galicaster/classui/mpinfo.py:76 galicaster/classui/mpinfo.py:75
+msgid "Mediapackage Info "
+msgstr "Información "
+
+#: galicaster/classui/mpinfo.py:100 galicaster/classui/mpinfo.py:99
+msgid "Basic"
+msgstr "General"
+
+#: galicaster/classui/mpinfo.py:108 galicaster/classui/listing.py:308
+#: galicaster/classui/mpinfo.py:107 galicaster/classui/listing.py:307
+msgid "Operations"
+msgstr "Operaciones"
+
+#: galicaster/classui/mpinfo.py:109 galicaster/classui/mpinfo.py:108
+msgid "Ingest:"
+msgstr "Subida:"
+
+#: galicaster/classui/mpinfo.py:111 galicaster/classui/mpinfo.py:110
+msgid "Zipping:"
+msgstr "Zip:"
+
+#: galicaster/classui/mpinfo.py:113 galicaster/classui/mpinfo.py:112
+msgid "Side by Side:"
+msgstr "Side by Side:"
+
+#: galicaster/classui/mpinfo.py:119 galicaster/classui/listing.py:137
+#: galicaster/classui/mpinfo.py:118 galicaster/classui/listing.py:135
+msgid "Series"
+msgstr "Serie"
+
+#: galicaster/classui/mpinfo.py:125 galicaster/classui/mpinfo.py:124
+msgid "Tracks"
+msgstr "Pistas"
+
+#: galicaster/classui/mpinfo.py:131 galicaster/classui/mpinfo.py:144
+#: galicaster/classui/mpinfo.py:130 galicaster/classui/mpinfo.py:143
+msgid "Name:"
+msgstr "Nombre:"
+
+#: galicaster/classui/mpinfo.py:132 galicaster/classui/mpinfo.py:145
+#: galicaster/classui/mpinfo.py:131 galicaster/classui/mpinfo.py:144
+msgid "Flavor:"
+msgstr "Flavor:"
+
+#: galicaster/classui/mpinfo.py:133 galicaster/classui/mpinfo.py:146
+#: galicaster/classui/mpinfo.py:132 galicaster/classui/mpinfo.py:145
+msgid "Type:"
+msgstr "Tipo:"
+
+#: galicaster/classui/mpinfo.py:135 galicaster/classui/mpinfo.py:148
+#: galicaster/classui/mpinfo.py:134 galicaster/classui/mpinfo.py:147
+msgid "File:"
+msgstr "Archivo:"
+
+#: galicaster/classui/mpinfo.py:138 galicaster/classui/mpinfo.py:137
+msgid "Catalogs"
+msgstr "Catálogo"
+
+#: galicaster/classui/mpinfo.py:167 galicaster/classui/profile.py:256
+#: galicaster/plugins/noaudiodialog.py:209 galicaster/classui/mpinfo.py:166
+#: galicaster/classui/profile.py:255 galicaster/plugins/noaudiodialog.py:207
+msgid "Close"
+msgstr "Cerrar"
+
+#: galicaster/classui/mpinfo.py:168 galicaster/classui/mpinfo.py:167
+msgid "Open Folder"
+msgstr "Abrir Carpeta"
+
+#: galicaster/classui/metadata.py:42 resources/ui/metadata.glade:63
+#: galicaster/classui/metadata.py:40
+msgid "Course/Series:"
+msgstr "Curso/Serie:"
+
+#: galicaster/classui/metadata.py:48 resources/ui/metadata.glade:75
+#: galicaster/classui/metadata.py:46
+msgid "Start Time:"
+msgstr "Hora inicio:"
+
+#: galicaster/classui/metadata.py:57 resources/ui/metadata.glade:22
+#: galicaster/classui/metadata.py:55
+msgid "Edit Metadata"
+msgstr "Editar Metadatos"
+
+#: galicaster/classui/metadata.py:57 galicaster/classui/profile.py:412
+#: galicaster/classui/profile.py:512 resources/ui/conf.glade:1458
+#: resources/ui/metadata.glade:280 galicaster/classui/metadata.py:55
+#: galicaster/classui/profile.py:411 galicaster/classui/profile.py:511
+msgid "Save"
+msgstr "Guardar"
+
+#: galicaster/classui/profile.py:64 galicaster/classui/profile.py:71
+#: galicaster/classui/profile.py:85 galicaste   r/classui/profile.py:62
+#: galicaster/classui/profile.py:69 galicaster/classui/profile.py:83
+msgid "Profile Selector"
+msgstr "Selección de Perfil"
+
+#: galicaster/classui/profile.py:151 galicaster/classui/profile.py:150
+msgid "Profile Tracks"
+msgstr "Info Perfil"
+
+#: galicaster/classui/profile.py:250 resources/ui/openfile.glade:25
+#: galicaster/classui/profile.py:249
+msgid "Select"
+msgstr "Seleccionar"
+
+#: galicaster/classui/profile.py:252 galicaster/classui/profile.py:413
+#: galicaster/classui/listing.py:307 galicaster/classui/listing.py:313
+#: resources/ui/listing.glade:87 resources/ui/listing.glade:112
+#: resources/ui/player.glade:298 resources/ui/recorder.glade:622
+#: galicaster/classui/profile.py:251 galicaster/classui/profile.py:412
+#: galicaster/classui/listing.py:306 galicaster/classui/listing.py:312
+msgid "Edit"
+msgstr "Editar"
+
+#: galicaster/classui/profile.py:253 galicaster/classui/profile.py:252
+msgid "New"
+msgstr "Nuevo"
+
+#: galicaster/classui/profile.py:254 galicaster/classui/profile.py:253
+msgid "Duplicate"
+msgstr "Duplicar"
+
+#: galicaster/classui/profile.py:255 galicaster/classui/listing.py:310
+#: galicaster/classui/listing.py:315 resources/ui/delete.glade:7
+#: resources/ui/delete.glade:38 resources/ui/listing.glade:185
+#: resources/ui/listing.glade:210 resources/ui/player.glade:390
+#: galicaster/classui/profile.py:254 galicaster/classui/listing.py:309
+#: galicaster/classui/listing.py:314
+msgid "Delete"
+msgstr "Borrar"
+
+#: galicaster/classui/profile.py:414 galicaster/classui/profile.py:413
+msgid "New track"
+msgstr "Nueva pista"
+
+#: galicaster/classui/profile.py:415 galicaster/classui/profile.py:414
+msgid "Delete track"
+msgstr "Borrar pista"
+
+#: galicaster/classui/profile.py:457 galicaster/classui/profile.py:456
+msgid "New Track"
+msgstr "Nueva pista"
+
+#: galicaster/classui/listing.py:135 galicaster/classui/listing.py:133
+msgid "Name"
+msgstr "Nombre"
+
+#: galicaster/classui/listing.py:136 resources/ui/conf.glade:201
+#: resources/ui/conf.glade:239 galicaster/classui/listing.py:134
+msgid "Presenter"
+msgstr "Ponente"
+
+#: galicaster/classui/listing.py:138 galicaster/classui/listing.py:136
+msgid "Size"
+msgstr "Tamaño"
+
+#: galicaster/classui/listing.py:139 galicaster/classui/listing.py:137
+msgid "Duration"
+msgstr "Duración"
+
+#: galicaster/classui/listing.py:140 galicaster/classui/listing.py:138
+msgid "Date"
+msgstr "Fecha"
+
+#: galicaster/classui/listing.py:144 galicaster/classui/listing.py:142
+msgid "Zip"
+msgstr "Zip"
+
+#: galicaster/classui/listing.py:145 galicaster/classui/listing.py:143
+msgid "SbS"
+msgstr "SbS"
+
+#: galicaster/classui/listing.py:306 galicaster/classui/listing.py:312
+#: resources/ui/listing.glade:61 galicaster/classui/listing.py:305
+#: galicaster/classui/listing.py:311
+msgid "Play"
+msgstr "Reproducir"
+
+#: galicaster/classui/listing.py:309 galicaster/classui/listing.py:314
+#: galicaster/classui/listing.py:308 galicaster/classui/listing.py:313
+msgid "Info"
+msgstr "Info"
+
+#: galicaster/classui/listing.py:372 galicaster/classui/listing.py:371
+msgid "This recording can't be played"
+msgstr "Esta grabación no pudo ser reproducida"
+
+#: galicaster/classui/events.py:66 galicaster/classui/events.py:65
+msgid "Next Recordings"
+msgstr "Siguientes Grabaciones"
+
+#: galicaster/classui/events.py:111 galicaster/classui/events.py:116
+#: galicaster/classui/events.py:110 galicaster/classui/events.py:115
+msgid "Record Now"
+msgstr "Grabar Ahora"
+
+#: galicaster/classui/distrib.py:78 galicaster/classui/distrib.py:77
+msgid "Profile: {profileName}"
+msgstr "Perfil: {profileName}"
+
+#: galicaster/plugins/noaudiodialog.py:217
+#: galicaster/plugins/noaudiodialog.py:215
+msgid "Warning"
+msgstr "Atención"
+
+#: galicaster/plugins/noaudiodialog.py:222 resources/ui/warning.glade:41
+#: galicaster/plugins/noaudiodialog.py:220
+msgid "No Audio!!"
+msgstr "¡Sin Audio!"
+
+#: galicaster/plugins/noaudiodialog.py:223
+#: galicaster/plugins/noaudiodialog.py:221
+msgid ""
+"Pick up the microphone\n"
+"Press the mute button"
+msgstr ""
+"   Coge el micrófono y\n"
+"presiona el botón de silencio"
+
+#: galicaster/plugins/setuprecording.py:86
+#: galicaster/plugins/setuprecording.py:87
+#: galicaster/plugins/setuprecording.py:85
+#: galicaster/plugins/setuprecording.py:86
+msgid "New Recording"
+msgstr "Nueva Grabación"
+
+#: galicaster/plugins/setuprecording.py:88
+#: galicaster/plugins/setuprecording.py:87
+msgid "Start"
+msgstr "Iniciar"
+
+#: resources/ui/adminbar.glade:9
+msgid "Configure"
+msgstr "Configurar"
+
+#: resources/ui/adminbar.glade:21
+msgid "Volume"
+msgstr "Volumen"
+
+#: resources/ui/adminbar.glade:33
+msgid "Metadata"
+msgstr "Metadatos"
+
+#: resources/ui/adminbar.glade:45
+msgid "Restart Preview"
+msgstr "Reiniciar Vista Previa"
+
+#: resources/ui/adminbar.glade:57
+msgid "Fullscreen"
+msgstr "Pantalla Completa"
+
+#: resources/ui/conf.glade:37
+msgid "Repository Folder"
+msgstr "Carpeta de Repositorio"
+
+#: resources/ui/conf.glade:74
+msgid "Codec"
+msgstr "Codec"
+
+#: resources/ui/conf.glade:120
+msgid "General"
+msgstr "General"
+
+#: resources/ui/conf.glade:141
+msgid "Player"
+msgstr "Reproductor"
+
+#: resources/ui/conf.glade:212 resources/ui/conf.glade:250
+msgid "Presentation"
+msgstr "Presentacion"
+
+#: resources/ui/conf.glade:279
+msgid "Screen"
+msgstr "Pantalla"
+
+#: resources/ui/conf.glade:303
+msgid "Host"
+msgstr "Host"
+
+#: resources/ui/conf.glade:314
+msgid "Username"
+msgstr "Usuario"
+
+#: resources/ui/conf.glade:327
+msgid "Password"
+msgstr "Contraseña"
+
+#: resources/ui/conf.glade:416
+msgid "Workflow"
+msgstr "Workflow"
+
+#: resources/ui/conf.glade:496
+msgid "Device 1"
+msgstr "Dispositivo 1"
+
+#: resources/ui/conf.glade:512 resources/ui/conf.glade:744
+#: resources/ui/conf.glade:958 resources/ui/conf.glade:994
+#: resources/ui/conf.glade:1226
+msgid "Device"
+msgstr "Dispositivo"
+
+#: resources/ui/conf.glade:523 resources/ui/conf.glade:755
+#: resources/ui/conf.glade:1005 resources/ui/conf.glade:1237
+msgid "Location"
+msgstr ""
+
+#: resources/ui/conf.glade:536 resources/ui/conf.glade:768
+#: resources/ui/conf.glade:1018 resources/ui/conf.glade:1250
+msgid "Flavor"
+msgstr "Flavor"
+
+#: resources/ui/conf.glade:625 resources/ui/conf.glade:857
+#: resources/ui/conf.glade:1107 resources/ui/conf.glade:1339
+msgid "File"
+msgstr "Archivo"
+
+#: resources/ui/conf.glade:688 resources/ui/conf.glade:920
+#: resources/ui/conf.glade:1170 resources/ui/conf.glade:1402
+msgid "Active"
+msgstr "Activar"
+
+#: resources/ui/conf.glade:728
+msgid "Device 2"
+msgstr "Dispositivo 2"
+
+#: resources/ui/conf.glade:978
+msgid "Device 3"
+msgstr "Dispositivo 3"
+
+#: resources/ui/conf.glade:1210
+msgid "Device 4"
+msgstr "Dispositivo 4"
+
+#: resources/ui/conf.glade:1440
+msgid "Audio"
+msgstr "Audio"
+
+#: resources/ui/delete.glade:64 resources/ui/quit.glade:120
+msgid " Cancel "
+msgstr " Cancelar "
+
+#: resources/ui/distrib.glade:150
+msgid "label"
+msgstr "label"
+
+#: resources/ui/distrib.glade:271
+msgid "Galicaster Release 1 .3"
+msgstr "Galicaster Release 1 .3"
+
+#: resources/ui/distrib.glade:354
+msgid "Shutdown"
+msgstr "Apagar"
+
+# msgid "INICIO DA GRAVACIÓN"
+# msgstr ""
+# msgid "GRAVACIÓN"
+# msgstr ""
+# msgid "FIN DA GRAVACIÓN"
+# msgstr ""
+# msgid "PUBLICACIÓN"
+# msgstr ""
+# msgid "CONTACTO"
+# msgstr ""
+# msgid " Galego "
+# msgstr ""
+# msgid " Español "
+# msgstr ""
+# msgid " English "
+# msgstr ""
+# msgid "   OK   "
+# msgstr ""
+# msgid ""
+# "A gravación será publicada no menor tempo posible. \n"
+# "Se desexa ser avisado da súa publicación contacte co seu responsable de "
+# "Máster ou Grado.\n"
+# "Se existe algún problema cunha gravación contacte con Teltek no e-mail "
+# "galicaster@teltek.es\n"
+# msgstr ""
+# msgid "Send Recording"
+# msgstr ""
+# msgid ""
+# "Do you want to enqueue \n"
+# "this recording for ingesting?"
+# msgstr ""
+# msgid "Cancel Ingest"
+# msgstr ""
+# msgid "Ingest now"
+# msgstr ""
+# msgid "Yes"
+# msgstr ""
+#: resources/ui/help.glade:35 resources/ui/help.glade:185
+#: resources/ui/help.glade:337 resources/ui/help.glade:61
+#: resources/ui/help.glade:211 resources/ui/help.glade:363
+#: resources/ui/help.glade:87 resources/ui/help.glade:237
+#: resources/ui/help.glade:389 resources/ui/help.glade:113
+#: resources/ui/help.glade:263 resources/ui/help.glade:415
+#: resources/ui/help.glade:139 resources/ui/help.glade:289
+#: resources/ui/help.glade:441 resources/ui/help.glade:168
+#: resources/ui/help.glade:319 resources/ui/help.glade:471
+#: resources/ui/help.glade:500 resources/ui/help.glade:557
+#: resources/ui/ingest2.glade:7 resources/ui/ingest.glade:7
+#: resources/ui/ingest2.glade:42 resources/ui/ingest.glade:42
+#: resources/ui/ingest2.glade:72 resources/ui/ingest2.glade:95
+#: resources/ui/ingest.glade:95 resources/ui/ingest.glade:72
+#: resources/ui/listing.glade:161 resources/ui/player.glade:345
+msgid "Operation"
+msgstr "Operación"
+
+#: resources/ui/metadata.glade:7
+msgid "Edit Metadata..."
+msgstr "Editar Metadatos..."
+
+#: resources/ui/next.glade:7
+msgid " Event Manager"
+msgstr " Gestor del evento"
+
+#: resources/ui/next.glade:34
+msgid "    OK    "
+msgstr "    OK    "
+
+#: resources/ui/next.glade:61
+msgid "Next recordings"
+msgstr "Siguientes grabaciones"
+
+#: resources/ui/okwarning.glade:7 resources/ui/stop.glade:7
+msgid "Stop Recording"
+msgstr "Parar Grabación"
+
+#: resources/ui/okwarning.glade:43
+msgid "This recording can't be ingested yet?"
+msgstr "¿Esta grabación no puede ser añadida todavía?"
+
+#: resources/ui/okwarning.glade:73
+msgid "OK"
+msgstr "OK"
+
+#: resources/ui/openfile.glade:7
+msgid "Open mediapackage..."
+msgstr "Ver información..."
+
+# msgid "page 1"
+# msgstr "página 1"
+#: resources/ui/player.glade:130 resources/ui/player.glade:448
+#: resources/ui/recorder.glade:698 resources/ui/quit.glade:47
+msgid "Are you sure you want to QUIT?"
+msgstr "¿Estás seguro de que deseas SALIR?"
+
+#: resources/ui/recorder.glade:188
+msgid "Next REC"
+msgstr ""
+
+#: resources/ui/recorder.glade:232
+msgid "Very long title, this is always for sure"
+msgstr ""
+
+#: resources/ui/recorder.glade:247
+msgid "scheduled"
+msgstr ""
+
+#: resources/ui/recorder.glade:266
+msgid "Events"
+msgstr "Eventos"
+
+#: resources/ui/recorder.glade:287
+msgid "Not recording"
+msgstr "Sin grabaciones"
+
+#: resources/ui/recorder.glade:323
+msgid "Recording"
+msgstr "Grabando"
+
+#: resources/ui/recorder.glade:406
+msgid "Storage space left:  "
+msgstr "Espacio restante:  "
+
+#: resources/ui/recorder.glade:420
+msgid "Agent name:  "
+msgstr "Agente:  "
+
+#: resources/ui/recorder.glade:435
+msgid "Recording space:  "
+msgstr "Espacio para grabar:  "
+
+#: resources/ui/recorder.glade:450
+msgid "Core connectivity:  "
+msgstr "Conectividad:  "
+
+#: resources/ui/recorder.glade:472
+msgid "Status"
+msgstr "Estado"
+
+#: resources/ui/recorder.glade:674
+msgid "HELP"
+msgstr "AYUDA"
+
+# msgid "page 2"
+# msgstr ""
+# msgid "page 3"
+# msgstr ""
+#: resources/ui/recorder.glade:711 resources/ui/recorder.glade:725
+#: resources/ui/stop.glade:43
+msgid "Are you sure you want to stop the recording?"
+msgstr "¿Estás seguro de que deseas parar la grabación?"
+
+#: resources/ui/stop.glade:74
+msgid "Stop"
+msgstr "Parar"
+
+#: resources/ui/warning.glade:6
+msgid "Warning!"
+msgstr "¡Atención!"
+
+#: resources/ui/warning.glade:66
+msgid ""
+"Pick up the microphone\n"
+"Pulse the mute button"
+msgstr ""
+"   Coge el micrófono y\n"
+"presiona el botón de silencio"

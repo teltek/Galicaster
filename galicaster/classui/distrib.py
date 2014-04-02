@@ -23,6 +23,8 @@ from galicaster.classui.profile import ProfileUI as ListProfile
 from galicaster.classui.about import GCAboutDialog
 from galicaster.utils.resize import relabel
 
+from galicaster.utils.i18n import _
+
 class DistribUI(gtk.Box):
     """
     GUI for the Welcoming - Distribution Screen
@@ -72,7 +74,7 @@ class DistribUI(gtk.Box):
         profile = context.get_conf().get_current_profile()
              
         if self.selected.get_text() != profile.name:
-            self.selected.set_text("Profile: "+profile.name)          
+            self.selected.set_text(_("Profile: {profileName}").format(profileName = profile.name))          
 
     def emit_signal(origin, button, signal, value=None):
         dispatcher = context.get_dispatcher()
@@ -82,7 +84,16 @@ class DistribUI(gtk.Box):
             dispatcher.emit(signal)
 
     def show_about_dialog(self,origin, button):
-        GCAboutDialog()
+        about_dialog = GCAboutDialog()
+        about_dialog.set_transient_for(context.get_mainwindow())
+        about_dialog.set_modal(True)
+        about_dialog.set_keep_above(False)
+        about_dialog.show()
+        about_dialog.connect('response', self.on_about_dialog_response)
+                
+    def on_about_dialog_response(self, origin, response_id):
+        if response_id == gtk.RESPONSE_CLOSE or response_id == gtk.RESPONSE_CANCEL:
+            origin.hide()  
 
     def resize(self): 
         size = context.get_mainwindow().get_size()

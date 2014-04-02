@@ -47,7 +47,7 @@ class Repository(object):
         self.logger = logger
 
         self.__list = dict()
-        self.refresh(True)
+        self.__refresh(True)
 
 
     def create_repo(self, hostname):
@@ -78,7 +78,10 @@ class Repository(object):
                 os.rename(full_path, os.path.join(backup_dir, temp_file))
 
 
-    def refresh(self, check_inconsistencies=False):
+    def __refresh(self, check_inconsistencies=False):
+        if self.logger:
+            self.logger.info("Creating repository from {}".format(self.root))
+
         self.__list.clear()
         if self.root != None:
             for folder in os.listdir(self.root):
@@ -232,11 +235,11 @@ class Repository(object):
         for bin in bins:
             # TODO rec all and ingest 
             capture_dev_names = mp.getOCCaptureAgentProperty('capture.device.names')
-            if mp.manual or not capture_dev_names or capture_dev_names == 'defaults' or bin['name'] in capture_dev_names:
+            if mp.manual or len(capture_dev_names) == 0 or capture_dev_names == 'defaults' or bin['name'] in capture_dev_names:
                 filename = os.path.join(bin['path'], bin['file'])
                 dest = os.path.join(mp.getURI(), os.path.basename(filename))
                 os.rename(filename, dest)
-                etype = 'audio/mp3' if bin['device'] in ['pulse','audiotest'] else 'video/' + dest.split('.')[1].lower()
+                etype = 'audio/mp3' if bin['device'] in ['pulse', 'autoaudio', 'audiotest'] else 'video/' + dest.split('.')[1].lower()
                 flavour = bin['flavor'] + '/source'
                 mp.add(dest, mediapackage.TYPE_TRACK, flavour, etype, duration) # FIXME MIMETYPE
         mp.forceDuration(duration)
@@ -267,9 +270,8 @@ class Repository(object):
 
 
     def save_attach(self, name, data):
-        m = open(os.path.join(self.root, self.attach_dir, name), 'w')  
-        m.write(data)  
-        m.close()
+        with open(os.path.join(self.root, self.attach_dir, name), 'w') as m:
+            m.write(data)  
         
 
     def get_attach(self, name):
@@ -288,6 +290,11 @@ class Repository(object):
             return os.path.join(self.root, self.rectemp_dir, name)
         else:
             return os.path.join(self.root, self.rectemp_dir)
+
+
+    def get_free_space(self):
+        s = os.statvfs(self.root)
+        return s.f_bsize * s.f_bavail
 
 
     def __get_folder_name(self, mp):
@@ -322,12 +329,20 @@ class Repository(object):
             folder_name = (base + "_" + str(next(count)))
 
         return os.path.join(self.root, folder_name)
-
-
-    def __add(self, mp):
-        self.__list[mp.getIdentifier()] = mp
-        serializer.save_in_dir(mp, self.logger)
-        #FIXME write new XML metadata, episode, series
-        return mp
         
     
+    def __add(self, mp):
+        self.__list[mp.getIdentifier()] = mp
+
+        # This makes sure the series gets properly included/removed from the manifest                                                                                                                              
+        # FIXME: Probably shouldn't go here                                                                                                                                                                        
+        catalogs = mp.getCatalogs("dublincore/series")
+        if mp.getSeriesIdentifier() and not catalogs:
+                mp.add(os.path.join(mp.getURI(), 'series.xml'), mediapackage.TYPE_CATALOG, 'dublincore/series', 'text/xml')
+        elif not mp.getSeriesIdentifier() and catalogs:
+            mp.remove(catalogs[0])
+            # FIXME: Remove the file from disk?                                                                                                                                                                     
+        # Save the mediapackage in the repo
+        serializer.save_in_dir(mp, self.logger)
+        #FIXME write new XML metadata, episode, series                                                                                                                                                              
+        return mp

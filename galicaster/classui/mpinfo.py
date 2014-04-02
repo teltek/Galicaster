@@ -23,6 +23,41 @@ from galicaster.core import context
 from galicaster.utils import readable
 from galicaster.utils.nautilus import open_folder
 
+from galicaster.utils.i18n import _
+
+EPISODE_NAMES = { 'title': _('Title:'),
+            'identifier': _('Identifier:'),
+            'folder': _('Folder:'),
+            'duration': _('Duration:'),
+            'size': _('Size:'),
+            'created': _('Recorded on:'),
+            'license': _('License:'),
+            'temporal': _('Temporal:'),
+            'spatial': _('Agent name:'),
+            'isPartOf': _('Series:'),
+            'contributor': _('Contributor:'),
+            'creator': _('Presenter:'),
+            'subject': _('Subject:'),
+            'language': _('Language:'),
+            'description': _('Description:'),
+            'rights': _('Rights:'),
+             }
+
+SERIES_NAMES = { 'title': _('Title:'),
+            'identifier': _('Identifier:'),
+            'creator': _('Creator:'),
+            'contributor': _('Contributor:'),
+            'subject': _('Subject:'),
+            'language': _('Language:'),
+            'license': _('License:'),
+            'description': _('Description:'),
+             }
+
+
+ORDER_EPISODES = [ 'title', 'identifier', 'folder', 'duration', 'size', 'created' , 'license', 'temporal', 'spatial', 'isPartOf', 'contributor', 'creator', 'subject', 'language', 'description', 'rights']
+
+ORDER_SERIES = [ 'title', 'identifier','creator', 'contributor', 'subject', 'language', 'license', 'decription']
+
 class MPinfo(gtk.Window):
 
     __gtype_name__ = 'MPinfoUI'
@@ -37,7 +72,7 @@ class MPinfo(gtk.Window):
         height = int(size[1]/2.5)
         
         gtk.Window.__init__(self)
-        self.set_title("Mediapackage Info ")
+        self.set_title(_("Mediapackage Info "))
         self.set_position(gtk.WIN_POS_CENTER_ALWAYS)
         self.set_default_size(width,height)
         self.set_modal(True)
@@ -49,62 +84,67 @@ class MPinfo(gtk.Window):
         # INFO       
 	mp = context.get_repository().get(key)
 
-        # Basic info
-        basic, basic_table = self.add_framed_table("Basic")
-        self.add_data(basic_table,"Title:",mp.title)
-        self.add_data(basic_table,"Identifier:",mp.identifier)
-        self.add_data(basic_table,"Folder:",mp.getURI())
-        self.add_data(basic_table,"Duration:",
-                      readable.time(int(mp.getDuration())/1000))
-        self.add_data(basic_table,"Size:",
-                      readable.size(mp.getSize()))
-        self.add_data(basic_table,"Recorded on:",
-                      readable.date(mp.getStartDateAsString(),
-                                    "%B %d, %Y - %H:%M").replace(' 0',' '))
-        for parameter in mp.metadata_episode:
-            if mp.metadata_episode[parameter] and parameter != 'title':
-                self.add_data(basic_table,parameter.capitalize(),mp.metadata_episode[parameter])
+        
+
+        # Metadata info
+        data = {}
+        data['title'] = mp.title
+        data['identifier'] = mp.identifier
+        data['folder'] = mp.getURI()
+        data['duration'] = readable.time(int(mp.getDuration())/1000)
+        data['size'] = readable.size(mp.getSize())
+        data['created'] = readable.date(mp.getStartDateAsString(),
+                                   "%B %d, %Y - %H:%M").replace(' 0',' ')
+
+        basic, basic_table = self.add_framed_table(_("Basic"))    
+        for item in ORDER_EPISODES:
+            if item in data:
+                self.add_data(basic_table,EPISODE_NAMES[item], data[item])
+            elif item in mp.metadata_episode:
+                self.add_data(basic_table,EPISODE_NAMES[item], mp.metadata_episode[item])                
 
         # Operations info
-        ops, ops_table = self.add_framed_table("Operations")
-        self.add_data(ops_table,"Ingest:",
+        ops, ops_table = self.add_framed_table(_("Operations"))
+        self.add_data(ops_table,_("Ingest:"),
                       mediapackage.op_status[mp.getOpStatus("ingest")])
-        self.add_data(ops_table,"Zipping:",
+        self.add_data(ops_table,_("Zipping:"),
                       mediapackage.op_status[mp.getOpStatus("exporttozip")])
-        self.add_data(ops_table,"Side by Side:",
+        self.add_data(ops_table,_("Side by Side:"),
                       mediapackage.op_status[mp.getOpStatus("sidebyside")])
 
+        
         # Series info
         if mp.getSeries():
-            series, series_table = self.add_framed_table("Series")
-            for parameter in mp.metadata_series:
-                self.add_data(series_table,parameter.capitalize(),mp.metadata_series[parameter])
+            series, series_table = self.add_framed_table(_("Series"))
+            for item in ORDER_SERIES:
+                if item in mp.metadata_series:
+                    self.add_data(series_table,SERIES_NAMES[item], mp.metadata_series[item])
 
         # Track info
-        tracks, track_table = self.add_framed_table("Tracks", True)
+        tracks, track_table = self.add_framed_table(_("Tracks"), True)
         first = True
         for track in mp.getTracks():
             if not first:
                 self.add_data(track_table,"","")
             first = False
-            self.add_data(track_table,"Name:",track.getIdentifier())
-            self.add_data(track_table,"Flavor:",track.getFlavor())
-            self.add_data(track_table,"Type:",track.getMimeType())
+            self.add_data(track_table,_("Name:"),track.getIdentifier())
+            self.add_data(track_table,_("Flavor:"),track.getFlavor())
+            self.add_data(track_table,_("Type:"),track.getMimeType())
             filename = str(path.split(track.getURI())[1])
-            self.add_data(track_table,"File:",filename)
+            self.add_data(track_table,_("File:"),filename)
 
         # Catalog info
-        cats, cat_table = self.add_framed_table("Catalogs", True)
+        cats, cat_table = self.add_framed_table(_("Catalogs"), True)
         first = True
         for cat in mp.getCatalogs():
             if not first:
                 self.add_data(cat_table,"","")
             first = False
-            self.add_data(cat_table,"Name:",cat.getIdentifier())
-            self.add_data(cat_table,"Flavor:",cat.getFlavor())
-            self.add_data(cat_table,"Type:",cat.getMimeType())
+            self.add_data(cat_table,_("Name:"),cat.getIdentifier())
+            self.add_data(cat_table,_("Flavor:"),cat.getFlavor())
+            self.add_data(cat_table,_("Type:"),cat.getMimeType())
             filename = str(path.split(cat.getURI())[1])
-            self.add_data(cat_table,"File:",filename)
+            self.add_data(cat_table,_("File:"),filename)
 
         #PACKING
         box = gtk.VBox()
@@ -123,8 +163,8 @@ class MPinfo(gtk.Window):
         self.buttons = gtk.HButtonBox()
         self.buttons.set_layout(gtk.BUTTONBOX_SPREAD)
 
-        self.add_button("Close", self.close)
-        self.add_button("Open Folder", self.openfolder, mp.getURI())
+        self.add_button(_("Close"), self.close)
+        self.add_button(_("Open Folder"), self.openfolder, mp.getURI())
         box.pack_end(self.buttons, False, False, int(self.hprop*10))
         self.show_all()
 		    

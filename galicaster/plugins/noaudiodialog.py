@@ -23,110 +23,151 @@ import pango
 from galicaster.core import context
 from galicaster.classui import get_ui_path, get_image_path
 from galicaster.classui.elements.message_header import Header
+from threading import Lock
+
+from galicaster.utils.i18n import _
+
+lock = Lock()
 
 no_audio = False
 no_audio_dialog = None
 focus_is_active = True
 keep_hidden = False
-
+old_keep_hidden = False
+was_shown = False
 
 def init():
+
     global focus_is_active
+    global no_audio_dialog
 
     dispatcher = context.get_dispatcher()
     conf = context.get_conf()
-
+    no_audio_dialog = create_ui()
+    
     focus_is_active = not conf.get_boolean('basic','admin')
 
-    dispatcher.connect('audio-mute', warning_audio)
-    dispatcher.connect('audio-recovered', warning_audio_destroy)
+    dispatcher.connect('audio-mute', warning_audio_show)
+    dispatcher.connect('audio-recovered', warning_audio_hide)
     dispatcher.connect('galicaster-status', event_change_mode)
     dispatcher.connect('reload-profile', clear_data_and_check)
     dispatcher.connect('restart_preview', deactivate_hidden_and_check)
     dispatcher.connect('starting-record', deactivate_hidden_and_check)
     dispatcher.connect('upcoming-recording', deactivate_hidden_and_check)
+    dispatcher.connect('disable-no-audio', force_hide)
+    dispatcher.connect('enable-no-audio', disable_force_hide)
+
+def force_hide(element=None):
+    global no_audio_dialog    
+    global was_shown
+    global keep_hidden
+    global old_keep_hidden
+
+    with lock:
+        was_shown = no_audio_dialog.get_visible()
+        old_keep_hidden = keep_hidden
+        keep_hidden = True
+        __check_dialog()
+
+def disable_force_hide(element=None):
+    global keep_hidden
+    global old_keep_hidden
+    global was_shown
+
+    with lock:
+        keep_hidden = old_keep_hidden
+        if was_shown:
+            __check_dialog()
+    
+def __check_dialog():
+
+    global no_audio_dialog
+    global keep_hidden
+    global focus_is_active
+    global no_audio
+
+    if not keep_hidden and no_audio and focus_is_active:
+        no_audio_dialog.show()
+    else:
+        no_audio_dialog.hide()
 
 def activate_hidden(button, dialog):
     """
     Activates Keep Hidden feature and hides dialog
     """
     global keep_hidden
-    keep_hidden = True
-    dialog.hide() 
+    with lock:
+        keep_hidden = True
+        __check_dialog()
+
 
 def deactivate_hidden_and_check(element=None):
     """
-    When a signal is received, deactivate the keep hidden feature and shows dialog if necessary
+    When a signal is recived, deactivate the keep hidden feature and shows dialog if necessary
     """
-    global no_audio
-    global no_audio_dialog
-    global focus_is_active
-    global keep_hidden
-    keep_hidden = False
 
-    if focus_is_active and no_audio:
-        if no_audio_dialog:
-            pass
-        else:
-            no_audio_dialog = create_ui()
-        no_audio_dialog.show() 
+    global keep_hidden
+
+    with lock:
+        keep_hidden = False
+        __check_dialog()
+    
     return True
+
 
 def clear_data_and_check(element=None):
+
     global no_audio
-    no_audio = False
-    deactivate_hidden_and_check()
+
+    with lock:
+        __check_dialog()
+
     return True
 
 
-def warning_audio(element=None):
+def warning_audio_show(element=None):
     """
     Called up on a new mute signal, shows the dialog if necessary
     """
     global no_audio
-    global no_audio_dialog
-    global focus_is_active
-    global keep_hidden
-    no_audio = True
-    if focus_is_active and not keep_hidden:
-        if no_audio_dialog:
-            pass
-        else:
-            no_audio_dialog = create_ui()
-        no_audio_dialog.show() 
+
+    with lock:
+        no_audio = True
+        __check_dialog()
+
     return True
 
-def warning_audio_destroy(element=None):
+
+def warning_audio_hide(element=None):
     """
     If the audio dialog is displayed, hides it
     """
     global no_audio
-    global no_audio_dialog
-    no_audio = False
-    try:
-        assert no_audio_dialog
-    except:
-        return True           
-    no_audio_dialog.hide()
-    return True      
+
+    with lock:
+        no_audio = False
+        __check_dialog()
+
+    return True           
+
 
 def event_change_mode(orig, old_state, new_state):
     """
     On changing mode, if the new area is right, shows dialog if necessary
     """
-    global no_audio
-    global no_audio_dialog
+
     global focus_is_active
 
     if new_state == 0: 
-        focus_is_active = True
-        if no_audio:
-            warning_audio()
+        with lock:
+            focus_is_active = True
+            __check_dialog()
 
     if old_state == 0:
-        focus_is_active = False
-        if no_audio and no_audio_dialog:
-            no_audio_dialog.hide()
+        with lock:
+            focus_is_active = False
+            __check_dialog()
+
 
 def refuse_focus(signal, data):
     data.grab_focus()
@@ -146,7 +187,7 @@ def create_ui():
     ui.set_accept_focus(False)
     ui.set_destroy_with_parent(True)
 
-
+   
     size = parent.get_size()
     ui.set_property('width-request',int(size[0]/3)) 
     if size[0] < 1300:
@@ -158,11 +199,11 @@ def create_ui():
 
     #Buttons
     conf = context.get_conf()
-    keep_closed_feature = conf.get_boolean('audio','keepclosed') or False
+    keep_closed_feature = conf.get_boolean('audio','keep_closed') or False
     if keep_closed_feature:
         keep_button = ui.add_button("Keep Closed",1)
         keep_button.connect("clicked",activate_hidden, ui)
-    hide_button = ui.add_button("Close",2)
+    hide_button = ui.add_button(_("Close"),2)
     hide_button.connect("clicked",lambda l:ui.hide())
     for child in ui.action_area.get_children():
         child.set_property("width-request", int(wprop*170) )
@@ -170,13 +211,13 @@ def create_ui():
         child.set_can_focus(False)
 
     #Taskbar with logo
-    strip = Header(size=size, title="Warning")
+    strip = Header(size=size, title=_("Warning"))
     ui.vbox.pack_start(strip, False, True, 0)
     strip.show()
 
     #Labels
-    label1 = gtk.Label("No Audio!!")
-    label2 = gtk.Label("Pick up the microphone\nPress the mute button")
+    label1 = gtk.Label(_("No Audio!!"))
+    label2 = gtk.Label(_("Pick up the microphone\nPress the mute button"))
     desc1 = "bold " + str(int(hprop*64))+"px"
     desc2 = "bold " + str(int(hprop*24))+"px"
     font1=pango.FontDescription(desc1)

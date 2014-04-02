@@ -86,6 +86,8 @@ def get_mhclient():
     if 'mhclient' not in __galicaster_context:
         conf = get_conf()
         multiple_ingest  = conf.get_boolean('ingest','multiple-ingest') or False
+        connect_timeout = conf.get_int('ingest', 'connect_timeout') or 2
+        timeout = conf.get_int('ingest', 'timeout') or 2
         if get_conf().get_boolean("ingest", "active"):
             mhclient = MHHTTPClient(conf.get('ingest', 'host'), 
                                     conf.get('ingest', 'username'), 
@@ -93,9 +95,13 @@ def get_mhclient():
                                     conf.hostname, 
                                     conf.get('ingest', 'address'),
                                     multiple_ingest, 
+                                    connect_timeout,
+                                    timeout,
                                     conf.get('ingest', 'workflow'),
-                                    conf.get('ingest', 'workflow-parameters'),
-                                    get_logger() )
+                                    conf.get_dict('ingest', 'workflow-parameters'),
+                                    conf.get_dict('ingest', 'ca-parameters'),
+                                    get_repository(),
+                                    get_logger())
         else:
             mhclient = None
         __galicaster_context['mhclient'] = mhclient
@@ -123,12 +129,14 @@ def get_repository():
         if template is None:
             __galicaster_context['repository'] = Repository(
                 conf.get('basic', 'repository'), 
-                conf.hostname)
+                conf.hostname,
+                logger=get_logger())
         else:
             __galicaster_context['repository'] = Repository(
                 conf.get('basic', 'repository'), 
                 conf.hostname,
-                conf.get('repository', 'foldertemplate'))
+                conf.get('repository', 'foldertemplate'),
+                get_logger())
 
     return __galicaster_context['repository']
 
@@ -146,7 +154,9 @@ def get_worker():
                                                 get_conf().get('basic', 'export'),
                                                 get_conf().get('basic', 'tmp'),
                                                 not legacy,
-                                                get_conf().get('sidebyside', 'layout'))
+                                                get_conf().get('sidebyside', 'layout'),
+                                                get_conf().get_list('operations', 'hide'),
+                                                get_conf().get_list('operations', 'hide_nightly'))
 
     return __galicaster_context['worker']
 
@@ -187,7 +197,7 @@ def get_scheduler():
     if 'scheduler' not in __galicaster_context:
         if get_conf().get_boolean("ingest", "active"):
             sch = Scheduler(get_repository(), get_conf(), get_dispatcher(), 
-                            get_mhclient(), get_logger())
+                            get_mhclient(), get_logger(), get_state())
         else:
             sch = None
         __galicaster_context['scheduler'] = sch

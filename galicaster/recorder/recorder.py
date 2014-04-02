@@ -188,7 +188,7 @@ class Recorder(object):
         error, debug = msg.parse_error()
         error_info = "%s (%s)" % (error, debug)
         logger.error(error_info)
-        if not debug.count('canguro'):
+        if not debug.count('canguro') and not self.error:
             self.stop_elements()
             gtk.gdk.threads_enter()
             self.error = error_info

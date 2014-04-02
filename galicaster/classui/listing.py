@@ -19,6 +19,9 @@ from galicaster.classui.managerui import ManagerUI
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 from galicaster.classui import get_ui_path
+from galicaster.utils import readable
+
+from galicaster.utils.i18n import _
 
 logger = context.get_logger()
 
@@ -100,7 +103,7 @@ class ListingClassUI(ManagerUI):
 
     def populate_treeview(self, mp):
 	"""Establishes which values to be shown, its properties"""
-	self.lista = gtk.ListStore(str,str, str, str, long, int, str, int, str, int, int, int)
+	self.lista = gtk.ListStore(str, str, str, str, float, int, str, int, str, int, int, int)
 	# gobject.TYPE_PYOBJECT
 	self.insert_data_in_list(self.lista, mp)
 
@@ -128,17 +131,17 @@ class ListingClassUI(ManagerUI):
 	# Create each column
 	#columna5 = gtk.TreeViewColumn("Id",render5,text = 0, background= 8) 
 	# column5 wont be append to the treeview
-	columna1 = gtk.TreeViewColumn("Name",render1,text = 1, background= 8)
-	columna6 = gtk.TreeViewColumn("Presenter", render6, text = 2, background= 8)
-	columna7 = gtk.TreeViewColumn("Series", render7, text = 3, background= 8)
-	columna2 = gtk.TreeViewColumn("Size", render2, text = 4, background= 8)
-	columna3 = gtk.TreeViewColumn("Duration", render3, text = 5, background= 8)
-	columna4 = gtk.TreeViewColumn("Date", render4, text = 6, background= 8)
+	columna1 = gtk.TreeViewColumn(_("Name"),render1,text = 1, background= 8)
+	columna6 = gtk.TreeViewColumn(_("Presenter"), render6, text = 2, background= 8)
+	columna7 = gtk.TreeViewColumn(_("Series"), render7, text = 3, background= 8)
+	columna2 = gtk.TreeViewColumn(_("Size"), render2, text = 4, background= 8)
+	columna3 = gtk.TreeViewColumn(_("Duration"), render3, text = 5, background= 8)
+	columna4 = gtk.TreeViewColumn(_("Date"), render4, text = 6, background= 8)
 	
 	#columna8 = gtk.TreeViewColumn("Status", render8, text = 7, background= 8)
-	columna9 = gtk.TreeViewColumn("Ingest", render9)
-	columna10 = gtk.TreeViewColumn("Zip", render9)
-	columna11 = gtk.TreeViewColumn("SbS", render9)		
+	columna9 = gtk.TreeViewColumn(_("Ingest"), render9)
+	columna10 = gtk.TreeViewColumn(_("Zip"), render9)
+	columna11 = gtk.TreeViewColumn(_("SbS"), render9)		
 	
 	#columna8 = gtk.TreeViewColumn("Status", render8, text = 7, background= 8)
 	#columna9 = gtk.TreeViewColumn("Operations", render9, text = 9, background= 8)
@@ -148,14 +151,13 @@ class ListingClassUI(ManagerUI):
 	columna1.set_expand(True)
 
 	# Edit content
-	columna2.set_cell_data_func(render2,self.size_readable,None)	
-	columna3.set_cell_data_func(render3,self.time_readable,None)
-	columna4.set_cell_data_func(render4,self.date_readable,None)
+	columna2.set_cell_data_func(render2, self.size_readable, 4)	
+	columna3.set_cell_data_func(render3, self.time_readable, 5)
+	columna4.set_cell_data_func(render4, self.date_readable, 6)
 	#columna8.set_cell_data_func(render8,self.status_readable,None)
 	columna9.set_cell_data_func(render9,self.operation_readable,"ingest")
 	columna10.set_cell_data_func(render9,self.operation_readable,"exporttozip")
 	columna11.set_cell_data_func(render9,self.operation_readable,"sidebyside")
-	#columna7.set_cell_data_func(render7,self.series_readable,None)
 	# Columns 6 and 7 are not edited
 
 	# Set Treeview Model
@@ -214,7 +216,6 @@ class ListingClassUI(ManagerUI):
 	"""Refresh all the values on the list"""
 	logger.info("Refreshing TreeView")
 	model, selected = self.vista.get_selection().get_selected_rows()
-	self.repository.refresh()
 	self.insert_data_in_list(self.lista, self.repository.list().values())
 
 	s = 0 if len(selected) == 0 else selected[0][0]
@@ -265,16 +266,16 @@ class ListingClassUI(ManagerUI):
 #---------------------------- MOUSE AND SELECTION MANAGMENT --------------------
 
 
-    def on_action(self, action):
+    def on_action(self, widget):
         """When an action its selected calls the function associated"""	
-	op=action.get_property("tooltip-text")
-	if not isinstance(op,str):
-            op=action.get_label()
+	action=widget.get_name()
+	#if not isinstance(op,str):
+        #    op=action.get_label()
 
-	logger.info("ON_action >> "+op)
+	logger.info("ON_action >> {0}".format(action))
 
 
-	if op == "Delete":
+	if action == "delete_action":
 	    #self.vista.get_selection().selected_foreach(self.delete)
 	    model, selected = self.vista.get_selection().get_selected_rows()
 	    iters = []
@@ -284,13 +285,13 @@ class ListingClassUI(ManagerUI):
 	    for i in iters:
                 self.on_delete(self.lista,i)
 		#TODO connect "row-deleted" to delete package
-	elif op == "Operations" or op == "Ingest":
+	elif action == "operations_action":
             self.vista.get_selection().selected_foreach(self.on_ingest_question)
-	elif op == "Play":
+	elif action == "play_action":
 	    self.vista.get_selection().selected_foreach(self.on_play)# FIX single operation
-	elif op == "Edit":
+	elif action == "edit_action":
 	    self.vista.get_selection().selected_foreach(self.on_edit)# FIX single operation
-	elif op == "Info":
+	elif action == "info_action":
 	    self.vista.get_selection().selected_foreach(self.on_info)
 	else:
             logger.debug('Invalid action')
@@ -300,12 +301,20 @@ class ListingClassUI(ManagerUI):
         """Creates a menu to be shown on right-button-click over a MP"""
 	menu = gtk.Menu()
 	if self.conf.get_boolean('ingest', 'active'):
-            operations = ["Play", "Edit", "Operations", "Info", "Delete"]
+            operations = [ (_("Play"), "play_action"),
+                           (_("Edit"), "edit_action"),
+                           (_("Operations"), "operations_action"), 
+                           (_("Info"), "info_action"),
+                           (_("Delete"), "delete_action")]
 	else:
-	    operations = ["Play", "Edit", "Info", "Delete"]
+            operations = [ (_("Play"), "play_action"),
+                           (_("Edit"), "edit_action"),
+                           (_("Info"), "info_action"),
+                           (_("Delete"), "delete_action")]
 
 	for op in operations:
-            item = gtk.MenuItem(op)
+            item = gtk.MenuItem(op[0])
+            item.set_name(op[1])
 	    menu.append(item)
 	    item.connect("activate", self.on_action)
 	    item.show()
@@ -357,14 +366,57 @@ class ListingClassUI(ManagerUI):
 	if package.status == mediapackage.RECORDED:
 	    self.dispatcher.emit("play-list", package)
 	else:			
-	    text = {"title" : "Media Manager",
-		    "main" : "This recording can't be played",
-		    }
+	    text = {"title" : _("Media Manager"),
+		    "main" : _("This recording can't be played"),
+		   }
 	    buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
 	    message.PopUp(message.WARNING, text, 
                           context.get_mainwindow(),
                           buttons)
 	return True	
+
+#-------------------------------- DATA PRESENTATION --------------------------------
+
+
+    def size_readable(self, column, cell, model, iterator, index):
+        """Generates human readable string for a number.
+        Returns: A string form of the number using size abbreviations (KB, MB, etc.) """
+        value = readable.size(model.get_value(iterator, index))
+        cell.set_property('text', value)
+
+    def date_readable(self, column, cell, model, iterator, index):
+        """ Generates date readable string from an isoformat datetime. """
+        value = readable.date(model.get_value(iterator, index))
+        cell.set_property('text', value)
+
+    def time_readable(self, column, cell, model, iterator, index):
+        """Generates date hour:minute:seconds from seconds."""		
+        value = readable.time(model.get_value(iterator, index)/1000)
+        cell.set_property('text', value)
+
+    def list_readable(self,listed):
+        """Generates a string of items from a list, separated by commas."""		
+        novo = readable.list(listed)
+        return novo
+
+    def status_readable(self, column, cell, model, iterator, index):
+        """Set text equivalent for numeric status of mediapackages."""	
+        value = mediapackage.mp_status.get(model.get_value(iterator, index))
+        cell.set_property('text', value)
+
+    def operation_readable(self, column, cell, model, iterator, operation):
+        """Sets text equivalent for numeric operation status of mediapackages."""	
+        mp=self.repository.get((model[iterator])[0])
+        status=mp.getOpStatus(operation)
+        out = mediapackage.op_status[status]
+        cell.set_property('text', out)
+        old_style = context.get_conf().get_color_style()
+        if old_style:
+            color = model[iterator][8]
+        else:
+            palette = context.get_conf().get_palette()
+            color = palette[status]
+        cell.set_property('background', color)
 
 #--------------------------------------- Edit METADATA -----------------------------
 	

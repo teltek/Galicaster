@@ -24,10 +24,16 @@ $ sudo apt-get install python-pycurl
 # Herramientas de configuración de tarjetas capturadoras
 $ sudo apt-get install v4l-conf v4l-utils guvcview
 
+# Paquete para usar glade en Python
+$ sudo apt-get install python-glade2
+
   * Nota: Hasta la versión 10.10 de Ubuntu (incluida) debe usarse "ivtv-utils" en lugar de "v4l-utils".
 
 # (Opcional) pyGst
 $ sudo pip install pygst
+
+# (Opcional) python-bottle para el plugin REST
+$ sudo apt-get install python-bottle
 
 Configuracion
 -------------
@@ -64,10 +70,6 @@ Apartados:
       - {utcminute}: Minuto de grabacion UTC del MP como un numero decimal [00,59].
       - {utcsecond}: Segundo de grabacion UTC del MP como un numero decimal [00,59].
       
-
--- screen
-   * right: Nombre del dispositivo de vídeo en las lista de tracks que se mostrará en la pantalla derecha (None para desactivar).
-   * left: Nombre del dispositivo de vídeo en las lista de tracks que se mostrará en la pantalla izquierda (None para desactivar).
 
 -- ingest
    Los datos para conectar Galicaster a un servidor Opencast-Matterhorn.

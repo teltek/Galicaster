@@ -48,7 +48,7 @@ class Worker(object):
     
 
     def __init__(self, dispatcher, repo, logger, mh_client=None, export_path=None, tmp_path=None, 
-                 use_namespace=True, sbs_layout='sbs'):
+                 use_namespace=True, sbs_layout='sbs', hide_ops=[], hide_nightly=[]):
         """
         Arguments:
 
@@ -68,7 +68,9 @@ class Worker(object):
         self.sbs_layout = sbs_layout
         self.dispatcher = dispatcher
         self.logger = logger
-        
+        self.hide_ops = hide_ops
+        self.hide_nightly = hide_nightly
+
         for dir_path in (self.export_path, self.tmp_path):
             if not os.path.isdir(dir_path):
                 os.makedirs(dir_path)
@@ -95,11 +97,13 @@ class Worker(object):
             if key==INGEST and not self.mh_client:
                 continue
             if mp.getOpStatus(value) not in [mediapackage.OP_PENDING, mediapackage.OP_PROCESSING]:
-                jobs.append(key)
-                night = cc+key+nn if mp.getOpStatus(value) == mediapackage.OP_NIGHTLY else key+nn
-                jobs_night.append(night)            
+                if value not in self.hide_ops:
+                    jobs.append(key)
+                if value not in self.hide_nightly:
+                    night = cc+key+nn if mp.getOpStatus(value) == mediapackage.OP_NIGHTLY else key+nn
+                    jobs_night.append(night)            
 
-        return jobs,jobs_night
+        return jobs, jobs_night
     
     def do_job_by_name(self, name, mp_id):
         f_operation = {
@@ -138,6 +142,12 @@ class Worker(object):
             self.cancel_nightly(mp, name.replace('cancel',''))
         else:
             self.operation_nightly(mp, name)      
+
+    def gen_location(self, extension):
+        name = datetime.now().replace(microsecond=0).isoformat()
+        while os.path.exists(os.path.join(self.export_path, name + '.' + extension)):
+            name += '_2'
+        return os.path.join(self.export_path, name + '.' + extension)
 
     def ingest_nightly(self, mp):
         self.operation_nightly(mp, INGEST_CODE)
@@ -211,9 +221,7 @@ class Worker(object):
 
 
     def _export_to_zip(self, mp, location=None, is_action=True):
-        if not location:
-            name = datetime.now().replace(microsecond=0).isoformat()
-            location = location or os.path.join(self.export_path, name + '.zip')
+        location = location or self.gen_location('zip')
         if is_action:
             self.logger.info("Executing ExportToZIP for MP {0}".format(mp.getIdentifier()))
             mp.setOpStatus('exporttozip',mediapackage.OP_PROCESSING)
@@ -245,11 +253,9 @@ class Worker(object):
 
 
     def _side_by_side(self, mp, location=None):
+        location = location or self.gen_location('mp4')
         self.logger.info('Executing SideBySide for MP {0}'.format(mp.getIdentifier()))
         mp.setOpStatus('sidebyside',mediapackage.OP_PROCESSING)
-        if not location:
-            name = datetime.now().replace(microsecond=0).isoformat()
-            location = location or os.path.join(self.export_path, name + '.mp4')
         self.repo.update(mp)
         self.dispatcher.emit('start-operation', 'sidebyside', mp)
 

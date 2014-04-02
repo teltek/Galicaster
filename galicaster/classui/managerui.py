@@ -16,16 +16,30 @@ UI for the Media Manager and Player area
 
 import gtk
 import gobject
+from galicaster.utils import series
 
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 from galicaster.classui import message
 from galicaster.classui.metadata import MetadataClass as Metadata
-from galicaster.utils import readable
 from galicaster.classui.strip import StripUI
 from galicaster.classui.mpinfo import MPinfo
+
+from galicaster.utils.i18n import _
  
 logger = context.get_logger()
+
+OPERATION_NAMES = { 'Export to Zip': _('Export to Zip'),
+            'Export to Zip Nightly': _('Export to Zip Nightly'),
+            'Cancel Export to Zip Nightly': _('Cancel Zip Nightly'),
+            'Ingest': _('Ingest'),
+            'Ingest Nightly': _('Ingest Nightly'),
+            'Cancel Ingest Nightly': _('Cancel Ingest Nightly:'),
+            'Side by Side': _('Side by Side'),
+            'Side by Side Nightly': _('Side by Side Nightly'),
+            'Cancel Side by Side Nightly': _('Cancel SbS Nightly'),            
+            'Cancel': _('Cancel'),
+             }
 
 class ManagerUI(gtk.Box):
     """
@@ -145,67 +159,6 @@ class ManagerUI(gtk.Box):
             return -1 * ascending
         
 
-#-------------------------------- DATA PRESENTATION --------------------------------
-
-
-    def size_readable(self,column,cell,model,iterador,user_data):
-        """Generates human readable string for a number.
-        Returns: A string form of the number using size abbreviations (KB, MB, etc.) """
-        value = model.get_value(iterador, 4)
-        resultado = readable.size(value)
-        cell.set_property('text',resultado)
-        return resultado
-
-    def date_readable(self,column,cell,model,iterador,user_data):
-        """ Generates date readable string from an isoformat datetime. """		
-        value = model.get_value(iterador, 6)
-        novo=readable.date(value)
-        cell.set_property('text',novo)		
-        return novo
-
-    def time_readable(self,column,cell,model,iterador,user_data):
-        """Generates date hout:minute:seconds from seconds."""		
-        ms = model.get_value(iterador, 5)
-        novo = readable.time(int(ms)/1000)
-        cell.set_property('text',novo)		
-        return novo
-
-    def list_readable(self,listed):
-        """Generates a string of items from a list, separated by commas."""		
-        novo = readable.list(listed)
-        return novo
-
-    def status_readable(self,column,cell,model,iterator,user_data):
-        """Set text equivalent for numeric status of mediapackages."""	
-        ms = cell.get_property('text')
-        novo = mediapackage.mp_status[int(ms)]
-        cell.set_property('text',novo)
-
-    def operation_readable(self,column,cell,model,iterator,operation):
-        """Sets text equivalent for numeric operation status of mediapackages."""	
-        mp=self.repository.get((model[iterator])[0])
-        status=mp.getOpStatus(operation)
-        out = mediapackage.op_status[status]
-        cell.set_property('text', out)
-        old_style = context.get_conf().get_color_style()
-        if old_style:
-            color = model[iterator][8]
-        else:
-            palette = context.get_conf().get_palette()
-            color = palette[status]
-        cell.set_property('background', color)
-     
-
-    def series_readable(self,column,cell,model,iterator,user_data):
-        """Sets text equivalent for numeric status of mediapackages."""	
-        ms = cell.get_property('text')
-        if ms == None:
-            novo=""
-        else: 
-            novo=self.repository.get((model[iterator])[0]).series_title
-        cell.set_property('text',novo)
-        return novo
-
 #---------------------------------------- ACTION CALLBACKS ------------------
 
     def ingest_question(self,package):            
@@ -214,17 +167,17 @@ class ManagerUI(gtk.Box):
         disabled = not self.conf.get_boolean("ingest", "active")
         day,night = context.get_worker().get_all_job_types_by_mp(package)
         jobs = day+night
-        text = {"title" : "Media Manager",
-                "main" : "Which operation do you want to perform?"
-                        }
+        text = {"title" : _("Media Manager"),
+                "main" : _("Which operation do you want to perform?")
+               }
         text['text'] = ''
         icon = message.QUESTION
 
         if disabled:                                         
-            text['text']=text['text']+"The ingest service is disabled."
+            text['text']=text['text']+_("The ingest service is disabled.")
 
         if not self.network:                                         
-            text['text']=text['text']+"Ingest disabled because of network problems."
+            text['text']=text['text']+_("Ingest disabled because of network problems. ")
             for job in day:
                 if job.lower().count("ingest"):
                     jobs.remove(job)            
@@ -238,9 +191,9 @@ class ManagerUI(gtk.Box):
         for job in day:
             op_state = package.operation[job.lower().replace(" ", "")]
             if op_state == mediapackage.OP_DONE:
-                text['text']="\n" + text['text'] + job + " already perfomed"
+                text['text']="\n" + text['text'] + _("{0} already performed").format(OPERATION_NAMES[job])
             elif op_state == mediapackage.OP_NIGHTLY:
-                text['text']="\n"+ text['text'] + job + " will be performed tonight" 
+                text['text']="\n"+ text['text'] + _("{0} will be performed tonight").format(OPERATION_NAMES[job]) 
             
 
         index = 0
@@ -291,14 +244,14 @@ class ManagerUI(gtk.Box):
 
     def edit(self,key):
         """Pop ups the Metadata Editor"""
-	logger.info("Edit: "+str(key))
+	logger.info("Edit: {0}".format(str(key)))
 	selected_mp = self.repository.get(key)
-	Metadata(selected_mp)
+	Metadata(selected_mp, series.get_series())
 	self.repository.update(selected_mp)
 
     def info(self,key):
         """Pops up de MP info dialog"""
-        logger.info("Info: "+str(key))
+        logger.info("Info: {0}".format(str(key)))
         MPinfo(key)
 
     def do_resize(self, buttonlist, secondlist=[]): 
@@ -312,7 +265,7 @@ class ManagerUI(gtk.Box):
 	k2 = altura / 1080.0
 	self.proportion = k1
 
-	for name  in buttonlist:
+	for name in buttonlist:
 	    button = self.gui.get_object(name) 
 	    button.set_property("width-request", int(k1*100) )
 	    button.set_property("height-request", int(k1*100) )
@@ -345,12 +298,12 @@ class ManagerUI(gtk.Box):
 
     def delete(self,key):
         """Pops up a dialog. If response is positive, deletes a MP."""
-	logger.info("Delete: "+str(key))
+	logger.info("Delete: {0}".format(str(key)))
 	package = self.repository.get(key)
-	t1 = "This action will remove the recording from the hard disk."
-	t2 = 'Recording:  "'+package.getTitle()+'"'
-	text = {"title" : "Media Manager",
-		"main" : "Are you sure you want to delete?",
+	t1 = _("This action will remove the recording from the hard disk.")
+	t2 = _('Recording: "{0}"').format(package.getTitle())
+	text = {"title" : _("Media Manager"),
+		"main" : _("Are you sure you want to delete?"),
 		"text" : t1+"\n\n"+t2
 		    }
 	buttons = ( gtk.STOCK_DELETE, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)

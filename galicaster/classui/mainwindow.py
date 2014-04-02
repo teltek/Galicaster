@@ -21,6 +21,8 @@ from galicaster.classui import message
 from galicaster.classui import get_image_path
 from galicaster.utils.shutdown import shutdown as UtilsShutdown
 
+from galicaster.utils.i18n import _
+
 class GCWindow(gtk.Window):
     """
     GUI for the Welcoming - Distribution Screen
@@ -51,7 +53,7 @@ class GCWindow(gtk.Window):
         self.__def_win_size__=(self.custom_size[0],self.custom_size[1])
         self.set_size_request(self.custom_size[0],self.custom_size[1])
 
-        self.set_title("GaliCASTER " + __version__ );    
+        self.set_title(_("GaliCASTER {0}").format(__version__));    
         self.set_decorated(False)
         self.set_position(gtk.WIN_POS_CENTER)
         self.is_fullscreen = (self.custom_size == self.full_size)
@@ -147,13 +149,15 @@ class GCWindow(gtk.Window):
 
     def close(self, signal):
         """Pops up a dialog asking to quit"""
-        text = {"title" : "Quit",
-                "main" : "Are you sure you want to QUIT? ", 
+        text = {"title" : _("Quit"),
+                "main" : _("Are you sure you want to QUIT? "), 
                 }
 
         buttons = ( gtk.STOCK_QUIT, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
+        self.dispatcher.emit("disable-no-audio")
         warning = message.PopUp(message.WARNING, text,
                                 self, buttons)
+        self.dispatcher.emit("enable-no-audio")
 
         if warning.response in message.POSITIVE:
             if self.logger:
@@ -167,8 +171,8 @@ class GCWindow(gtk.Window):
 
     def shutdown(self, signal):
         """Pops up a dialog asking to shutdown the computer"""
-        text = {"title" : "Shutdwon",
-                "main" : "Are you sure you want to SHUTDOWN? ", 
+        text = {"title" : _("Shutdwon"),
+                "main" : _("Are you sure you want to SHUTDOWN? "), 
                 }
 
         buttons = ( gtk.STOCK_QUIT, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)

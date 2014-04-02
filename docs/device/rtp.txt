@@ -20,7 +20,7 @@ audiotype: Audio format to capture, by default mp3. (acc|mp3)
 vumeter: Activates data sending to the program's vumeter. (True|False) Only one device should be activated.
 player: Whether the audio input would be played on preview. (True|False)
 muxer: Muxer to encapsulate the stream. FLV by default, other options include mpegtsmux, avimux, mp4mux.
->>>>>>> master
+
 
 Examples
 --------
