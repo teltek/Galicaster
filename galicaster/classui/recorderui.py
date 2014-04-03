@@ -813,9 +813,11 @@ class RecorderClassUI(gtk.Box):
             today = datetime.datetime.now()
             then = today + timedif
             dif = then.date() - today.date()
-            formatted = "{days} day{plural}".format(
-                days =  dif.days,
-                plural = 's' if dif.days >1 else '')
+            singular = _("day")
+            plural = _("days")
+            formatted = "{days_number} {word}".format(
+                days_number =  dif.days,
+                word = plural if dif.days > 1 else singular)
 
         return formatted
     

@@ -899,3 +899,11 @@ msgid ""
 msgstr ""
 "   Coge el micrófono y\n"
 "presiona el botón de silencio"
+
+#: galicaster/classui/recorderui.py:816
+msgid "day"
+msgstr "día"
+
+#: galicaster/classui/recorderui.py:817
+msgid "days"
+msgstr "días"
