@@ -5,7 +5,7 @@ Web version of the changelog in http://wiki.teltek.es/display/Galicaster/Release
 To get the diff for a specific change, go to https://github.com/teltek/galicaster/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/teltek/galicaster/compare/1.2.1...1.2.3
 
-* 1.4.0 (YYYY-MM-DD)
+* 1.4.0 (2014-04-09)
 
  * Improved Galciaster stability (Stephen Marquard)
  * Feature: Allow configuration of MHHTTPClient timeouts (ppettit)
