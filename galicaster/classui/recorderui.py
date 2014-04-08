@@ -106,7 +106,7 @@ class RecorderClassUI(gtk.Box):
         self.current_mediapackage = None
         self.current = None
         self.next = None
-        self.restarting = False
+        self.start_recording = False
         self.font = None
         self.scheduled_recording = False
         self.focus_is_active = False
@@ -139,7 +139,6 @@ class RecorderClassUI(gtk.Box):
         self.dispatcher.connect("restart-preview", self.check_status_area)
         self.dispatcher.connect("net-up", self.check_net, True)        
         self.dispatcher.connect("net-down", self.check_net, False)        
-        self.statusbar.SetTimer(0)
 
         # VUMETER
         self.audiobar=Vumeter()
@@ -277,13 +276,19 @@ class RecorderClassUI(gtk.Box):
     def init_recorder(self):
         self.recorder = Recorder(self.bins, self.areas) 
         self.recorder.mute_preview(not self.focus_is_active)   
-        ok = self.recorder.preview()
+        if self.start_recording:
+            self.start_recording = False
+            ok = self.recorder.preview_and_record()
+            self.mediapackage = self.repo.get(self.current_mediapackage)
+            # NOTE only call on_rec to update UI. Recorder is already recording.
+            self.on_rec()
+        else:
+            ok = self.recorder.preview()
         if ok :
             if self.mediapackage.manual:
                 self.change_state(GC_PREVIEW)
         else:
-            if self.restarting:
-                logger.error("Restarting Preview Failed")
+            logger.error("Restarting Preview Failed")
             self.change_state(GC_ERROR)
             if self.scheduled_recording:
                 self.on_failed_scheduled(self.current_mediapackage)
@@ -300,8 +305,7 @@ class RecorderClassUI(gtk.Box):
         """Restarting preview, commanded by record""" 
         logger.info("Restarting Preview")
 
-        paused = self.paused_time.total_seconds()*1000000000 # pass to ns
-        close_duration = int((self.recorder.get_time()-self.initial_time-paused)*1000/gst.SECOND)
+        close_duration = self.recorder.get_recorded_time() / gst.MSECOND
 
         self.mediapackage.status = mediapackage.RECORDED
         self.mediapackage.properties['origin'] = self.conf.hostname
@@ -317,7 +321,6 @@ class RecorderClassUI(gtk.Box):
         self.conf.reload()
         #self.configure_profile()
         self.select_devices()
-        self.restarting = False
         return True
 
     def configure_profile(self):
@@ -468,12 +471,8 @@ class RecorderClassUI(gtk.Box):
                 # In case of stop, restart with the overlapped job
 
             else: # Stop current recording, wait until prewiew restarted and record
-                self.restarting = True
+                self.start_recording = True
                 self.close_recording()                
-                while self.restarting:
-                    time.sleep(0.1) 
-                self.mediapackage = self.repo.get(self.current_mediapackage)   
-                self.on_rec()       
                       
         elif self.status == GC_INIT:  # Start Preview and Record
             self.on_start_button()
@@ -633,36 +632,18 @@ class RecorderClassUI(gtk.Box):
 
     def timer_launch_thread(self):
         """Thread handling the recording elapsed time timer."""
-        
-        # Based on: http://pygstdocs.berlios.de/pygst-tutorial/seeking.html
-        
         thread_id= self.timer_thread_id
-        self.initial_time=self.recorder.get_time()
-        self.initial_datetime=datetime.datetime.utcnow().replace(microsecond = 0)
-        gtk.gdk.threads_enter()
-        self.statusbar.SetTimer(0)
-        gtk.gdk.threads_leave()
-        self.paused_time = datetime.timedelta(0,0)
-
         rec_title = self.gui.get_object("recording1")
         rec_elapsed = self.gui.get_object("recording3")
-              
+             
         while thread_id == self.timer_thread_id:            
-        #while True:
-            actual_time=self.recorder.get_time()               
-            timer=(actual_time-self.initial_time)/gst.SECOND
-            if self.status==GC_PAUSED:
-                self.paused_time = self.paused_time + datetime.timedelta(0,0,200000)               
-            dif = datetime.datetime.utcnow() - self.initial_datetime - self.paused_time
-
-            if thread_id==self.timer_thread_id:
-                gtk.gdk.threads_enter()
-                self.statusbar.SetTimer(timer)
-                if rec_title.get_text() != self.mediapackage.getTitle():
-                    rec_title.set_text(self.mediapackage.getTitle())
-                rec_elapsed.set_text(_("Elapsed Time: ") + self.time_readable(dif))
-                gtk.gdk.threads_leave()
-            time.sleep(0.2)          
+            gtk.gdk.threads_enter()
+            if rec_title.get_text() != self.mediapackage.getTitle():
+                rec_title.set_text(self.mediapackage.getTitle())
+            msec = datetime.timedelta(microseconds=(self.recorder.get_recorded_time()/1000))
+            rec_elapsed.set_text(_("Elapsed Time: ") + self.time_readable(msec))
+            gtk.gdk.threads_leave()
+            time.sleep(0.5)          
         return True
 
     def scheduler_launch_thread(self):
@@ -832,9 +813,11 @@ class RecorderClassUI(gtk.Box):
             today = datetime.datetime.now()
             then = today + timedif
             dif = then.date() - today.date()
-            formatted = "{days} day{plural}".format(
-                days =  dif.days,
-                plural = 's' if dif.days >1 else '')
+            singular = _("day")
+            plural = _("days")
+            formatted = "{days_number} {word}".format(
+                days_number =  dif.days,
+                word = plural if dif.days > 1 else singular)
 
         return formatted
     

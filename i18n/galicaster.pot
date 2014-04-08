@@ -767,3 +767,11 @@ msgid ""
 "Pick up the microphone\n"
 "Pulse the mute button"
 msgstr ""
+
+#: galicaster/classui/recorderui.py:816
+msgid "day"
+msgstr ""
+
+#: galicaster/classui/recorderui.py:817
+msgid "days"
+msgstr ""
