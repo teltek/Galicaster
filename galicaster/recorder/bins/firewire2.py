@@ -29,9 +29,11 @@ pipestr = (' dv1394src name=gc-firewire2-src ! '
            ' queue ! volume name=gc-firewire2-volume ! alsasink sync=false name=gc-firewire2-audio-sink '
            ' gc-firewire2-demuxer. ! queue ! ffdec_dvvideo ! ffmpegcolorspace ! queue ! tee name=gc-firewire2-videotee ! '
            ' xvimagesink qos=false async=false sync=false name=gc-firewire2-preview '
-           ' gc-firewire2-audiotee. ! queue ! valve drop=false name=gc-firewire2-audio-valve ! audio/x-raw-int ! gc-firewire2-audioenc ! gc-firewire2-muxer ! '
+           ' gc-firewire2-audiotee. ! queue ! valve drop=false name=gc-firewire2-audio-valve ! audio/x-raw-int ! ' 
+           ' gc-firewire2-audioenc ! gc-firewire2-muxer ! '
            ' queue ! filesink name=gc-firewire2-sink async=false '
-           ' gc-firewire2-videotee. ! queue ! valve drop=false name=gc-firewire2-video-valve ! videorate skip-to-first=true ! videoscale ! gc-firewire2-capsfilter ! gc-firewire2-videoenc ! gc-firewire2-mux. '
+           ' gc-firewire2-videotee. ! queue ! valve drop=false name=gc-firewire2-video-valve ! '
+           ' videorate skip-to-first=true ! videoscale ! gc-firewire2-capsfilter ! gc-firewire2-videoenc ! gc-firewire2-mux. '
            )
 
 class GCfirewire2(gst.Bin, base.Base):
@@ -120,7 +122,7 @@ class GCfirewire2(gst.Bin, base.Base):
                .replace('gc-firewire2-muxer', self.options['muxer']+' name=gc-firewire2-mux')
                .replace('gc-firewire2-audioenc', self.options['audioencoder'])
                .replace('gc-firewire2-capsfilter', self.options['caps'])
-			   )
+              )
         #bin = gst.parse_bin_from_description(aux, False)
         bin = gst.parse_launch("( {} )".format(aux))
 
