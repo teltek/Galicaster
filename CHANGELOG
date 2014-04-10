@@ -6,6 +6,7 @@ To get the diff for a specific change, go to https://github.com/teltek/galicaste
 To get the diff between two versions, go to https://github.com/teltek/galicaster/compare/1.2.1...1.2.3
 
 
+
 * DEV (YYYY-MM-DD)
 
  * Fixed bug in capture.cleaner.mindiskspace value (Added get_free_space in the repository).
@@ -15,7 +16,7 @@ To get the diff between two versions, go to https://github.com/teltek/galicaster
  * New autoaudio device module to automatically detect audio source and sink. (oaubert)
  * Using autoaudiosink instead of hardcoding pulsesink in player. (oaubert)
 
-* 1.4.0 (YYYY-MM-DD)
+* 1.4.0 (2014-04-09)
 
  * Improved Galciaster stability (Stephen Marquard)
  * Feature: Allow configuration of MHHTTPClient timeouts (ppettit)

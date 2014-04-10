@@ -23,12 +23,11 @@ from galicaster import __version__
 from galicaster.utils.i18n import _
 
 PROGRAM = "Galicaster"
-COPY1 = "Copyright © 2011 Teltek"
-COPY2 = "Copyright © 2011 Héctor Canto, Rubén González"
+COPY = "Copyright © 2014 Teltek Video Research"
 WEB = "http://galicaster.teltek.es"
 LICENSE = """
 Galicaster, Multistream Recorder and Player
-Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
+Copyright (c) 2014, Teltek Video Research <galicaster@teltek.es>
 
 This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License. 
 To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
@@ -37,18 +36,21 @@ or send a letter to Creative Commons, 171 Second Street, Suite 300, San Francisc
 
 AUTHORS = [
 "Héctor Canto",
-"Rubén González"
+"Hugo Caloto",
+"Rubén González",
+"Rubén Pérez"
 ]
 
 DOCS = (
 "Héctor Canto",
+"Hugo Caloto",
 "Rubén González",
 "Rubén Pérez"
 )
 
 ARTISTS = [
-"Natalia García",
-"Héctor Canto"
+"Héctor Canto",
+"Natalia García"
 ]
 
 class GCAboutDialog(gtk.AboutDialog):
@@ -84,7 +86,7 @@ class GCAboutDialog(gtk.AboutDialog):
          self.set_authors(AUTHORS)
          self.set_documenters(DOCS)
          self.set_artists(ARTISTS)
-         self.set_copyright("\n".join((COPY1,COPY2)))
+         self.set_copyright(COPY)
          self.set_license(LICENSE)
          pixbuf = gtk.gdk.pixbuf_new_from_file(get_image_path('logo.svg')) 
          pixbuf = pixbuf.scale_simple(
