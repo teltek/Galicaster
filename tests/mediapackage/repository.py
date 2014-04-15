@@ -178,8 +178,8 @@ class TestFunctions(TestCase):
         repo = repository.Repository(self.tmppath)
         mp = mediapackage.Mediapackage()
         #TODO file extension to mimetype???
-        bins = [self.__get_tmp_bin('t.avi', {'device': 'test', 'name': 'name1', 'dev': 'dev1', 'flavor': 'presenter' }),
-                self.__get_tmp_bin('t.mp4', {'device': 'test', 'name': 'name2', 'dev': 'dev2', 'flavor': 'presentation' })
+        bins = [self.__get_tmp_bin('t.avi', {'device': 'test', 'name': 'name1', 'dev': 'dev1', 'mimetype': 'video/mp4', 'flavor': 'presenter' }),
+                self.__get_tmp_bin('t.mp4', {'device': 'test', 'name': 'name2', 'dev': 'dev2', 'mimetype': 'video/mp4', 'flavor': 'presentation' })
                 ]
 
         self.assertTrue(mp.manual)        
@@ -199,8 +199,8 @@ class TestFunctions(TestCase):
 
         mp.manual = False
         #TODO file extension to mimetype???
-        bins = [self.__get_tmp_bin('t.avi', {'device': 'test', 'name': 'name1', 'dev': 'dev1', 'flavor': 'presenter' }),
-                self.__get_tmp_bin('t.mp4', {'device': 'test', 'name': 'name2', 'dev': 'dev2', 'flavor': 'presentation' })
+        bins = [self.__get_tmp_bin('t.avi', {'device': 'test', 'name': 'name1', 'dev': 'dev1', 'mimetype': 'video/mp4', 'flavor': 'presenter' }),
+                self.__get_tmp_bin('t.mp4', {'device': 'test', 'name': 'name2', 'dev': 'dev2', 'mimetype': 'video/mp4', 'flavor': 'presentation' })
                 ]
 
         self.assertFalse(mp.manual)        
