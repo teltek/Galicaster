@@ -31,7 +31,6 @@ from galicaster.recorder import Recorder
 
 from galicaster.utils import series
 from galicaster.classui.metadata import MetadataClass as Metadata
-from galicaster.classui import statusbar as status_bar
 from galicaster.classui.audiobar import Vumeter
 from galicaster.classui.events import EventManager
 from galicaster.classui.about import GCAboutDialog
@@ -125,15 +124,10 @@ class RecorderClassUI(gtk.Box):
         self.vubox = builder.get_object("vubox")
         self.gui = builder
 
-        # BIG STATUS
+        # STATUS
         big_status = builder.get_object("bg_status")
         self.view = self.set_status_view()
         big_status.add(self.view)
-
-        # STATUS BAR
-        self.statusbar=status_bar.StatusBarClass()
-        self.dispatcher.connect("update-rec-status", self.statusbar.SetStatus)
-        self.dispatcher.connect("update-video", self.statusbar.SetVideo)
         self.dispatcher.connect("galicaster-init", self.check_status_area)
         self.dispatcher.connect("galicaster-init", self.check_net)
         self.dispatcher.connect("restart-preview", self.check_status_area)
@@ -836,9 +830,6 @@ class RecorderClassUI(gtk.Box):
         if not self.scheduled_recording:
             Metadata(self.mediapackage, series.get_series(), parent=self)
             mp = self.mediapackage
-            self.statusbar.SetVideo(None,mp.getTitle())
-            if self.mediapackage.getCreator() != None:
-                self.statusbar.SetPresenter(None,mp.getCreator() if mp.getCreator() != None else '')
             self.dispatcher.emit("enable-no-audio")
         #self.change_state(self.previous)  
         return True 
