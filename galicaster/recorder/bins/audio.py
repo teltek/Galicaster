@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       galicaster/recorder/bins/pulse
+#       galicaster/recorder/bins/audio
 #
-# Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
+# Copyright (c) 2014, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
 # NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
@@ -18,7 +18,7 @@ from os import path
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
-pipestr = (" pulsesrc name=gc-audio-src  ! queue ! audioamplify name=gc-audio-amplify amplification=1 ! "
+pipestr = (" gc-audio-src-element name=gc-audio-src  ! queue ! audioamplify name=gc-audio-amplify amplification=1 ! "
            " tee name=tee-aud  ! queue ! level name=gc-audio-level message=true interval=100000000 ! "
            " volume name=gc-audio-volume ! alsasink sync=false name=gc-audio-preview  "
            " tee-aud. ! queue ! valve drop=false name=gc-audio-valve ! "
@@ -26,21 +26,26 @@ pipestr = (" pulsesrc name=gc-audio-src  ! queue ! audioamplify name=gc-audio-am
            " queue ! filesink name=gc-audio-sink async=false " )
 
 
-class GCpulse(gst.Bin, base.Base):
+class GCaudio(gst.Bin, base.Base):
     
-    order = ["name", "flavor", "location", "file", 
+    order = ["name", "flavor", "src", "location", "file", 
              "vumeter", "player", "amplification", "audioencoder"]
 
     gc_parameters = {
         "name": {
             "type": "text",
-            "default": "Pulse",
+            "default": "Audio",
             "description": "Name assigned to the device",
             },
         "flavor": {
             "type": "flavor",
             "default": "presenter",
             "description": "Matterhorn flavor associated to the track",
+            },
+        "src": {
+            "type": "device",
+            "default": "autoaudiosrc",
+            "description": "Gstreamer source element to use",
             },
         "location": {
             "type": "device",
@@ -82,7 +87,7 @@ class GCpulse(gst.Bin, base.Base):
     __gstdetails__ = (
         "Galicaster Audio BIN",
         "Generic/Audio",
-        "Plugin to capture raw audio via Pulse",
+        "Plugin to capture raw audio",
         "Teltek Video Research"
         )
 
@@ -91,16 +96,25 @@ class GCpulse(gst.Bin, base.Base):
         gst.Bin.__init__(self, self.options["name"])
 
         aux = (pipestr.replace("gc-audio-preview", "sink-" + self.options["name"])
-                      .replace("gc-audio-enc", self.options["audioencoder"]))
+                      .replace("gc-audio-enc", self.options["audioencoder"])
+                      .replace("gc-audio-src-element", self.options["src"]))
 
         #bin = gst.parse_bin_from_description(aux, True)
         bin = gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
-        if self.options['location'] != "default":
-            sink = self.get_by_name("gc-audio-src")
-            sink.set_property("device", self.options['location'])
+        sink = self.get_by_name("gc-audio-src")
+        try:
+            if self.options['location'] != "default":
+                sink.set_property("device", self.options['location'])
+        except TypeError:
+            pass
 
+        try:
+            sink.set_property("provide-clock", False)
+            print "provide-clock"
+        except TypeError:
+            pass
 
         sink = self.get_by_name("gc-audio-sink")
         sink.set_property('location', path.join(self.options['path'], self.options['file']))
@@ -144,6 +158,6 @@ class GCpulse(gst.Bin, base.Base):
             element.set_property("mute", value)
 
     
-gobject.type_register(GCpulse)
-gst.element_register(GCpulse, "gc-pulse-bin")
-module_register(GCpulse, 'pulse')
+gobject.type_register(GCaudio)
+gst.element_register(GCaudio, "gc-audio-bin")
+module_register(GCaudio, 'audio')

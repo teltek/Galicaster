@@ -235,7 +235,16 @@ class RecorderClassUI(gtk.Box):
 
         for objectbin in bins:
             objectbin['path']=self.repo.get_rectemp_path()
-        devices = current_profile.get_video_areas()
+        devices = {}
+        index = 1
+        for bin in bins:
+            if bin.has_audio == None:
+                temp_bin = Recorder.get_gst_bin(bin)
+                bin.has_audio = temp_bin.has_audio
+                bin.has_video = temp_bin.has_video
+            if bin.has_video:
+                devices[index] = bin.name
+                index += 1
         areas = self.create_drawing_areas(devices)  
 
         self.bins = bins

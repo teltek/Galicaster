@@ -453,7 +453,7 @@ class Track(OrderedDict):
 
    """
 
-   BASIC = ['name', 'device', 'flavor', 'location', 'file']
+   BASIC = ['name', 'device', 'has_audio', 'has_video', 'flavor', 'location', 'file']
 
    def __init__(self, *args, **kw):
       super(Track,self).__init__(*args, **kw)
@@ -477,6 +477,22 @@ class Track(OrderedDict):
         self['device'] = value
 
    device = property(_get_device, _set_device)
+
+   def _get_has_audio(self):
+        return self['has_audio']
+
+   def _set_has_audio(self, value):
+        self['has_audio'] = value
+
+   has_audio = property(_get_has_audio, _set_has_audio)
+
+   def _get_has_video(self):
+        return self['has_video']
+
+   def _set_has_video(self, value):
+        self['has_video'] = value
+
+   has_video = property(_get_has_video, _set_has_video)
 
    def _get_flavor(self):
         return self['flavor']
