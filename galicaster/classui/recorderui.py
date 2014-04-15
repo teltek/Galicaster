@@ -30,6 +30,7 @@ from galicaster.mediapackage import mediapackage
 from galicaster.recorder import Recorder
 
 from galicaster.utils import series
+from galicaster.utils import readable
 from galicaster.classui.metadata import MetadataClass as Metadata
 from galicaster.classui.audiobar import Vumeter
 from galicaster.classui.events import EventManager
@@ -951,7 +952,9 @@ class RecorderClassUI(gtk.Box):
         # s3 = self.gui.get_object("status3")
         s4 = self.gui.get_object("status4")
  
-        freespace,text_space=status_bar.GetFreeSpace(self.repo.get_rectemp_path())
+        freespace = self.repo.get_free_space()
+        text_space = readable.size(freespace)
+        
         s1.set_text(text_space)
         four_gb = 4000000000.0
         hours = int(freespace/four_gb)
