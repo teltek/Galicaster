@@ -34,8 +34,8 @@ class TestFunctions(TestCase):
         hostname = 'rubenruaHost'
         address = '8.8.8.8'
         workflow = 'mini-full'
-        workflow_parameters = 'uno:uno'
-        workflow_parameters_2 = 'uno:uno;dos:dos'
+        workflow_parameters = {'uno': 'uno'}
+        workflow_parameters_2 = {'uno': 'uno', 'dos': 'dos'}
 
         client = MHHTTPClient(server, user, password)
         self.assertEqual(client.hostname, 'galicaster')
@@ -55,17 +55,17 @@ class TestFunctions(TestCase):
 
         client = MHHTTPClient(server, user, password, hostname, address, workflow, workflow_parameters)
         self.assertEqual(client.workflow, 'mini-full')
-        self.assertEqual(client.workflow_parameters, {'uno': 'uno'})
+        self.assertEqual(client.workflow_parameters, workflow_parameters)
 
         client = MHHTTPClient(server, user, password, hostname, address, workflow, workflow_parameters_2)
         self.assertEqual(client.workflow, 'mini-full')
-        self.assertEqual(client.workflow_parameters, {'uno': 'uno', 'dos': 'dos'})
+        self.assertEqual(client.workflow_parameters, workflow_parameters_2)
 
 
 
     def no_test_prepare_ingest(self):
         workflow = 'mini-full'
-        workflow_parameters = 'uno:uno;dos:dos'
+        workflow_parameters = {'uno': 'uno', 'dos': 'dos'}
         client = MHHTTPClient(None, None, None, None, None, workflow, workflow_parameters)
         
         # Default values
@@ -102,8 +102,8 @@ class TestFunctions(TestCase):
     # OC-MH whoami endpoint return anonymous.
     def no_test_whoami(self):
         server = 'http://demo.opencastproject.org'
-        user = 'matterhorn_system_account';
-        password = 'CHANGE_ME';
+        user = 'matterhorn_system_account'
+        password = 'CHANGE_ME'
 
         client = MHHTTPClient(server, user, password)
         mh_user = client.whoami()
@@ -113,8 +113,8 @@ class TestFunctions(TestCase):
 
     def no_test_whoami(self):
         server = 'http://demo.opencastproject.org'
-        user = 'matterhorn_system_account';
-        password = 'CHANGE_ME';
+        user = 'matterhorn_system_account'
+        password = 'CHANGE_ME'
 
         client = MHHTTPClient(server, user, password)
         mh_user = client.welcome()
@@ -124,8 +124,8 @@ class TestFunctions(TestCase):
 
     def no_test_series(self):
         server = 'http://demo.opencastproject.org'
-        user = 'matterhorn_system_account';
-        password = 'CHANGE_ME';
+        user = 'matterhorn_system_account'
+        password = 'CHANGE_ME'
 
         client = MHHTTPClient(server, user, password)
         series = client.getseries()    
@@ -136,8 +136,8 @@ class TestFunctions(TestCase):
 
     def no_test_setstate(self):
         server = 'http://demo.opencastproject.org'
-        user = 'matterhorn_system_account';
-        password = 'CHANGE_ME';
+        user = 'matterhorn_system_account'
+        password = 'CHANGE_ME'
         client_name = 'rubenrua_pr'
         client_address = '172.20.209.225'
         client_states = [ 'shutting_down', 'capturing', 'uploading', 'unknown', 'idle' ]        
@@ -153,8 +153,8 @@ class TestFunctions(TestCase):
 
     def no_test_setcapabilities(self):
         server = 'http://demo.opencastproject.org'
-        user = 'matterhorn_system_account';
-        password = 'CHANGE_ME';
+        user = 'matterhorn_system_account'
+        password = 'CHANGE_ME'
         client_name = 'rubenrua_pr'
         client_address = '172.20.209.225'
 
@@ -170,8 +170,8 @@ class TestFunctions(TestCase):
 
     def no_test_limit_init_duration(self):
         server = 'http://10.10.10.10:10'
-        user = 'matterhorn_system_account';
-        password = 'CHANGE_ME';
+        user = 'matterhorn_system_account'
+        password = 'CHANGE_ME'
 
         client = MHHTTPClient(server, user, password)
 

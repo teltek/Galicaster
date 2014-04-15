@@ -216,7 +216,6 @@ class ListingClassUI(ManagerUI):
 	"""Refresh all the values on the list"""
 	logger.info("Refreshing TreeView")
 	model, selected = self.vista.get_selection().get_selected_rows()
-	self.repository.refresh()
 	self.insert_data_in_list(self.lista, self.repository.list().values())
 
 	s = 0 if len(selected) == 0 else selected[0][0]

@@ -1,0 +1,56 @@
+Como configurar sudoers para que el usuario que ejecuta galicaster no tenga permisos de acceso (lectura y escritura) sobre los logs y archivos de configuracion. 
+
+Esta configuracion puede ser útil por motivos de seguridad y para montar un entorno multiusuario (ver plugin setuprecording).
+
+NOTA: ESTE PROCESO HA SIDO PROBADO EN UBUNTU (12.04.4 por el momento).
+
+Pasos a seguir:
+
+1.- Crear un nuevo usuario gcuser
+
+$ sudo adduser --system --quiet --home /var/lib/gcuser --shell /bin/false --group --gecos "Galicaster Administrator" gcuser
+
+2.- Crear nuevo grupo gcusers para los usuarios que tienen permiso para ejecutar galicaster (Notese la diferencia entre el grupo gcuser y gcusers)
+
+$ sudo addgroup --system --quiet gcusers
+
+3.- Modificar permisos de archivos de configuracion y logs de Galciaster para que solo el usuario gcuser tenga permiso de acceso.
+
+$ ETCDIR="/etc/galicaster"
+$ LOGDIR="/var/log/galicaster"
+
+$ sudo chown -R gcuser:gcuser ${ETCDIR}
+$ sudo find ${ETCDIR} -type d -exec chmod 0770 {} \;
+$ sudo find ${ETCDIR} -type f -exec chmod 0660 {} \;
+
+$ sudo install -d -o gcuser -g gcuser -m770 ${LOGDIR}
+$ sudo touch ${LOGDIR}/galicaster.log 
+$ sudo chown gcuser:gcuser ${LOGDIR}/galicaster.log 
+$ sudo chmod 660 ${LOGDIR}/galicaster.log
+
+4.- Añadir aplicación Galicaster a sudoers.d
+
+$ sudo sh -c 'cat >/etc/sudoers.d/galicaster <<EOF
+%gcusers ALL=(gcuser:gcuser) NOPASSWD: /usr/bin/python /usr/share/galicaster/run_galicaster.py
+EOF'
+$ sudo chmod 0440 /etc/sudoers.d/galicaster
+
+5.- Modificar ejecutable de galicaster para ejecutarlo con el grupo gcuser.
+
+$ sudo sh -c 'cat >/usr/bin/galicaster <<EOF
+#!/bin/sh
+sudo -g gcuser /usr/bin/python /usr/share/galicaster/run_galicaster.py
+EOF'
+$ sudo chmod -R 755 /usr/bin/galicaster
+
+
+6.- Añadir usuarios del sistema al grupo gcuser
+
+$ sudo addgroup `whoami` gcusers
+
+Finalmente reiniciar la sesión de usuario para que los cambios se apliquen correctamente.
+
+En caso de usar un repositorio común para los diferentes usuarios, los permisos del repositorio tiene que permitir la escritura y lectura a todos los usuarios del grupo gcuser.
+
+NOTA: TODOS LOS PERFILES CREADOS EN /etc/galicaster/profiles TIENE QUE TENER LOS PERMISOS ADECUADOS (VER PUNTO 3)
+

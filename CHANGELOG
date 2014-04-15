@@ -6,15 +6,19 @@ To get the diff for a specific change, go to https://github.com/teltek/galicaste
 To get the diff between two versions, go to https://github.com/teltek/galicaster/compare/1.2.1...1.2.3
 
 
+
 * DEV (YYYY-MM-DD)
 
+ * Fixed bug in capture.cleaner.mindiskspace value (Added get_free_space in the repository).
+ * Added ca_parameters to allow editing of the CA configurations.
  * New plugin to reingest recordings where the ingest has failed. (ppettit)
  * New screen device module to record the screencast. (olabri)
  * New autoaudio device module to automatically detect audio source and sink. (oaubert)
  * Using autoaudiosink instead of hardcoding pulsesink in player. (oaubert)
 
-* 1.4.0 (YYYY-MM-DD)
+* 1.4.0 (2014-04-09)
 
+ * Improved Galciaster stability (Stephen Marquard)
  * Feature: Allow configuration of MHHTTPClient timeouts (ppettit)
  * Fixed bug: Allow any case for plugin config values (JamesUoM)
  * Fixed bug: Set recording state on matterhorn server when doing manual recording (ppettit)
@@ -28,6 +32,10 @@ To get the diff between two versions, go to https://github.com/teltek/galicaster
  * Fixed bug: Galicaster doesn't crash anymore when a webcam is unplugged. Now you can go back and reload the profile.
  * Fixed bug on forced users to click twice in pop-ups when using distributions like Xubuntu. 
  * Corrected some bad interactions between the no-audio dialog and other popups.
+
+* 1.3.2 (2014-03-25)
+
+ * Fixed Galicaster UI stability issue (Issue #93)
 
 * 1.3.1 (2014-01-20)
 

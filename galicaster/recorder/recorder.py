@@ -50,6 +50,9 @@ class Recorder(object):
         self.restart = False
         self.mute = False
         self.error = False
+        self.__on_start_only_preview = True
+        self.__start_record_time = 0
+        self.__duration = 0
 
         self.pipeline = gst.Pipeline("galicaster_recorder")
         self.bus = self.pipeline.get_bus()
@@ -89,37 +92,56 @@ class Recorder(object):
     def get_time(self):
         return self.pipeline.get_clock().get_time()
 
+    def get_recorded_time(self):
+        if self.pipeline.get_state()[1] == gst.STATE_NULL:
+            return self.__duration
+        return self.__query_position() - self.__start_record_time
+
+    def __query_position(self):
+        try:
+            duration = self.pipeline.query_position(gst.FORMAT_TIME)[0]
+        except:
+            duration = 0
+        return duration
+
     def preview(self):
         logger.debug("recorder preview")
-        if not len(self.bins):
-            self.dispatcher.emit("recorder-error","No tracks on profile")
-            return False
-        else:
-            change=self.pipeline.set_state(gst.STATE_PAUSED)
-            
-            if change == gst.STATE_CHANGE_FAILURE:
-                text = None
-                random_bin = None
-                for key,value in self.bins.iteritems():
-                    if not value.getSource():
-                        random_bin = value
-                        text = "Error on track : "+ key
-                    if not random_bin:
-                        random_bin = value
-                        text = "Error on unknow track"
+        return self.__start(gst.STATE_PAUSED)
 
-                src = random_bin
-                error = gst.GError(gst.RESOURCE_ERROR,
-                                   gst.RESOURCE_ERROR_FAILED, text)
+    def preview_and_record(self):
+        logger.debug("recorder preview and record")
+        self.__on_start_only_preview = False
+        self.__start_record_time = self.__query_position()
+        return self.__start(gst.STATE_PLAYING)
+
+    def __start(self, new_state=gst.STATE_PAUSED):
+        if not len(self.bins):
+            self.dispatcher.emit("recorder-error", "No tracks on profile")
+            return False
+        
+        change = self.pipeline.set_state(new_state)
+            
+        if change == gst.STATE_CHANGE_FAILURE:
+            text = None
+            random_bin = None
+            for key, value in self.bins.iteritems():
+                if not value.getSource():
+                    random_bin = value
+                    text = "Error on track : "+ key
+                if not random_bin:
+                    random_bin = value
+                    text = "Error on unknow track"
+
+            src = random_bin
+            error = gst.GError(gst.RESOURCE_ERROR, gst.RESOURCE_ERROR_FAILED, text)
                 
-                message = gst.message_new_error(
-                    src, error, 
-                    str(random_bin)+"\nunknown system_error")
-                self.bus.post(message)
-                #self.dispatcher.emit("recorder-error","Driver error")
-                return False
-            else:          
-                return True
+            message = gst.message_new_error(
+                src, error, 
+                str(random_bin)+"\nunknown system_error")
+            self.bus.post(message)
+            #self.dispatcher.emit("recorder-error","Driver error")
+            return False
+        return True
 
     def stop_preview(self):
         #FIXME send EOS
@@ -130,10 +152,11 @@ class Recorder(object):
     def record(self):
         if self.pipeline.get_state()[1] == gst.STATE_PLAYING:
             for bin_name, bin in self.bins.iteritems():
-                valve = bin.changeValve(False)                
-            # Get clock
+                valve = bin.changeValve(False)
+        self.__start_record_time = self.__query_position()
 
-    def stop_record(self):                
+    def stop_record(self):
+        self.__duration = self.__query_position() - self.__start_record_time
         a = gst.structure_from_string('letpass')
         event = gst.event_new_custom(gst.EVENT_EOS, a)
         for bin_name, bin in self.bins.iteritems():
@@ -211,7 +234,8 @@ class Recorder(object):
     def _on_state_changed(self, bus, message):
         old, new, pending = message.parse_state_changed()
         if (isinstance(message.src, gst.Pipeline) and 
-            (old, new) == (gst.STATE_READY, gst.STATE_PAUSED) ):
+            (old, new) == (gst.STATE_READY, gst.STATE_PAUSED) and
+            self.__on_start_only_preview):
             for bin_name, bin in self.bins.iteritems():
                 valve = bin.changeValve(True) 
             self.pipeline.set_state(gst.STATE_PLAYING)

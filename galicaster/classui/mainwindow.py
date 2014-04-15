@@ -154,8 +154,10 @@ class GCWindow(gtk.Window):
                 }
 
         buttons = ( gtk.STOCK_QUIT, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
+        self.dispatcher.emit("disable-no-audio")
         warning = message.PopUp(message.WARNING, text,
                                 self, buttons)
+        self.dispatcher.emit("enable-no-audio")
 
         if warning.response in message.POSITIVE:
             if self.logger:

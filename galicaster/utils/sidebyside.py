@@ -42,28 +42,6 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
     """
 
     pipestr = """
-    videomixer2 name=mix background=1 
-      sink_0::xpos={screen_xpos} sink_0::ypos={screen_ypos} sink_0::zorder={screen_zorder} 
-      sink_1::xpos={camera_xpos} sink_1::ypos={camera_ypos} sink_1::zorder={camera_zorder} !
-    ffmpegcolorspace name=colorsp_saida ! 
-    video/x-raw-yuv, format=(fourcc)I420, width={out_width}, height={out_height}, framerate=25/1 ! 
-    x264enc quantizer=45 speed-preset=6 profile=1 ! queue ! 
-    mp4mux name=mux  ! queue ! filesink location="{OUT}"
-    
-    filesrc location="{SCREEN}" ! decodebin2 name=dbscreen ! deinterlace !
-    aspectratiocrop aspect-ratio={screen_aspect} ! videoscale ! videorate ! 
-    ffmpegcolorspace name=colorsp_screen ! 
-    video/x-raw-yuv, format=(fourcc)AYUV, framerate=25/1, width={screen_width}, height={screen_height} ! 
-    mix.sink_0 
-    
-    filesrc location="{CAMERA}" ! decodebin2 name=dbcamera ! deinterlace !
-    aspectratiocrop aspect-ratio={camera_aspect} ! videoscale ! videorate ! 
-    ffmpegcolorspace name=colorsp_camera ! 
-    video/x-raw-yuv, format=(fourcc)AYUV, framerate=25/1, width={camera_width}, height={camera_height} ! 
-    mix.sink_1 
-    """
-
-    old_pipestr = """
     videomixer name=mix 
         sink_0::xpos=0 sink_0::ypos=0 sink_0::zorder=0
         sink_1::xpos=640 sink_1::ypos=120 sink_1::zorder=1 !
@@ -71,15 +49,17 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
     x264enc quantizer=45 speed-preset=6 profile=1 ! queue ! 
     mp4mux name=mux  ! queue ! filesink location="{OUT}"
 
-    filesrc location="{SCREEN}" !
-    queue ! decodebin2 name=dbscreen ! ffmpegcolorspace ! deinterlace ! videoscale ! videorate name=v2 !
+    filesrc location="{SCREEN}" ! decodebin2 name=dbscreen ! deinterlace ! 
+    aspectratiocrop aspect-ratio={screen_aspect} ! videoscale ! videorate !
+    ffmpegcolorspace name=colorsp_screen !
     video/x-raw-yuv,width=640,height=480,framerate=25/1 !
-    videobox right=-640 top=-120 bottom=-120 ! ffmpegcolorspace !
+    videobox right=-640 top=-120 bottom=-120 ! queue !
     mix.sink_0 
 
-    filesrc location="{CAMERA}" !
-    queue ! decodebin2 name=dbcamera ! ffmpegcolorspace ! deinterlace ! videoscale ! videorate name=v1 !
-    video/x-raw-yuv,width=640,height=480,framerate=25/1,interlaced=false !
+    filesrc location="{CAMERA}" ! decodebin2 name=dbcamera ! deinterlace ! 
+    aspectratiocrop aspect-ratio={camera_aspect} ! videoscale ! videorate !
+    ffmpegcolorspace name=colorsp_camera !
+    video/x-raw-yuv,width=640,height=480,framerate=25/1,interlaced=false ! queue !
     mix.sink_1 
     """
 
@@ -124,19 +104,16 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
     parameters = {'OUT': out, 'SCREEN': screen, 'CAMERA': camera}
     parameters.update(layouts[layout])
 
-    pipeline = gst.Pipeline("galicaster_sidebyside")
+    pipeline = gst.parse_launch(pipestr.format(**parameters))
     bus = pipeline.get_bus()
-
-    gst_bin = gst.parse_bin_from_description(pipestr.format(**parameters), False)
-    pipeline.add(gst_bin)
 
     # connect callback to fetch the audio stream
     if embeded:
         mux = pipeline.get_by_name('mux')    
         dec_camera = pipeline.get_by_name('dbcamera')
         dec_screen = pipeline.get_by_name('dbscreen')    
-        dec_camera.connect('pad-added', on_audio_decoded, gst_bin, mux)
-        dec_screen.connect('pad-added', on_audio_decoded, gst_bin, mux)
+        dec_camera.connect('pad-added', on_audio_decoded, pipeline, mux)
+        dec_screen.connect('pad-added', on_audio_decoded, pipeline, mux)
 
 
     pipeline.set_state(gst.STATE_PLAYING)
