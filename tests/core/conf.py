@@ -236,5 +236,4 @@ class TestFunctions(TestCase):
 
         profile = conf.get_current_profile()
 
-        print profile.tracks
         self.assertEqual(1, len(profile.tracks))
