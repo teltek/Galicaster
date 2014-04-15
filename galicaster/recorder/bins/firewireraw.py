@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       galicaster/recorder/bins/firewire2
+#       galicaster/recorder/bins/firewireraw
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
@@ -22,25 +22,25 @@ from os import path
 
 from galicaster.recorder import base
 
-pipestr = (' dv1394src name=gc-firewire2-src ! '
-           ' queue ! dvdemux name=gc-firewire2-demuxer ! '
-           ' level name=gc-firewire2-level message=true interval=100000000 ! '
-           ' tee name=gc-firewire2-audiotee ! '
-           ' queue ! volume name=gc-firewire2-volume ! alsasink sync=false name=gc-firewire2-audio-sink '
-           ' gc-firewire2-demuxer. ! queue ! ffdec_dvvideo ! ffmpegcolorspace ! queue ! tee name=gc-firewire2-videotee ! '
-           ' xvimagesink qos=false async=false sync=false name=gc-firewire2-preview '
-           ' gc-firewire2-audiotee. ! queue ! valve drop=false name=gc-firewire2-audio-valve ! audio/x-raw-int ! ' 
-           ' gc-firewire2-audioenc ! gc-firewire2-muxer ! '
-           ' queue ! filesink name=gc-firewire2-sink async=false '
-           ' gc-firewire2-videotee. ! queue ! valve drop=false name=gc-firewire2-video-valve ! '
-           ' videorate skip-to-first=true ! videoscale ! gc-firewire2-capsfilter ! gc-firewire2-videoenc ! gc-firewire2-mux. '
+pipestr = (' dv1394src name=gc-firewireraw-src ! '
+           ' queue ! dvdemux name=gc-firewireraw-demuxer ! '
+           ' level name=gc-firewireraw-level message=true interval=100000000 ! '
+           ' tee name=gc-firewireraw-audiotee ! '
+           ' queue ! volume name=gc-firewireraw-volume ! alsasink sync=false name=gc-firewireraw-audio-sink '
+           ' gc-firewireraw-demuxer. ! queue ! ffdec_dvvideo ! ffmpegcolorspace ! queue ! tee name=gc-firewireraw-videotee ! '
+           ' xvimagesink qos=false async=false sync=false name=gc-firewireraw-preview '
+           ' gc-firewireraw-audiotee. ! queue ! valve drop=false name=gc-firewireraw-audio-valve ! audio/x-raw-int ! ' 
+           ' gc-firewireraw-audioenc ! gc-firewireraw-muxer ! '
+           ' queue ! filesink name=gc-firewireraw-sink async=false '
+           ' gc-firewireraw-videotee. ! queue ! valve drop=false name=gc-firewireraw-video-valve ! '
+           ' videorate skip-to-first=true ! videoscale ! gc-firewireraw-capsfilter ! gc-firewireraw-videoenc ! gc-firewireraw-mux. '
            )
 
-class GCfirewire2(gst.Bin, base.Base):
+class GCfirewireraw(gst.Bin, base.Base):
     gc_parameters = {
         "name": {
             "type": "text",
-            "default": "Firewire2",
+            "default": "Firewireraw",
             "description": "Name assigned to the device",
             },
         "flavor": {
@@ -107,7 +107,7 @@ class GCfirewire2(gst.Bin, base.Base):
     has_video   = True
     
     __gstdetails__ = (
-        "Galicaster Firewire2 BIN",
+        "Galicaster Firewireraw BIN",
         "Generic/Video",
         "Add descripcion",
         "Teltek Video Research"
@@ -117,50 +117,50 @@ class GCfirewire2(gst.Bin, base.Base):
         base.Base.__init__(self, options)
         gst.Bin.__init__(self, self.options["name"])
 
-        aux = (pipestr.replace("gc-firewire2-preview", "sink-" + self.options["name"])
-               .replace('gc-firewire2-videoenc', self.options['videoencoder'])
-               .replace('gc-firewire2-muxer', self.options['muxer']+' name=gc-firewire2-mux')
-               .replace('gc-firewire2-audioenc', self.options['audioencoder'])
-               .replace('gc-firewire2-capsfilter', self.options['caps'])
+        aux = (pipestr.replace("gc-firewireraw-preview", "sink-" + self.options["name"])
+               .replace('gc-firewireraw-videoenc', self.options['videoencoder'])
+               .replace('gc-firewireraw-muxer', self.options['muxer']+' name=gc-firewireraw-mux')
+               .replace('gc-firewireraw-audioenc', self.options['audioencoder'])
+               .replace('gc-firewireraw-capsfilter', self.options['caps'])
               )
         #bin = gst.parse_bin_from_description(aux, False)
         bin = gst.parse_launch("( {} )".format(aux))
 
         self.add(bin)
 
-        sink = self.get_by_name("gc-firewire2-sink")
+        sink = self.get_by_name("gc-firewireraw-sink")
         sink.set_property('location', path.join(self.options['path'], self.options['file']))
 
         if self.options["vumeter"] == False:
-            level = self.get_by_name("gc-firewire2-level")
+            level = self.get_by_name("gc-firewireraw-level")
             level.set_property("message", False) 
 
         if self.options["player"] == False:
             self.mute = True
-            element = self.get_by_name("gc-firewire2-volume")
+            element = self.get_by_name("gc-firewireraw-volume")
             element.set_property("mute", True)        
         else:
             self.mute = False
 
     def changeValve(self, value):
-        valve1=self.get_by_name('gc-firewire2-video-valve')
-        valve2=self.get_by_name('gc-firewire2-audio-valve')
+        valve1=self.get_by_name('gc-firewireraw-video-valve')
+        valve2=self.get_by_name('gc-firewireraw-audio-valve')
         valve1.set_property('drop', value)
         valve2.set_property('drop', value)
 
     def getVideoSink(self):
-        return self.get_by_name("gc-firewire2-preview")
+        return self.get_by_name("gc-firewireraw-preview")
 
     def getSource(self):
-        return self.get_by_name("gc-firewire2-src")
+        return self.get_by_name("gc-firewireraw-src")
   
     def send_event_to_src(self,event):
-        src1 = self.get_by_name("gc-firewire2-src")
+        src1 = self.get_by_name("gc-firewireraw-src")
         src1.send_event(event)
 
     def mute_preview(self, value):
         if not self.mute:
-            element = self.get_by_name("gc-firewire2-volume")
+            element = self.get_by_name("gc-firewireraw-volume")
             element.set_property("mute", value)
 
     def configure(self):
@@ -170,5 +170,5 @@ class GCfirewire2(gst.Bin, base.Base):
         pass
      
 
-gobject.type_register(GCfirewire2)
-gst.element_register(GCfirewire2, "gc-firewire2-bin")
+gobject.type_register(GCfirewireraw)
+gst.element_register(GCfirewireraw, "gc-firewireraw-bin")
