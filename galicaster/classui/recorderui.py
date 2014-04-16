@@ -627,7 +627,7 @@ class RecorderClassUI(gtk.Box):
             if rec_title.get_text() != self.mediapackage.getTitle():
                 rec_title.set_text(self.mediapackage.getTitle())
             msec = datetime.timedelta(microseconds=(self.recorder.get_recorded_time()/1000))
-            rec_elapsed.set_text(_("Elapsed Time: ") + self.time_readable(msec))
+            rec_elapsed.set_text(_("Elapsed Time: ") + readable.long_time(msec))
             gtk.gdk.threads_leave()
             time.sleep(0.5)          
         return True
@@ -698,7 +698,7 @@ class RecorderClassUI(gtk.Box):
                     self.current_mediapackage = None
                     status.set_text("")
                 else:
-                    status.set_text(_("Stopping in {0}").format(self.time_readable(dif+one_second)))
+                    status.set_text(_("Stopping in {0}").format(readable.long_time(dif+one_second)))
                     if event_type.get_text() != CURRENT_TEXT:
                         event_type.set_text(CURRENT_TEXT) 
                     if title.get_text() != self.current.title:
@@ -722,7 +722,7 @@ class RecorderClassUI(gtk.Box):
                     event_type.set_text(NEXT_TEXT)
                 if title.get_text() != self.next.title:
                     title.set_text(self.next.title)
-                status.set_text(_("Starting in {0}").format(self.time_readable(dif)))
+                status.set_text(_("Starting in {0}").format(readable.long_time(dif)))
 
                 if dif < datetime.timedelta(0,TIME_RED_START):
                     if not changed:
@@ -778,34 +778,6 @@ class RecorderClassUI(gtk.Box):
                 gtk.gdk.threads_leave()
             time.sleep(1)          
         return True
-
-
-    def time_readable(self, timedif):
-        """
-        Take a timedelta and return it formatted
-        """       
-           
-        if timedif < datetime.timedelta(0,300): # 5 minutes tops
-            formatted = "{minutes:02d}:{seconds:02d}".format( 
-                            minutes = timedif.seconds // 60, 
-                            seconds = timedif.seconds % 60 )
-        elif timedif < datetime.timedelta(1,0): # 24 hours
-            formatted = "{hours:02d}:{minutes:02d}:{seconds:02d}".format(
-                hours =  timedif.days*24 + timedif.seconds // 3600, 
-                minutes = timedif.seconds % 3600 // 60 ,
-                seconds = timedif.seconds % 60 
-                )
-        else: # days
-            today = datetime.datetime.now()
-            then = today + timedif
-            dif = then.date() - today.date()
-            singular = _("day")
-            plural = _("days")
-            formatted = "{days_number} {word}".format(
-                days_number =  dif.days,
-                word = plural if dif.days > 1 else singular)
-
-        return formatted
     
    
     def check_schedule(self):
