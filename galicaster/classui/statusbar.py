@@ -135,20 +135,5 @@ class StatusBarClass(gtk.Box):
         relabel(self.presenter,k*32,True)
        
         return True
-
-def GetFreeSpace(directorio): # TODO, this function belong in utils
-    """ Return the freespace of the partition where a folder is placed -usually Repository- on human readeble style"""
-    stats = os.statvfs(directorio)
-    freespace=(stats.f_bsize * stats.f_bavail)
-    return freespace,make_human_readable(freespace)
-
-def make_human_readable(num):
-    """Generates human readable string for a number.
-    Returns: A string form of the number using size abbreviations (KB, MB, etc.) """
-    i = 0
-    while i+1 < len(EXP_STRINGS) and num >= (2 ** EXP_STRINGS[i+1][0]):
-        i += 1
-        rounded_val = round(float(num) / 2 ** EXP_STRINGS[i][0], 2)
-    return '%s %s' % (rounded_val, EXP_STRINGS[i][1])
     
 gobject.type_register(StatusBarClass)

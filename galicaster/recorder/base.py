@@ -124,10 +124,7 @@ class Base(object):
             #         raise SystemError('Parameter {0} on {1} holds invalid caps'.format(
             #                  k, type(self).__name__)) # TODO Mejorar
             
-         
-        
-
-            
+    
             # TODO Completar
 
     def set_option_in_pipeline(self, option, element, prop, parse=str):
@@ -137,6 +134,17 @@ class Base(object):
     def set_value_in_pipeline(self, value, element, prop, parse=str):
         element = self.get_by_name(element)
         element.set_property(prop, parse(value))
+
+    def get_display_areas_info(self):
+        if self.has_video:
+            return ['sink-' + self.options['name']]
+        return []
+
+    def get_bins_info(self):
+        if not self.options.has_key('mimetype'):
+            ext = self.options['file'].split('.')[1].lower()
+            self.options['mimetype'] = 'audio/' + ext if self.has_audio and not self.has_video else 'video/' + ext
+        return [self.options]
 
     @classmethod
     def get_gc_parameters(klass):
@@ -149,4 +157,4 @@ class Base(object):
     def get_conf_form(self):
         ##TODO necesito GLADE
         pass
-        
+

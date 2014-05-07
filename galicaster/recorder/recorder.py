@@ -46,7 +46,6 @@ class Recorder(object):
                 )
 
         self.dispatcher = context.get_dispatcher() 
-        self.bins_desc = bins
         self.players = players
         self.restart = False
         self.mute = False
@@ -245,7 +244,7 @@ class Recorder(object):
         if message.structure is None:
             return
         if message.structure.get_name() == 'prepare-xwindow-id':
-            name = message.src.get_property('name')[5:]
+            name = message.src.get_property('name')
             logger.debug("on sync message 'prepare-xwindow-id' %r", name)
 
             try:
@@ -285,3 +284,21 @@ class Recorder(object):
         for bin_name, bin in self.bins.iteritems():
             if bin.has_audio:
                 bin.mute_preview(value)
+                
+    def set_drawing_areas(self, players):
+        self.players = players        
+
+    def get_display_areas_info(self):
+        display_areas_info = []
+        for bin_name, bin in self.bins.iteritems():
+            display_areas_info.extend(bin.get_display_areas_info())
+        return display_areas_info
+
+    def get_bins_info(self):
+        bins_info = []
+        for bin_name, bin in self.bins.iteritems():
+            bins_info.extend(bin.get_bins_info())
+        return bins_info
+        
+
+            

@@ -34,9 +34,8 @@ class Logger(logging.Logger):
         if use_syslog:
             from logging.handlers import SysLogHandler
             loghandler = SysLogHandler(address='/dev/log')
-            formatting.inser(0, "Galicaster") 
+            formatting.insert(0, "Galicaster") 
             del(formatting[2]) 
-            formatting[0] = "Galicaster"
             loghandler.setFormatter(logging.Formatter(" ".join(formatting)))
         elif log_path == None or len(log_path) == 0:
             loghandler = logging.NullHandler()
