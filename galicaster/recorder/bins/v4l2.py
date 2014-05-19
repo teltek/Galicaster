@@ -22,7 +22,7 @@ from galicaster.recorder import base
 from galicaster.recorder import module_register
 
 pipestr = (' v4l2src name=gc-v4l2-src ! capsfilter name=gc-v4l2-filter ! queue ! gc-v4l2-dec '
-           ' videorate ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! '
+           ' videorate ! ffmpegcolorspace ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! '
            ' tee name=gc-v4l2-tee  ! queue !  xvimagesink async=false sync=false qos=false name=gc-v4l2-preview'
            ' gc-v4l2-tee. ! queue ! valve drop=false name=gc-v4l2-valve ! ffmpegcolorspace ! queue ! '
            ' gc-v4l2-enc ! queue ! gc-v4l2-mux ! '
