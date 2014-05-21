@@ -34,6 +34,7 @@ class State(object):
         self.hostname = hostname
         self.net = True #TODO update on startup
         self.is_recording = False
+        self.is_error = False
         self.status = "Initialization" #Recorder status
         self.mp = None # should be key
         self.area = REC # TODO set to DIS if admin=True
