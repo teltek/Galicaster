@@ -191,7 +191,6 @@ class RecorderClassUI(gtk.Box):
         self.clock_thread.daemon = True
         self.scheduler_thread.start()
         self.clock_thread.start() 
-        self.dispatcher.emit("galicaster-init")
 
         # SHOW OR HIDE SWAP BUTTON
         if self.conf.get_boolean('basic', 'swapvideos'):

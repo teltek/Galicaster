@@ -89,6 +89,8 @@ class Main():
             self.recorder.block()  
 
         context.get_heartbeat().init_timer()
+        self.dispatcher.emit("galicaster-init")
+
 
     def emit_quit(self):
         self.dispatcher.emit('galicaster-notify-quit')
