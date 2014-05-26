@@ -29,3 +29,6 @@ pip-log.txt
 tests/resources/attach/
 tests/resources/repository/attach/
 tests/resources/profile/folder/
+
+# IDE project files
+nbproject/
