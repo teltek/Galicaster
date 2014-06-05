@@ -27,7 +27,7 @@ FAILOVER_FILE = FAIL_DIR + '/presenter.mp3'
 FAILOVER_MIMETYPE = 'audio/mp3'
 default_max_amplitude = '-50'
 default_device = 'default'
-default_track = '0'
+default_track = '1'
 # gstreamer pipeline amplitude temp file
 temp_amp = os.getenv('HOME') + '/gc_pipeline_amp'
 # gstreamer pipeline
@@ -124,7 +124,7 @@ def get_audio_track():
         t = default_track
     else:
         t = audio_track
-    return track_list[int(t)]
+    return track_list[int(t)-1]
 
 
 def remove_temp(tempdir, tmpf):
