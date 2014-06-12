@@ -54,7 +54,6 @@ def init():
 
 def set_pipeline():
     # create the gstreamer elements; pulse source mp3 192kbps cbr
-    # FIXME hardcoded properties
     faudiosrc = gst.element_factory_make("pulsesrc", "pulsesrc")
     if device is None:
         faudiosrc.set_property("device", "{0}".format(default_device))
@@ -157,14 +156,6 @@ def failover_audio(self, mpUri):
                     logger.debug('Examine track type %s', mimetype)
                     if mimetype.split('/')[0].lower() == 'audio':
                         mp.remove(t)
-                    else:
-                        if mimetype.split('/')[1].lower() == 'mp4':
-                            t_path = t.getURI()
-                            output_file = t_path.split('.')[0] + '_1.' + t_path.split('.')[1]
-                            cmd = "avconv -y -i {0} -acodec copy -an {1}".format(t_path, output_file)
-                            os.system(cmd)
-                            os.remove(t_path)
-                            os.rename(output_file, t_path)
                 filename = get_audio_track()
                 dest = os.path.join(mpUri, os.path.basename(filename))
                 shutil.copyfile(FAILOVER_FILE, dest)
