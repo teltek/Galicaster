@@ -15,12 +15,12 @@
 Tests for `galicaster.recorder.recorder` modules.
 """
 
+import time
 from unittest import TestCase
 from galicaster.recorder.recorder import Recorder
 
 
 class TestFunctions(TestCase):
-
     def setUp(self):
         self.default_bins = [{'name': 'Bars', 
                               'pattern': '0',
@@ -55,6 +55,7 @@ class TestFunctions(TestCase):
                               'amplification': '1.0',
                               'path': ' /tmp'}]
                              
+
     def test_constructor(self):
         recorder = Recorder(self.default_bins)
         self.assertRaises(TypeError, Recorder)
@@ -68,15 +69,22 @@ class TestFunctions(TestCase):
 
 
     def test_get_display_areas_info(self):
-        r = Recorder(self.default_bins)
-        self.assertEqual(r.get_display_areas_info(), ['sink-Bars', 'sink-Static'])
-        r = Recorder([{'name': '1', 'device': 'videotest', 'path': '/tmp'}, {'name': '2', 'device': 'videotest', 'path': '/tmp'}])
-        self.assertEqual(r.get_display_areas_info(), ['sink-1', 'sink-2'])
+        recorder = Recorder(self.default_bins)
+        self.assertEqual(recorder.get_display_areas_info(), ['sink-Bars', 'sink-Static'])
+        recorder = Recorder([{'name': '1', 'device': 'videotest', 'path': '/tmp'}, 
+                             {'name': '2', 'device': 'videotest', 'path': '/tmp'}])
+        self.assertEqual(recorder.get_display_areas_info(), ['sink-1', 'sink-2'])
 
 
     def test_get_bins_info(self):
-        r = Recorder([{'name': 'name', 'device': 'videotest', 'path': '/tmp'}])
-        info = r.get_bins_info()
+        recorder = Recorder([{'name': 'name', 'device': 'videotest', 'path': '/tmp'}])
+        info = recorder.get_bins_info()
         self.assertEqual(info[0]['name'], 'name')
         self.assertEqual(info[0]['path'], '/tmp')
 
+
+    def test_preview(self):
+        recorder = Recorder([{'name': 'name', 'device': 'videotest', 'path': '/tmp'}])
+        recorder.preview()
+        time.sleep(2)
+        recorder.stop_preview()
