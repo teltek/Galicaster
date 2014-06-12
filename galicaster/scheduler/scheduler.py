@@ -90,7 +90,12 @@ class Scheduler(object):
 
 
     def set_state(self):
-        self.ca_status = 'capturing' if self.state.is_recording else 'idle'
+        if self.state.is_error:
+            self.ca_status = 'unknown' #See AgentState.java
+        elif self.state.is_recording:
+            self.ca_status = 'capturing'
+        else:
+            self.ca_status = 'idle'
         self.logger.info('Set status %s to server', self.ca_status)
         try:
             self.client.setstate(self.ca_status)

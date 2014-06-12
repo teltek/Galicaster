@@ -191,7 +191,6 @@ class RecorderClassUI(gtk.Box):
         self.clock_thread.daemon = True
         self.scheduler_thread.start()
         self.clock_thread.start() 
-        self.dispatcher.emit("galicaster-init")
 
         # SHOW OR HIDE SWAP BUTTON
         if self.conf.get_boolean('basic', 'swapvideos'):
@@ -249,6 +248,7 @@ class RecorderClassUI(gtk.Box):
             "recorder-error",
             self.handle_pipeline_error)
         self.audiobar.ClearVumeter()
+        context.get_state().is_error = False
 
         current_profile = self.conf.get_current_profile()
         bins = current_profile.tracks
@@ -276,6 +276,7 @@ class RecorderClassUI(gtk.Box):
                 self.change_state(GC_PREVIEW)
         else:
             logger.error("Restarting Preview Failed")
+            context.get_state().is_error = True
             self.change_state(GC_ERROR)
             if self.scheduled_recording:
                 self.on_failed_scheduled(self.current_mediapackage)    
@@ -532,6 +533,7 @@ class RecorderClassUI(gtk.Box):
         If the recording are is active, shows it
         """
         self.change_state(GC_ERROR)
+        context.get_state().is_error = True
         self.recorder.stop_elements()
         context.get_state().is_recording = False
         if self.error_id:
@@ -863,6 +865,7 @@ class RecorderClassUI(gtk.Box):
             if self.error_text:            
                 if self.status != GC_ERROR:
                     self.change_state(GC_ERROR)
+                    context.get_state().is_error = True
                 self.launch_error_message(self.error_text)            
 
         if old_state == 0:

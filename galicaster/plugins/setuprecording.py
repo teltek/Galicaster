@@ -29,6 +29,11 @@ MAPPINGS = { 'user': getpass.getuser() }
 
 
 def init():
+    dispatcher = context.get_dispatcher()
+    dispatcher.connect("galicaster-init", post_init)
+
+
+def post_init(source=None):
 
     global recorder_ui
     global rec_button
