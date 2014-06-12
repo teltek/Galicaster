@@ -269,6 +269,7 @@ class RecorderClassUI(gtk.Box):
             if self.mediapackage.manual:
                 self.change_state(GC_PREVIEW)
         else:
+            # NEW TODO: Not necesary check ok. Use recorder-error signal.
             logger.error("Restarting Preview Failed")
             context.get_state().is_error = True
             self.change_state(GC_ERROR)
@@ -1073,7 +1074,6 @@ class RecorderClassUI(gtk.Box):
             prevb.set_sensitive(True)
             editb.set_sensitive(False)
             swapb.set_sensitive(False)
-            self.dispatcher.emit("update-rec-status", "Initialization")            
 
         elif state == GC_PREVIEW:    
             record.set_sensitive( (self.allow_start or self.allow_manual) )
@@ -1084,10 +1084,6 @@ class RecorderClassUI(gtk.Box):
             prevb.set_sensitive(True)
             editb.set_sensitive(False)
             swapb.set_sensitive(True)
-            if self.next == None:
-                self.dispatcher.emit("update-rec-status", "Idle")            
-            else:
-                self.dispatcher.emit("update-rec-status", "Waiting")     
 
         elif state == GC_RECORDING:
             record.set_sensitive(False)
@@ -1097,7 +1093,6 @@ class RecorderClassUI(gtk.Box):
             prevb.set_sensitive(False)
             swapb.set_sensitive(False)
             editb.set_sensitive(True and not self.scheduled_recording)    
-            self.dispatcher.emit("update-rec-status", "  Recording  ")
        
         elif state == GC_PAUSED:
             record.set_sensitive(False)
@@ -1106,9 +1101,7 @@ class RecorderClassUI(gtk.Box):
             prevb.set_sensitive(False)
             helpb.set_sensitive(False)
             editb.set_sensitive(False)
-  
-            self.dispatcher.emit("update-rec-status", "Paused")
-            
+              
         elif state == GC_STOP:
             if self.previous == GC_PAUSED:
                 self.pause_dialog.destroy()
