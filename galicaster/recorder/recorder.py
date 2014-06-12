@@ -46,7 +46,7 @@ class Recorder(object):
         self.restart = False
         self.mute = False
         self.error = False
-        self.__on_start_only_preview = True
+        self.is_recording = False
         self.__start_record_time = 0
         self.__duration = 0
 
@@ -59,10 +59,8 @@ class Recorder(object):
         self.bus.add_signal_watch()
         self.bus.enable_sync_message_emission()
         #self.bus.connect('message', WeakMethod(self, '_debug')) # TO DEBUG
-        self.bus.connect('message::eos', WeakMethod(self, '_on_eos'))
         self.bus.connect('message::error', WeakMethod(self, '_on_error'))        
         self.bus.connect('message::element', WeakMethod(self, '_on_message_element'))
-        self.bus.connect('message::state-changed', WeakMethod(self, '_on_state_changed'))
         self.bus.connect('sync-message::element', WeakMethod(self, '_on_sync_message'))
 
         for bin in bins:
@@ -107,14 +105,17 @@ class Recorder(object):
 
     def preview(self):
         logger.debug("recorder preview")
-        return self.__start(gst.STATE_PAUSED)
+        self.__start(gst.STATE_PAUSED)
+        for bin in self.bins.values():
+            bin.changeValve(True) 
+        self.__start(gst.STATE_PLAYING)
 
 
     def preview_and_record(self):
         logger.debug("recorder preview and record")
-        self.__on_start_only_preview = False
-        self.__start_record_time = self.__query_position()
-        return self.__start(gst.STATE_PLAYING)
+        self.__start(gst.STATE_PLAYING)
+        self.__start_record_time = self.__query_position() #TODO
+        self.is_recording = True
 
 
     def __start(self, new_state=gst.STATE_PAUSED):
@@ -140,14 +141,20 @@ class Recorder(object):
             self.bus.post(message)
             #self.dispatcher.emit("recorder-error","Driver error")
             return False
+        while True:
+            message = self.bus.timed_pop_filtered(gst.CLOCK_TIME_NONE, gst.MESSAGE_STATE_CHANGED)
+            old, new, pending = message.parse_state_changed()
+            if (message.src == self.pipeline and new == new_state):
+                break
         return True
 
 
     def record(self):
         if self.pipeline.get_state()[1] == gst.STATE_PLAYING:
-            for bin_name, bin in self.bins.iteritems():
+            for bin in self.bins.values():
                 bin.changeValve(False)
         self.__start_record_time = self.__query_position()
+        self.is_recording = True
 
 
     def pause(self):
@@ -164,67 +171,21 @@ class Recorder(object):
         return None
 
 
-    def stop_preview(self):
-        #FIXME send EOS
+    def stop(self):
+        if self.is_recording:
+            self.is_recording == False
+            self.__duration = self.__query_position() - self.__start_record_time
+            a = gst.structure_from_string('letpass')
+            event = gst.event_new_custom(gst.EVENT_EOS, a)
+            for bin_name, bin in self.bins.iteritems():
+                bin.send_event_to_src(event)
+            self.bus.timed_pop_filtered(gst.CLOCK_TIME_NONE, gst.MESSAGE_EOS)
         self.pipeline.set_state(gst.STATE_NULL)
-        self.pipeline.get_state()
-        return None
-
-
-    def stop_record(self):
-        self.__duration = self.__query_position() - self.__start_record_time
-        a = gst.structure_from_string('letpass')
-        event = gst.event_new_custom(gst.EVENT_EOS, a)
-        for bin_name, bin in self.bins.iteritems():
-            bin.send_event_to_src(event)
-        return True
-
-
-    def stop_record_and_restart_preview(self):
-        logger.debug("Stopping Recording and Restarting Preview")
-        self.stop_record()
-        self.restart = True  # FIXME send user_data on the EOS to force restart
-        if self.pipeline.get_state()[1] == gst.STATE_PAUSED: 
-            # If paused ensure sending EOS
-            self.pipeline.set_state(gst.STATE_PLAYING)
-        return True
-
-
-    def just_restart_preview(self):
-        logger.debug("Stopping Preview and Restarting")
-        self.stop_preview()
-        logger.debug("EMITTING restart preview")
-        self.dispatcher.emit("restart-preview")
-        return True
-
-
-    def stop_elements(self):        
-        iterator = self.pipeline.elements()
-        while True:
-            try:                
-                element = iterator.next()
-                element.set_state(gst.STATE_NULL)
-                element.get_state()
-            except StopIteration:
-                break           
-        self.pipeline.set_state(gst.STATE_NULL)
-        self.pipeline.get_state()
-        #return True
 
 
     def _debug(self, bus, msg):       
         if msg.type != gst.MESSAGE_ELEMENT or msg.structure.get_name() != 'level':
             print "DEBUG ", msg
-
-
-    def _on_eos(self, bus, msg):
-        logger.info('eos')
-        self.stop_preview()  # FIXME pipeline set to NULL twice (bf and in the function)
-
-        if self.restart:
-            self.restart = False
-            logger.debug("EMITTING restart preview")
-            self.dispatcher.emit("restart-preview")
 
 
     def _on_error(self, bus, msg):
@@ -239,16 +200,6 @@ class Recorder(object):
             gtk.gdk.threads_leave()
             # return True
     
-
-    def _on_state_changed(self, bus, message):
-        old, new, pending = message.parse_state_changed()
-        if (isinstance(message.src, gst.Pipeline) and 
-            (old, new) == (gst.STATE_READY, gst.STATE_PAUSED) and
-            self.__on_start_only_preview):
-            for bin_name, bin in self.bins.iteritems():
-                bin.changeValve(True) 
-            self.pipeline.set_state(gst.STATE_PLAYING)
-
 
     def _on_sync_message(self, bus, message):
         if message.structure is None:
