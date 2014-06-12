@@ -45,7 +45,7 @@ gobject.signal_new('start-record', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.
 gobject.signal_new('starting-record', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
 gobject.signal_new('stop-record', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 gobject.signal_new('restart-preview', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
-gobject.signal_new('update-rec-vumeter', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
+gobject.signal_new('recorder-vumeter', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 # NEW ON 1.2
 gobject.signal_new('recorder-error', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 gobject.signal_new('reload-profile', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )

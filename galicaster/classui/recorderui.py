@@ -146,7 +146,7 @@ class RecorderClassUI(gtk.Box):
         self.dispatcher.connect("stop-record", self.on_stop)
         self.dispatcher.connect("start-before", self.on_start_before)
         self.dispatcher.connect("restart-preview", self.on_restart_preview)
-        self.dispatcher.connect("update-rec-vumeter", self.audiobar.SetVumeter)
+        self.dispatcher.connect("recorder-vumeter", self.audiobar.SetVumeter)
         self.dispatcher.connect("galicaster-status", self.event_change_mode)
         self.dispatcher.connect("galicaster-notify-quit", self.close)
         self.dispatcher.connect("recorder-error", self.handle_pipeline_error)

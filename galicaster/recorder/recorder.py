@@ -273,7 +273,7 @@ class Recorder(object):
             valor = "Inf"
         else:            
             valor = struct['rms'][0]
-        self.dispatcher.emit("update-rec-vumeter", valor)
+        self.dispatcher.emit("recorder-vumeter", valor)
 
 
     def is_pausable(self):
