@@ -79,7 +79,7 @@ class Recorder(object):
                 Klass = getattr(mod, "GC" + bin['device'])
             except:
                 raise NameError(
-                    'Invalid track type %s for %s track' % (mod_name, name)
+                    'Invalid track type %s for %s track' % (bin.get('device'), name)
                     )
 
             logger.debug("Init bin %s %s", name, mod_name)
