@@ -29,21 +29,18 @@ class Recorder(object):
         Initialize the recorder.
         This class is event-based and needs a mainloop to work properly.
 
-        :param bins: a ``list`` of ``dict`` with name, klass, device and file to record
-        :param players: a ``dict`` a gtk.DrawingArea list to use as player.
+        :param bins: ``list`` of ``dict`` with name, klass, device and file to record
+        :param players: (optional) ```gtk.DrawingArea``` ```list``` to use as player.
         """
-        #FIXME check the values are dict with the next keys: name, klass/type, dev* and filesink.
         if not isinstance(bins, list) or len(bins) == 0:
             raise TypeError(
-                '%s: need a %r; got a %r: %r' % ('bins', list,
-                                                 type(bins), bins) 
-                )
-        #FIXME check the values are gtk.DrawingArea
+                '{}: need a {}; got a {}: {}'.format('bins', list,
+                                                     type(bins), bins))
+
         if not isinstance(players, dict):
             raise TypeError(
-                '%s: need a %r; got a %r: %r' % ('players', dict, 
-                                                 type(players), players)
-                )
+                '{}: need a {}; got a {}: {}'.format('players', dict,
+                                                     type(players), players))
 
         self.dispatcher = context.get_dispatcher() 
         self.players = players
@@ -78,11 +75,11 @@ class Recorder(object):
                 mod = sys.modules[mod_name]
                 Klass = getattr(mod, "GC" + bin['device'])
             except:
-                raise NameError(
-                    'Invalid track type %s for %s track' % (bin.get('device'), name)
-                    )
+                message = 'Invalid track type "{}" for "{}" track'.format(bin.get('device'), name)
+                logger.error(message)
+                raise NameError(message)
 
-            logger.debug("Init bin %s %s", name, mod_name)
+            logger.debug("Init bin {} {}".format(name, mod_name))
             self.bins[name] = Klass(bin)
             self.pipeline.add(self.bins[name])
 
@@ -204,7 +201,7 @@ class Recorder(object):
 
     def _on_error(self, bus, msg):
         error, debug = msg.parse_error()
-        error_info = "%s (%s)" % (error, debug)
+        error_info = "{} ({})".format(error, debug)
         logger.error(error_info)
         if not debug.count('canguro') and not self.error:
             self.stop_elements()
@@ -256,7 +253,7 @@ class Recorder(object):
             except KeyError:
                 pass
             except TypeError:
-                logger.error('players[%r]: need a %r; got a %r: %r' % (
+                logger.error('players[{}]: need a {}; got a {}: {}'.format(
                         name, gtk.DrawingArea, type(gtk_player), gtk_player))
         
     def _on_message_element(self, bus, message):
