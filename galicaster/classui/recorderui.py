@@ -259,23 +259,13 @@ class RecorderClassUI(gtk.Box):
 
         if self.start_recording:
             self.start_recording = False
-            ok = self.recorder.preview_and_record()
+            self.recorder.preview_and_record()
             self.mediapackage = self.repo.get(self.current_mediapackage)
             # NOTE only call on_rec to update UI. Recorder is already recording.
             self.on_rec()
         else:
-            ok = self.recorder.preview()
-        if ok :
-            if self.mediapackage.manual:
-                self.change_state(GC_PREVIEW)
-        else:
-            # NEW TODO: Not necesary check ok. Use recorder-error signal.
-            logger.error("Restarting Preview Failed")
-            context.get_state().is_error = True
-            self.change_state(GC_ERROR)
-            if self.scheduled_recording:
-                self.on_failed_scheduled(self.current_mediapackage)    
-            # TODO kill counter in case of error and scheduler
+            self.recorder.preview()
+        self.change_state(GC_PREVIEW)
 
     def go_ahead(self):
         """Continue Recorder init create Record module and start_preview"""
