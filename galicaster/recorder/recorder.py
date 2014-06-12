@@ -33,7 +33,7 @@ class Recorder(object):
         :param players: a ``dict`` a gtk.DrawingArea list to use as player.
         """
         #FIXME check the values are dict with the next keys: name, klass/type, dev* and filesink.
-        if not isinstance(bins, list):
+        if not isinstance(bins, list) or len(bins) == 0:
             raise TypeError(
                 '%s: need a %r; got a %r: %r' % ('bins', list,
                                                  type(bins), bins) 
@@ -115,10 +115,6 @@ class Recorder(object):
         return self.__start(gst.STATE_PLAYING)
 
     def __start(self, new_state=gst.STATE_PAUSED):
-        if not len(self.bins):
-            self.dispatcher.emit("recorder-error", "No tracks on profile")
-            return False
-        
         change = self.pipeline.set_state(new_state)
             
         if change == gst.STATE_CHANGE_FAILURE:

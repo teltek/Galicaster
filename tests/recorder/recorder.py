@@ -58,4 +58,6 @@ class TestFunctions(TestCase):
     def test_constructor(self):
         recorder = Recorder(self.default_bins)
         self.assertRaises(TypeError, Recorder)
+        self.assertRaises(TypeError, Recorder, [])
         self.assertRaises(NameError, Recorder, [{'name': 'name'}])
+
