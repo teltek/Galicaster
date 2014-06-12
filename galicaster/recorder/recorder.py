@@ -70,7 +70,7 @@ class Recorder(object):
         self.bus.connect('sync-message::element', WeakMethod(self, '_on_sync_message'))
 
         for bin in bins:
-            name = bin['name']
+            name = bin.get('name', 'default')
 
             try:
                 mod_name = 'galicaster.recorder.bins.' + bin['device']
