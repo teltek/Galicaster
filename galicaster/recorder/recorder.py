@@ -144,18 +144,32 @@ class Recorder(object):
         return True
 
 
-    def stop_preview(self):
-        #FIXME send EOS
-        self.pipeline.set_state(gst.STATE_NULL)
-        self.pipeline.get_state()
-        return None
-
-
     def record(self):
         if self.pipeline.get_state()[1] == gst.STATE_PLAYING:
             for bin_name, bin in self.bins.iteritems():
                 valve = bin.changeValve(False)
         self.__start_record_time = self.__query_position()
+
+
+    def pause(self):
+        logger.debug("recorder paused")
+        self.pipeline.set_state(gst.STATE_PAUSED)
+        self.pipeline.get_state()
+        return True
+
+
+    def resume(self):
+        logger.debug("resume paused")
+        self.pipeline.set_state(gst.STATE_PLAYING)
+        self.pipeline.get_state()
+        return None
+
+
+    def stop_preview(self):
+        #FIXME send EOS
+        self.pipeline.set_state(gst.STATE_NULL)
+        self.pipeline.get_state()
+        return None
 
 
     def stop_record(self):
@@ -187,18 +201,18 @@ class Recorder(object):
         return True
 
 
-    def pause(self):
-        logger.debug("recorder paused")
-        self.pipeline.set_state(gst.STATE_PAUSED)
+    def stop_elements(self):        
+        iterator = self.pipeline.elements()
+        while True:
+            try:                
+                element = iterator.next()
+                element.set_state(gst.STATE_NULL)
+                state = element.get_state()
+            except StopIteration:
+                break           
+        self.pipeline.set_state(gst.STATE_NULL)
         self.pipeline.get_state()
-        return True
-
-
-    def resume(self):
-        logger.debug("resume paused")
-        self.pipeline.set_state(gst.STATE_PLAYING)
-        self.pipeline.get_state()
-        return None
+        #return True
 
 
     def _debug(self, bus, msg):       
@@ -228,20 +242,6 @@ class Recorder(object):
             gtk.gdk.threads_leave()
             # return True
     
-
-    def stop_elements(self):        
-        iterator = self.pipeline.elements()
-        while True:
-            try:                
-                element = iterator.next()
-                element.set_state(gst.STATE_NULL)
-                state = element.get_state()
-            except StopIteration:
-                break           
-        self.pipeline.set_state(gst.STATE_NULL)
-        self.pipeline.get_state()
-        #return True
-
 
     def _on_state_changed(self, bus, message):
         old, new, pending = message.parse_state_changed()
