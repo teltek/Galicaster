@@ -112,7 +112,6 @@ class RecorderClassUI(gtk.Box):
         self.focus_is_active = False
         self.net_activity = None
 
-        self.error_id = None
         self.error_text = None
         self.error_dialog = None
         self.ok_to_show = False
@@ -150,6 +149,7 @@ class RecorderClassUI(gtk.Box):
         self.dispatcher.connect("update-rec-vumeter", self.audiobar.SetVumeter)
         self.dispatcher.connect("galicaster-status", self.event_change_mode)
         self.dispatcher.connect("galicaster-notify-quit", self.close)
+        self.dispatcher.connect("recorder-error", self.handle_pipeline_error)
 
         nb=builder.get_object("data_panel")
         pages = nb.get_n_pages()        
@@ -238,15 +238,9 @@ class RecorderClassUI(gtk.Box):
 
     def init_recorder(self):
         if self.error_dialog:
-            if self.error_id:
-                self.dispatcher.disconnect(self.error_id)
-                self.error_id = None
             self.error_dialog.dialog_destroy()
             self.error_dialog = None
             self.error_text = None
-        self.error_id = self.dispatcher.connect(
-            "recorder-error",
-            self.handle_pipeline_error)
         self.audiobar.ClearVumeter()
         context.get_state().is_error = False
 
@@ -427,9 +421,6 @@ class RecorderClassUI(gtk.Box):
         """Set the final data on the mediapackage, stop the record and restart the preview"""
         # To avoid error messages on stopping pipelines
         if self.error_dialog:
-            if self.error_id:
-                self.dispatcher.disconnect(self.error_id)
-                self.error_id = None
             self.error_dialog.dialog_destroy()
             self.error_dialog = None
             self.error_text = None
@@ -536,11 +527,6 @@ class RecorderClassUI(gtk.Box):
         context.get_state().is_error = True
         self.recorder.stop_elements()
         context.get_state().is_recording = False
-        if self.error_id:
-            self.dispatcher.disconnect(self.error_id)
-            self.error_id = None
-            #TODO kill previous error if needed
-        
         self.error_text = error_message
         if self.focus_is_active:
             self.launch_error_message(error_message)
@@ -560,12 +546,6 @@ class RecorderClassUI(gtk.Box):
     def on_recover_from_error(self, origin):
         """If an error ocurred, removes preview areas and disconnect error handlers."""   
 
-        if self.error_id:
-            self.dispatcher.disconnect(self.error_id)
-            self.error_id = None
-            self.error_dialog = None
-            self.error_text = None
-     
         if self.status in [GC_ERROR,GC_STOP]:
             main = self.main_area  
             for child in main.get_children():
