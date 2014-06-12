@@ -29,7 +29,7 @@ class Recorder(object):
         Initialize the recorder.
         This class is event-based and needs a mainloop to work properly.
 
-        :param bins: ``list`` of ``dict`` with name, klass, device and file to record
+        :param bins: ``list`` of ``dict`` with bin name, device, path, and optional parameters.
         :param players: (optional) ```gtk.DrawingArea``` ```list``` to use as player.
         """
         if not isinstance(bins, list) or len(bins) == 0:
@@ -67,7 +67,7 @@ class Recorder(object):
         self.bus.connect('sync-message::element', WeakMethod(self, '_on_sync_message'))
 
         for bin in bins:
-            name = bin.get('name', 'default')
+            name = bin['name']
 
             try:
                 mod_name = 'galicaster.recorder.bins.' + bin['device']
@@ -255,10 +255,12 @@ class Recorder(object):
             except TypeError:
                 logger.error('players[{}]: need a {}; got a {}: {}'.format(
                         name, gtk.DrawingArea, type(gtk_player), gtk_player))
+
         
     def _on_message_element(self, bus, message):
         if message.structure.get_name() == 'level':
             self.__set_vumeter(message)
+
 
     def __set_vumeter(self, message):
         struct = message.structure
@@ -277,15 +279,18 @@ class Recorder(object):
         for bin_name, bin in self.bins.iteritems():
             if bin.has_audio:
                 bin.mute_preview(value)
+
                 
     def set_drawing_areas(self, players):
         self.players = players        
+
 
     def get_display_areas_info(self):
         display_areas_info = []
         for bin_name, bin in self.bins.iteritems():
             display_areas_info.extend(bin.get_display_areas_info())
         return display_areas_info
+
 
     def get_bins_info(self):
         bins_info = []

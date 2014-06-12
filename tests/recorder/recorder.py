@@ -31,7 +31,7 @@ class TestFunctions(TestCase):
                               'file': 'CAMERA.avi',
                               'device': 'videotest',
                               'flavor': 'presenter',
-                              'path': '/home/rubenrua/Repository/rectemp'},
+                              'path': '/tmp'},
                              {'name': 'Static',
                               'device': 'videotest',
                               'location': 'default',
@@ -41,7 +41,7 @@ class TestFunctions(TestCase):
                               'pattern': '1',
                               'color1': '4294967295',
                               'color2': '4278190080',
-                              'path': '/home/rubenrua/Repository/rectemp'},
+                              'path': '/tmp'},
                              {'name': 'Noise',
                               'device': 'audiotest',
                               'location': 'default',
@@ -53,16 +53,30 @@ class TestFunctions(TestCase):
                               'player': 'True',
                               'vumeter': 'True',
                               'amplification': '1.0',
-                              'path': ' /home/rubenrua/Repository/rectemp'}]
+                              'path': ' /tmp'}]
                              
     def test_constructor(self):
         recorder = Recorder(self.default_bins)
         self.assertRaises(TypeError, Recorder)
         self.assertRaises(TypeError, Recorder, [])
         self.assertRaises(NameError, Recorder, [{'name': 'name'}])
-        self.assertRaises(NameError, Recorder, [{'type': 'v4l2', 'caps': 'raw'}])
+        self.assertRaises(KeyError, Recorder, [{'type': 'v4l2', 'caps': 'raw'}])
         self.assertRaises(KeyError, Recorder, [{'device': 'v4l2', 'caps': 'raw'}])
 
         #valid
-        Recorder([{'device': 'v4l2', 'path': '/tmp'}])
+        Recorder([{'name': 'test', 'device': 'v4l2', 'path': '/tmp'}])
+
+
+    def test_get_display_areas_info(self):
+        r = Recorder(self.default_bins)
+        self.assertEqual(r.get_display_areas_info(), ['sink-Bars', 'sink-Static'])
+        r = Recorder([{'name': '1', 'device': 'videotest', 'path': '/tmp'}, {'name': '2', 'device': 'videotest', 'path': '/tmp'}])
+        self.assertEqual(r.get_display_areas_info(), ['sink-1', 'sink-2'])
+
+
+    def test_get_bins_info(self):
+        r = Recorder([{'name': 'name', 'device': 'videotest', 'path': '/tmp'}])
+        info = r.get_bins_info()
+        self.assertEqual(info[0]['name'], 'name')
+        self.assertEqual(info[0]['path'], '/tmp')
 
