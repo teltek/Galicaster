@@ -13,7 +13,6 @@
 
 import gtk
 import gst
-import os
 import sys
 
 from galicaster.core import context
@@ -147,7 +146,7 @@ class Recorder(object):
     def record(self):
         if self.pipeline.get_state()[1] == gst.STATE_PLAYING:
             for bin_name, bin in self.bins.iteritems():
-                valve = bin.changeValve(False)
+                bin.changeValve(False)
         self.__start_record_time = self.__query_position()
 
 
@@ -177,9 +176,7 @@ class Recorder(object):
         a = gst.structure_from_string('letpass')
         event = gst.event_new_custom(gst.EVENT_EOS, a)
         for bin_name, bin in self.bins.iteritems():
-            resultado = bin.send_event_to_src(event)
-            #if resultado: 
-            #    print "EOS sended to src of: " + bin_name
+            bin.send_event_to_src(event)
         return True
 
 
@@ -207,7 +204,7 @@ class Recorder(object):
             try:                
                 element = iterator.next()
                 element.set_state(gst.STATE_NULL)
-                state = element.get_state()
+                element.get_state()
             except StopIteration:
                 break           
         self.pipeline.set_state(gst.STATE_NULL)
@@ -249,7 +246,7 @@ class Recorder(object):
             (old, new) == (gst.STATE_READY, gst.STATE_PAUSED) and
             self.__on_start_only_preview):
             for bin_name, bin in self.bins.iteritems():
-                valve = bin.changeValve(True) 
+                bin.changeValve(True) 
             self.pipeline.set_state(gst.STATE_PLAYING)
 
 
