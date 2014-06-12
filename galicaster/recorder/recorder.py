@@ -83,16 +83,20 @@ class Recorder(object):
             self.bins[name] = Klass(bin)
             self.pipeline.add(self.bins[name])
 
+
     def get_status(self):
         return self.pipeline.get_state()
 
+
     def get_time(self):
         return self.pipeline.get_clock().get_time()
+
 
     def get_recorded_time(self):
         if self.pipeline.get_state()[1] == gst.STATE_NULL:
             return self.__duration
         return self.__query_position() - self.__start_record_time
+
 
     def __query_position(self):
         try:
@@ -101,15 +105,18 @@ class Recorder(object):
             duration = 0
         return duration
 
+
     def preview(self):
         logger.debug("recorder preview")
         return self.__start(gst.STATE_PAUSED)
+
 
     def preview_and_record(self):
         logger.debug("recorder preview and record")
         self.__on_start_only_preview = False
         self.__start_record_time = self.__query_position()
         return self.__start(gst.STATE_PLAYING)
+
 
     def __start(self, new_state=gst.STATE_PAUSED):
         change = self.pipeline.set_state(new_state)
@@ -136,17 +143,20 @@ class Recorder(object):
             return False
         return True
 
+
     def stop_preview(self):
         #FIXME send EOS
         self.pipeline.set_state(gst.STATE_NULL)
         self.pipeline.get_state()
         return None
 
+
     def record(self):
         if self.pipeline.get_state()[1] == gst.STATE_PLAYING:
             for bin_name, bin in self.bins.iteritems():
                 valve = bin.changeValve(False)
         self.__start_record_time = self.__query_position()
+
 
     def stop_record(self):
         self.__duration = self.__query_position() - self.__start_record_time
@@ -158,6 +168,7 @@ class Recorder(object):
             #    print "EOS sended to src of: " + bin_name
         return True
 
+
     def stop_record_and_restart_preview(self):
         logger.debug("Stopping Recording and Restarting Preview")
         self.stop_record()
@@ -167,6 +178,7 @@ class Recorder(object):
             self.pipeline.set_state(gst.STATE_PLAYING)
         return True
 
+
     def just_restart_preview(self):
         logger.debug("Stopping Preview and Restarting")
         self.stop_preview()
@@ -174,11 +186,13 @@ class Recorder(object):
         self.dispatcher.emit("restart-preview")
         return True
 
+
     def pause(self):
         logger.debug("recorder paused")
         self.pipeline.set_state(gst.STATE_PAUSED)
         self.pipeline.get_state()
         return True
+
 
     def resume(self):
         logger.debug("resume paused")
@@ -186,9 +200,11 @@ class Recorder(object):
         self.pipeline.get_state()
         return None
 
+
     def _debug(self, bus, msg):       
         if msg.type != gst.MESSAGE_ELEMENT or msg.structure.get_name() != 'level':
             print "DEBUG ", msg
+
 
     def _on_eos(self, bus, msg):
         logger.info('eos')
@@ -198,6 +214,7 @@ class Recorder(object):
             self.restart = False
             logger.debug("EMITTING restart preview")
             self.dispatcher.emit("restart-preview")
+
 
     def _on_error(self, bus, msg):
         error, debug = msg.parse_error()
@@ -211,6 +228,7 @@ class Recorder(object):
             gtk.gdk.threads_leave()
             # return True
     
+
     def stop_elements(self):        
         iterator = self.pipeline.elements()
         while True:
@@ -224,6 +242,7 @@ class Recorder(object):
         self.pipeline.get_state()
         #return True
 
+
     def _on_state_changed(self, bus, message):
         old, new, pending = message.parse_state_changed()
         if (isinstance(message.src, gst.Pipeline) and 
@@ -232,6 +251,7 @@ class Recorder(object):
             for bin_name, bin in self.bins.iteritems():
                 valve = bin.changeValve(True) 
             self.pipeline.set_state(gst.STATE_PLAYING)
+
 
     def _on_sync_message(self, bus, message):
         if message.structure is None:
@@ -255,8 +275,8 @@ class Recorder(object):
             except TypeError:
                 logger.error('players[{}]: need a {}; got a {}: {}'.format(
                         name, gtk.DrawingArea, type(gtk_player), gtk_player))
-
         
+
     def _on_message_element(self, bus, message):
         if message.structure.get_name() == 'level':
             self.__set_vumeter(message)
@@ -279,8 +299,8 @@ class Recorder(object):
         for bin_name, bin in self.bins.iteritems():
             if bin.has_audio:
                 bin.mute_preview(value)
-
                 
+
     def set_drawing_areas(self, players):
         self.players = players        
 
