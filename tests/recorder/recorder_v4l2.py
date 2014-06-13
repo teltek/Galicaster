@@ -29,70 +29,10 @@ gtk.gdk.threads_init()
 
 class TestFunctions(TestCase):
     def setUp(self):
-        self.tmppath = mkdtemp()
-        self.default_bins = [{'name': 'Bars', 
-                              'pattern': '0',
-                              'caps': 'video/x-raw-yuv,framerate=25/1,width=640,height=480',
-                              'color1': '4294967295',
-                              'color2': '4278190080',
-                              'location': 'default',
-                              'file': 'CAMERA.avi',
-                              'device': 'videotest',
-                              'flavor': 'presenter',
-                              'path': self.tmppath},
-                             {'name': 'Static',
-                              'device': 'videotest',
-                              'location': 'default',
-                              'file': 'SCREEN.avi',
-                              'flavor': 'presentation',
-                              'caps': 'video/x-raw-yuv,framerate=25/1,width=640,height=480',
-                              'pattern': '1',
-                              'color1': '4294967295',
-                              'color2': '4278190080',
-                              'path': self.tmppath},
-                             {'name': 'Noise',
-                              'device': 'audiotest',
-                              'location': 'default',
-                              'file': 'sound.mp3',
-                              'flavor': 'presenter',
-                              'pattern': 'pink-noise',
-                              'frequency': '440',
-                              'volume': '0.3',
-                              'player': 'True',
-                              'vumeter': 'True',
-                              'amplification': '1.0',
-                              'path': self.tmppath}]
-                             
+        self.tmppath = mkdtemp()                             
 
     def tearDown(self):
         rmtree(self.tmppath)
-
-
-    def test_constructor(self):
-        self.assertRaises(TypeError, Recorder)
-        self.assertRaises(TypeError, Recorder, [])
-        self.assertRaises(NameError, Recorder, [{'name': 'name'}])
-        self.assertRaises(KeyError, Recorder, [{'type': 'v4l2', 'caps': 'raw'}])
-        self.assertRaises(KeyError, Recorder, [{'device': 'v4l2', 'caps': 'raw'}])
-
-        #valid
-        Recorder([{'name': 'test', 'device': 'v4l2', 'path': self.tmppath}])
-        Recorder(self.default_bins)
-
-
-    def test_get_display_areas_info(self):
-        recorder = Recorder(self.default_bins)
-        self.assertEqual(recorder.get_display_areas_info(), ['sink-Bars', 'sink-Static'])
-        recorder = Recorder([{'name': '1', 'device': 'v4l2', 'caps': 'image/jpeg,framerate=30/1,width=1280,height=720', 'path': self.tmppath}, 
-                             {'name': '2', 'device': 'videotest', 'path': self.tmppath}])
-        self.assertEqual(recorder.get_display_areas_info(), ['sink-1', 'sink-2'])
-
-
-    def test_get_bins_info(self):
-        recorder = Recorder([{'name': 'name', 'device': 'v4l2', 'caps': 'image/jpeg,framerate=30/1,width=1280,height=720', 'path': self.tmppath}])
-        info = recorder.get_bins_info()
-        self.assertEqual(info[0]['name'], 'name')
-        self.assertEqual(info[0]['path'], self.tmppath)
 
 
     def test_preview(self):
@@ -105,7 +45,7 @@ class TestFunctions(TestCase):
 
 
     def test_preview_multi(self):
-        recorder = Recorder([{'name': '1', 'device': 'v4l2', 'caps': 'image/jpeg,framerate=30/1,width=1280,height=720', 'path': self.tmppath, 'file': '1.avi', 'pattern': '1'},
+        recorder = Recorder([{'name': '1', 'device': 'v4l2', 'caps': 'image/jpeg,framerate=30/1,width=1280,height=720', 'path': self.tmppath, 'file': '1.avi'},
                              {'name': '2', 'device': 'videotest', 'path': self.tmppath, 'file': '2.avi'},
                              {'name': '3', 'device': 'pulse', 'path': self.tmppath, 'file': '3.mp3'}])
         recorder.preview()
@@ -127,7 +67,7 @@ class TestFunctions(TestCase):
 
 
     def test_preview_and_record_multi(self):
-        recorder = Recorder([{'name': '1', 'device': 'v4l2', 'caps': 'image/jpeg,framerate=30/1,width=1280,height=720', 'path': self.tmppath, 'file': '1.avi', 'pattern': '1'},
+        recorder = Recorder([{'name': '1', 'device': 'v4l2', 'caps': 'image/jpeg,framerate=30/1,width=1280,height=720', 'path': self.tmppath, 'file': '1.avi'},
                              {'name': '2', 'device': 'videotest', 'path': self.tmppath, 'file': '2.avi'},
                              {'name': '3', 'device': 'pulse', 'path': self.tmppath, 'file': '3.mp3'}])
         recorder.preview_and_record()
@@ -154,7 +94,7 @@ class TestFunctions(TestCase):
 
 
     def test_record_multi(self):
-        recorder = Recorder([{'name': '1', 'device': 'v4l2', 'caps': 'image/jpeg,framerate=30/1,width=1280,height=720', 'path': self.tmppath, 'file': '1.avi', 'pattern': '1'},
+        recorder = Recorder([{'name': '1', 'device': 'v4l2', 'caps': 'image/jpeg,framerate=30/1,width=1280,height=720', 'path': self.tmppath, 'file': '1.avi'},
                              {'name': '2', 'device': 'videotest', 'path': self.tmppath, 'file': '2.avi'},
                              {'name': '3', 'device': 'pulse', 'path': self.tmppath, 'file': '3.mp3'}])
         recorder.preview()
