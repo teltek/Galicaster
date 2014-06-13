@@ -21,10 +21,10 @@
 import gtk
 import gst
 import os
-from gst.pbutils import Discoverer
 
 from galicaster.core import context
 from galicaster.utils.gstreamer import WeakMethod
+from galicaster.utils.mediainfo import get_duration
 
 logger = context.get_logger()
 
@@ -277,10 +277,8 @@ class Player(object):
         self.dispatcher.emit("update-play-vumeter", valor)
 
 
-    def __discover(self,filepath):
-        discoverer = Discoverer(1*gst.SECOND)
-        info = discoverer.discover_uri('file://'+filepath)
-        self.duration = info.get_duration() / 1000000000
+    def __discover(self, filepath):
+        self.duration = get_duration(filepath) 
         logger.info("Duration ON_DISCOVERED: " + str(self.duration))        
         self.create_pipeline()
         return True
