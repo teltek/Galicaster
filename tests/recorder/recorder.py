@@ -16,13 +16,12 @@ Tests for `galicaster.recorder.recorder` modules.
 """
 
 from os import path
-import gtk
-import gst
 import time
+import gtk
 from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
-from gst.pbutils import Discoverer
+from galicaster.utils.mediainfo import get_duration
 from galicaster.recorder.recorder import Recorder
 
 gtk.gdk.threads_init()
@@ -151,10 +150,7 @@ class TestFunctions(TestCase):
         recorder.stop()
         self.assertTrue(recorder.get_recorded_time() > 0)
         self.assertTrue(path.getsize(path.join(self.tmppath, '1.avi')) > 0)
-        d = Discoverer(gst.SECOND)
-        info = d.discover_uri('file://' + path.join(self.tmppath, '1.avi'))
-        duration = info.get_duration() / gst.SECOND
-        self.assertEqual(duration, 2)
+        self.assertEqual(get_duration(path.join(self.tmppath, '1.avi')), 2)
 
 
     def test_record_multi(self):
@@ -172,15 +168,6 @@ class TestFunctions(TestCase):
         self.assertTrue(path.getsize(path.join(self.tmppath, '1.avi')) > 0)
         self.assertTrue(path.getsize(path.join(self.tmppath, '2.avi')) > 0)
         self.assertTrue(path.getsize(path.join(self.tmppath, '3.mp3')) > 0)
-        d = Discoverer(gst.SECOND)
-        info = d.discover_uri('file://' + path.join(self.tmppath, '1.avi'))
-        duration = info.get_duration() / gst.SECOND
-        self.assertEqual(duration, 4)
-        d = Discoverer(gst.SECOND)
-        info = d.discover_uri('file://' + path.join(self.tmppath, '2.avi'))
-        duration = info.get_duration() / gst.SECOND
-        self.assertEqual(duration, 4)
-        d = Discoverer(gst.SECOND)
-        info = d.discover_uri('file://' + path.join(self.tmppath, '3.mp3'))
-        duration = info.get_duration() / gst.SECOND
-        self.assertEqual(duration, 4)
+        self.assertEqual(get_duration(path.join(self.tmppath, '1.avi')), 4)
+        self.assertEqual(get_duration(path.join(self.tmppath, '2.avi')), 4)
+        self.assertEqual(get_duration(path.join(self.tmppath, '3.mp3')), 4)
