@@ -26,7 +26,6 @@ class Recorder(object):
     def __init__(self, bins, players={}):
         """
         Initialize the recorder.
-        This class is event-based and needs a mainloop to work properly.
 
         :param bins: ``list`` of ``dict`` with bin name, device, path, and optional parameters.
         :param players: (optional) ```gtk.DrawingArea``` ```list``` to use as player.
@@ -114,7 +113,7 @@ class Recorder(object):
     def preview_and_record(self):
         logger.debug("recorder preview and record")
         self.__start(gst.STATE_PLAYING)
-        self.__start_record_time = self.__query_position() #TODO
+        self.__start_record_time = self.__query_position()
         self.is_recording = True
 
 
@@ -171,9 +170,9 @@ class Recorder(object):
         return None
 
 
-    def stop(self):
-        if self.is_recording:
-            self.is_recording == False
+    def stop(self, force=False):
+        if self.is_recording and not force:
+            self.is_recording = False
             self.__duration = self.__query_position() - self.__start_record_time
             a = gst.structure_from_string('letpass')
             event = gst.event_new_custom(gst.EVENT_EOS, a)
@@ -193,7 +192,7 @@ class Recorder(object):
         error_info = "{} ({})".format(error, debug)
         logger.error(error_info)
         if not debug.count('canguro') and not self.error:
-            self.stop_elements()
+            self.stop()   #TODO force stop if recording.
             gtk.gdk.threads_enter()
             self.error = error_info
             self.dispatcher.emit("recorder-error", error_info)
