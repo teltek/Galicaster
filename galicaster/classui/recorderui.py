@@ -130,7 +130,6 @@ class RecorderClassUI(gtk.Box):
         big_status.add(self.view)
         self.dispatcher.connect("galicaster-init", self.check_status_area)
         self.dispatcher.connect("galicaster-init", self.check_net)
-        self.dispatcher.connect("restart-preview", self.check_status_area)
         self.dispatcher.connect("net-up", self.check_net, True)        
         self.dispatcher.connect("net-down", self.check_net, False)        
 
@@ -145,7 +144,7 @@ class RecorderClassUI(gtk.Box):
         self.dispatcher.connect("start-record", self.on_scheduled_start)
         self.dispatcher.connect("stop-record", self.on_stop)
         self.dispatcher.connect("start-before", self.on_start_before)
-        self.dispatcher.connect("restart-preview", self.on_restart_preview)
+        ### self.dispatcher.connect("restart-preview", self.on_restart_preview)
         self.dispatcher.connect("recorder-vumeter", self.audiobar.SetVumeter)
         self.dispatcher.connect("galicaster-status", self.event_change_mode)
         self.dispatcher.connect("galicaster-notify-quit", self.close)
@@ -415,8 +414,9 @@ class RecorderClassUI(gtk.Box):
             self.error_dialog.dialog_destroy()
             self.error_dialog = None
             self.error_text = None
-        self.recorder.stop_record_and_restart_preview()
+        self.recorder.stop()
         self.change_state(GC_STOP)
+        self.on_restart_preview()
 
         context.get_state().is_recording = False
         self.timer_thread_id = None
@@ -497,18 +497,6 @@ class RecorderClassUI(gtk.Box):
         message.PopUp(message.INFO, text,
                       context.get_mainwindow(), buttons)
 
-    def restart(self): # FIXME name confusing cause on_restart_preview
-        """Called by Core, if in preview, reload configuration and restart preview."""
-        if self.status == GC_STOP:
-            self.on_start()
-            
-        elif self.status == GC_PREVIEW:
-            self.change_state(GC_STOP)
-            self.recorder.just_restart_preview()
-        else:
-            logger.warning("Restart preview called while Recording")
-
-        return True
 
     def handle_pipeline_error(self, origin, error_message):
         """ Captures a pipeline error.
@@ -516,7 +504,7 @@ class RecorderClassUI(gtk.Box):
         """
         self.change_state(GC_ERROR)
         context.get_state().is_error = True
-        self.recorder.stop_elements()
+        self.recorder.stop()
         context.get_state().is_recording = False
         self.error_text = error_message
         if self.focus_is_active:
@@ -535,8 +523,7 @@ class RecorderClassUI(gtk.Box):
         
 
     def on_recover_from_error(self, origin):
-        """If an error ocurred, removes preview areas and disconnect error handlers."""   
-
+        """If an error ocurred, removes preview areas and disconnect error handlers."""
         if self.status in [GC_ERROR,GC_STOP]:
             main = self.main_area  
             for child in main.get_children():
@@ -546,8 +533,7 @@ class RecorderClassUI(gtk.Box):
             self.on_start()
 
         elif self.status in [GC_PREVIEW, GC_PRE2]:
-            #self.restart()
-            self.recorder.stop_preview()
+            self.recorder.stop()
             self.change_state(GC_STOP)
             main = self.main_area  
             for child in main.get_children():
@@ -573,7 +559,7 @@ class RecorderClassUI(gtk.Box):
         if response == gtk.RESPONSE_OK:   
             dialog.destroy()
             if self.status >= GC_PREVIEW:
-                self.recorder.stop_preview()
+                self.recorder.stop()
 
             self.change_state(GC_EXIT)
             logger.info("Closing Clock and Scheduler")
@@ -1150,7 +1136,7 @@ class RecorderClassUI(gtk.Box):
         self.scheduler_thread_id = None
         self.clock_thread_id = None
         if self.status in [GC_PREVIEW]:
-            self.recorder.stop_preview()        
+            self.recorder.stop()
         return True        
 
 
