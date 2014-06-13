@@ -17,6 +17,7 @@ Tests for `galicaster.recorder.recorder` modules.
 
 from os import path
 import gtk
+import gst
 import time
 from shutil import rmtree
 from tempfile import mkdtemp
@@ -150,8 +151,10 @@ class TestFunctions(TestCase):
         recorder.stop()
         self.assertTrue(recorder.get_recorded_time() > 0)
         self.assertTrue(path.getsize(path.join(self.tmppath, '1.avi')) > 0)
-        d = Discoverer()
-        print d.discover_uri_async(path.join(self.tmppath, '1.avi'))
+        d = Discoverer(gst.SECOND)
+        info = d.discover_uri('file://' + path.join(self.tmppath, '1.avi'))
+        duration = info.get_duration() / gst.SECOND
+        self.assertEqual(duration, 2)
 
 
     def test_record_multi(self):
@@ -161,7 +164,7 @@ class TestFunctions(TestCase):
         recorder.preview()
         time.sleep(4)
         rec_time = recorder.get_recorded_time()
-        #self.assertEqual(recorder.rec_time, 0)
+        #self.assertEqual(rec_time, 0)
         recorder.record()
         time.sleep(4)
         recorder.stop()
@@ -169,3 +172,15 @@ class TestFunctions(TestCase):
         self.assertTrue(path.getsize(path.join(self.tmppath, '1.avi')) > 0)
         self.assertTrue(path.getsize(path.join(self.tmppath, '2.avi')) > 0)
         self.assertTrue(path.getsize(path.join(self.tmppath, '3.mp3')) > 0)
+        d = Discoverer(gst.SECOND)
+        info = d.discover_uri('file://' + path.join(self.tmppath, '1.avi'))
+        duration = info.get_duration() / gst.SECOND
+        self.assertEqual(duration, 4)
+        d = Discoverer(gst.SECOND)
+        info = d.discover_uri('file://' + path.join(self.tmppath, '2.avi'))
+        duration = info.get_duration() / gst.SECOND
+        self.assertEqual(duration, 4)
+        d = Discoverer(gst.SECOND)
+        info = d.discover_uri('file://' + path.join(self.tmppath, '3.mp3'))
+        duration = info.get_duration() / gst.SECOND
+        self.assertEqual(duration, 4)
