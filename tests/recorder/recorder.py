@@ -28,6 +28,14 @@ gtk.gdk.threads_init()
 
 
 class TestFunctions(TestCase):
+    def assertCorrectRecording(self, bins, duration=None):
+        for bin in bins:
+            self.assertTrue(path.exists(path.join(self.tmppath, bin['file'])))
+            self.assertTrue(path.getsize(path.join(self.tmppath, bin['file'])) > 0)
+            duration and self.assertEqual(get_duration(path.join(self.tmppath, bin['file'])), duration)
+
+
+        
     def setUp(self):
         self.tmppath = mkdtemp()
         self.default_bins = [{'name': 'Bars', 
@@ -96,7 +104,8 @@ class TestFunctions(TestCase):
 
 
     def test_preview(self):
-        recorder = Recorder([{'name': 'name', 'device': 'videotest', 'path': self.tmppath, 'file': '1.avi'}])
+        bins = [{'name': 'name', 'device': 'videotest', 'path': self.tmppath, 'file': '1.avi'}]
+        recorder = Recorder(bins)
         recorder.preview()
         time.sleep(2)
         recorder.stop()
@@ -105,9 +114,10 @@ class TestFunctions(TestCase):
 
 
     def test_preview_multi(self):
-        recorder = Recorder([{'name': '1', 'device': 'videotest', 'path': self.tmppath, 'file': '1.avi', 'pattern': '1'},
-                             {'name': '2', 'device': 'videotest', 'path': self.tmppath, 'file': '2.avi'},
-                             {'name': '3', 'device': 'audiotest', 'path': self.tmppath, 'file': '3.mp3'}])
+        bins = [{'name': '1', 'device': 'videotest', 'path': self.tmppath, 'file': '1.avi', 'pattern': '1'},
+                {'name': '2', 'device': 'videotest', 'path': self.tmppath, 'file': '2.avi'},
+                {'name': '3', 'device': 'audiotest', 'path': self.tmppath, 'file': '3.mp3'}]
+        recorder = Recorder(bins)
         recorder.preview()
         time.sleep(4)
         recorder.stop()
@@ -118,29 +128,30 @@ class TestFunctions(TestCase):
 
 
     def test_preview_and_record(self):
-        recorder = Recorder([{'name': 'name', 'device': 'videotest', 'path': self.tmppath, 'file': '1.avi'}])
+        bins = [{'name': 'name', 'device': 'videotest', 'path': self.tmppath, 'file': '1.avi'}]
+        recorder = Recorder(bins)
         recorder.preview_and_record()
         time.sleep(2)
         recorder.stop()
         self.assertTrue(recorder.get_recorded_time() > 0)
-        self.assertTrue(path.getsize(path.join(self.tmppath, '1.avi')) > 0)
+        self.assertCorrectRecording(bins, 2)
 
 
     def test_preview_and_record_multi(self):
-        recorder = Recorder([{'name': '1', 'device': 'videotest', 'path': self.tmppath, 'file': '1.avi', 'pattern': '1'},
+        bins = [{'name': '1', 'device': 'videotest', 'path': self.tmppath, 'file': '1.avi', 'pattern': '1'},
                              {'name': '2', 'device': 'videotest', 'path': self.tmppath, 'file': '2.avi'},
-                             {'name': '3', 'device': 'audiotest', 'path': self.tmppath, 'file': '3.mp3'}])
+                             {'name': '3', 'device': 'audiotest', 'path': self.tmppath, 'file': '3.mp3'}]
+        recorder = Recorder(bins)
         recorder.preview_and_record()
         time.sleep(4)
         recorder.stop()
         self.assertTrue(recorder.get_recorded_time() > 0)
-        self.assertTrue(path.getsize(path.join(self.tmppath, '1.avi')) > 0)
-        self.assertTrue(path.getsize(path.join(self.tmppath, '2.avi')) > 0)
-        self.assertTrue(path.getsize(path.join(self.tmppath, '3.mp3')) > 0)
+        self.assertCorrectRecording(bins, 4)
 
 
     def test_record(self):
-        recorder = Recorder([{'name': 'name', 'device': 'videotest', 'path': self.tmppath, 'file': '1.avi'}])
+        bins = [{'name': 'name', 'device': 'videotest', 'path': self.tmppath, 'file': '1.avi'}]
+        recorder = Recorder(bins)
         recorder.preview()
         time.sleep(2)
         rec_time = recorder.get_recorded_time()
@@ -149,14 +160,14 @@ class TestFunctions(TestCase):
         time.sleep(2)
         recorder.stop()
         self.assertTrue(recorder.get_recorded_time() > 0)
-        self.assertTrue(path.getsize(path.join(self.tmppath, '1.avi')) > 0)
-        self.assertEqual(get_duration(path.join(self.tmppath, '1.avi')), 2)
+        self.assertCorrectRecording(bins, 2)
 
 
     def test_record_multi(self):
-        recorder = Recorder([{'name': '1', 'device': 'videotest', 'path': self.tmppath, 'file': '1.avi', 'pattern': '1'},
-                             {'name': '2', 'device': 'videotest', 'path': self.tmppath, 'file': '2.avi'},
-                             {'name': '3', 'device': 'audiotest', 'path': self.tmppath, 'file': '3.mp3'}])
+        bins = [{'name': '1', 'device': 'videotest', 'path': self.tmppath, 'file': '1.avi', 'pattern': '1'},
+                {'name': '2', 'device': 'videotest', 'path': self.tmppath, 'file': '2.avi'},
+                {'name': '3', 'device': 'audiotest', 'path': self.tmppath, 'file': '3.mp3'}]
+        recorder = Recorder(bins)
         recorder.preview()
         time.sleep(4)
         rec_time = recorder.get_recorded_time()
@@ -165,9 +176,4 @@ class TestFunctions(TestCase):
         time.sleep(4)
         recorder.stop()
         self.assertTrue(recorder.get_recorded_time() > 0)
-        self.assertTrue(path.getsize(path.join(self.tmppath, '1.avi')) > 0)
-        self.assertTrue(path.getsize(path.join(self.tmppath, '2.avi')) > 0)
-        self.assertTrue(path.getsize(path.join(self.tmppath, '3.mp3')) > 0)
-        self.assertEqual(get_duration(path.join(self.tmppath, '1.avi')), 4)
-        self.assertEqual(get_duration(path.join(self.tmppath, '2.avi')), 4)
-        self.assertEqual(get_duration(path.join(self.tmppath, '3.mp3')), 4)
+        self.assertCorrectRecording(bins, 4)
