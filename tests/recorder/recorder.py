@@ -69,7 +69,6 @@ class TestFunctions(TestCase):
 
 
     def test_constructor(self):
-        recorder = Recorder(self.default_bins)
         self.assertRaises(TypeError, Recorder)
         self.assertRaises(TypeError, Recorder, [])
         self.assertRaises(NameError, Recorder, [{'name': 'name'}])
@@ -78,6 +77,7 @@ class TestFunctions(TestCase):
 
         #valid
         Recorder([{'name': 'test', 'device': 'v4l2', 'path': self.tmppath}])
+        Recorder(self.default_bins)
 
 
     def test_get_display_areas_info(self):
