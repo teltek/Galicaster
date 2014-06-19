@@ -18,6 +18,7 @@ Tests for `galicaster.recorder.recorder` modules.
 from os import path
 import time
 import gtk
+import gst
 from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
@@ -177,3 +178,42 @@ class TestFunctions(TestCase):
         recorder.stop()
         self.assertTrue(recorder.get_recorded_time() > 0)
         self.assertCorrectRecording(bins, 4)
+
+
+    def test_preview_error(self):
+        bins = [{'name': 'name', 'device': 'videotest', 'path': self.tmppath, 'file': '1.avi'}]
+        recorder = Recorder(bins)
+        recorder.preview()
+        time.sleep(2)
+        rec_time = recorder.get_recorded_time()
+        #self.assertEqual(rec_time, 0)
+        recorder.record()
+        time.sleep(2)
+        recorder.stop(True)
+        self.assertEqual(recorder.get_status()[1], gst.STATE_NULL)
+
+
+    def test_record_error(self):
+        bins = [{'name': 'name', 'device': 'videotest', 'path': self.tmppath, 'file': '1.avi'}]
+        recorder = Recorder(bins)
+        recorder.preview()
+        time.sleep(2)
+        rec_time = recorder.get_recorded_time()
+        #self.assertEqual(rec_time, 0)
+        recorder.record()
+        time.sleep(2)
+        recorder.stop(True)
+        self.assertEqual(recorder.get_status()[1], gst.STATE_NULL)
+
+
+    def test_pause_error(self):
+        bins = [{'name': 'name', 'device': 'videotest', 'path': self.tmppath, 'file': '1.avi'}]
+        recorder = Recorder(bins)
+        recorder.preview()
+        time.sleep(2)
+        rec_time = recorder.get_recorded_time()
+        #self.assertEqual(rec_time, 0)
+        recorder.pause()
+        time.sleep(2)
+        recorder.stop(True)
+        self.assertEqual(recorder.get_status()[1], gst.STATE_NULL)

@@ -192,7 +192,7 @@ class Recorder(object):
         error_info = "{} ({})".format(error, debug)
         logger.error(error_info)
         if not debug.count('canguro') and not self.error:
-            self.stop()   #TODO force stop if recording.
+            self.stop(True)
             gtk.gdk.threads_enter()
             self.error = error_info
             self.dispatcher.emit("recorder-error", error_info)
