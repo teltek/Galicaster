@@ -104,20 +104,20 @@ class Recorder(object):
 
     def preview(self):
         logger.debug("recorder preview")
-        self.__start(gst.STATE_PAUSED)
+        self.__set_state(gst.STATE_PAUSED)
         for bin in self.bins.values():
             bin.changeValve(True) 
-        self.__start(gst.STATE_PLAYING)
+        self.__set_state(gst.STATE_PLAYING)
 
 
     def preview_and_record(self):
         logger.debug("recorder preview and record")
-        self.__start(gst.STATE_PLAYING)
+        self.__set_state(gst.STATE_PLAYING)
         self.__start_record_time = self.__query_position()
         self.is_recording = True
 
 
-    def __start(self, new_state=gst.STATE_PAUSED):
+    def __set_state(self, new_state=gst.STATE_PAUSED):
         change = self.pipeline.set_state(new_state)
             
         if change == gst.STATE_CHANGE_FAILURE:
@@ -158,16 +158,14 @@ class Recorder(object):
 
     def pause(self):
         logger.debug("recorder paused")
-        self.pipeline.set_state(gst.STATE_PAUSED)
-        self.pipeline.get_state()
+        self.__set_state(gst.STATE_PAUSED)
         return True
 
 
     def resume(self):
         logger.debug("resume paused")
-        self.pipeline.set_state(gst.STATE_PLAYING)
-        self.pipeline.get_state()
-        return None
+        self.__set_state(gst.STATE_PLAYING)
+        return True
 
 
     def stop(self, force=False):
