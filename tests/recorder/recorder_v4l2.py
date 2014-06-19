@@ -29,14 +29,15 @@ gtk.gdk.threads_init()
 
 class TestFunctions(TestCase):
     def setUp(self):
-        self.tmppath = mkdtemp()                             
+        self.tmppath = mkdtemp()
+        self.v4l2_caps = 'image/jpeg,framerate=30/1,width=800,height=600'
 
     def tearDown(self):
         rmtree(self.tmppath)
 
 
     def test_preview(self):
-        recorder = Recorder([{'name': 'name', 'device': 'v4l2', 'caps': 'image/jpeg,framerate=30/1,width=1280,height=720', 'path': self.tmppath, 'file': '1.avi'}])
+        recorder = Recorder([{'name': 'name', 'device': 'v4l2', 'caps': self.v4l2_caps, 'path': self.tmppath, 'file': '1.avi'}])
         recorder.preview()
         time.sleep(2)
         recorder.stop()
@@ -45,7 +46,7 @@ class TestFunctions(TestCase):
 
 
     def test_preview_multi(self):
-        recorder = Recorder([{'name': '1', 'device': 'v4l2', 'caps': 'image/jpeg,framerate=30/1,width=1280,height=720', 'path': self.tmppath, 'file': '1.avi'},
+        recorder = Recorder([{'name': '1', 'device': 'v4l2', 'caps': self.v4l2_caps, 'path': self.tmppath, 'file': '1.avi'},
                              {'name': '2', 'device': 'videotest', 'path': self.tmppath, 'file': '2.avi'},
                              {'name': '3', 'device': 'pulse', 'path': self.tmppath, 'file': '3.mp3'}])
         recorder.preview()
@@ -58,7 +59,7 @@ class TestFunctions(TestCase):
 
 
     def test_preview_and_record(self):
-        recorder = Recorder([{'name': 'name', 'device': 'v4l2', 'caps': 'image/jpeg,framerate=30/1,width=1280,height=720', 'path': self.tmppath, 'file': '1.avi'}])
+        recorder = Recorder([{'name': 'name', 'device': 'v4l2', 'caps': self.v4l2_caps, 'path': self.tmppath, 'file': '1.avi'}])
         recorder.preview_and_record()
         time.sleep(2)
         recorder.stop()
@@ -67,7 +68,7 @@ class TestFunctions(TestCase):
 
 
     def test_preview_and_record_multi(self):
-        recorder = Recorder([{'name': '1', 'device': 'v4l2', 'caps': 'image/jpeg,framerate=30/1,width=1280,height=720', 'path': self.tmppath, 'file': '1.avi'},
+        recorder = Recorder([{'name': '1', 'device': 'v4l2', 'caps': self.v4l2_caps, 'path': self.tmppath, 'file': '1.avi'},
                              {'name': '2', 'device': 'videotest', 'path': self.tmppath, 'file': '2.avi'},
                              {'name': '3', 'device': 'pulse', 'path': self.tmppath, 'file': '3.mp3'}])
         recorder.preview_and_record()
@@ -80,7 +81,7 @@ class TestFunctions(TestCase):
 
 
     def test_record(self):
-        recorder = Recorder([{'name': 'name', 'device': 'v4l2', 'caps': 'image/jpeg,framerate=30/1,width=1280,height=720', 'path': self.tmppath, 'file': '1.avi'}])
+        recorder = Recorder([{'name': 'name', 'device': 'v4l2', 'caps': self.v4l2_caps, 'path': self.tmppath, 'file': '1.avi'}])
         recorder.preview()
         time.sleep(2)
         rec_time = recorder.get_recorded_time()
@@ -94,7 +95,7 @@ class TestFunctions(TestCase):
 
 
     def test_record_multi(self):
-        recorder = Recorder([{'name': '1', 'device': 'v4l2', 'caps': 'image/jpeg,framerate=30/1,width=1280,height=720', 'path': self.tmppath, 'file': '1.avi'},
+        recorder = Recorder([{'name': '1', 'device': 'v4l2', 'caps': self.v4l2_caps, 'path': self.tmppath, 'file': '1.avi'},
                              {'name': '2', 'device': 'videotest', 'path': self.tmppath, 'file': '2.avi'},
                              {'name': '3', 'device': 'pulse', 'path': self.tmppath, 'file': '3.mp3'}])
         recorder.preview()
