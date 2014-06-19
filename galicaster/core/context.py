@@ -215,3 +215,19 @@ def get_state():
 
     return __galicaster_context['state']
     
+
+def get_recorder():
+    """
+    Get Recorder Service
+    """
+    from galicaster.recorder.service import RecorderService
+
+    if 'recorder' not in __galicaster_context:
+        recorder = RecorderService(get_dispatcher(),
+                                   get_repository(),
+                                   get_worker(),
+                                   get_conf(),
+                                   get_logger())
+        __galicaster_context['recorder'] = recorder
+
+    return __galicaster_context['recorder']
