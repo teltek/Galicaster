@@ -71,7 +71,7 @@ class TestFunctions(TestCase):
                               'vumeter': 'True',
                               'amplification': '1.0',
                               'path': self.tmppath}]
-                             
+
 
     def tearDown(self):
         rmtree(self.tmppath)
@@ -178,6 +178,22 @@ class TestFunctions(TestCase):
         recorder.stop()
         self.assertTrue(recorder.get_recorded_time() > 0)
         self.assertCorrectRecording(bins, 4)
+
+
+    def todo_test_stop_on_paused(self):
+        bins = [{'name': 'name', 'device': 'videotest', 'path': self.tmppath, 'file': '1.avi'}]
+        recorder = Recorder(bins)
+        recorder.preview()
+        time.sleep(2)
+        rec_time = recorder.get_recorded_time()
+        #self.assertEqual(rec_time, 0)
+        recorder.record()
+        time.sleep(2)
+        recorder.pause()
+        time.sleep(2)
+        recorder.stop()
+        self.assertTrue(recorder.get_recorded_time() > 0)
+        self.assertCorrectRecording(bins, 2)
 
 
     def test_preview_error(self):
