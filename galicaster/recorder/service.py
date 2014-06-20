@@ -11,6 +11,21 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
+"""
+TODO: 
+ - On stop go to preview.
+ - On error try to fix.
+ - Record on manual recording.
+ - On reload profile reload system.
+ - Preview on init galicaster.
+ - Add connect:
+   * galicaster-init
+   * start-record
+   * stop-record
+   * start-before
+   * reload-profile
+"""
+
 from datetime import datetime
 import gst
 from galicaster.mediapackage import mediapackage
@@ -20,6 +35,7 @@ from galicaster.utils.i18n import _
 class State(object):
     def __init__(self, name): self.name = name
     def __str__(self): return self.name
+    def __repr__(self): return self.name
 
 INIT_STATE = State('init')
 PREVIEW_STATE = State('preview')
@@ -52,6 +68,9 @@ class RecorderService(object):
         self.__recorderklass = recorderklass
         self.__create_drawing_areas_func = None
 
+        self.dispatcher.connect("recorder-error", self.__handle_error)
+
+
 
     def set_create_drawing_areas_func(self, func):
         self.__create_drawing_areas_func = func
@@ -71,15 +90,15 @@ class RecorderService(object):
             #    info.reverse()
             areas = self.__create_drawing_areas_func(info)
             self.recorder.set_drawing_areas(areas)
-        self.recorder.preview()
         self.state = PREVIEW_STATE
+        self.recorder.preview()
 
 
     def record(self):
         #TODO if is recording
-        self.recorder and self.recorder.record()
         self.current_mediapackage = self.__new_mediapackage(to_record=True)
         self.state = RECORDING_STATE
+        self.recorder and self.recorder.record()
 
 
     def stop(self, force=False):
@@ -139,3 +158,7 @@ class RecorderService(object):
             now = datetime.utcnow().replace(microsecond=0)
             mp.setDate(now)
         return mp
+
+
+    def __handle_error(self, origin, error_msg):
+        self.state = ERROR_STATE

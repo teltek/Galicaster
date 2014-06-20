@@ -24,6 +24,7 @@ import tempfile
 import time
 from tempfile import mkdtemp
 from shutil import rmtree
+from datetime import datetime
 import gst
 
 from galicaster.core.conf import Conf
@@ -35,15 +36,16 @@ from galicaster.recorder.service import INIT_STATE
 from galicaster.recorder.service import PREVIEW_STATE
 from galicaster.recorder.service import RECORDING_STATE
 from galicaster.recorder.service import PAUSED_STATE
-from galicaster.recorder.service import PAUSED_STATE
+from galicaster.recorder.service import ERROR_STATE
 from galicaster.recorder.recorder import Recorder
+from galicaster.core import context
 
-
+from tests import get_resource
 
 gtk.gdk.threads_init()
 
-
 class TestFunctions(TestCase):
+
     class WorkerMock(object):
         def ingest(self, mp):
             pass
@@ -55,6 +57,8 @@ class TestFunctions(TestCase):
         def __init__(self, bins, players={}):
             self.bins = bins
             self.player = players
+            self.dispatcher = context.get_dispatcher()
+            self.time = None
         def get_status(self):
             pass
         def get_time(self):
@@ -66,15 +70,18 @@ class TestFunctions(TestCase):
         def preview_and_record(self):
             pass
         def record(self):
-            pass
+            self.time = datetime.now()
         def pause(self):
             pass
         def resume(self):
             pass
         def stop(self, force=False):
-            pass
+            self.time = datetime.now()
+            for bin in self.bins:
+                filename = os.path.join(bin['path'], bin['file'])
+                os.symlink(get_resource('sbs/CAMERA.mp4'), filename)
         def is_pausable(self):
-            pass
+            return True
         def mute_preview(self, value):
             pass
         def set_drawing_areas(self, players):
@@ -82,13 +89,24 @@ class TestFunctions(TestCase):
         def get_display_areas_info(self):
             return ['sink-1', 'sink-2']
         def get_bins_info(self):
+            for bin in self.bins:
+                bin['mimetype'] = 'video/avi'
             return self.bins 
 
 
+    class RecorderErrorMock(RecorderMock):
+        def preview(self):
+            self.dispatcher.emit("recorder-error", "error test")
+            
+
+
     def setUp(self):
-        #self.recorderklass = self.RecorderMock
-        self.recorderklass = Recorder
+        self.recorderklass = self.RecorderMock
+        #self.recorderklass = Recorder
         self.tmppath = mkdtemp()
+        # To reset dispatcher in each tests.
+        context.set('dispatcher', None)
+        context.delete('dispatcher')
 
 
     def tearDown(self):
@@ -96,7 +114,7 @@ class TestFunctions(TestCase):
 
 
     def test_init(self):
-        dispatcher = Dispatcher()
+        dispatcher = context.get_dispatcher()
         repo = Repository(self.tmppath)
         worker = self.WorkerMock()
         conf = Conf()
@@ -108,7 +126,7 @@ class TestFunctions(TestCase):
         
 
     def test_preview(self):
-        dispatcher = Dispatcher()
+        dispatcher = context.get_dispatcher()
         repo = Repository(self.tmppath)
         worker = self.WorkerMock()
         conf = Conf()
@@ -118,14 +136,14 @@ class TestFunctions(TestCase):
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
-        time.sleep(1.1)
+        #time.sleep(1.1)
         recorder_service.stop()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
         self.assertEqual(len(repo), 0)
 
 
     def test_recording(self):
-        dispatcher = Dispatcher()
+        dispatcher = context.get_dispatcher()
         repo = Repository(self.tmppath)
         worker = self.WorkerMock()
         conf = Conf()
@@ -135,7 +153,7 @@ class TestFunctions(TestCase):
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
-        time.sleep(1.1)
+        #time.sleep(1.1)
         recorder_service.record()
         self.assertEqual(recorder_service.state, RECORDING_STATE)
         recorder_service.stop()
@@ -144,7 +162,7 @@ class TestFunctions(TestCase):
 
 
     def test_stop_recoding_on_pause(self):
-        dispatcher = Dispatcher()
+        dispatcher = context.get_dispatcher()
         repo = Repository(self.tmppath)
         worker = self.WorkerMock()
         conf = Conf()
@@ -154,13 +172,27 @@ class TestFunctions(TestCase):
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
-        time.sleep(1.1)
+        #time.sleep(1.1)
         recorder_service.record()
         self.assertEqual(recorder_service.state, RECORDING_STATE)
-        time.sleep(1.1)
+        #time.sleep(1.1)
         recorder_service.pause()
         self.assertEqual(recorder_service.state, PAUSED_STATE)
-        time.sleep(1.1)
+        #time.sleep(1.1)
         recorder_service.stop()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
         self.assertEqual(len(repo), 1)
+
+
+    def test_init_error(self):
+        dispatcher = context.get_dispatcher()
+        repo = Repository(self.tmppath)
+        worker = self.WorkerMock()
+        conf = Conf()
+        logger = Logger(None)
+        
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.RecorderErrorMock)
+        self.assertEqual(recorder_service.state, INIT_STATE)
+        recorder_service.preview()
+        time.sleep(1.1)
+        self.assertEqual(recorder_service.state, ERROR_STATE)
