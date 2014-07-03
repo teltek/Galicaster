@@ -101,8 +101,8 @@ class TestFunctions(TestCase):
 
 
     def setUp(self):
-        self.recorderklass = self.RecorderMock
-        #self.recorderklass = Recorder
+        #self.recorderklass = self.RecorderMock
+        self.recorderklass = Recorder
         self.tmppath = mkdtemp()
         # To reset dispatcher in each tests.
         context.set('dispatcher', None)
@@ -136,7 +136,11 @@ class TestFunctions(TestCase):
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
-        #time.sleep(1.1)
+        self.assertEqual(recorder_service.preview(), False)
+        self.assertEqual(recorder_service.stop(), False)
+        self.assertEqual(recorder_service.pause(), False)
+        self.assertEqual(recorder_service.resume(), False)
+        time.sleep(1.1)
         recorder_service.stop()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
         self.assertEqual(len(repo), 0)
@@ -153,9 +157,10 @@ class TestFunctions(TestCase):
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
-        #time.sleep(1.1)
+        time.sleep(1.1)
         recorder_service.record()
         self.assertEqual(recorder_service.state, RECORDING_STATE)
+        time.sleep(1.1)
         recorder_service.stop()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
         self.assertEqual(len(repo), 1)
@@ -172,19 +177,19 @@ class TestFunctions(TestCase):
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
-        #time.sleep(1.1)
+        time.sleep(1.1)
         recorder_service.record()
         self.assertEqual(recorder_service.state, RECORDING_STATE)
-        #time.sleep(1.1)
+        time.sleep(1.1)
         recorder_service.pause()
         self.assertEqual(recorder_service.state, PAUSED_STATE)
-        #time.sleep(1.1)
+        time.sleep(1.1)
         recorder_service.stop()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
         self.assertEqual(len(repo), 1)
 
 
-    def test_init_error(self):
+    def test_error(self):
         dispatcher = context.get_dispatcher()
         repo = Repository(self.tmppath)
         worker = self.WorkerMock()
@@ -196,3 +201,18 @@ class TestFunctions(TestCase):
         recorder_service.preview()
         time.sleep(1.1)
         self.assertEqual(recorder_service.state, ERROR_STATE)
+
+
+    def test_external_error(self):
+        dispatcher = context.get_dispatcher()
+        repo = Repository(self.tmppath)
+        worker = self.WorkerMock()
+        conf = Conf()
+        logger = Logger(None)
+        
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        self.assertEqual(recorder_service.state, INIT_STATE)
+        recorder_service.preview()
+        dispatcher.emit("recorder-error", None)
+        self.assertEqual(recorder_service.state, ERROR_STATE)
+        

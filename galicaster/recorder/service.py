@@ -3,7 +3,7 @@
 #
 #       galicaster/recorder/service
 #
-# Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
+# Copyright (c) 2014, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-o
 # NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
@@ -13,7 +13,6 @@
 
 """
 TODO: 
- - On stop go to preview.
  - On error try to fix.
  - Record on manual recording.
  - On reload profile reload system.
@@ -31,6 +30,8 @@ import gst
 from galicaster.mediapackage import mediapackage
 from galicaster.recorder import Recorder
 from galicaster.utils.i18n import _
+from galicaster.utils.gstreamer import WeakMethod
+
 
 class State(object):
     def __init__(self, name): self.name = name
@@ -42,6 +43,7 @@ PREVIEW_STATE = State('preview')
 RECORDING_STATE = State('recording')
 PAUSED_STATE = State('paused')
 ERROR_STATE = State('error')
+
 
 class RecorderService(object):
     def __init__(self, dispatcher, repo, worker, conf, logger, recorderklass=Recorder):
@@ -68,8 +70,9 @@ class RecorderService(object):
         self.__recorderklass = recorderklass
         self.__create_drawing_areas_func = None
 
-        self.dispatcher.connect("recorder-error", self.__handle_error)
-
+        self.dispatcher.connect("recorder-init", WeakMethod(self, '_handle_init'))
+        self.dispatcher.connect("recorder-error", WeakMethod(self, '_handle_error'))
+ 
 
 
     def set_create_drawing_areas_func(self, func):
@@ -77,6 +80,9 @@ class RecorderService(object):
 
 
     def preview(self):
+        if self.state not in (INIT_STATE, ERROR_STATE):
+            return False
+
         current_profile = self.conf.get_current_profile()
         bins = current_profile.tracks
         for objectbin in bins:
@@ -95,7 +101,7 @@ class RecorderService(object):
 
 
     def record(self):
-        #TODO if is recording
+        #TODO if is just recording
         self.current_mediapackage = self.__new_mediapackage(to_record=True)
         self.state = RECORDING_STATE
         self.recorder and self.recorder.record()
@@ -104,24 +110,25 @@ class RecorderService(object):
     def stop(self, force=False):
         if self.state == PAUSED_STATE:
             self.resume()
+        if self.state != RECORDING_STATE:
+            return False
 
-        self.recorder and self.recorder.stop(force)
+        self.recorder.stop(force)
 
-        if self.state == RECORDING_STATE:
-            close_duration = self.recorder.get_recorded_time() / gst.MSECOND
-            self.current_mediapackage.status = mediapackage.RECORDED
-            self.repo.add_after_rec(self.current_mediapackage, self.recorder.get_bins_info(),
-                                    close_duration, self.current_mediapackage.manual)
+        close_duration = self.recorder.get_recorded_time() / gst.MSECOND
+        self.current_mediapackage.status = mediapackage.RECORDED
+        self.repo.add_after_rec(self.current_mediapackage, self.recorder.get_bins_info(),
+                                close_duration, self.current_mediapackage.manual)
 
-            code = 'manual' if self.current_mediapackage.manual else 'scheduled'
-            if self.conf.get_lower('ingest', code) == 'immediately':
-                self.worker.ingest(self.current_mediapackage)
-            elif self.conf.get_lower('ingest', code) == 'nightly':
-                self.worker.ingest_nightly(self.current_mediapackage)
+        code = 'manual' if self.current_mediapackage.manual else 'scheduled'
+        if self.conf.get_lower('ingest', code) == 'immediately':
+            self.worker.ingest(self.current_mediapackage)
+        elif self.conf.get_lower('ingest', code) == 'nightly':
+            self.worker.ingest_nightly(self.current_mediapackage)
 
-            self.state = PREVIEW_STATE
-            return True
-        return False
+        self.state = INIT_STATE
+        self.preview()
+        return True
 
 
     def pause(self):
@@ -148,6 +155,14 @@ class RecorderService(object):
         return self.recorder.mute_preview(value) if self.recorder else 0
 
 
+    def _handle_error(self, origin, error_msg):
+        self.recorder.stop(True)
+        self.state = ERROR_STATE
+
+    def _handle_init(self, origin):
+        self.preview()
+
+
     def __new_mediapackage(self, to_record=False):
         now = datetime.now().replace(microsecond=0)
         title = _("Recording started at {0}").format(now.isoformat())
@@ -160,5 +175,5 @@ class RecorderService(object):
         return mp
 
 
-    def __handle_error(self, origin, error_msg):
-        self.state = ERROR_STATE
+    def __del__(self):
+        self.recorder and self.recorder.stop(True)
