@@ -15,8 +15,6 @@
 TODO: 
  - On error try to fix.
  - Record on manual recording.
- - On reload profile reload system.
- - Preview on init galicaster.
  - Add connect:
    * galicaster-init
    * start-record
@@ -70,7 +68,8 @@ class RecorderService(object):
         self.__recorderklass = recorderklass
         self.__create_drawing_areas_func = None
 
-        self.dispatcher.connect("recorder-init", WeakMethod(self, '_handle_init'))
+        self.dispatcher.connect("galicaster-init", WeakMethod(self, '_handle_init'))
+        self.dispatcher.connect("reload-profile", WeakMethod(self, '_handle_reload_profile'))
         self.dispatcher.connect("recorder-error", WeakMethod(self, '_handle_error'))
  
 
@@ -159,8 +158,17 @@ class RecorderService(object):
         self.recorder.stop(True)
         self.state = ERROR_STATE
 
+
     def _handle_init(self, origin):
         self.preview()
+
+
+    def _handle_reload_profile(self, origin):
+        if self.state == PREVIEW_STATE:
+            self.recorder.stop(True)
+            self.state = INIT_STATE
+            self.preview()
+            
 
 
     def __new_mediapackage(self, to_record=False):
