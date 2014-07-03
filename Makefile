@@ -13,7 +13,13 @@
 # San Francisco, California, 94105, USA.
 all: test
 test:
-	nosetests --all-modules
+	nosetests --all-modules -a '!nodefault'
+test-matterhorn:
+	nosetests --all-modules -a 'matterhorn'
+test-recorder:
+	nosetests --all-modules -a 'recorder'
+test-all:
+	nosetests --all-modules --no-skip
 check:
 	pychecker `find galicaster -name '*.py'`
 	pychecker `find test -name '*.py'`

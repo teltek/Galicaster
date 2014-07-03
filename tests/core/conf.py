@@ -38,7 +38,7 @@ class TestFunctions(TestCase):
     def tearDown(self):
         del self.conf
 
-    
+
     def test_init_no_file(self):
         primary_conf = path.join('/etc/galicaster','conf.ini')
         secondary_conf = path.abspath(path.join(path.dirname(__file__), '..', '..', 'conf.ini'))

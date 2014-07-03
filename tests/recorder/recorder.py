@@ -22,12 +22,14 @@ import gst
 from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
+from nose.plugins.attrib import attr
+
 from galicaster.utils.mediainfo import get_duration
 from galicaster.recorder.recorder import Recorder
 
 gtk.gdk.threads_init()
 
-
+@attr('nodefault', 'recorder')
 class TestFunctions(TestCase):
     def assertCorrectRecording(self, bins, duration=None):
         for bin in bins:

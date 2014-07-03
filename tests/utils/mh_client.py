@@ -17,17 +17,18 @@ Unit tests for `galicaster.utils` module.
 
 Disble by default. You can enable it to test MatterHorn HTTP Client.
 """
+import os
 import socket
 import pycurl
 import json
 from xml.dom.minidom import parseString
 from unittest import TestCase
-from unittest import skip
+from nose.plugins.attrib import attr
 
 from galicaster.utils.mhhttpclient import MHHTTPClient
 
 
-@skip("Not unit test")
+@attr('nodefault', 'matterhorn')
 class TestFunctions(TestCase):
 
     def test_userandaddressinit(self):
