@@ -182,6 +182,7 @@ class TestFunctions(TestCase):
         self.assertCorrectRecording(bins, 4)
 
 
+    #TODO
     def todo_test_stop_on_paused(self):
         bins = [{'name': 'name', 'device': 'videotest', 'path': self.tmppath, 'file': '1.avi'}]
         recorder = Recorder(bins)

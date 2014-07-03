@@ -216,3 +216,27 @@ class TestFunctions(TestCase):
         dispatcher.emit("recorder-error", None)
         self.assertEqual(recorder_service.state, ERROR_STATE)
         
+
+    def test_handle_reload_profile(self):
+        dispatcher = context.get_dispatcher()
+        repo = Repository(self.tmppath)
+        worker = self.WorkerMock()
+        conf = Conf()
+        logger = Logger(None)
+        
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        self.assertEqual(recorder_service.state, INIT_STATE)
+        recorder_service.preview()
+        old_id = id(recorder_service.recorder)
+        dispatcher.emit("reload-profile")
+        new_id = id(recorder_service.recorder)
+        self.assertEqual(recorder_service.state, PREVIEW_STATE)
+        self.assertNotEqual(old_id, new_id)
+        time.sleep(1.1)
+        recorder_service.record()
+        old_id = id(recorder_service.recorder)
+        self.assertEqual(recorder_service.state, RECORDING_STATE)
+        dispatcher.emit("reload-profile")
+        new_id = id(recorder_service.recorder)
+        self.assertEqual(old_id, new_id)
+        self.assertEqual(recorder_service.state, RECORDING_STATE)
