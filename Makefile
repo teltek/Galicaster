@@ -33,6 +33,7 @@ test-matterhorn:
 	nosetests --all-modules -a 'matterhorn'
 test-recorder:
 	nosetests --all-modules -a 'recorder'
+	#python -m unittest tests.recorder.recorder
 test-all:
 	nosetests --all-modules --no-skip
 check:
