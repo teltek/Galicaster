@@ -21,12 +21,14 @@ import gtk
 from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
+from unittest import skip
+
 from galicaster.utils.mediainfo import get_duration
 from galicaster.recorder.recorder import Recorder
 
 gtk.gdk.threads_init()
 
-
+@skip("Only with v4l2 device")
 class TestFunctions(TestCase):
     def setUp(self):
         self.tmppath = mkdtemp()
