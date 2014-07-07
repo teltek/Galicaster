@@ -12,7 +12,6 @@
 # San Francisco, California, 94105, USA.
 
 
-
 """
 Unit tests for `galicaster.recorder.service` module.
 """
@@ -77,9 +76,10 @@ class TestFunctions(TestCase):
             pass
         def stop(self, force=False):
             self.time = datetime.now()
-            for bin in self.bins:
-                filename = os.path.join(bin['path'], bin['file'])
-                os.symlink(get_resource('sbs/CAMERA.mp4'), filename)
+            if not force and os.path.isdir(self.bins[0]['path']):
+                for bin in self.bins:
+                    filename = os.path.join(bin['path'], bin['file'])
+                    os.symlink(get_resource('sbs/CAMERA.mp4'), filename)
         def is_pausable(self):
             return True
         def mute_preview(self, value):
@@ -99,10 +99,9 @@ class TestFunctions(TestCase):
             self.dispatcher.emit("recorder-error", "error test")
             
 
-
     def setUp(self):
-        #self.recorderklass = self.RecorderMock
-        self.recorderklass = Recorder
+        self.recorderklass = self.RecorderMock
+        #self.recorderklass = Recorder
         self.tmppath = mkdtemp()
         # To reset dispatcher in each tests.
         context.set('dispatcher', None)
@@ -140,7 +139,7 @@ class TestFunctions(TestCase):
         self.assertEqual(recorder_service.stop(), False)
         self.assertEqual(recorder_service.pause(), False)
         self.assertEqual(recorder_service.resume(), False)
-        time.sleep(1.1)
+        self.sleep()
         recorder_service.stop()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
         self.assertEqual(len(repo), 0)
@@ -157,10 +156,10 @@ class TestFunctions(TestCase):
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
-        time.sleep(1.1)
+        self.sleep()
         recorder_service.record()
         self.assertEqual(recorder_service.state, RECORDING_STATE)
-        time.sleep(1.1)
+        self.sleep()
         recorder_service.stop()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
         self.assertEqual(len(repo), 1)
@@ -177,13 +176,13 @@ class TestFunctions(TestCase):
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
-        time.sleep(1.1)
+        self.sleep()
         recorder_service.record()
         self.assertEqual(recorder_service.state, RECORDING_STATE)
-        time.sleep(1.1)
+        self.sleep()
         recorder_service.pause()
         self.assertEqual(recorder_service.state, PAUSED_STATE)
-        time.sleep(1.1)
+        self.sleep()
         recorder_service.stop()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
         self.assertEqual(len(repo), 1)
@@ -195,11 +194,11 @@ class TestFunctions(TestCase):
         worker = self.WorkerMock()
         conf = Conf()
         logger = Logger(None)
-        
+
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.RecorderErrorMock)
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
-        time.sleep(1.1)
+        self.sleep()
         self.assertEqual(recorder_service.state, ERROR_STATE)
 
 
@@ -232,7 +231,7 @@ class TestFunctions(TestCase):
         new_id = id(recorder_service.recorder)
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
         self.assertNotEqual(old_id, new_id)
-        time.sleep(1.1)
+        self.sleep()
         recorder_service.record()
         old_id = id(recorder_service.recorder)
         self.assertEqual(recorder_service.state, RECORDING_STATE)
@@ -240,3 +239,8 @@ class TestFunctions(TestCase):
         new_id = id(recorder_service.recorder)
         self.assertEqual(old_id, new_id)
         self.assertEqual(recorder_service.state, RECORDING_STATE)
+
+
+    def sleep(self):
+        if self.recorderklass == Recorder:
+            time.sleep(1.1)
