@@ -14,7 +14,6 @@
 """
 TODO: 
  - On error try to fix.
- - Allows
  - Add connect:
    * start-record
    * stop-record
@@ -111,8 +110,10 @@ class RecorderService(object):
             return False
         if self.state == PAUSED_STATE:
             self.resume()
+
         if self.state == RECORDING_STATE:
-            self.stop()
+            self.recorder.stop()
+            self.__close_mp()
             self.__prepare()
             self.recorder.preview_and_record()
         else:
@@ -129,7 +130,14 @@ class RecorderService(object):
             return False
 
         self.recorder.stop(force)
+        self.__close_mp()
 
+        self.state = INIT_STATE
+        self.preview()
+        return True
+
+
+    def __close_mp(self):
         close_duration = self.recorder.get_recorded_time() / gst.MSECOND
         self.current_mediapackage.status = mediapackage.RECORDED
         self.repo.add_after_rec(self.current_mediapackage, self.recorder.get_bins_info(),
@@ -140,10 +148,6 @@ class RecorderService(object):
             self.worker.ingest(self.current_mediapackage)
         elif self.conf.get_lower('ingest', code) == 'nightly':
             self.worker.ingest_nightly(self.current_mediapackage)
-
-        self.state = INIT_STATE
-        self.preview()
-        return True
 
 
     def pause(self):
