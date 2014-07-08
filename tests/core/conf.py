@@ -222,11 +222,15 @@ class TestFunctions(TestCase):
         conf = Conf()
         conf.set('config', 'ingest', None)
         conf.set('basic', 'admin', 'True')
+        conf.set('ingest', 'hostname', None)
         self.assertEqual('GCMobile-' + socket.gethostname(), conf.get_hostname())
         self.assertEqual(1, len(conf.get_tracks_in_mh_dict()))
         self.assertEqual({'capture.device.names': 'defaults'}, conf.get_tracks_in_mh_dict())
         conf.set('basic', 'admin', 'False')
         self.assertEqual('GC-' + socket.gethostname(), conf.get_hostname())
+        name = "123456_654321"
+        conf.set('ingest', 'hostname', name)
+        self.assertEqual(name, conf.get_hostname())
 
 
     def test_active_tag_default_profile(self):
