@@ -14,13 +14,11 @@
 """
 TODO: 
  - On error try to fix.
- - Record on manual recording.
+ - Allows
  - Add connect:
-   * galicaster-init
    * start-record
    * stop-record
    * start-before
-   * reload-profile
 """
 
 from datetime import datetime
@@ -81,7 +79,14 @@ class RecorderService(object):
     def preview(self):
         if self.state not in (INIT_STATE, ERROR_STATE):
             return False
+        
+        self.__prepare()
+        self.recorder.preview()
+        self.state = PREVIEW_STATE
+        return True
 
+
+    def __prepare(self):
         current_profile = self.conf.get_current_profile()
         bins = current_profile.tracks
         for objectbin in bins:
@@ -95,15 +100,22 @@ class RecorderService(object):
             #    info.reverse()
             areas = self.__create_drawing_areas_func(info)
             self.recorder.set_drawing_areas(areas)
-        self.state = PREVIEW_STATE
-        self.recorder.preview()
 
 
     def record(self):
-        #TODO if is just recording
+        if self.state in (INIT_STATE, ERROR_STATE):
+            return False
+        if self.state == PAUSED_STATE:
+            self.resume()
+        if self.state == RECORDING_STATE:
+            self.stop()
+            self.__prepare()
+            self.recorder.preview_and_record()
+        else:
+            self.recorder and self.recorder.record()            
         self.current_mediapackage = self.__new_mediapackage(to_record=True)
         self.state = RECORDING_STATE
-        self.recorder and self.recorder.record()
+        return True
 
 
     def stop(self, force=False):
