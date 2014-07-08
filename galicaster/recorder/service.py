@@ -13,11 +13,12 @@
 
 """
 TODO:
- - Add more log
+ - Status vs state
  - Add connect:
    * start-record
    * stop-record
    * start-before
+ - Add doc
 """
 
 from datetime import datetime
@@ -82,6 +83,7 @@ class RecorderService(object):
         if self.state not in (INIT_STATE, ERROR_STATE):
             return False
         
+        self.logger.info("Starting recording service in the preview state")
         self.__prepare()
         self.recorder.preview()
         self.state = PREVIEW_STATE
@@ -90,6 +92,7 @@ class RecorderService(object):
 
     def __prepare(self):
         current_profile = self.conf.get_current_profile()
+        self.logger.debug("Using {} profile".format(current_profile.name))
         bins = current_profile.tracks
         for objectbin in bins:
             objectbin['path'] = self.repo.get_rectemp_path()
@@ -105,10 +108,14 @@ class RecorderService(object):
 
 
     def record(self):
+        self.logger.info("Recording")
         if self.state in (INIT_STATE, ERROR_STATE):
+            self.logger.warning("Cancel recording: state error (in {})".format(self.state))
             return False
         if self.state != PREVIEW_STATE and not self.overlap:
+            self.logger.info("Cancel recording: it is already recording and not allow overlap")
             return False
+
         if self.state == PAUSED_STATE:
             self.resume()
 
@@ -125,9 +132,11 @@ class RecorderService(object):
 
 
     def stop(self, force=False):
+        self.logger.info("Stopping the capture")
         if self.state == PAUSED_STATE:
             self.resume()
         if self.state != RECORDING_STATE:
+            self.logger.warning("Cancel stop: state error (is {})".format(self.state))
             return False
 
         self.recorder.stop(force)
@@ -141,6 +150,8 @@ class RecorderService(object):
     def __close_mp(self):
         close_duration = self.recorder.get_recorded_time() / gst.MSECOND
         self.current_mediapackage.status = mediapackage.RECORDED
+        self.logger.info("Adding new mediapackage ({}) to the repository".format(
+                self.current_mediapackage.getIdentifier()))
         self.repo.add_after_rec(self.current_mediapackage, self.recorder.get_bins_info(),
                                 close_duration, self.current_mediapackage.manual)
 
@@ -152,18 +163,22 @@ class RecorderService(object):
 
 
     def pause(self):
+        self.logger.info("Pausing recorder")
         if self.state == RECORDING_STATE:
             self.recorder.pause()
             self.state = PAUSED_STATE
             return True
+        self.logger.warning("Cancel pause: state error (in {})".format(self.state))
         return False
 
 
     def resume(self):
+        self.logger.info("Resuming recorder")
         if self.state == PAUSED_STATE:
             self.recorder.resume()
             self.state = RECORDING_STATE
             return True
+        self.logger.warning("Cancel resume: state error (in {})".format(self.state))
         return False
 
 
@@ -176,29 +191,34 @@ class RecorderService(object):
 
 
     def _handle_error(self, origin, error_msg):
+        self.logger.error("Handle error ({})". format(error_msg))
         self.recorder.stop(True)
         self.state = ERROR_STATE
         if not self.__handle_recover_id:
+            self.logger.debug("Connecting recover recorder callback")
             self.__handle_recover_id = self.dispatcher.connect("galicaster-notify-timer-long", 
                                                              WeakMethod(self, '_handle_recover'))
 
 
     def _handle_recover(self, origin):
+        self.logger.info("Handle recover from error")
         if self.__handle_recover_id and self.preview(): 
+            self.logger.debug("Disconnecting recover recorder callback")
             self.__handle_recover_id = self.dispatcher.disconnect(self.__handle_recover_id)        
 
 
     def _handle_init(self, origin):
+        self.logger.debug("Init recorder service")
         self.preview()
 
 
     def _handle_reload_profile(self, origin):
         if self.state == PREVIEW_STATE:
+            self.logger.debug("Resetting recorder after reloading the profile")
             self.recorder.stop(True)
             self.state = INIT_STATE
             self.preview()
             
-
 
     def __new_mediapackage(self, to_record=False):
         now = datetime.now().replace(microsecond=0)
@@ -206,7 +226,7 @@ class RecorderService(object):
         mp = mediapackage.Mediapackage(title=title)
         mp.properties['origin'] = self.conf.hostname
         if to_record:
-            mp.status=mediapackage.RECORDING
+            mp.status = mediapackage.RECORDING
             now = datetime.utcnow().replace(microsecond=0)
             mp.setDate(now)
         return mp
