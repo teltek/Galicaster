@@ -31,11 +31,11 @@ from galicaster.core.dispatcher import Dispatcher
 from galicaster.core.logger import Logger
 from galicaster.mediapackage.repository import Repository
 from galicaster.recorder.service import RecorderService
-from galicaster.recorder.service import INIT_STATE
-from galicaster.recorder.service import PREVIEW_STATE
-from galicaster.recorder.service import RECORDING_STATE
-from galicaster.recorder.service import PAUSED_STATE
-from galicaster.recorder.service import ERROR_STATE
+from galicaster.recorder.service import INIT_STATUS
+from galicaster.recorder.service import PREVIEW_STATUS
+from galicaster.recorder.service import RECORDING_STATUS
+from galicaster.recorder.service import PAUSED_STATUS
+from galicaster.recorder.service import ERROR_STATUS
 from galicaster.recorder.recorder import Recorder
 from galicaster.core import context
 
@@ -111,7 +111,7 @@ class TestFunctions(TestCase):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
-        self.assertEqual(recorder_service.state, INIT_STATE)
+        self.assertEqual(recorder_service.status, INIT_STATUS)
         self.assertEqual(recorder_service.get_recorded_time(), 0)
         
 
@@ -119,16 +119,16 @@ class TestFunctions(TestCase):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
-        self.assertEqual(recorder_service.state, INIT_STATE)
+        self.assertEqual(recorder_service.status, INIT_STATUS)
         recorder_service.preview()
-        self.assertEqual(recorder_service.state, PREVIEW_STATE)
+        self.assertEqual(recorder_service.status, PREVIEW_STATUS)
         self.assertEqual(recorder_service.preview(), False)
         self.assertEqual(recorder_service.stop(), False)
         self.assertEqual(recorder_service.pause(), False)
         self.assertEqual(recorder_service.resume(), False)
         self.__sleep()
         recorder_service.stop()
-        self.assertEqual(recorder_service.state, PREVIEW_STATE)
+        self.assertEqual(recorder_service.status, PREVIEW_STATUS)
         self.assertEqual(len(repo), 0)
 
 
@@ -136,15 +136,15 @@ class TestFunctions(TestCase):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
-        self.assertEqual(recorder_service.state, INIT_STATE)
+        self.assertEqual(recorder_service.status, INIT_STATUS)
         recorder_service.preview()
-        self.assertEqual(recorder_service.state, PREVIEW_STATE)
+        self.assertEqual(recorder_service.status, PREVIEW_STATUS)
         self.__sleep()
         recorder_service.record()
-        self.assertEqual(recorder_service.state, RECORDING_STATE)
+        self.assertEqual(recorder_service.status, RECORDING_STATUS)
         self.__sleep()
         recorder_service.stop()
-        self.assertEqual(recorder_service.state, PREVIEW_STATE)
+        self.assertEqual(recorder_service.status, PREVIEW_STATUS)
         self.assertEqual(len(repo), 1)
 
 
@@ -152,18 +152,18 @@ class TestFunctions(TestCase):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
-        self.assertEqual(recorder_service.state, INIT_STATE)
+        self.assertEqual(recorder_service.status, INIT_STATUS)
         recorder_service.preview()
-        self.assertEqual(recorder_service.state, PREVIEW_STATE)
+        self.assertEqual(recorder_service.status, PREVIEW_STATUS)
         self.__sleep()
         recorder_service.record()
-        self.assertEqual(recorder_service.state, RECORDING_STATE)
+        self.assertEqual(recorder_service.status, RECORDING_STATUS)
         self.__sleep()
         recorder_service.pause()
-        self.assertEqual(recorder_service.state, PAUSED_STATE)
+        self.assertEqual(recorder_service.status, PAUSED_STATUS)
         self.__sleep()
         recorder_service.stop()
-        self.assertEqual(recorder_service.state, PREVIEW_STATE)
+        self.assertEqual(recorder_service.status, PREVIEW_STATUS)
         self.assertEqual(len(repo), 1)
 
 
@@ -171,37 +171,37 @@ class TestFunctions(TestCase):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
-        self.assertEqual(recorder_service.state, INIT_STATE)
+        self.assertEqual(recorder_service.status, INIT_STATUS)
         recorder_service.preview()
         dispatcher.emit("recorder-error", None)
-        self.assertEqual(recorder_service.state, ERROR_STATE)
+        self.assertEqual(recorder_service.status, ERROR_STATUS)
         dispatcher.emit("galicaster-notify-timer-long")
-        self.assertEqual(recorder_service.state, PREVIEW_STATE)
+        self.assertEqual(recorder_service.status, PREVIEW_STATUS)
         recorder_service.record()
-        self.assertEqual(recorder_service.state, RECORDING_STATE)
+        self.assertEqual(recorder_service.status, RECORDING_STATUS)
         dispatcher.emit("galicaster-notify-timer-long")
-        self.assertEqual(recorder_service.state, RECORDING_STATE)
+        self.assertEqual(recorder_service.status, RECORDING_STATUS)
         
 
     def test_handle_reload_profile(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
-        self.assertEqual(recorder_service.state, INIT_STATE)
+        self.assertEqual(recorder_service.status, INIT_STATUS)
         recorder_service.preview()
         old_id = id(recorder_service.recorder)
         dispatcher.emit("reload-profile")
         new_id = id(recorder_service.recorder)
-        self.assertEqual(recorder_service.state, PREVIEW_STATE)
+        self.assertEqual(recorder_service.status, PREVIEW_STATUS)
         self.assertNotEqual(old_id, new_id)
         self.__sleep()
         recorder_service.record()
         old_id = id(recorder_service.recorder)
-        self.assertEqual(recorder_service.state, RECORDING_STATE)
+        self.assertEqual(recorder_service.status, RECORDING_STATUS)
         dispatcher.emit("reload-profile")
         new_id = id(recorder_service.recorder)
         self.assertEqual(old_id, new_id)
-        self.assertEqual(recorder_service.state, RECORDING_STATE)
+        self.assertEqual(recorder_service.status, RECORDING_STATUS)
 
 
     def test_new_recording_when_recording(self):
@@ -214,10 +214,10 @@ class TestFunctions(TestCase):
         recorder_service.record()
         self.__sleep()
         recorder_service.record()
-        self.assertEqual(recorder_service.state, RECORDING_STATE)
+        self.assertEqual(recorder_service.status, RECORDING_STATUS)
         self.assertEqual(len(repo), 1)
         self.__sleep()
-        self.assertEqual(recorder_service.state, RECORDING_STATE)
+        self.assertEqual(recorder_service.status, RECORDING_STATUS)
         recorder_service.stop()
         self.assertEqual(len(repo), 2)
 
@@ -231,10 +231,10 @@ class TestFunctions(TestCase):
         recorder_service.record()
         self.__sleep()
         recorder_service.record()
-        self.assertEqual(recorder_service.state, RECORDING_STATE)
+        self.assertEqual(recorder_service.status, RECORDING_STATUS)
         self.assertEqual(len(repo), 0)
         self.__sleep()
-        self.assertEqual(recorder_service.state, RECORDING_STATE)
+        self.assertEqual(recorder_service.status, RECORDING_STATUS)
         recorder_service.stop()
         self.assertEqual(len(repo), 1)
 
@@ -251,10 +251,10 @@ class TestFunctions(TestCase):
         recorder_service.pause()
         self.__sleep()
         recorder_service.record()
-        self.assertEqual(recorder_service.state, RECORDING_STATE)
+        self.assertEqual(recorder_service.status, RECORDING_STATUS)
         self.assertEqual(len(repo), 1)
         self.__sleep()
-        self.assertEqual(recorder_service.state, RECORDING_STATE)
+        self.assertEqual(recorder_service.status, RECORDING_STATUS)
         recorder_service.stop()        
         self.assertEqual(len(repo), 2)
 

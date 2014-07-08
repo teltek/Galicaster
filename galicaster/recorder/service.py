@@ -13,7 +13,6 @@
 
 """
 TODO:
- - Status vs state
  - Add connect:
    * start-record
    * stop-record
@@ -29,16 +28,16 @@ from galicaster.utils.i18n import _
 from galicaster.utils.gstreamer import WeakMethod
 
 
-class State(object):
+class Status(object):
     def __init__(self, name): self.name = name
     def __str__(self): return self.name
     def __repr__(self): return self.name
 
-INIT_STATE = State('init')
-PREVIEW_STATE = State('preview')
-RECORDING_STATE = State('recording')
-PAUSED_STATE = State('paused')
-ERROR_STATE = State('error')
+INIT_STATUS = Status('init')
+PREVIEW_STATUS = Status('preview')
+RECORDING_STATUS = Status('recording')
+PAUSED_STATUS = Status('paused')
+ERROR_STATUS = Status('error')
 
 
 class RecorderService(object):
@@ -60,7 +59,7 @@ class RecorderService(object):
         self.conf = conf
         self.overlap = conf.get_permission("overlap")
         
-        self.state = INIT_STATE
+        self.status = INIT_STATUS
 
         self.current_mediapackage = None
         self.recorder = None
@@ -79,13 +78,13 @@ class RecorderService(object):
 
 
     def preview(self):
-        if self.state not in (INIT_STATE, ERROR_STATE):
+        if self.status not in (INIT_STATUS, ERROR_STATUS):
             return False
         
-        self.logger.info("Starting recording service in the preview state")
+        self.logger.info("Starting recording service in the preview status")
         self.__prepare()
         self.recorder.preview()
-        self.state = PREVIEW_STATE
+        self.status = PREVIEW_STATUS
         return True
 
 
@@ -108,17 +107,17 @@ class RecorderService(object):
 
     def record(self):
         self.logger.info("Recording")
-        if self.state in (INIT_STATE, ERROR_STATE):
-            self.logger.warning("Cancel recording: state error (in {})".format(self.state))
+        if self.status in (INIT_STATUS, ERROR_STATUS):
+            self.logger.warning("Cancel recording: status error (in {})".format(self.status))
             return False
-        if self.state != PREVIEW_STATE and not self.overlap:
+        if self.status != PREVIEW_STATUS and not self.overlap:
             self.logger.info("Cancel recording: it is already recording and not allow overlap")
             return False
 
-        if self.state == PAUSED_STATE:
+        if self.status == PAUSED_STATUS:
             self.resume()
 
-        if self.state == RECORDING_STATE:
+        if self.status == RECORDING_STATUS:
             self.recorder.stop()
             self.__close_mp()
             self.__prepare()
@@ -126,22 +125,22 @@ class RecorderService(object):
         else:
             self.recorder and self.recorder.record()            
         self.current_mediapackage = self.__new_mediapackage(to_record=True)
-        self.state = RECORDING_STATE
+        self.status = RECORDING_STATUS
         return True
 
 
     def stop(self, force=False):
         self.logger.info("Stopping the capture")
-        if self.state == PAUSED_STATE:
+        if self.status == PAUSED_STATUS:
             self.resume()
-        if self.state != RECORDING_STATE:
-            self.logger.warning("Cancel stop: state error (is {})".format(self.state))
+        if self.status != RECORDING_STATUS:
+            self.logger.warning("Cancel stop: status error (is {})".format(self.status))
             return False
 
         self.recorder.stop(force)
         self.__close_mp()
 
-        self.state = INIT_STATE
+        self.status = INIT_STATUS
         self.preview()
         return True
 
@@ -163,21 +162,21 @@ class RecorderService(object):
 
     def pause(self):
         self.logger.info("Pausing recorder")
-        if self.state == RECORDING_STATE:
+        if self.status == RECORDING_STATUS:
             self.recorder.pause()
-            self.state = PAUSED_STATE
+            self.status = PAUSED_STATUS
             return True
-        self.logger.warning("Cancel pause: state error (in {})".format(self.state))
+        self.logger.warning("Cancel pause: status error (in {})".format(self.status))
         return False
 
 
     def resume(self):
         self.logger.info("Resuming recorder")
-        if self.state == PAUSED_STATE:
+        if self.status == PAUSED_STATUS:
             self.recorder.resume()
-            self.state = RECORDING_STATE
+            self.status = RECORDING_STATUS
             return True
-        self.logger.warning("Cancel resume: state error (in {})".format(self.state))
+        self.logger.warning("Cancel resume: status error (in {})".format(self.status))
         return False
 
 
@@ -192,7 +191,7 @@ class RecorderService(object):
     def _handle_error(self, origin, error_msg):
         self.logger.error("Handle error ({})". format(error_msg))
         self.recorder.stop(True)
-        self.state = ERROR_STATE
+        self.status = ERROR_STATUS
         if not self.__handle_recover_id:
             self.logger.debug("Connecting recover recorder callback")
             self.__handle_recover_id = self.dispatcher.connect("galicaster-notify-timer-long", 
@@ -212,10 +211,10 @@ class RecorderService(object):
 
 
     def _handle_reload_profile(self, origin):
-        if self.state == PREVIEW_STATE:
+        if self.status == PREVIEW_STATUS:
             self.logger.debug("Resetting recorder after reloading the profile")
             self.recorder.stop(True)
-            self.state = INIT_STATE
+            self.status = INIT_STATUS
             self.preview()
             
 
