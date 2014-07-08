@@ -42,7 +42,7 @@ ERROR_STATE = State('error')
 
 
 class RecorderService(object):
-    def __init__(self, dispatcher, repo, worker, conf, logger, recorderklass=Recorder):
+    def __init__(self, dispatcher, repo, worker, conf, logger, overlap=True, recorderklass=Recorder):
         """
         Initialize the recorder service.
 
@@ -51,6 +51,7 @@ class RecorderService(object):
         :param worker service.
         :param conf service.
         :param logger service.
+        :param boolean overlap. Allow recording when is recording. (stop actual and start new)
         :param recorderklass (only to test) 
         """        
         self.repo = repo
@@ -58,6 +59,7 @@ class RecorderService(object):
         self.worker = worker
         self.logger = logger
         self.conf = conf
+        self.overlap = overlap
         
         self.state = INIT_STATE
 
@@ -104,6 +106,8 @@ class RecorderService(object):
 
     def record(self):
         if self.state in (INIT_STATE, ERROR_STATE):
+            return False
+        if self.state != PREVIEW_STATE and not self.overlap:
             return False
         if self.state == PAUSED_STATE:
             self.resume()

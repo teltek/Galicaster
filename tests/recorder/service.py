@@ -114,7 +114,7 @@ class TestFunctions(TestCase):
         conf = Conf()
         logger = Logger(None)
         
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, False, self.recorderklass)
         self.assertEqual(recorder_service.state, INIT_STATE)
         self.assertEqual(recorder_service.get_recorded_time(), 0)
         
@@ -126,7 +126,7 @@ class TestFunctions(TestCase):
         conf = Conf()
         logger = Logger(None)
         
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, False, self.recorderklass)
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
@@ -147,7 +147,7 @@ class TestFunctions(TestCase):
         conf = Conf()
         logger = Logger(None)
         
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, False, self.recorderklass)
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
@@ -167,7 +167,7 @@ class TestFunctions(TestCase):
         conf = Conf()
         logger = Logger(None)
         
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, False, self.recorderklass)
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
@@ -190,7 +190,7 @@ class TestFunctions(TestCase):
         conf = Conf()
         logger = Logger(None)
         
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, False, self.recorderklass)
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         dispatcher.emit("recorder-error", None)
@@ -204,7 +204,7 @@ class TestFunctions(TestCase):
         conf = Conf()
         logger = Logger(None)
         
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, False, self.recorderklass)
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         old_id = id(recorder_service.recorder)
@@ -229,7 +229,7 @@ class TestFunctions(TestCase):
         conf = Conf()
         logger = Logger(None)
         
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, True, self.recorderklass)
         recorder_service.preview()
         self.sleep()
         recorder_service.record()
@@ -243,6 +243,27 @@ class TestFunctions(TestCase):
         self.assertEqual(len(repo), 2)
 
 
+    def test_new_recording_when_recording_not_allow(self):
+        dispatcher = context.get_dispatcher()
+        repo = Repository(self.tmppath)
+        worker = self.WorkerMock()
+        conf = Conf()
+        logger = Logger(None)
+        
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, False, self.recorderklass)
+        recorder_service.preview()
+        self.sleep()
+        recorder_service.record()
+        self.sleep()
+        recorder_service.record()
+        self.assertEqual(recorder_service.state, RECORDING_STATE)
+        self.assertEqual(len(repo), 0)
+        self.sleep()
+        self.assertEqual(recorder_service.state, RECORDING_STATE)
+        recorder_service.stop()
+        self.assertEqual(len(repo), 1)
+
+
     def test_new_recording_when_paused(self):
         dispatcher = context.get_dispatcher()
         repo = Repository(self.tmppath)
@@ -250,7 +271,7 @@ class TestFunctions(TestCase):
         conf = Conf()
         logger = Logger(None)
         
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, True, self.recorderklass)
         recorder_service.preview()
         self.sleep()
         recorder_service.record()
