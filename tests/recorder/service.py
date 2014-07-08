@@ -167,7 +167,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(repo), 1)
 
 
-    def test_error(self):
+    def test_error_and_recover(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
@@ -175,6 +175,12 @@ class TestFunctions(TestCase):
         recorder_service.preview()
         dispatcher.emit("recorder-error", None)
         self.assertEqual(recorder_service.state, ERROR_STATE)
+        dispatcher.emit("galicaster-notify-timer-long")
+        self.assertEqual(recorder_service.state, PREVIEW_STATE)
+        recorder_service.record()
+        self.assertEqual(recorder_service.state, RECORDING_STATE)
+        dispatcher.emit("galicaster-notify-timer-long")
+        self.assertEqual(recorder_service.state, RECORDING_STATE)
         
 
     def test_handle_reload_profile(self):
@@ -252,7 +258,7 @@ class TestFunctions(TestCase):
         recorder_service.stop()        
         self.assertEqual(len(repo), 2)
 
-        
+
     def __sleep(self):
         if self.recorderklass == Recorder:
             time.sleep(1.1)

@@ -12,8 +12,8 @@
 # San Francisco, California, 94105, USA.
 
 """
-TODO: 
- - On error try to fix.
+TODO:
+ - Add more log
  - Add connect:
    * start-record
    * stop-record
@@ -66,6 +66,7 @@ class RecorderService(object):
         self.recorder = None
         self.__recorderklass = recorderklass
         self.__create_drawing_areas_func = None
+        self.__handle_recover_id = None
 
         self.dispatcher.connect("galicaster-init", WeakMethod(self, '_handle_init'))
         self.dispatcher.connect("reload-profile", WeakMethod(self, '_handle_reload_profile'))
@@ -177,6 +178,14 @@ class RecorderService(object):
     def _handle_error(self, origin, error_msg):
         self.recorder.stop(True)
         self.state = ERROR_STATE
+        if not self.__handle_recover_id:
+            self.__handle_recover_id = self.dispatcher.connect("galicaster-notify-timer-long", 
+                                                             WeakMethod(self, '_handle_recover'))
+
+
+    def _handle_recover(self, origin):
+        if self.__handle_recover_id and self.preview(): 
+            self.__handle_recover_id = self.dispatcher.disconnect(self.__handle_recover_id)        
 
 
     def _handle_init(self, origin):
