@@ -108,25 +108,17 @@ class TestFunctions(TestCase):
 
 
     def test_init(self):
-        dispatcher = context.get_dispatcher()
-        repo = Repository(self.tmppath)
-        worker = self.WorkerMock()
-        conf = Conf()
-        logger = Logger(None)
+        dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, False, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         self.assertEqual(recorder_service.state, INIT_STATE)
         self.assertEqual(recorder_service.get_recorded_time(), 0)
         
 
     def test_preview(self):
-        dispatcher = context.get_dispatcher()
-        repo = Repository(self.tmppath)
-        worker = self.WorkerMock()
-        conf = Conf()
-        logger = Logger(None)
+        dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, False, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
@@ -134,63 +126,51 @@ class TestFunctions(TestCase):
         self.assertEqual(recorder_service.stop(), False)
         self.assertEqual(recorder_service.pause(), False)
         self.assertEqual(recorder_service.resume(), False)
-        self.sleep()
+        self.__sleep()
         recorder_service.stop()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
         self.assertEqual(len(repo), 0)
 
 
     def test_recording(self):
-        dispatcher = context.get_dispatcher()
-        repo = Repository(self.tmppath)
-        worker = self.WorkerMock()
-        conf = Conf()
-        logger = Logger(None)
+        dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, False, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
-        self.sleep()
+        self.__sleep()
         recorder_service.record()
         self.assertEqual(recorder_service.state, RECORDING_STATE)
-        self.sleep()
+        self.__sleep()
         recorder_service.stop()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
         self.assertEqual(len(repo), 1)
 
 
     def test_stop_recoding_on_pause(self):
-        dispatcher = context.get_dispatcher()
-        repo = Repository(self.tmppath)
-        worker = self.WorkerMock()
-        conf = Conf()
-        logger = Logger(None)
+        dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, False, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
-        self.sleep()
+        self.__sleep()
         recorder_service.record()
         self.assertEqual(recorder_service.state, RECORDING_STATE)
-        self.sleep()
+        self.__sleep()
         recorder_service.pause()
         self.assertEqual(recorder_service.state, PAUSED_STATE)
-        self.sleep()
+        self.__sleep()
         recorder_service.stop()
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
         self.assertEqual(len(repo), 1)
 
 
     def test_error(self):
-        dispatcher = context.get_dispatcher()
-        repo = Repository(self.tmppath)
-        worker = self.WorkerMock()
-        conf = Conf()
-        logger = Logger(None)
+        dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, False, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         dispatcher.emit("recorder-error", None)
@@ -198,13 +178,9 @@ class TestFunctions(TestCase):
         
 
     def test_handle_reload_profile(self):
-        dispatcher = context.get_dispatcher()
-        repo = Repository(self.tmppath)
-        worker = self.WorkerMock()
-        conf = Conf()
-        logger = Logger(None)
+        dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, False, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         self.assertEqual(recorder_service.state, INIT_STATE)
         recorder_service.preview()
         old_id = id(recorder_service.recorder)
@@ -212,7 +188,7 @@ class TestFunctions(TestCase):
         new_id = id(recorder_service.recorder)
         self.assertEqual(recorder_service.state, PREVIEW_STATE)
         self.assertNotEqual(old_id, new_id)
-        self.sleep()
+        self.__sleep()
         recorder_service.record()
         old_id = id(recorder_service.recorder)
         self.assertEqual(recorder_service.state, RECORDING_STATE)
@@ -223,70 +199,71 @@ class TestFunctions(TestCase):
 
 
     def test_new_recording_when_recording(self):
-        dispatcher = context.get_dispatcher()
-        repo = Repository(self.tmppath)
-        worker = self.WorkerMock()
-        conf = Conf()
-        logger = Logger(None)
+        dispatcher, repo, worker, conf, logger = self.__get_dependencies()
+        conf.set("allows", "overlap", "True")
         
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, True, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         recorder_service.preview()
-        self.sleep()
+        self.__sleep()
         recorder_service.record()
-        self.sleep()
+        self.__sleep()
         recorder_service.record()
         self.assertEqual(recorder_service.state, RECORDING_STATE)
         self.assertEqual(len(repo), 1)
-        self.sleep()
+        self.__sleep()
         self.assertEqual(recorder_service.state, RECORDING_STATE)
         recorder_service.stop()
         self.assertEqual(len(repo), 2)
 
 
     def test_new_recording_when_recording_not_allow(self):
-        dispatcher = context.get_dispatcher()
-        repo = Repository(self.tmppath)
-        worker = self.WorkerMock()
-        conf = Conf()
-        logger = Logger(None)
+        dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, False, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         recorder_service.preview()
-        self.sleep()
+        self.__sleep()
         recorder_service.record()
-        self.sleep()
+        self.__sleep()
         recorder_service.record()
         self.assertEqual(recorder_service.state, RECORDING_STATE)
         self.assertEqual(len(repo), 0)
-        self.sleep()
+        self.__sleep()
         self.assertEqual(recorder_service.state, RECORDING_STATE)
         recorder_service.stop()
         self.assertEqual(len(repo), 1)
 
 
     def test_new_recording_when_paused(self):
-        dispatcher = context.get_dispatcher()
-        repo = Repository(self.tmppath)
-        worker = self.WorkerMock()
-        conf = Conf()
-        logger = Logger(None)
+        dispatcher, repo, worker, conf, logger = self.__get_dependencies()
+        conf.set("allows", "overlap", "True")
         
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, True, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         recorder_service.preview()
-        self.sleep()
+        self.__sleep()
         recorder_service.record()
-        self.sleep()
+        self.__sleep()
         recorder_service.pause()
-        self.sleep()
+        self.__sleep()
         recorder_service.record()
         self.assertEqual(recorder_service.state, RECORDING_STATE)
         self.assertEqual(len(repo), 1)
-        self.sleep()
+        self.__sleep()
         self.assertEqual(recorder_service.state, RECORDING_STATE)
         recorder_service.stop()        
         self.assertEqual(len(repo), 2)
 
-
-    def sleep(self):
+        
+    def __sleep(self):
         if self.recorderklass == Recorder:
             time.sleep(1.1)
+
+
+    def __get_dependencies(self):
+        dispatcher = context.get_dispatcher()
+        repo = Repository(self.tmppath)
+        worker = self.WorkerMock()
+        conf = Conf()
+        conf.set("allows", "overlap", "False")
+        logger = Logger(None)
+
+        return dispatcher, repo, worker, conf, logger
