@@ -51,7 +51,6 @@ class RecorderService(object):
         :param worker service.
         :param conf service.
         :param logger service.
-        :param boolean overlap. Allow recording when is recording. (stop actual and start new)
         :param recorderklass (only to test) 
         """        
         self.repo = repo
