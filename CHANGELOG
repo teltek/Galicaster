@@ -9,6 +9,7 @@ To get the diff between two versions, go to https://github.com/teltek/galicaster
 
 * DEV (YYYY-MM-DD)
 
+ * New retry to recreate the pipeline periodically when a stream dies.
  * Fixed bug in capture.cleaner.mindiskspace value (Added get_free_space in the repository).
  * Added ca_parameters to allow editing of the CA configurations.
  * New plugin to reingest recordings where the ingest has failed. (ppettit)

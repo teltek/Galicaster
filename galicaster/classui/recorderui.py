@@ -114,6 +114,7 @@ class RecorderClassUI(gtk.Box):
 
         self.error_text = None
         self.error_dialog = None
+        self.error_count = 0
         self.ok_to_show = False
         self.swap_active = None
         self.swap = False
@@ -218,7 +219,7 @@ class RecorderClassUI(gtk.Box):
 
         if self.ok_to_show:
             self.init_recorder()
-        return True
+        return False
 
 
 
@@ -229,11 +230,13 @@ class RecorderClassUI(gtk.Box):
         """Preview at start - Galicaster initialization"""
         logger.info("Starting Preview")
         self.conf.reload()
+        self.error_count = 0
         self.select_devices()
         return True
 
     def on_start_button(self, button=None):
         """Triggers bin loading and start preview"""
+        self.error_count = 0
         self.select_devices()
 
     def init_recorder(self):
@@ -527,6 +530,15 @@ class RecorderClassUI(gtk.Box):
         context.get_state().is_error = True
         self.recorder.stop_elements()
         context.get_state().is_recording = False
+        self.error_count += 1
+        if (self.error_count > 5):
+            logger.error("Error. Show message ({})".format(self.error_count))
+            self.show_pipeline_error(origin, error_message)
+        elif(self.status not in [ GC_RECORDING, GC_PAUSED ]):
+            logger.error("Error, retry intent {}".format(self.error_count))
+            gobject.timeout_add_seconds(13, self.select_devices)
+
+    def show_pipeline_error(self, origin, error_message):
         self.error_text = error_message
         if self.focus_is_active:
             self.launch_error_message(error_message)
