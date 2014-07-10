@@ -22,7 +22,7 @@ import pango
 import os
 
 from galicaster.classui.calendarwindow import CalendarWindow
-import galicaster.mediapackage.mediapackage as mediapackage
+from galicaster.mediapackage import mediapackage
 from galicaster.core import context
 from galicaster.utils import series as listseries
 from galicaster.classui import get_ui_path

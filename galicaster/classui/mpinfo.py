@@ -18,7 +18,7 @@ import gtk
 from os import path
 import pango
 
-import galicaster.mediapackage.mediapackage as mediapackage
+from galicaster.mediapackage import mediapackage
 from galicaster.core import context
 from galicaster.utils import readable
 from galicaster.utils.nautilus import open_folder
