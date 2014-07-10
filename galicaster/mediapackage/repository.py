@@ -47,7 +47,7 @@ class Repository(object):
         self.logger = logger
 
         self.__list = dict()
-        self.refresh(True)
+        self.__refresh(True)
 
 
     def create_repo(self, hostname):
@@ -78,7 +78,10 @@ class Repository(object):
                 os.rename(full_path, os.path.join(backup_dir, temp_file))
 
 
-    def refresh(self, check_inconsistencies=False):
+    def __refresh(self, check_inconsistencies=False):
+        if self.logger:
+            self.logger.info("Creating repository from {}".format(self.root))
+
         self.__list.clear()
         if self.root != None:
             for folder in os.listdir(self.root):
@@ -236,7 +239,7 @@ class Repository(object):
                 filename = os.path.join(bin['path'], bin['file'])
                 dest = os.path.join(mp.getURI(), os.path.basename(filename))
                 os.rename(filename, dest)
-                etype = 'audio/mp3' if bin['device'] in ['pulse','audiotest'] else 'video/' + dest.split('.')[1].lower()
+                etype = bin['mimetype']
                 flavour = bin['flavor'] + '/source'
                 mp.add(dest, mediapackage.TYPE_TRACK, flavour, etype, duration) # FIXME MIMETYPE
         mp.forceDuration(duration)
@@ -287,6 +290,11 @@ class Repository(object):
             return os.path.join(self.root, self.rectemp_dir, name)
         else:
             return os.path.join(self.root, self.rectemp_dir)
+
+
+    def get_free_space(self):
+        s = os.statvfs(self.root)
+        return s.f_bsize * s.f_bavail
 
 
     def __get_folder_name(self, mp):

@@ -20,7 +20,6 @@ from StringIO import StringIO
 import pycurl
 from collections import OrderedDict
 import urlparse
-import urllib
 
 INIT_ENDPOINT = '/welcome.html'
 ME_ENDPOINT = '/info/me.json'
@@ -31,25 +30,33 @@ INGEST_ENDPOINT = '/ingest/addZippedMediaPackage'
 ICAL_ENDPOINT = '/recordings/calendars'
 SERIES_ENDPOINT = '/series/series.json'
 SERVICE_REGISTRY_ENDPOINT = '/services/available.json'
+SEARCH_ENDPOINT = '/search/episode.json'
 
+SEARCH_SERVICE_TYPE = 'org.opencastproject.search'
+INGEST_SERVICE_TYPE = 'org.opencastproject.ingest'
 
 
 class MHHTTPClient(object):
     
     def __init__(self, server, user, password, hostname='galicaster', address=None, multiple_ingest=False, 
-        connect_timeout=2, timeout=2, workflow='full', workflow_parameters={'trimHold':'true'}, logger=None):
+                 connect_timeout=2, timeout=2, workflow='full', workflow_parameters={'trimHold':'true'}, 
+                 ca_parameters={}, repo=None, logger=None):
         """
         Arguments:
 
         server -- Matterhorn server URL.
         user -- Account used to operate the Matterhorn REST endpoints service.
         password -- Password for the account  used to operate the Matterhorn REST endpoints service.
-        connect_timeout -- connection timeout for curl in seconds
-        timeout -- total timeout for curl in seconds 
         hostname -- Capture agent hostname, optional galicaster by default.
         address -- Capture agent IP address, optional socket.gethostbyname(socket.gethostname()) by default.
+        multiple_ingest -- Use an ingest node, optional False by default.
+        connect_timeout -- Connection timeout for curl in seconds.
+        timeout -- Total timeout for curl in seconds .
         workflow -- Name of the workflow used to ingest the recordings., optional `full` by default.
-        workflow_parameters -- string (k1=v1;k2=v2) or dict of parameters used to ingest, opcional {'trimHold':'true'} by default.
+        workflow_parameters -- Dict of parameters used to ingest, opcional {'trimHold':'true'} by default.
+        ca_parameters -- Dict of parameters used as configuration, optional empty by default.
+        logger -- Logger service.
+        repo -- Repository service.
         """
         self.server = server
         self.user = user
@@ -61,10 +68,10 @@ class MHHTTPClient(object):
         self.timeout = timeout
         self.workflow = workflow
         self.logger = logger
-        if isinstance(workflow_parameters, basestring):
-            self.workflow_parameters = dict(item.split(":") for item in workflow_parameters.split(";"))
-        else:
-            self.workflow_parameters = workflow_parameters
+        self.repo = repo
+        self.workflow_parameters = workflow_parameters
+        self.ca_parameters = ca_parameters
+        self.search_server = None
 
 
     def __call(self, method, endpoint, path_params={}, query_params={}, postfield={}, urlencode=True, server=None, timeout=True):
@@ -165,7 +172,7 @@ class MHHTTPClient(object):
             'capture.ingest.pause.time': '3600',
             'capture.cleaner.interval': '3600',
             'capture.cleaner.maxarchivaldays': '30',
-            'capture.cleaner.mindiskspace': '536870912',
+            'capture.cleaner.mindiskspace': '0',
             'capture.error.messagebody': '&quot;Capture agent was not running, and was just started.&quot;',
             'capture.error.subject': '&quot;%hostname capture agent started at %date&quot;',
             'org.opencastproject.server.url': 'http://172.20.209.88:8080',
@@ -173,7 +180,11 @@ class MHHTTPClient(object):
             'capture.max.length': '28800'
             }
         
+        if self.repo:
+            client_conf['capture.cleaner.mindiskspace'] = self.repo.get_free_space()
+
         client_conf.update(capture_devices)
+        client_conf.update(self.ca_parameters)
 
         xml = ""
         for k, v in client_conf.iteritems():
@@ -196,6 +207,27 @@ class MHHTTPClient(object):
             postdict.update(self.workflow_parameters)
         postdict[u'track'] = (pycurl.FORM_FILE, mp_file)
         return postdict
+
+    def _get_endpoints(self, service_type):
+        if self.logger:
+            self.logger.debug('Looking up Matterhorn endpoint for %s', service_type)
+        services = self.__call('GET', SERVICE_REGISTRY_ENDPOINT, {}, {'serviceType': service_type})
+        services = json.loads(services)
+        return services['services']['service']
+
+    def _get_search_server(self):
+        if not self.search_server:
+            service = self._get_endpoints(SEARCH_SERVICE_TYPE)
+            self.search_server = str(service['host'])
+        return self.search_server
+
+    def search_by_mp_id(self, mp_id):
+        """ Returns search result from matterhorn """
+        search_server = self._get_search_server()
+        result = self.__call('GET', SEARCH_ENDPOINT, {}, {'id': mp_id}, {}, True, search_server, True)
+        search_result = json.loads(result)
+        return search_result['search-results']
+
 
     def verify_ingest_server(self, server):
         """ if we have multiple ingest servers the get_ingest_server should never 
@@ -225,10 +257,7 @@ class MHHTTPClient(object):
         if there are more than one ingest servers the first from the list will be used
         as they are returned in order of their load, if there is only one returned this 
         will be the admin node, so we can use the information we already have """ 
-        servers = self.__call('GET', SERVICE_REGISTRY_ENDPOINT, {}, {'serviceType':'org.opencastproject.ingest'}, {},
-                              True, None, True)
-        servers_avail = json.loads(servers)
-        all_servers = servers_avail['services']['service']
+        all_servers = self._get_endpoints(INGEST_SERVICE_TYPE)
         if type(all_servers) is list:
             for serv in all_servers:
                 if self.verify_ingest_server(serv):
@@ -240,7 +269,8 @@ class MHHTTPClient(object):
     def ingest(self, mp_file, workflow=None, workflow_instance=None, workflow_parameters=None):
         postdict = self._prepare_ingest(mp_file, workflow, workflow_instance, workflow_parameters)
         server = self.server if not self.multiple_ingest else self.get_ingest_server()
-        self.logger.info( 'Ingesting to Server {0}'.format(server) ) 
+        if self.logger:
+            self.logger.info( 'Ingesting to Server {0}'.format(server) ) 
         return self.__call('POST', INGEST_ENDPOINT, {}, {}, postdict.items(), False, server, False)
 
 

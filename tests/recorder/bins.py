@@ -24,6 +24,7 @@ from galicaster.recorder.bins.hauppauge import GChauppauge
 from galicaster.recorder.bins.datapath import GCdatapath
 from galicaster.recorder.bins.rtp import GCrtp
 from galicaster.recorder.bins.pulse import GCpulse
+from galicaster.recorder.bins.autoaudio import GCautoaudio
 from galicaster.recorder.bins.firewire import GCfirewire
 
 
@@ -134,3 +135,7 @@ class TestFunctions(TestCase):
         self.assertEqual(track.options['vumeter'], True)
         self.assertEqual(track.options['player'], True)
         
+    def test_autoaudio_activated(self):
+        track = GCautoaudio({"vumeter":"true", "player":"true", "path":"/"})
+        self.assertEqual(track.options['vumeter'], True)
+        self.assertEqual(track.options['player'], True)

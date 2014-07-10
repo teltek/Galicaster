@@ -50,6 +50,8 @@ class Main():
         self.dispatcher.connect('net-down', self.check_net, False)
 
     def load_modules(self):
+        plugins.init()
+        
         self.window = context.get_mainwindow()
                
         # Recorder
@@ -86,8 +88,9 @@ class Main():
             self.state.area = REC
             self.recorder.block()  
 
-        plugins.init()
         context.get_heartbeat().init_timer()
+        self.dispatcher.emit("galicaster-init")
+
 
     def emit_quit(self):
         self.dispatcher.emit('galicaster-notify-quit')

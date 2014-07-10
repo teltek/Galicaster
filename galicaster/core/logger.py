@@ -36,7 +36,6 @@ class Logger(logging.Logger):
             loghandler = SysLogHandler(address='/dev/log')
             formatting.insert(0, "Galicaster") 
             del(formatting[2]) 
-            formatting[0] = "Galicaster"
             loghandler.setFormatter(logging.Formatter(" ".join(formatting)))
         elif log_path == None or len(log_path) == 0:
             loghandler = logging.NullHandler()

@@ -70,11 +70,6 @@ Sections:
       - {utcminute}: MP's UTC minute of recording, as a decimal number [00,59].
       - {utc second}: MP's UTC second of recording, as a decimal number [00,59].
 
--- screen
-   * left: Name of the video device in the track list to be shown in the left screen (None to deactivate).
-   * right: Name of the video device in the track list to be shown in the right screen (None to deactivate).
-   Note that if a profile differnt from default is selected, they will be ordered automatically via track position
-
 -- ingest
    The data to connect Galicaster to an Opencast-Matterhorn server.
    * active: Enables the connection to a Opencast-Matterhorn server (True|False).

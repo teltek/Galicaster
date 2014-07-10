@@ -63,8 +63,6 @@ class TestFunctions(TestCase):
         self.assertEqual('full', self.conf.get('ingest', 'workflow'))
         # GET data in conf
         self.assertEqual('track1', self.conf.get('track1', 'name'))
-        # GET data in conf (and conf-dist)
-        self.assertEqual('presentation', self.conf.get('screen', 'left'))
         # SET
         self.conf.set('section', 'key', 'value')
         self.assertEqual('value', self.conf.get('section', 'key'))
@@ -169,7 +167,7 @@ class TestFunctions(TestCase):
         self.assertEqual(1, len(profile.tracks))
                 
 
-    def test_get_boolean_int_lower(self):
+    def test_get_boolean(self):
         conf = Conf()
         for yes in ['True', 'true', 'yes', 'si', 'y', 'OK', 'Y', 'TRUE']:
             conf.set('s', 'k', yes)
@@ -179,14 +177,38 @@ class TestFunctions(TestCase):
             conf.set('s', 'k', no)
             self.assertFalse(conf.get_boolean('s', 'k'), 'Check if {0} is False'.format(no))
         
+    def test_get_lower(self):
+        conf = Conf()
         for lower in ['RUBENRUA', 'RubenRua', 'RubenruA', 'rubenrua']:
             conf.set('s', 'k', lower)
             self.assertEqual(conf.get_lower('s', 'k'), 'rubenrua')
 
         self.assertEqual(conf.get_lower('s', 'k_not_exists'), None)
 
+
+    def test_get_int(self):
+        conf = Conf()
         conf.set('s', 'k', '10')
         self.assertEqual(conf.get_int('s', 'k'), 10)
+
+
+    def test_get_list(self):
+        conf = Conf()
+        self.assertEqual(conf.get_list('s', 'k'), [])
+
+        conf.set('s', 'k', '1 2 3 4 5 6')
+        self.assertEqual(conf.get_list('s', 'k'), ['1', '2', '3', '4', '5', '6'])
+
+        conf.set('s', 'k', 'one two three')
+        self.assertEqual(conf.get_list('s', 'k'), ['one', 'two', 'three'])
+
+
+    def test_get_dict(self):
+        conf = Conf()
+        self.assertEqual(conf.get_dict('s', 'k'), {})
+
+        conf.set('s', 'k', 'k1:v1;k2:v2;k3:v3')
+        self.assertEqual(conf.get_dict('s', 'k'), {'k1': 'v1', 'k2': 'v2', 'k3': 'v3'})
 
 
     def test_track_property(self):
@@ -205,3 +227,13 @@ class TestFunctions(TestCase):
         self.assertEqual({'capture.device.names': 'defaults'}, conf.get_tracks_in_mh_dict())
         conf.set('basic', 'admin', 'False')
         self.assertEqual('GC-' + socket.gethostname(), conf.get_hostname())
+
+
+    def test_active_tag_default_profile(self):
+        conf_file = get_resource('conf/conf_active.ini')
+        dist_file = get_resource('conf/conf-dist.ini')
+        conf = Conf(conf_file, dist_file)
+
+        profile = conf.get_current_profile()
+
+        self.assertEqual(1, len(profile.tracks))
