@@ -187,6 +187,10 @@ class RecorderService(object):
         self.recorder and self.recorder.mute_preview(value)
 
 
+    def is_pausable(self):
+        return self.recorder.is_pausable() if self.recorder else False
+
+
     def get_recorded_time(self):
         return self.recorder.get_recorded_time() if self.recorder else 0
 
