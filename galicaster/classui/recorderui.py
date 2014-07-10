@@ -213,8 +213,6 @@ class RecorderClassUI(gtk.Box):
         now = datetime.datetime.now().replace(microsecond=0)
         self.mediapackage = mediapackage.Mediapackage(title=_("Recording started at {0}").format(now.isoformat()))
 
-        context.get_state().mp = self.mediapackage.identifier
-
         if self.ok_to_show:
             self.init_recorder()
         return True
@@ -241,7 +239,6 @@ class RecorderClassUI(gtk.Box):
             self.error_dialog = None
             self.error_text = None
         self.audiobar.ClearVumeter()
-        context.get_state().is_error = False
 
         current_profile = self.conf.get_current_profile()
         bins = current_profile.tracks
@@ -296,7 +293,6 @@ class RecorderClassUI(gtk.Box):
 
     def configure_profile(self):
         profile = self.conf.get_current_profile()
-        context.get_state().profile = profile
         if profile.execute:
             out = os.system(profile.execute)
             logger.info("Executing {0} with out {1}".format(profile.execute, out))
@@ -317,7 +313,6 @@ class RecorderClassUI(gtk.Box):
         self.timer_thread.daemon = True
         self.timer_thread.start()
         self.change_state(GC_RECORDING)
-        context.get_state().is_recording = True
         return True  
 
 
@@ -326,7 +321,6 @@ class RecorderClassUI(gtk.Box):
         if key:
             logger.info("Start recording before schedule")
             self.mediapackage = self.repo.get(key)
-            context.get_state().mp=self.mediapackage.identifier
         else:
             logger.info("Rest triggered recording")
         self.on_rec()
@@ -418,7 +412,6 @@ class RecorderClassUI(gtk.Box):
         self.change_state(GC_STOP)
         self.on_restart_preview()
 
-        context.get_state().is_recording = False
         self.timer_thread_id = None
 
     def on_scheduled_start(self, source, identifier):
@@ -503,9 +496,7 @@ class RecorderClassUI(gtk.Box):
         If the recording are is active, shows it
         """
         self.change_state(GC_ERROR)
-        context.get_state().is_error = True
         self.recorder.stop()
-        context.get_state().is_recording = False
         self.error_text = error_message
         if self.focus_is_active:
             self.launch_error_message(error_message)
@@ -822,7 +813,6 @@ class RecorderClassUI(gtk.Box):
             if self.error_text:            
                 if self.status != GC_ERROR:
                     self.change_state(GC_ERROR)
-                    context.get_state().is_error = True
                 self.launch_error_message(self.error_text)            
 
         if old_state == 0:
@@ -891,7 +881,7 @@ class RecorderClassUI(gtk.Box):
         four_gb = 4000000000.0
         hours = int(freespace/four_gb)
         s2.set_text(_("{0} hours left").format(str(hours)))
-        agent = context.get_state().hostname # TODO just consult it once
+        agent = self.conf.hostname # TODO just consult it once
         if s4.get_text() != agent:
             s4.set_text(agent)
 
@@ -1105,7 +1095,6 @@ class RecorderClassUI(gtk.Box):
             editb.set_sensitive(False)
 
 
-        context.get_state().status = STATUS[state][0]
 
         if self.next == None and state == GC_PREVIEW:
             self.view.set_displayed_row(GC_PRE2)

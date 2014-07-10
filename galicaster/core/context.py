@@ -167,7 +167,6 @@ def get_mainwindow():
     """
     if 'mainwindow' not in __galicaster_context:
         __galicaster_context['mainwindow'] = GCWindow(get_dispatcher(), 
-                                                      get_state(), 
                                                       get_conf().get_size(), 
                                                       get_logger())
 
@@ -209,11 +208,7 @@ def get_state():
     """
     Get Galicaster State
     """
-    if 'state' not in __galicaster_context:
-        state = State(get_conf().hostname)
-        __galicaster_context['state'] = state
-
-    return __galicaster_context['state']
+    raise Exception('Use galicaster recoder service instead of state service')
     
 
 def get_recorder():

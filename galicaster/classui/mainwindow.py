@@ -29,7 +29,7 @@ class GCWindow(gtk.Window):
     """
     __gtype_name__ = 'GCWindow'
 
-    def __init__(self, dispatcher=None, state=None, size=None, logger=None):  
+    def __init__(self, dispatcher=None, size=None, logger=None):  
 
         gtk.Window.__init__(self,gtk.WINDOW_TOPLEVEL)
         self.full_size = self.discover_size() # Fullscreen size

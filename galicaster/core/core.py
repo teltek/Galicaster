@@ -42,12 +42,9 @@ class Main():
         logger.info('galicaster.__file__: %r', __file__)
 
         self.conf = context.get_conf()
-        self.state = context.get_state()
         self.dispatcher = context.get_dispatcher()
         self.modules = self.conf.get_modules()
         self.load_modules()
-        self.dispatcher.connect('net-up', self.check_net, True)
-        self.dispatcher.connect('net-down', self.check_net, False)
 
     def load_modules(self):
         plugins.init()
@@ -82,10 +79,8 @@ class Main():
 
         if 'media_manager' in self.modules:            
             self.window.set_current_page(DIS)
-            self.state.area = DIS
         else:
             self.window.set_current_page(REC)
-            self.state.area = REC
             self.recorder.block()  
 
         context.get_heartbeat().init_timer()
@@ -98,8 +93,4 @@ class Main():
     def change_mode(self, origin, page):
         old_page = self.window.get_current_page()
         self.window.set_current_page(page)  
-        self.state.area = page
         self.dispatcher.emit('galicaster-status', old_page, page)
-
-    def check_net(self, origin, data):
-        self.state.net = data
