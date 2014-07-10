@@ -13,6 +13,8 @@
 
 """
 TODO:
+ - Scheduled recordings
+ - profile.execute (see recorderui configure_profile)
  - Delete gst dependency.
  - Add connect:
    * start-record
@@ -186,7 +188,7 @@ class RecorderService(object):
 
 
     def get_recorded_time(self):
-        return self.recorder.mute_preview(value) if self.recorder else 0
+        return self.recorder.get_recorded_time() if self.recorder else 0
 
 
     def _handle_error(self, origin, error_msg):
