@@ -13,6 +13,7 @@
 
 """
 TODO:
+ - Delete gst dependency.
  - Add connect:
    * start-record
    * stop-record
