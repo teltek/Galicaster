@@ -65,6 +65,7 @@ class RecorderService(object):
         self.__set_status(INIT_STATUS)
 
         self.current_mediapackage = None
+        self.error_msg = None
         self.recorder = None
         self.__recorderklass = recorderklass
         self.__create_drawing_areas_func = None
@@ -199,6 +200,7 @@ class RecorderService(object):
         self.logger.error("Handle error ({})". format(error_msg))
         self.recorder.stop(True)
         self.__set_status(ERROR_STATUS)
+        self.error_msg = error_msg
         if not self.__handle_recover_id:
             self.logger.debug("Connecting recover recorder callback")
             self.__handle_recover_id = self.dispatcher.connect("galicaster-notify-timer-long", 
@@ -208,6 +210,7 @@ class RecorderService(object):
     def _handle_recover(self, origin):
         self.logger.info("Handle recover from error")
         if self.__handle_recover_id and self.preview(): 
+            self.error_msg = None
             self.logger.debug("Disconnecting recover recorder callback")
             self.__handle_recover_id = self.dispatcher.disconnect(self.__handle_recover_id)        
 
