@@ -61,6 +61,7 @@ class RecorderService(object):
         self.logger = logger
         self.conf = conf
         self.overlap = conf.get_permission("overlap")
+        self.mute = True
         
         self.__set_status(INIT_STATUS)
 
@@ -100,6 +101,7 @@ class RecorderService(object):
             objectbin['path'] = self.repo.get_rectemp_path()
 
         self.recorder = self.__recorderklass(bins)
+        self.mute_preview(self.mute)
         if self.__create_drawing_areas_func:
             info = self.recorder.get_display_areas_info()
             #TODO
@@ -185,6 +187,7 @@ class RecorderService(object):
 
 
     def mute_preview(self, value):
+        self.mute = value
         self.recorder and self.recorder.mute_preview(value)
 
 
