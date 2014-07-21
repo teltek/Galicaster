@@ -533,10 +533,13 @@ class RecorderClassUI(gtk.Box):
         self.recorder.stop_elements()
         context.get_state().is_recording = False
         self.error_count += 1
+
         if (self.error_count > 5):
             logger.error("Error. Show message ({})".format(self.error_count))
             self.show_pipeline_error(origin, error_message)
         elif(self.status not in [ GC_RECORDING, GC_PAUSED ]):
+            if self.error_count == 1:
+                self.repo.save_crash_recordings()
             logger.error("Error, retry intent {}".format(self.error_count))
             gobject.timeout_add_seconds(13, self.select_devices)
 
