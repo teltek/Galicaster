@@ -506,8 +506,10 @@ class RecorderClassUI(gtk.Box):
                 "text" : _(" ...or contact us on our community list.")
 		}
         buttons = None
+        self.dispatcher.emit("disable-no-audio")
         message.PopUp(message.INFO, text,
                       context.get_mainwindow(), buttons)
+        self.dispatcher.emit("enable-no-audio")
 
     def restart(self): # FIXME name confusing cause on_restart_preview
         """Called by Core, if in preview, reload configuration and restart preview."""
