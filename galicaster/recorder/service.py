@@ -164,6 +164,7 @@ class RecorderService(object):
             self.worker.ingest(self.current_mediapackage)
         elif self.conf.get_lower('ingest', code) == 'nightly':
             self.worker.ingest_nightly(self.current_mediapackage)
+        self.current_mediapackage = None
 
 
     def pause(self):
