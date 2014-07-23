@@ -115,6 +115,7 @@ class RecorderClassUI(gtk.Box):
         self.error_text = None
         self.error_dialog = None
         self.error_count = 0
+        self.error_handle_id = None
         self.ok_to_show = False
         self.swap_active = None
         self.swap = False
@@ -230,13 +231,13 @@ class RecorderClassUI(gtk.Box):
         """Preview at start - Galicaster initialization"""
         logger.info("Starting Preview")
         self.conf.reload()
-        self.error_count = 0
+        self.reset_recover_handler()
         self.select_devices()
         return True
 
     def on_start_button(self, button=None):
         """Triggers bin loading and start preview"""
-        self.error_count = 0
+        self.reset_recover_handler()
         self.select_devices()
 
     def init_recorder(self):
@@ -523,6 +524,12 @@ class RecorderClassUI(gtk.Box):
             logger.warning("Restart preview called while Recording")
 
         return True
+
+
+    def reset_recover_handler(self):
+        self.error_count = 0
+        self.error_handle_id and gobject.source_remove(self.error_handle_id)
+        
 
     def handle_pipeline_error(self, origin, error_message):
         """ Captures a pipeline error.
