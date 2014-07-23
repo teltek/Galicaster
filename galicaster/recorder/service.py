@@ -202,6 +202,7 @@ class RecorderService(object):
 
     def _handle_error(self, origin, error_msg):
         self.logger.error("Handle error ({})". format(error_msg))
+        self.current_mediapackage = None
         self.recorder.stop(True)
         self.error_msg = error_msg
         self.__set_status(ERROR_STATUS)
