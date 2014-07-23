@@ -220,6 +220,7 @@ class RecorderClassUI(gtk.Box):
 
         if self.ok_to_show:
             self.init_recorder()
+        self.error_handle_id = None
         return False
 
 
@@ -405,7 +406,7 @@ class RecorderClassUI(gtk.Box):
               context.get_mainwindow(), buttons
             )
             self.dispatcher.emit("enable-no-audio")
-            if warning.response not in message.POSITIVE:
+            if warning.response not in message.POSITIVE or self.status not in [GC_RECORDING]:
                 return False
             else:
                 self.on_stop("UI","current")
@@ -549,7 +550,7 @@ class RecorderClassUI(gtk.Box):
             if self.error_count == 1:
                 self.repo.save_crash_recordings()
             logger.error("Error, retry intent {}".format(self.error_count))
-            gobject.timeout_add_seconds(13, self.select_devices)
+            self.error_handle_id = gobject.timeout_add_seconds(13, self.select_devices)
 
     def show_pipeline_error(self, origin, error_message):
         self.error_text = error_message
