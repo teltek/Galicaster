@@ -529,6 +529,7 @@ class RecorderClassUI(gtk.Box):
         If the recording are is active, shows it
         """
         self.change_state(GC_ERROR)
+        self.timer_thread_id = None
         context.get_state().is_error = True
         self.recorder.stop_elements()
         context.get_state().is_recording = False
