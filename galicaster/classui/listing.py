@@ -408,7 +408,7 @@ class ListingClassUI(ManagerUI):
         """Sets text equivalent for numeric operation status of mediapackages."""	
         mp=self.repository.get((model[iterator])[0])
         status=mp.getOpStatus(operation)
-        out = mediapackage.op_status[status]
+        out = _(mediapackage.op_status[status])
         cell.set_property('text', out)
         old_style = context.get_conf().get_color_style()
         if old_style:

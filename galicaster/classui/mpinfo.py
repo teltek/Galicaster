@@ -106,11 +106,11 @@ class MPinfo(gtk.Window):
         # Operations info
         ops, ops_table = self.add_framed_table(_("Operations"))
         self.add_data(ops_table,_("Ingest:"),
-                      mediapackage.op_status[mp.getOpStatus("ingest")])
+                      _(mediapackage.op_status[mp.getOpStatus("ingest")]))
         self.add_data(ops_table,_("Zipping:"),
-                      mediapackage.op_status[mp.getOpStatus("exporttozip")])
+                      _(mediapackage.op_status[mp.getOpStatus("exporttozip")]))
         self.add_data(ops_table,_("Side by Side:"),
-                      mediapackage.op_status[mp.getOpStatus("sidebyside")])
+                      _(mediapackage.op_status[mp.getOpStatus("sidebyside")]))
 
         
         # Series info
