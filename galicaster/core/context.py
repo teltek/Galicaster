@@ -18,7 +18,6 @@ from galicaster.core.logger import Logger
 from galicaster.core.worker import Worker
 from galicaster.core.dispatcher import Dispatcher
 from galicaster.core.state import State
-from galicaster.classui.mainwindow import GCWindow
 from galicaster.scheduler.heartbeat import Heartbeat
 from galicaster.scheduler.scheduler import Scheduler
 
@@ -165,6 +164,8 @@ def get_mainwindow():
     """
     Get Galicaster Mainwindow from the App Context
     """
+    from galicaster.classui.mainwindow import GCWindow
+
     if 'mainwindow' not in __galicaster_context:
         __galicaster_context['mainwindow'] = GCWindow(get_dispatcher(), 
                                                       get_conf().get_size(), 
