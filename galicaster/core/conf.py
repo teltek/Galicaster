@@ -260,7 +260,7 @@ class Conf(object): # TODO list get and other ops arround profile
          self.__current_profile = profile_list[current]
       except:
          if self.logger:
-            self.logger.error("Forcing default profile since current doesn't exits")
+            self.logger.error("Forcing default profile since current doesn't exist")
          self.__current_profile = self.__default_profile
 
       return profile_list
