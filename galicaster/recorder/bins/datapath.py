@@ -11,13 +11,15 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
+"""
+The 'datapath' bin is preserved to keep backwards compatibility. The 'datapath' bin and the 'v4l2' are equal, please use the 'v4l2' bin.
+"""
+
 from galicaster.recorder.bins import v4l2
 from galicaster.recorder import module_register
 
 
 class GCdatapath(v4l2.GCv4l2):
-
-    is_pausable = False
 
     gc_parameters = {
         "name": {

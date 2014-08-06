@@ -23,8 +23,13 @@ ALL_TABS = { "events": "eventpanel",
              }
 
 
-def init():
 
+def init():
+    dispatcher = context.get_dispatcher()
+    dispatcher.connect("galicaster-init", post_init)
+
+
+def post_init(source=None):
     conf = context.get_conf()
 
     recorder_ui = context.get_mainwindow().nbox.get_nth_page(0).gui
@@ -49,6 +54,7 @@ def init():
                     data_panel.set_tab_label_packing(page, False, True,gtk.PACK_START)
     except AttributeError as e:
         # The conf parameter isn't defined. Ignore
+        print "Attribute error"
         pass
 
 

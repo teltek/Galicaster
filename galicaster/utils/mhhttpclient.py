@@ -20,7 +20,6 @@ from StringIO import StringIO
 import pycurl
 from collections import OrderedDict
 import urlparse
-import urllib
 
 INIT_ENDPOINT = '/welcome.html'
 ME_ENDPOINT = '/info/me.json'

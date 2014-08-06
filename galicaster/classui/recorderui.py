@@ -112,9 +112,9 @@ class RecorderClassUI(gtk.Box):
         self.focus_is_active = False
         self.net_activity = None
 
-        self.error_id = None
         self.error_text = None
         self.error_dialog = None
+        self.error_count = 0
         self.ok_to_show = False
         self.swap_active = None
         self.swap = False
@@ -150,6 +150,7 @@ class RecorderClassUI(gtk.Box):
         self.dispatcher.connect("update-rec-vumeter", self.audiobar.SetVumeter)
         self.dispatcher.connect("galicaster-status", self.event_change_mode)
         self.dispatcher.connect("galicaster-notify-quit", self.close)
+        self.dispatcher.connect("recorder-error", self.handle_pipeline_error)
 
         nb=builder.get_object("data_panel")
         pages = nb.get_n_pages()        
@@ -191,7 +192,6 @@ class RecorderClassUI(gtk.Box):
         self.clock_thread.daemon = True
         self.scheduler_thread.start()
         self.clock_thread.start() 
-        self.dispatcher.emit("galicaster-init")
 
         # SHOW OR HIDE SWAP BUTTON
         if self.conf.get_boolean('basic', 'swapvideos'):
@@ -219,7 +219,7 @@ class RecorderClassUI(gtk.Box):
 
         if self.ok_to_show:
             self.init_recorder()
-        return True
+        return False
 
 
 
@@ -230,25 +230,22 @@ class RecorderClassUI(gtk.Box):
         """Preview at start - Galicaster initialization"""
         logger.info("Starting Preview")
         self.conf.reload()
+        self.error_count = 0
         self.select_devices()
         return True
 
     def on_start_button(self, button=None):
         """Triggers bin loading and start preview"""
+        self.error_count = 0
         self.select_devices()
 
     def init_recorder(self):
         if self.error_dialog:
-            if self.error_id:
-                self.dispatcher.disconnect(self.error_id)
-                self.error_id = None
             self.error_dialog.dialog_destroy()
             self.error_dialog = None
             self.error_text = None
-        self.error_id = self.dispatcher.connect(
-            "recorder-error",
-            self.handle_pipeline_error)
         self.audiobar.ClearVumeter()
+        context.get_state().is_error = False
 
         current_profile = self.conf.get_current_profile()
         bins = current_profile.tracks
@@ -276,6 +273,7 @@ class RecorderClassUI(gtk.Box):
                 self.change_state(GC_PREVIEW)
         else:
             logger.error("Restarting Preview Failed")
+            context.get_state().is_error = True
             self.change_state(GC_ERROR)
             if self.scheduled_recording:
                 self.on_failed_scheduled(self.current_mediapackage)    
@@ -426,9 +424,6 @@ class RecorderClassUI(gtk.Box):
         """Set the final data on the mediapackage, stop the record and restart the preview"""
         # To avoid error messages on stopping pipelines
         if self.error_dialog:
-            if self.error_id:
-                self.dispatcher.disconnect(self.error_id)
-                self.error_id = None
             self.error_dialog.dialog_destroy()
             self.error_dialog = None
             self.error_text = None
@@ -532,13 +527,18 @@ class RecorderClassUI(gtk.Box):
         If the recording are is active, shows it
         """
         self.change_state(GC_ERROR)
+        context.get_state().is_error = True
         self.recorder.stop_elements()
         context.get_state().is_recording = False
-        if self.error_id:
-            self.dispatcher.disconnect(self.error_id)
-            self.error_id = None
-            #TODO kill previous error if needed
-        
+        self.error_count += 1
+        if (self.error_count > 5):
+            logger.error("Error. Show message ({})".format(self.error_count))
+            self.show_pipeline_error(origin, error_message)
+        elif(self.status not in [ GC_RECORDING, GC_PAUSED ]):
+            logger.error("Error, retry intent {}".format(self.error_count))
+            gobject.timeout_add_seconds(13, self.select_devices)
+
+    def show_pipeline_error(self, origin, error_message):
         self.error_text = error_message
         if self.focus_is_active:
             self.launch_error_message(error_message)
@@ -558,12 +558,6 @@ class RecorderClassUI(gtk.Box):
     def on_recover_from_error(self, origin):
         """If an error ocurred, removes preview areas and disconnect error handlers."""   
 
-        if self.error_id:
-            self.dispatcher.disconnect(self.error_id)
-            self.error_id = None
-            self.error_dialog = None
-            self.error_text = None
-     
         if self.status in [GC_ERROR,GC_STOP]:
             main = self.main_area  
             for child in main.get_children():
@@ -863,6 +857,7 @@ class RecorderClassUI(gtk.Box):
             if self.error_text:            
                 if self.status != GC_ERROR:
                     self.change_state(GC_ERROR)
+                    context.get_state().is_error = True
                 self.launch_error_message(self.error_text)            
 
         if old_state == 0:
