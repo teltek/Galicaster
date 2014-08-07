@@ -15,7 +15,6 @@
 TODO:
  - Scheduled recordings
  - profile.execute (see recorderui configure_profile)
- - Delete gst dependency.
  - Add connect:
    * start-record
    * stop-record
@@ -24,7 +23,6 @@ TODO:
 """
 
 from datetime import datetime
-import gst
 from galicaster.mediapackage import mediapackage
 from galicaster.recorder import Recorder
 from galicaster.utils.i18n import _
@@ -153,7 +151,7 @@ class RecorderService(object):
 
 
     def __close_mp(self):
-        close_duration = self.recorder.get_recorded_time() / gst.MSECOND
+        close_duration = self.recorder.get_recorded_time() / 1000000
         self.current_mediapackage.status = mediapackage.RECORDED
         self.logger.info("Adding new mediapackage ({}) to the repository".format(
                 self.current_mediapackage.getIdentifier()))
