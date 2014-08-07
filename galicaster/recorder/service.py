@@ -111,7 +111,7 @@ class RecorderService(object):
             self.recorder.set_drawing_areas(areas)
 
 
-    def record(self):
+    def record(self, mp=None):
         self.logger.info("Recording")
         if self.status in (INIT_STATUS, ERROR_STATUS):
             self.logger.warning("Cancel recording: status error (in {})".format(self.status))
@@ -130,7 +130,8 @@ class RecorderService(object):
             self.recorder.preview_and_record()
         else:
             self.recorder and self.recorder.record()            
-        self.current_mediapackage = self.__new_mediapackage(to_record=True)
+        self.current_mediapackage = mp or self.__new_mediapackage()
+        self.current_mediapackage.status = mediapackage.RECORDING
         self.__set_status(RECORDING_STATUS)
         return True
 
@@ -234,15 +235,11 @@ class RecorderService(object):
             self.preview()
             
 
-    def __new_mediapackage(self, to_record=False):
+    def __new_mediapackage(self):
         now = datetime.now().replace(microsecond=0)
         title = _("Recording started at {0}").format(now.isoformat())
         mp = mediapackage.Mediapackage(title=title)
         mp.properties['origin'] = self.conf.hostname
-        if to_record:
-            mp.status = mediapackage.RECORDING
-            now = datetime.utcnow().replace(microsecond=0)
-            mp.setDate(now)
         return mp
 
 

@@ -29,6 +29,7 @@ import gst
 from galicaster.core.conf import Conf
 from galicaster.core.dispatcher import Dispatcher
 from galicaster.core.logger import Logger
+from galicaster.mediapackage import mediapackage
 from galicaster.mediapackage.repository import Repository
 from galicaster.recorder.service import RecorderService
 from galicaster.recorder.service import INIT_STATUS
@@ -270,6 +271,48 @@ class TestFunctions(TestCase):
         self.assertEqual(recorder_service.status, RECORDING_STATUS)
         recorder_service.stop()        
         self.assertEqual(len(repo), 2)
+
+
+    def test_record_scheduled_mp(self):
+        dispatcher, repo, worker, conf, logger = self.__get_dependencies()        
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+
+        self.assertEqual(len(repo), 0)
+        recorder_service.preview()
+        self.assertEqual(recorder_service.current_mediapackage, None)
+        self.assertEqual(len(repo), 0)
+        self.__sleep()
+        recorder_service.record()
+        self.assertNotEqual(recorder_service.current_mediapackage, None)
+        self.assertEqual(recorder_service.current_mediapackage.status, mediapackage.RECORDING)
+        self.assertEqual(len(repo), 0)
+        self.__sleep()
+        recorder_service.stop()
+        self.assertEqual(recorder_service.current_mediapackage, None)
+        self.assertEqual(len(repo), 1)
+
+        mp = mediapackage.Mediapackage(title="test")
+        repo.add(mp)
+
+        self.assertEqual(len(repo), 2)
+        recorder_service.preview()
+        self.assertEqual(recorder_service.current_mediapackage, None)
+        self.assertEqual(len(repo), 2)
+        self.__sleep()
+        recorder_service.record(mp)
+        self.assertEqual(recorder_service.current_mediapackage, mp)
+        self.assertEqual(recorder_service.current_mediapackage.status, mediapackage.RECORDING)
+        self.assertEqual(repo[mp.identifier].status, mediapackage.RECORDING)
+        self.assertEqual(len(repo), 2)
+        self.__sleep()
+        recorder_service.stop()
+        self.assertEqual(recorder_service.current_mediapackage, None)
+        self.assertEqual(len(repo), 2)
+
+        for mp in repo.values():
+            self.assertEqual(mp.status, mediapackage.RECORDED)
+            
+
 
 
     def __sleep(self):
