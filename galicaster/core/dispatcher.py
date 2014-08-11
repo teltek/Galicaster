@@ -41,9 +41,7 @@ gobject.signal_new('galicaster-init', Dispatcher, gobject.SIGNAL_RUN_LAST, gobje
 gobject.signal_new('pr', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 #REC
 gobject.signal_new('upcoming-recording', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
-gobject.signal_new('start-record', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) ) #FIXME define where and wich signals emit on scheduled/manual record
 gobject.signal_new('starting-record', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () )
-gobject.signal_new('stop-record', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 gobject.signal_new('recorder-vumeter', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 gobject.signal_new('recorder-error', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 gobject.signal_new('recorder-status', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
@@ -65,7 +63,6 @@ gobject.signal_new('refresh-row', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.T
 #STATUS
 gobject.signal_new('update-play-status', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 gobject.signal_new('update-video', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
-gobject.signal_new('start-before', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 #DISTRIBUTION
 gobject.signal_new('change-mode', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,) )
 gobject.signal_new('galicaster-status', Dispatcher, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, gobject.TYPE_PYOBJECT) )

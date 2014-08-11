@@ -135,7 +135,8 @@ class EventManager(gtk.Widget):
         return None
 
     def send_start(self,origin, event, data):
-        context.get_dispatcher().emit("start-before", data)
+        mp = context.get_repository().get(data)
+        context.get_recorder().record(mp)
         self.dialog.destroy()
         return True
 
