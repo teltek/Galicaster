@@ -168,7 +168,7 @@ def failover_audio(self, mpUri):
 
 
 def check_pipeline_amp(self, valor):
-    if context.get_state().is_recording:
+    if context.get_recorder().is_recording():
         rms = valor
         rms_list.append(rms)
         if os.path.exists(temp_amp):
