@@ -102,7 +102,6 @@ class RecorderClassUI(gtk.Box):
         self.scheduled_recording = False
         self.focus_is_active = False
         self.net_activity = None
-
         self.error_dialog = None
 
         # BUILD
@@ -258,7 +257,6 @@ class RecorderClassUI(gtk.Box):
 			}
         self.error_dialog = message.PopUp(message.ERROR, text, 
                                 context.get_mainwindow(), None)
-
 
 
     def destroy_error_dialog(self):
