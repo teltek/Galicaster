@@ -102,9 +102,6 @@ class RecorderService(object):
         self.mute_preview(self.mute)
         if self.__create_drawing_areas_func:
             info = self.recorder.get_display_areas_info()
-            #TODO
-            #if self.swap:
-            #    info.reverse()
             areas = self.__create_drawing_areas_func(info)
             self.recorder.set_drawing_areas(areas)
 
