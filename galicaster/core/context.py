@@ -17,7 +17,6 @@ from galicaster.core.conf import Conf
 from galicaster.core.logger import Logger
 from galicaster.core.worker import Worker
 from galicaster.core.dispatcher import Dispatcher
-from galicaster.core.state import State
 from galicaster.scheduler.heartbeat import Heartbeat
 from galicaster.scheduler.scheduler import Scheduler
 
@@ -203,13 +202,6 @@ def get_scheduler():
         __galicaster_context['scheduler'] = sch
 
     return __galicaster_context['scheduler']
-    
-
-def get_state():
-    """
-    Get Galicaster State
-    """
-    raise Exception('Use galicaster recoder service instead of state service')
     
 
 def get_recorder():
