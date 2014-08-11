@@ -22,6 +22,8 @@ from galicaster.recorder.utils import Switcher
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
+raise Exception("Not implemented. Using gst 0.10")
+
 logger = context.get_logger()
 
 pipestr = (" identity name=\"joint\" ! tee name=gc-epiphan-tee ! queue ! "

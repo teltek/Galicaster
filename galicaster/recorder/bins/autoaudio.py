@@ -18,6 +18,8 @@ from os import path
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
+raise Exception("Not implemented. Using gst 0.10")
+
 pipestr = (" autoaudiosrc name=gc-autoaudio-src  ! queue ! audioamplify name=gc-autoaudio-amplify amplification=1 ! "
            " tee name=tee-aud  ! queue ! level name=gc-autoaudio-level message=true interval=100000000 ! "
            " volume name=gc-autoaudio-volume ! alsasink sync=false name=gc-autoaudio-preview  "

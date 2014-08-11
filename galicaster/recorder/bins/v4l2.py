@@ -21,6 +21,8 @@ from os import path
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
+raise Exception("Not implemented. Using gst 0.10")
+
 pipestr = (' v4l2src name=gc-v4l2-src ! capsfilter name=gc-v4l2-filter ! queue ! gc-v4l2-dec '
            ' videorate ! ffmpegcolorspace ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! '
            ' tee name=gc-v4l2-tee  ! queue !  xvimagesink async=false sync=false qos=false name=gc-v4l2-preview'

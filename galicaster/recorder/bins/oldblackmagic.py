@@ -24,6 +24,8 @@ from os import path
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
+raise Exception("Not implemented. Using gst 0.10")
+
 pipestr = ( ' decklinksrc input=sdi input-mode=12 name=gc-blackmagic-src ! capsfilter name=gc-blackmagic-filter ! '
             ' videorate ! capsfilter name=gc-blackmagic-vrate ! videocrop name=gc-blackmagic-crop ! '
             ' tee name=tee-cam2  ! queue !  xvimagesink async=false sync=false qos=false name=gc-blackmagic-preview'

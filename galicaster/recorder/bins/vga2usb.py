@@ -15,6 +15,8 @@ from galicaster.core import context
 from galicaster.recorder.bins import epiphan
 from galicaster.recorder import module_register
 
+raise Exception("Not implemented. Using gst 0.10")
+
 logger = context.get_logger()
 
 

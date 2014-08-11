@@ -18,6 +18,7 @@ The 'datapath' bin is preserved to keep backwards compatibility. The 'datapath' 
 from galicaster.recorder.bins import v4l2
 from galicaster.recorder import module_register
 
+raise Exception("Not implemented. Using gst 0.10")
 
 class GCdatapath(v4l2.GCv4l2):
 

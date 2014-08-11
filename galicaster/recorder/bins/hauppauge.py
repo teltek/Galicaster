@@ -20,6 +20,8 @@ from os import path
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
+raise Exception("Not implemented. Using gst 0.10")
+
 pipestr = ( " filesrc name=gc-hauppauge-file-src ! valve drop=false name=gc-hauppauge-valve !  filesink  name=gc-hauppauge-sink async=false "
             " v4l2src name=gc-hauppauge-device-src ! queue name=queue-hauprevideo ! ffmpegcolorspace ! xvimagesink qos=false async=false sync=false name=gc-hauppauge-preview " 
             " filesrc name= gc-hauppauge-audio-src ! "

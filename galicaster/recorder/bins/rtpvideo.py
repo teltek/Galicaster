@@ -25,6 +25,8 @@ from os import path
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
+raise Exception("Not implemented. Using gst 0.10")
+
 pipe_config = {'mpeg4':
                    {'depay': 'rtpmp4vdepay', 'videoparse': 'mpeg4videoparse', 'dec': 'decodebin2'},
                'h264':

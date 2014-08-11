@@ -22,6 +22,8 @@ from os import path
 
 from galicaster.recorder import base
 
+raise Exception("Not implemented. Using gst 0.10")
+
 pipestr = (' dv1394src name=gc-firewireraw-src ! '
            ' queue ! dvdemux name=gc-firewireraw-demuxer ! '
            ' level name=gc-firewireraw-level message=true interval=100000000 ! '

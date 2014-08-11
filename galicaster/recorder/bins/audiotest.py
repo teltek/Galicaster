@@ -18,6 +18,8 @@ from os import path
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
+raise Exception("Not implemented. Using gst 0.10")
+
 pipestr = (" audiotestsrc name=gc-audiotest-src is-live=true freq=440 volume=0.8 wave=5 ! queue ! " 
            " audioamplify name=gc-audiotest-amplify amplification=1 ! tee name=tee-aud  ! queue ! "
            " level name=gc-audiotest-level message=true interval=100000000 ! "
