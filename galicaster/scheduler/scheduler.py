@@ -22,14 +22,14 @@ from galicaster.mediapackage import mediapackage
 
 class Scheduler(object):
 
-    def __init__(self, repo, conf, disp, mhclient, logger, state):
+    def __init__(self, repo, conf, disp, mhclient, logger, recorder):
         """
         Arguments:
         repo -- the galicaster mediapackage repository
         conf -- galicaster configuration
         disp -- the galicaster event-dispatcher to emit signals
         mhclient -- matterhorn HTTP client
-        state -- galicaster state
+        recorder -- galicaster recorder service
         """
         self.ca_status = 'idle'
 
@@ -38,7 +38,7 @@ class Scheduler(object):
         self.dispatcher = disp
         self.client     = mhclient
         self.logger     = logger
-        self.state      = state
+        self.recorder   = recorder
 
         self.dispatcher.connect('galicaster-notify-timer-short', self.do_timers_short)
         self.dispatcher.connect('galicaster-notify-timer-long',  self.do_timers_long)
@@ -90,9 +90,9 @@ class Scheduler(object):
 
 
     def set_state(self):
-        if self.state.is_error:
+        if self.recorder.is_error():
             self.ca_status = 'unknown' #See AgentState.java
-        elif self.state.is_recording:
+        elif self.recorder.is_recording():
             self.ca_status = 'capturing'
         else:
             self.ca_status = 'idle'
@@ -175,7 +175,7 @@ class Scheduler(object):
 
             self.t_stop = Timer(mp.getDuration()/1000, self.stop_record, [mp.getIdentifier()])
             self.t_stop.start()
-            self.emit('start-record', mp.getIdentifier())
+            self.recorder.record(mp)
 
             try:
                 self.client.setrecordingstate(key, 'capturing')
@@ -193,7 +193,8 @@ class Scheduler(object):
 
         mp = self.repo.get(key)
         if mp.status == mediapackage.RECORDING:
-            self.emit('stop-record', key)
+            self.recorder.stop()
+
             try:
                 self.client.setrecordingstate(key, 'capture_finished')
             except:

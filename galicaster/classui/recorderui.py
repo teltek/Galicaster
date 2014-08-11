@@ -658,7 +658,6 @@ class RecorderClassUI(gtk.Box):
         
     def handle_status(self, origin, status):
         """Activates or deactivates the buttons depending on the new status"""
-        print status
 
         record = self.gui.get_object("recbutton")
         pause = self.gui.get_object("pausebutton")

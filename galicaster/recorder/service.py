@@ -127,6 +127,8 @@ class RecorderService(object):
             self.recorder and self.recorder.record()            
         self.current_mediapackage = mp or self.__new_mediapackage()
         self.current_mediapackage.status = mediapackage.RECORDING
+        now = datetime.utcnow().replace(microsecond=0)
+        self.current_mediapackage.setDate(now)
         self.__set_status(RECORDING_STATUS)
         return True
 
@@ -141,7 +143,6 @@ class RecorderService(object):
 
         self.recorder.stop(force)
         self.__close_mp()
-
         self.__set_status(INIT_STATUS)
         self.preview()
         return True
@@ -184,15 +185,28 @@ class RecorderService(object):
 
 
     def mute_preview(self, value):
+        """Proxy function to mute preview"""
         self.mute = value
         self.recorder and self.recorder.mute_preview(value)
 
 
     def is_pausable(self):
+        """Proxy function to know if actual recorder is pausable"""
         return self.recorder.is_pausable() if self.recorder else False
 
 
+    def is_recording(self):
+        """Helper function to check if status is RECORDING_STATUS or PAUSED_STATUS"""
+        return self.status == RECORDING_STATUS or self.status == PAUSED_STATUS
+
+
+    def is_error(self):
+        """Helper function to check if status is ERROR_STATUS"""
+        return self.status == ERROR_STATUS
+
+
     def get_recorded_time(self):
+        """Proxy function to get the recorder time"""
         return self.recorder.get_recorded_time() if self.recorder else 0
 
 

@@ -31,12 +31,11 @@ def check_key(source, event):
     """
     dispatcher = context.get_dispatcher()
     window = context.get_mainwindow()
-    state = context.get_state()
     if ((event.state & gtk.gdk.SHIFT_MASK and event.state & gtk.gdk.CONTROL_MASK) 
         and event.state & gtk.gdk.MOD2_MASK and
         (event.keyval in [gtk.gdk.keyval_from_name('q'), gtk.gdk.keyval_from_name('Q')])):
         
-        if not state.is_recording:
+        if not context.get_recorder.is_recording():
             dispatcher.emit('galicaster-quit')
 
     if ((event.state & gtk.gdk.CONTROL_MASK)  and

@@ -197,7 +197,7 @@ def get_scheduler():
     if 'scheduler' not in __galicaster_context:
         if get_conf().get_boolean("ingest", "active"):
             sch = Scheduler(get_repository(), get_conf(), get_dispatcher(), 
-                            get_mhclient(), get_logger(), get_state())
+                            get_mhclient(), get_logger(), get_recorder())
         else:
             sch = None
         __galicaster_context['scheduler'] = sch
