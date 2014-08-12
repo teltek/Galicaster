@@ -16,7 +16,8 @@
 
 from os import path
 
-import gst
+from gi.repository import Gst
+Gst.init(None)
 
 layouts = {'sbs': 
            {'screen_width': 640, 'screen_height': 480, 'screen_aspect': '4/3', 'screen_xpos': 640,'screen_ypos': 120, 'screen_zorder': 0, 
@@ -45,40 +46,37 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
     videomixer name=mix 
         sink_0::xpos=0 sink_0::ypos=0 sink_0::zorder=0
         sink_1::xpos=640 sink_1::ypos=120 sink_1::zorder=1 !
-    ffmpegcolorspace name=colorsp_saida ! 
-    x264enc quantizer=45 speed-preset=6 profile=1 ! queue ! 
+    videoconvert name=colorsp_saida ! 
+    x264enc quantizer=45 speed-preset=6 ! queue ! 
     mp4mux name=mux  ! queue ! filesink location="{OUT}"
 
-    filesrc location="{SCREEN}" ! decodebin2 name=dbscreen ! deinterlace ! 
+    filesrc location="{SCREEN}" ! decodebin name=dbscreen ! deinterlace ! 
     aspectratiocrop aspect-ratio={screen_aspect} ! videoscale ! videorate !
-    ffmpegcolorspace name=colorsp_screen !
-    video/x-raw-yuv,width=640,height=480,framerate=25/1 !
+    videoconvert name=colorsp_screen !
+    video/x-raw,width=640,height=480,framerate=25/1,pixel-aspect-ratio=1/1,interlace-mode=progressive !
     videobox right=-640 top=-120 bottom=-120 ! queue !
     mix.sink_0 
 
-    filesrc location="{CAMERA}" ! decodebin2 name=dbcamera ! deinterlace ! 
+    filesrc location="{CAMERA}" ! decodebin name=dbcamera ! deinterlace ! 
     aspectratiocrop aspect-ratio={camera_aspect} ! videoscale ! videorate !
-    ffmpegcolorspace name=colorsp_camera !
-    video/x-raw-yuv,width=640,height=480,framerate=25/1,interlaced=false ! queue !
+    videoconvert name=colorsp_camera !
+    video/x-raw,width=640,height=480,framerate=25/1,pixel-aspect-ratio=1/1,interlace-mode=progressive ! queue !
     mix.sink_1 
     """
 
     pipestr_audio = """
-    db{SRC}. ! audioconvert ! queue ! faac bitrate=128000 ! queue ! mux. 
+    db{SRC}. ! audioconvert ! queue ! voaacenc bitrate=128000 ! queue ! mux. 
     """
 
     pipestr_audio_file = """
-    filesrc location="{AUDIO}" ! decodebin2 name=dbaudio ! 
-    audioconvert ! queue ! faac bitrate=128000 ! queue ! mux.
+    filesrc location="{AUDIO}" ! decodebin name=dbaudio ! 
+    audioconvert ! queue ! voaacenc bitrate=128000 ! queue ! mux.
     """
 
     if not layout in layouts:
         if logger:
             logger.error('Layout not exists')
         raise IOError, 'Error in SideBySide proccess'
-
-    if not gst.element_factory_find('videomixer2'):
-        pipestr = old_pipestr    
 
     if not camera or not screen:
         if logger:
@@ -104,7 +102,7 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
     parameters = {'OUT': out, 'SCREEN': screen, 'CAMERA': camera}
     parameters.update(layouts[layout])
 
-    pipeline = gst.parse_launch(pipestr.format(**parameters))
+    pipeline = Gst.parse_launch(pipestr.format(**parameters))
     bus = pipeline.get_bus()
 
     # connect callback to fetch the audio stream
@@ -116,11 +114,11 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
         dec_screen.connect('pad-added', on_audio_decoded, pipeline, mux)
 
 
-    pipeline.set_state(gst.STATE_PLAYING)
-    msg = bus.timed_pop_filtered(gst.CLOCK_TIME_NONE, gst.MESSAGE_ERROR | gst.MESSAGE_EOS)
-    pipeline.set_state(gst.STATE_NULL)
-
-    if msg.type == gst.MESSAGE_ERROR:
+    pipeline.set_state(Gst.State.PLAYING)
+    msg = bus.timed_pop_filtered(Gst.CLOCK_TIME_NONE, Gst.MessageType.ERROR | Gst.MessageType.EOS)
+    pipeline.set_state(Gst.State.NULL)
+    
+    if msg.type == Gst.MessageType.ERROR:
         err, debug = msg.parse_error()
         if logger:
             logger.error('SideBySide Error: %s', err)
@@ -130,7 +128,7 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
     
 
 def on_audio_decoded(element, pad, bin, muxer):
-    name = pad.get_caps()[0].get_name()
+    name = pad.query_caps(None).to_string()
     element_name = element.get_name()[:8]
     sink = None
 
@@ -140,11 +138,11 @@ def on_audio_decoded(element, pad, bin, muxer):
 
     if name.startswith('audio/x-raw') and pending:
         # db%. audioconvert ! queue ! faac bitrate = 12800 ! queue ! mux.
-        convert = gst.element_factory_make('audioconvert', 'sbs-audio-convert')
-        q1 = gst.element_factory_make('queue','sbs-audio-queue1')
-        f = gst.element_factory_make('faac','sbs-audio-encoder')
+        convert = Gst.ElementFactory.make('audioconvert', 'sbs-audio-convert-{0}'.format(element_name))
+        q1 = Gst.ElementFactory.make('queue','sbs-audio-queue-{0}'.format(element_name))
+        f = Gst.ElementFactory.make('voaacenc','sbs-audio-encoder-{0}'.format(element_name))
         f.set_property('bitrate',128000)
-        q2 = gst.element_factory_make('queue','sbs-audio-queue2')
+        q2 = Gst.ElementFactory.make('queue','sbs-audio-queue2-{0}'.format(element_name))
 
         #link
         bin.add(convert)
@@ -156,11 +154,11 @@ def on_audio_decoded(element, pad, bin, muxer):
         f.link(q2)
         q2.link(muxer)
         #keep activating
-        convert.set_state(gst.STATE_PLAYING)
-        q1.set_state(gst.STATE_PLAYING)
-        f.set_state(gst.STATE_PLAYING)
-        q2.set_state(gst.STATE_PLAYING)
-        pad.link(convert.get_pad('sink'))
+        convert.set_state(Gst.State.PLAYING)
+        q1.set_state(Gst.State.PLAYING)
+        f.set_state(Gst.State.PLAYING)
+        q2.set_state(Gst.State.PLAYING)
+        pad.link(convert.get_static_pad('sink'))
 
     return sink
 
