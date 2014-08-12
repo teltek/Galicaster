@@ -18,12 +18,14 @@ Unit tests for `galicaster.mediapackage` module.
 from unittest import TestCase
 from os import path
 import tempfile
-import glib
+
+from gi.repository import GLib
+if getattr(GLib, "threads_init", None) is not None:
+    GLib.threads_init()
 
 from tests import get_resource
 from galicaster.utils import sidebyside
 
-glib.threads_init()
 
 class TestFunctions(TestCase):
     
