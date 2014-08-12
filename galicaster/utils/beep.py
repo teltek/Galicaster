@@ -13,18 +13,19 @@
 
 
 """
-Se genera un pitido usando gstreamer
+Beep generator using Gstreamer
 """
-import gst
-
+from gi.repository import Gst
+Gst.init(None)
 
 def do_beep():
-    pipeline = gst.Pipeline()
-    src = gst.element_factory_make('audiotestsrc')
+    pipeline = Gst.Pipeline.new()
+    src = Gst.ElementFactory.make("audiotestsrc", "source")
     src.set_property('num-buffers', 20) 
     src.set_property('wave', 7)
-    sink = gst.element_factory_make('autoaudiosink')
-    
-    pipeline.add(src, sink)
+    sink = Gst.ElementFactory.make("autoaudiosink", "sink")
+    pipeline.add(src)
+    pipeline.add(sink)
     src.link(sink)
-    pipeline.set_state(gst.STATE_PLAYING)
+    pipeline.set_state(Gst.State.PLAYING)
+
