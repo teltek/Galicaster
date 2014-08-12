@@ -15,13 +15,13 @@
 """
 Get information about audio/video files.
 """
-import gst
 
-from gst.pbutils import Discoverer
-
+from gi.repository import Gst
+Gst.init(None)
+from gi.repository import GstPbutils
 
 def get_duration(path):
-    d = Discoverer(gst.SECOND)
+    d = GstPbutils.Discoverer.new(Gst.SECOND)
     info = d.discover_uri('file://' + path)
-    return info.get_duration() / gst.SECOND
-
+    return info.get_duration() / Gst.SECOND
+    
