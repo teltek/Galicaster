@@ -12,9 +12,9 @@
 # San Francisco, California, 94105, USA.
 
 import datetime
-import gobject
 from os import path
 from threading import Timer, _Timer
+from gi.repository import GObject
 
 from galicaster.utils import ical
 from galicaster.mediapackage import mediapackage
@@ -208,5 +208,5 @@ class Scheduler(object):
     def emit(self, *args, **kwargs):
         # self.dispatcher.emit(*args, **kwargs)
         #Allow only the main thread to touch the GUI
-        gobject.idle_add(self.dispatcher.emit, *args, **kwargs)
+        GObject.idle_add(self.dispatcher.emit, *args, **kwargs)
         
