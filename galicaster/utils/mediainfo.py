@@ -23,5 +23,5 @@ from gi.repository import GstPbutils
 def get_duration(path):
     d = GstPbutils.Discoverer.new(Gst.SECOND)
     info = d.discover_uri('file://' + path)
-    return info.get_duration() / Gst.SECOND
+    return int(round(1.0 * info.get_duration() / Gst.SECOND))
     
