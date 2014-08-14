@@ -11,23 +11,22 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import gobject
-import gst
-
 from os import path
-from galicaster.recorder import base
-from galicaster.recorder import module_register
 
-raise Exception("Not implemented. Using gst 0.10")
+from gi.repository import GObject, Gst
+
+from galicaster.recorder import base
+#from galicaster.recorder import module_register
+
 
 pipestr = (" audiotestsrc name=gc-audiotest-src is-live=true freq=440 volume=0.8 wave=5 ! queue ! " 
            " audioamplify name=gc-audiotest-amplify amplification=1 ! tee name=tee-aud  ! queue ! "
            " level name=gc-audiotest-level message=true interval=100000000 ! "
-           " volume name=gc-audiotest-volume ! queue ! alsasink name=gc-audiotest-preview sync=false "
+           " volume name=gc-audiotest-volume ! queue ! alsasink name=gc-audiotest-preview sync=false async=false"
            " tee-aud. ! queue ! valve drop=false name=gc-audiotest-valve ! "
            " audioconvert ! gc-audiotest-enc !  queue ! filesink name=gc-audiotest-sink async=false ")
 
-class GCaudiotest(gst.Bin, base.Base):
+class GCaudiotest(Gst.Bin, base.Base):
 
     order = ["name", "flavor", "location", "file", 
              "vumeter", "player","amplification","audioencoder"
@@ -112,13 +111,13 @@ class GCaudiotest(gst.Bin, base.Base):
 
     def __init__(self, options={}): 
         base.Base.__init__(self, options)
-        gst.Bin.__init__(self, self.options["name"])
+        Gst.Bin.__init__(self)
 
         aux = (pipestr.replace("gc-audiotest-preview", "sink-" + self.options["name"])
                       .replace("gc-audiotest-enc", self.options["audioencoder"]))
 
-        #bin = gst.parse_bin_from_description(aux, True)
-        bin = gst.parse_launch("( {} )".format(aux))
+        #bin = Gst.parse_bin_from_description(aux, True)
+        bin = Gst.parse_launch("( {} )".format(aux))
 
         self.add(bin)
 
@@ -171,7 +170,9 @@ class GCaudiotest(gst.Bin, base.Base):
             element = self.get_by_name("gc-audiotest-volume")
             element.set_property("mute", value)
 
-    
-gobject.type_register(GCaudiotest)
-gst.element_register(GCaudiotest, "gc-audiotest-bin")
-module_register(GCaudiotest, 'audiotest')
+#GObject.type_register(GCaudiotest)
+#Gst.element_register(GCaudiotest, "gc-audiotest-bin")
+#module_register(GCaudiotest, 'audiotest')
+
+#GCaudiotestType = GObject.type_register(GCaudiotest)
+#Gst.Element.register(GCaudiotest, 'gc-audiotest-bin', 0, GCaudiotestType)
