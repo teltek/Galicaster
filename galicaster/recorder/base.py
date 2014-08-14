@@ -14,6 +14,8 @@
 from os import path
 import re
 
+from gi.repository import Gst
+
 FLAVOR = ['presenter', 'presentation', 'other']
 
 class Base(object):
@@ -129,11 +131,15 @@ class Base(object):
 
     def set_option_in_pipeline(self, option, element, prop, parse=str):
         element = self.get_by_name(element)
-        element.set_property(prop, parse(self.options[option]))
+        if prop == "caps":
+            element.set_property(prop, Gst.caps_from_string(self.options[option]))
+        else:
+            element.set_property(prop, parse(self.options[option]))
 
     def set_value_in_pipeline(self, value, element, prop, parse=str):
         element = self.get_by_name(element)
         element.set_property(prop, parse(value))
+            
 
     def get_display_areas_info(self):
         if self.has_video:
