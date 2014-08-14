@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       tests/recorder/recorder
+#       tests/recorder/recorder_v4l2
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
@@ -12,105 +12,76 @@
 # San Francisco, California, 94105, USA.
 
 """
-Tests for `galicaster.recorder.recorder` modules.
+Tests for `galicaster.recorder.bins.v4l2` module.
 """
 
 from os import path
 import time
-import gtk
-from shutil import rmtree
-from tempfile import mkdtemp
-from unittest import TestCase
+
+from gi.repository import Gst
+
+from unittest import TestCase, skip
 from nose.plugins.attrib import attr
 
-from galicaster.utils.mediainfo import get_duration
-from galicaster.recorder.recorder import Recorder
-
-gtk.gdk.threads_init()
+from tests.recorder.base import Base
 
 @attr('nodefault', 'recorder_v4l2')
-class TestFunctions(TestCase):
-    def setUp(self):
-        self.tmppath = mkdtemp()
-        self.v4l2_caps = 'image/jpeg,framerate=30/1,width=800,height=600'
+class TestFunctions(TestCase, Base):
 
+    v4l2_bin = [{'name'   : 'v4l2',
+                'device' : 'v4l2', 
+                'caps'   : 'video/x-raw,framerate=24/1,width=640,height=480',
+                'path'   :  '/tmp/',
+                'file'   : 'V4L2.avi'}]
+
+    def setUp(self):
+        Base.setUp(self)
+        self.v4l2_bin[0]['path'] = self.tmppath
+        
     def tearDown(self):
-        rmtree(self.tmppath)
+        Base.tearDown(self)
 
 
     def test_preview(self):
-        recorder = Recorder([{'name': 'name', 'device': 'v4l2', 'caps': self.v4l2_caps, 'path': self.tmppath, 'file': '1.avi'}])
-        recorder.preview()
-        time.sleep(2)
-        recorder.stop()
-        self.assertEqual(recorder.get_recorded_time(), 0)
-        self.assertEqual(path.getsize(path.join(self.tmppath, '1.avi')), 0)
+        bins = self.v4l2_bin
+        Base.test_preview(self, bins)
 
-
+    @skip("problem with videotest and audiotest")
     def test_preview_multi(self):
-        recorder = Recorder([{'name': '1', 'device': 'v4l2', 'caps': self.v4l2_caps, 'path': self.tmppath, 'file': '1.avi'},
-                             {'name': '2', 'device': 'videotest', 'path': self.tmppath, 'file': '2.avi'},
-                             {'name': '3', 'device': 'pulse', 'path': self.tmppath, 'file': '3.mp3'}])
-        recorder.preview()
-        time.sleep(4)
-        recorder.stop()
-        self.assertEqual(recorder.get_recorded_time(), 0)
-        self.assertEqual(path.getsize(path.join(self.tmppath, '1.avi')), 0)
-        self.assertEqual(path.getsize(path.join(self.tmppath, '2.avi')), 0)
-        self.assertEqual(path.getsize(path.join(self.tmppath, '3.mp3')), 0)
-
+        bins = self.v4l2_bin + self.getVideoTestBin() + self.getAudioTestBin()
+        Base.test_preview_multi(self, bins)
 
     def test_preview_and_record(self):
-        recorder = Recorder([{'name': 'name', 'device': 'v4l2', 'caps': self.v4l2_caps, 'path': self.tmppath, 'file': '1.avi'}])
-        recorder.preview_and_record()
-        time.sleep(2)
-        recorder.stop()
-        self.assertTrue(recorder.get_recorded_time() > 0)
-        self.assertTrue(path.getsize(path.join(self.tmppath, '1.avi')) > 0)
+        bins = self.v4l2_bin
+        Base.test_preview_and_record(self, bins)
 
-
+    @skip("problem with videotest and audiotest")
     def test_preview_and_record_multi(self):
-        recorder = Recorder([{'name': '1', 'device': 'v4l2', 'caps': self.v4l2_caps, 'path': self.tmppath, 'file': '1.avi'},
-                             {'name': '2', 'device': 'videotest', 'path': self.tmppath, 'file': '2.avi'},
-                             {'name': '3', 'device': 'pulse', 'path': self.tmppath, 'file': '3.mp3'}])
-        recorder.preview_and_record()
-        time.sleep(4)
-        recorder.stop()
-        self.assertTrue(recorder.get_recorded_time() > 0)
-        self.assertTrue(path.getsize(path.join(self.tmppath, '1.avi')) > 0)
-        self.assertTrue(path.getsize(path.join(self.tmppath, '2.avi')) > 0)
-        self.assertTrue(path.getsize(path.join(self.tmppath, '3.mp3')) > 0)
-
+        bins = self.v4l2_bin + self.getVideoTestBin() + self.getAudioTestBin()
+        Base.test_preview_and_record_multi(self, bins)
 
     def test_record(self):
-        recorder = Recorder([{'name': 'name', 'device': 'v4l2', 'caps': self.v4l2_caps, 'path': self.tmppath, 'file': '1.avi'}])
-        recorder.preview()
-        time.sleep(2)
-        rec_time = recorder.get_recorded_time()
-        #self.assertEqual(rec_time, 0)
-        recorder.record()
-        time.sleep(2)
-        recorder.stop()
-        self.assertTrue(recorder.get_recorded_time() > 0)
-        self.assertTrue(path.getsize(path.join(self.tmppath, '1.avi')) > 0)
-        self.assertEqual(get_duration(path.join(self.tmppath, '1.avi')), 2)
+        bins = self.v4l2_bin
+        Base.test_record(self, bins)
 
-
+    @skip("problem with videotest and audiotest")
     def test_record_multi(self):
-        recorder = Recorder([{'name': '1', 'device': 'v4l2', 'caps': self.v4l2_caps, 'path': self.tmppath, 'file': '1.avi'},
-                             {'name': '2', 'device': 'videotest', 'path': self.tmppath, 'file': '2.avi'},
-                             {'name': '3', 'device': 'pulse', 'path': self.tmppath, 'file': '3.mp3'}])
-        recorder.preview()
-        time.sleep(4)
-        rec_time = recorder.get_recorded_time()
-        #self.assertEqual(rec_time, 0)
-        recorder.record()
-        time.sleep(4)
-        recorder.stop()
-        self.assertTrue(recorder.get_recorded_time() > 0)
-        self.assertTrue(path.getsize(path.join(self.tmppath, '1.avi')) > 0)
-        self.assertTrue(path.getsize(path.join(self.tmppath, '2.avi')) > 0)
-        self.assertTrue(path.getsize(path.join(self.tmppath, '3.mp3')) > 0)
-        self.assertEqual(get_duration(path.join(self.tmppath, '1.avi')), 4)
-        self.assertEqual(get_duration(path.join(self.tmppath, '2.avi')), 4)
-        self.assertEqual(get_duration(path.join(self.tmppath, '3.mp3')), 4)
+        bins = self.v4l2_bin + self.getVideoTestBin() + self.getAudioTestBin()
+        Base.test_record_multi(self, bins)
+
+    #TODO
+    def todo_test_stop_on_paused(self):
+        bins = self.v4l2_bin
+        Base.todo_test_stop_on_paused(self, bins)
+
+    def test_preview_error(self):
+        bins = self.v4l2_bin
+        Base.test_preview_error(self, bins)
+
+    def test_record_error(self):
+        bins = self.v4l2_bin
+        Base.test_record_error(self, bins)
+
+    def test_pause_error(self):
+        bins = self.v4l2_bin
+        Base.test_pause_error(self, bins)

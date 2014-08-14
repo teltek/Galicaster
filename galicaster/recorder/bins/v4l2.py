@@ -11,27 +11,24 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
-import gobject
-import gst
+from os import path
 import re
 
-
-from os import path
+from gi.repository import GObject, Gst
+Gst.init(None)
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
-raise Exception("Not implemented. Using gst 0.10")
-
 pipestr = (' v4l2src name=gc-v4l2-src ! capsfilter name=gc-v4l2-filter ! queue ! gc-v4l2-dec '
-           ' videorate ! ffmpegcolorspace ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! '
+           ' videorate ! videoconvert ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! '
            ' tee name=gc-v4l2-tee  ! queue !  xvimagesink async=false sync=false qos=false name=gc-v4l2-preview'
-           ' gc-v4l2-tee. ! queue ! valve drop=false name=gc-v4l2-valve ! ffmpegcolorspace ! queue ! '
+           ' gc-v4l2-tee. ! queue ! valve drop=false name=gc-v4l2-valve ! videoconvert ! queue ! '
            ' gc-v4l2-enc ! queue ! gc-v4l2-mux ! '
            ' queue ! filesink name=gc-v4l2-sink async=false')
 
 
-class GCv4l2(gst.Bin, base.Base):
+class GCv4l2(Gst.Bin, base.Base):
 
 
     order = ["name","flavor","location","file","caps", 
@@ -61,7 +58,7 @@ class GCv4l2(gst.Bin, base.Base):
         "caps": {
             "type": "caps",
             "default": "image/jpeg,framerate=10/1,width=640,height=480", 
-            # video/x-raw-yuv,framerate=25/1,width=1024,height=768", 
+            # video/x-raw,framerate=25/1,width=1024,height=768", 
             "description": "Forced capabilities",
             },
         "videocrop-right": {
@@ -90,9 +87,7 @@ class GCv4l2(gst.Bin, base.Base):
             },
         "videoencoder": {
             "type": "text",
-            "default": "xvidenc bitrate=5000000",
-            # "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000",
-            # "x264enc pass=5 quantizer=22 speed-preset=4 profile=1"
+            "default": "x264enc pass=5 quantizer=22 speed-preset=4",
             "description": "Gstreamer encoder element used in the bin",
             },
         "muxer": {
@@ -115,7 +110,7 @@ class GCv4l2(gst.Bin, base.Base):
 
     def __init__(self, options={}):
         base.Base.__init__(self, options)
-        gst.Bin.__init__(self, self.options['name'])
+        Gst.Bin.__init__(self)
 
         aux = (pipestr.replace('gc-v4l2-preview', 'sink-' + self.options['name'])
                       .replace('gc-v4l2-enc', self.options['videoencoder'])
@@ -126,22 +121,15 @@ class GCv4l2(gst.Bin, base.Base):
         else:
             aux = aux.replace('gc-v4l2-dec', '')
 
-        #bin = gst.parse_bin_from_description(aux, True)
-        bin = gst.parse_launch("( {} )".format(aux))
+        #bin = Gst.parse_bin_from_description(aux, True)
+        bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
         self.set_option_in_pipeline('location', 'gc-v4l2-src', 'device')
 
         self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-v4l2-sink', 'location')
 
-        self.set_option_in_pipeline('caps', 'gc-v4l2-filter', 'caps', gst.Caps)
-        fr = re.findall("framerate *= *[0-9]+/[0-9]+", self.options['caps'])
-        if fr:            
-            newcaps = 'video/x-raw-yuv,' + fr[0]
-            self.set_value_in_pipeline(newcaps, 'gc-v4l2-vrate', 'caps', gst.Caps)
-
-        for pos in ['right','left','top','bottom']:
-            self.set_option_in_pipeline('videocrop-'+pos, 'gc-v4l2-crop', pos, int)
+        self.set_option_in_pipeline('caps', 'gc-v4l2-filter', 'caps', None)
 
 
     def changeValve(self, value):
@@ -159,6 +147,9 @@ class GCv4l2(gst.Bin, base.Base):
         src1.send_event(event)
 
 
-gobject.type_register(GCv4l2)
-gst.element_register(GCv4l2, 'gc-v4l2-bin')
-module_register(GCv4l2, 'v4l2')
+#GObject.type_register(GCv4l2)
+#Gst.element_register(GCv4l2, 'gc-v4l2-bin')
+#module_register(GCv4l2, 'v4l2')
+
+#GCv4l2Type = GObject.type_register(GCv4l2)
+#Gst.Element.register(GCv4l2, 'gc-v4l2-bin', 0, GCv4l2Type)
