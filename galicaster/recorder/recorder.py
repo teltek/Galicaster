@@ -11,9 +11,12 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
-import gtk
-import gst
+
 import sys
+
+import gi
+from gi.repository import Gtk, Gst
+Gst.init(None)
 
 from galicaster.core import context
 from galicaster.utils.gstreamer import WeakMethod
@@ -28,7 +31,7 @@ class Recorder(object):
         Initialize the recorder.
 
         :param bins: ``list`` of ``dict`` with bin name, device, path, and optional parameters.
-        :param players: (optional) ```gtk.DrawingArea``` ```list``` to use as player.
+        :param players: (optional) ```Gtk.DrawingArea``` ```list``` to use as player.
         """
         if not isinstance(bins, list) or len(bins) == 0:
             raise TypeError(
@@ -49,7 +52,7 @@ class Recorder(object):
         self.__start_record_time = 0
         self.__duration = 0
 
-        self.pipeline = gst.Pipeline("galicaster_recorder")
+        self.pipeline = Gst.Pipeline.new("galicaster_recorder")
         self.bus = self.pipeline.get_bus()
 
         self.bins = dict()
@@ -57,7 +60,7 @@ class Recorder(object):
 
         self.bus.add_signal_watch()
         self.bus.enable_sync_message_emission()
-        #self.bus.connect('message', WeakMethod(self, '_debug')) # TO DEBUG
+        self.bus.connect('message', WeakMethod(self, '_debug')) # TO DEBUG
         self.bus.connect('message::error', WeakMethod(self, '_on_error'))        
         self.bus.connect('message::element', WeakMethod(self, '_on_message_element'))
         self.bus.connect('sync-message::element', WeakMethod(self, '_on_sync_message'))
@@ -81,7 +84,7 @@ class Recorder(object):
 
 
     def get_status(self):
-        return self.pipeline.get_state()
+        return self.pipeline.get_state(Gst.CLOCK_TIME_NONE)
 
 
     def get_time(self):
@@ -90,14 +93,14 @@ class Recorder(object):
 
     def get_recorded_time(self):
         """Get recorded time in usec"""
-        if self.pipeline.get_state()[1] == gst.STATE_NULL:
+        if self.pipeline.get_state(Gst.CLOCK_TIME_NONE)[1] == Gst.State.NULL:
             return self.__duration
         return self.__query_position() - self.__start_record_time
 
 
     def __query_position(self):
         try:
-            duration = self.pipeline.query_position(gst.FORMAT_TIME)[0]
+            succes, duration = self.pipeline.query_position(Gst.Format.TIME)
         except:
             duration = 0
         return duration
@@ -105,23 +108,23 @@ class Recorder(object):
 
     def preview(self):
         logger.debug("recorder preview")
-        self.__set_state(gst.STATE_PAUSED)
+        self.__set_state(Gst.State.PAUSED)
         for bin in self.bins.values():
             bin.changeValve(True) 
-        self.__set_state(gst.STATE_PLAYING)
+        self.__set_state(Gst.State.PLAYING)
 
 
     def preview_and_record(self):
         logger.debug("recorder preview and record")
-        self.__set_state(gst.STATE_PLAYING)
+        self.__set_state(Gst.State.PLAYING)
         self.__start_record_time = self.__query_position()
         self.is_recording = True
 
 
-    def __set_state(self, new_state=gst.STATE_PAUSED):
+    def __set_state(self, new_state=Gst.State.PAUSED):
         change = self.pipeline.set_state(new_state)
             
-        if change == gst.STATE_CHANGE_FAILURE:
+        if change == Gst.StateChangeReturn.FAILURE:
             text = None
             random_bin = None
             for key, value in self.bins.iteritems():
@@ -133,16 +136,16 @@ class Recorder(object):
                     text = "Error on unknow track"
 
             src = random_bin
-            error = gst.GError(gst.RESOURCE_ERROR, gst.RESOURCE_ERROR_FAILED, text)
+            error = Gst.GError(Gst.ResourceError, Gst.ResourceError.FAILED, text)
                 
-            message = gst.message_new_error(
+            message = Gst.message_new_error(
                 src, error, 
                 str(random_bin)+"\nunknown system_error")
             self.bus.post(message)
-            #self.dispatcher.emit("recorder-error","Driver error")
+            self.dispatcher.emit("recorder-error","Driver error")
             return False
         while True:
-            message = self.bus.timed_pop_filtered(gst.CLOCK_TIME_NONE, gst.MESSAGE_STATE_CHANGED)
+            message = self.bus.timed_pop_filtered(Gst.CLOCK_TIME_NONE, Gst.MessageType.STATE_CHANGED)
             old, new, pending = message.parse_state_changed()
             if (message.src == self.pipeline and new == new_state):
                 break
@@ -150,7 +153,7 @@ class Recorder(object):
 
 
     def record(self):
-        if self.pipeline.get_state()[1] == gst.STATE_PLAYING:
+        if self.pipeline.get_state(Gst.CLOCK_TIME_NONE)[1] == Gst.State.PLAYING:
             for bin in self.bins.values():
                 bin.changeValve(False)
         self.__start_record_time = self.__query_position()
@@ -159,13 +162,13 @@ class Recorder(object):
 
     def pause(self):
         logger.debug("recorder paused")
-        self.__set_state(gst.STATE_PAUSED)
+        self.__set_state(Gst.State.PAUSED)
         return True
 
 
     def resume(self):
         logger.debug("resume paused")
-        self.__set_state(gst.STATE_PLAYING)
+        self.__set_state(Gst.State.PLAYING)
         return True
 
 
@@ -173,16 +176,17 @@ class Recorder(object):
         if self.is_recording and not force:
             self.is_recording = False
             self.__duration = self.__query_position() - self.__start_record_time
-            a = gst.structure_from_string('letpass')
-            event = gst.event_new_custom(gst.EVENT_EOS, a)
+            a = Gst.Structure.new_from_string('letpass')
+            event = Gst.Event.new_custom(Gst.EventType.EOS, a)
             for bin_name, bin in self.bins.iteritems():
                 bin.send_event_to_src(event)
-            self.bus.timed_pop_filtered(gst.CLOCK_TIME_NONE, gst.MESSAGE_EOS)
-        self.pipeline.set_state(gst.STATE_NULL)
+            #TODO If timeout send error.
+            self.bus.timed_pop_filtered(Gst.CLOCK_TIME_NONE, Gst.MessageType.EOS)
+        self.pipeline.set_state(Gst.State.NULL)
 
 
     def _debug(self, bus, msg):       
-        if msg.type != gst.MESSAGE_ELEMENT or msg.structure.get_name() != 'level':
+        if msg.type != Gst.MessageType.ELEMENT or msg.get_structure().get_name() != 'level':
             print "DEBUG ", msg
 
 
@@ -192,44 +196,44 @@ class Recorder(object):
         logger.error(error_info)
         if not debug.count('canguro') and not self.error:
             self.stop(True)
-            gtk.gdk.threads_enter()
+            Gtk.gdk.threads_enter()
             self.error = error_info
             self.dispatcher.emit("recorder-error", error_info)
-            gtk.gdk.threads_leave()
+            Gtk.gdk.threads_leave()
             # return True
     
 
     def _on_sync_message(self, bus, message):
-        if message.structure is None:
+        if message.get_structure() is None:
             return
-        if message.structure.get_name() == 'prepare-xwindow-id':
+        if message.get_structure().get_name() == 'prepare-window-handle':
             name = message.src.get_property('name')
-            logger.debug("on sync message 'prepare-xwindow-id' %r", name)
+            logger.debug("on sync message 'prepare-window-handle' %r", name)
 
             try:
                 gtk_player = self.players[name]
-                if not isinstance(gtk_player, gtk.DrawingArea):
+                if not isinstance(gtk_player, Gtk.DrawingArea):
                     raise TypeError()
-                gtk.gdk.threads_enter()
-                gtk.gdk.display_get_default().sync()            
+                Gtk.gdk.threads_enter()
+                Gtk.gdk.display_get_default().sync()            
                 message.src.set_property('force-aspect-ratio', True)
-                message.src.set_xwindow_id(gtk_player.window.xid)
-                gtk.gdk.threads_leave()
+                message.src.set_xwindow_id(gtk_player.get_property(window).get_xid())
+                Gtk.gdk.threads_leave()
 
             except KeyError:
                 pass
             except TypeError:
                 logger.error('players[{}]: need a {}; got a {}: {}'.format(
-                        name, gtk.DrawingArea, type(gtk_player), gtk_player))
+                        name, Gtk.DrawingArea, type(gtk_player), gtk_player))
         
 
     def _on_message_element(self, bus, message):
-        if message.structure.get_name() == 'level':
+        if message.get_structure().get_name() == 'level':
             self.__set_vumeter(message)
 
 
     def __set_vumeter(self, message):
-        struct = message.structure
+        struct = message.get_structure()
         if  struct['rms'][0] == float("-inf"):
             valor = "Inf"
         else:            
@@ -263,6 +267,4 @@ class Recorder(object):
         for bin_name, bin in self.bins.iteritems():
             bins_info.extend(bin.get_bins_info())
         return bins_info
-        
 
-            
