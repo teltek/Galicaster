@@ -253,11 +253,11 @@ class Player(object):
                 gtk_player = self.players[name]
                 if not isinstance(gtk_player, Gtk.DrawingArea):
                     raise TypeError()
-                Gtk.gdk.threads_enter()
-                Gtk.gdk.display_get_default().sync()
+                Gdk.threads_enter()
+                Gdk.Display.get_default().sync()
                 message.src.set_xwindow_id(Gtk_player.get_property('window').get_xid())
                 message.src.set_property('force-aspect-ratio', True)
-                Gtk.gdk.threads_leave()
+                Gdk.threads_leave()
 
             except TypeError:
                 pass
