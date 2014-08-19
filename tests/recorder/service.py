@@ -18,13 +18,13 @@ Unit tests for `galicaster.recorder.service` module.
 
 from unittest import TestCase
 import os
-import gtk
+from gi.repository import Gtk
 import tempfile
 import time
 from tempfile import mkdtemp
 from shutil import rmtree
 from datetime import datetime
-import gst
+from gi.repository import Gst
 
 from galicaster.core.conf import Conf
 from galicaster.core.dispatcher import Dispatcher
@@ -41,8 +41,6 @@ from galicaster.recorder.recorder import Recorder
 from galicaster.core import context
 
 from tests import get_resource
-
-gtk.gdk.threads_init()
 
 class TestFunctions(TestCase):
 
@@ -64,7 +62,7 @@ class TestFunctions(TestCase):
         def get_time(self):
             pass
         def get_recorded_time(self):
-            return gst.SECOND
+            return Gst.SECOND
         def preview(self):
             pass
         def preview_and_record(self):
