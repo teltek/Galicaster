@@ -28,11 +28,12 @@ from tests.recorder.base import Base
 @attr('nodefault', 'recorder_v4l2')
 class TestFunctions(TestCase, Base):
 
-    v4l2_bin = [{'name'   : 'v4l2',
-                'device' : 'v4l2', 
-                'caps'   : 'video/x-raw,framerate=24/1,width=640,height=480',
-                'path'   :  '/tmp/',
-                'file'   : 'V4L2.avi'}]
+    v4l2_bin = [{'name'     : 'v4l2',
+                 'device'   : 'v4l2',
+                 'location' : '/dev/video0',
+                 'caps'     : 'video/x-raw,framerate=24/1,width=640,height=480',
+                 'path'     :  '/tmp/',
+                 'file'     : 'V4L2.avi'}]
 
     def setUp(self):
         Base.setUp(self)
@@ -46,7 +47,6 @@ class TestFunctions(TestCase, Base):
         bins = self.v4l2_bin
         Base.test_preview(self, bins)
 
-    @skip("problem with videotest and audiotest")
     def test_preview_multi(self):
         bins = self.v4l2_bin + self.getVideoTestBin() + self.getAudioTestBin()
         Base.test_preview_multi(self, bins)
@@ -55,7 +55,6 @@ class TestFunctions(TestCase, Base):
         bins = self.v4l2_bin
         Base.test_preview_and_record(self, bins)
 
-    @skip("problem with videotest and audiotest")
     def test_preview_and_record_multi(self):
         bins = self.v4l2_bin + self.getVideoTestBin() + self.getAudioTestBin()
         Base.test_preview_and_record_multi(self, bins)
@@ -64,7 +63,6 @@ class TestFunctions(TestCase, Base):
         bins = self.v4l2_bin
         Base.test_record(self, bins)
 
-    @skip("problem with videotest and audiotest")
     def test_record_multi(self):
         bins = self.v4l2_bin + self.getVideoTestBin() + self.getAudioTestBin()
         Base.test_record_multi(self, bins)
