@@ -11,24 +11,22 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import gobject
-import gst
 from os import path
 
-from galicaster.recorder import base
-from galicaster.recorder import module_register
+from gi.repository import GObject, Gst
 
-raise Exception("Not implemented. Using gst 0.10")
+from galicaster.recorder import base
+#from galicaster.recorder import module_register
 
 pipestr = (" pulsesrc name=gc-audio-src  ! queue ! audioamplify name=gc-audio-amplify amplification=1 ! "
            " tee name=tee-aud  ! queue ! level name=gc-audio-level message=true interval=100000000 ! "
-           " volume name=gc-audio-volume ! alsasink sync=false name=gc-audio-preview  "
+           " volume name=gc-audio-volume ! autoaudiosink sync=false name=gc-audio-preview  "
            " tee-aud. ! queue ! valve drop=false name=gc-audio-valve ! "
            " audioconvert ! gc-audio-enc ! "
            " queue ! filesink name=gc-audio-sink async=false " )
 
 
-class GCpulse(gst.Bin, base.Base):
+class GCpulse(Gst.Bin, base.Base):
     
     order = ["name", "flavor", "location", "file", 
              "vumeter", "player", "amplification", "audioencoder"]
@@ -90,13 +88,13 @@ class GCpulse(gst.Bin, base.Base):
 
     def __init__(self, options={}): 
         base.Base.__init__(self, options)
-        gst.Bin.__init__(self, self.options["name"])
+        Gst.Bin.__init__(self)
 
         aux = (pipestr.replace("gc-audio-preview", "sink-" + self.options["name"])
                       .replace("gc-audio-enc", self.options["audioencoder"]))
 
-        #bin = gst.parse_bin_from_description(aux, True)
-        bin = gst.parse_launch("( {} )".format(aux))
+        #bin = Gst.parse_bin_from_description(aux, True)
+        bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
         if self.options['location'] != "default":
@@ -146,6 +144,9 @@ class GCpulse(gst.Bin, base.Base):
             element.set_property("mute", value)
 
     
-gobject.type_register(GCpulse)
-gst.element_register(GCpulse, "gc-pulse-bin")
-module_register(GCpulse, 'pulse')
+#GObject.type_register(GCpulse)
+#Gst.element_register(GCpulse, "gc-pulse-bin")
+#module_register(GCpulse, 'pulse')
+
+#GCpulseType = GObject.type_register(GCpulse)
+#Gst.Element.register(GCpulse, 'gc-pulse-bin', 0, GCpulseType)
