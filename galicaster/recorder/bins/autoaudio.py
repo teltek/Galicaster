@@ -11,24 +11,23 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import gobject
-import gst
 from os import path
+
+from gi.repository import GObject, Gst
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
-raise Exception("Not implemented. Using gst 0.10")
 
 pipestr = (" autoaudiosrc name=gc-autoaudio-src  ! queue ! audioamplify name=gc-autoaudio-amplify amplification=1 ! "
            " tee name=tee-aud  ! queue ! level name=gc-autoaudio-level message=true interval=100000000 ! "
-           " volume name=gc-autoaudio-volume ! alsasink sync=false name=gc-autoaudio-preview  "
+           " volume name=gc-autoaudio-volume ! autoaudiosink sync=false name=gc-autoaudio-preview  "
            " tee-aud. ! queue ! valve drop=false name=gc-autoaudio-valve ! "
            " audioconvert ! gc-autoaudio-enc ! "
            " queue ! filesink name=gc-autoaudio-sink async=false " )
 
 
-class GCautoaudio(gst.Bin, base.Base):
+class GCautoaudio(Gst.Bin, base.Base):
     
     order = ["name", "flavor", "location", "file", 
              "vumeter", "player", "amplification", "audioencoder"]
@@ -90,13 +89,13 @@ class GCautoaudio(gst.Bin, base.Base):
 
     def __init__(self, options={}): 
         base.Base.__init__(self, options)
-        gst.Bin.__init__(self, self.options["name"])
+        Gst.Bin.__init__(self)
 
         aux = (pipestr.replace("gc-autoaudio-preview", "sink-" + self.options["name"])
                       .replace("gc-autoaudio-enc", self.options["audioencoder"]))
 
-        #bin = gst.parse_bin_from_description(aux, True)
-        bin = gst.parse_launch("( {} )".format(aux))
+        #bin = Gst.parse_bin_from_description(aux, True)
+        bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
         if self.options['location'] != "default":
@@ -145,7 +144,10 @@ class GCautoaudio(gst.Bin, base.Base):
             element = self.get_by_name("gc-autoaudio-volume")
             element.set_property("mute", value)
 
+#GObject.type_register(GCautoaudio)
+#Gst.element_register(GCautoaudio, "gc-alsa-bin")
+#module_register(GCautoaudio, 'alsa')
+
+#GCautoaudioType = GObject.type_register(GCautoaudio)
+#Gst.Element.register(GCautoaudio, 'gc-autoaudio-bin', 0, GCautoaudioType)
     
-gobject.type_register(GCautoaudio)
-gst.element_register(GCautoaudio, "gc-alsa-bin")
-module_register(GCautoaudio, 'alsa')
