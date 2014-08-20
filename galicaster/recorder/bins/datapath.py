@@ -16,9 +16,7 @@ The 'datapath' bin is preserved to keep backwards compatibility. The 'datapath' 
 """
 
 from galicaster.recorder.bins import v4l2
-from galicaster.recorder import module_register
-
-raise Exception("Not implemented. Using gst 0.10")
+#from galicaster.recorder import module_register
 
 class GCdatapath(v4l2.GCv4l2):
 
@@ -45,7 +43,7 @@ class GCdatapath(v4l2.GCv4l2):
             },
         "caps": {
             "type": "caps",
-            "default": "video/x-raw-yuv,width=1024,height=768,framerate=30/1",
+            "default": "video/x-raw,width=1024,height=768,framerate=30/1",
             "description": "Forced capabilities",
             },
         "videocrop-right": {
@@ -74,9 +72,7 @@ class GCdatapath(v4l2.GCv4l2):
             },
         "videoencoder": {
             "type": "text",
-            "default": "xvidenc bitrate=5000000",
-            # "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000",
-            # "x264enc pass=5 quantizer=22 speed-preset=4 profile=1"
+            "default": "x264enc pass=5 quantizer=22 speed-preset=4",
             "description": "Gstreamer encoder element used in the bin",
             },
         "muxer": {
@@ -89,4 +85,4 @@ class GCdatapath(v4l2.GCv4l2):
     def __init__(self, options={}):
         v4l2.GCv4l2.__init__(self, options)
 
-module_register(GCdatapath, 'datapath')
+#module_register(GCdatapath, 'datapath')
