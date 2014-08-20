@@ -121,7 +121,7 @@ class Base(object):
             # TODO validate caps using gst module
             #if v['type'] == 'caps':
             #    try:
-            #        caps = gst.caps_from_string(self.options[k])
+            #        caps = Gst.Caps.from_string(self.options[k])
             #    except:
             #         raise SystemError('Parameter {0} on {1} holds invalid caps'.format(
             #                  k, type(self).__name__)) # TODO Mejorar
@@ -132,7 +132,7 @@ class Base(object):
     def set_option_in_pipeline(self, option, element, prop, parse=str):
         element = self.get_by_name(element)
         if prop == "caps":
-            element.set_property(prop, Gst.caps_from_string(self.options[option]))
+            element.set_property(prop, Gst.Caps.from_string(self.options[option]))
         else:
             element.set_property(prop, parse(self.options[option]))
 

@@ -69,7 +69,6 @@ class TestFunctions(TestCase, Base):
         bins = self.getVideoTestBin()
         Base.test_preview(self, bins)
 
-    @skip("problem with videotest and audiotest")
     def test_preview_multi(self):
         bins = self.getVideoTestBin() + self.getOtherVideoTestBin() + self.getAudioTestBin()
         Base.test_preview_multi(self, bins)
@@ -78,7 +77,6 @@ class TestFunctions(TestCase, Base):
         bins = self.getVideoTestBin()
         Base.test_preview_and_record(self, bins)
 
-    @skip("problem with videotest and audiotest")
     def test_preview_and_record_multi(self):
         bins = self.getVideoTestBin() + self.getOtherVideoTestBin() + self.getAudioTestBin()
         Base.test_preview_and_record_multi(self, bins)
@@ -88,7 +86,6 @@ class TestFunctions(TestCase, Base):
         Base.test_record(self, bins)
 
 
-    @skip("problem with videotest and audiotest")
     def test_record_multi(self):
         bins = self.getVideoTestBin() + self.getOtherVideoTestBin() + self.getAudioTestBin()
         Base.test_record_multi(self, bins)

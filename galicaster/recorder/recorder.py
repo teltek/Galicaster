@@ -73,8 +73,8 @@ class Recorder(object):
                 __import__(mod_name)
                 mod = sys.modules[mod_name]
                 Klass = getattr(mod, "GC" + bin['device'])
-            except:
-                message = 'Invalid track type "{}" for "{}" track'.format(bin.get('device'), name)
+            except Exception as exc:
+                message = 'Invalid track type "{}" for "{}" track: {}'.format(bin.get('device'), name, exc)
                 logger.error(message)
                 raise NameError(message)
 
@@ -136,11 +136,13 @@ class Recorder(object):
                     text = "Error on unknow track"
 
             src = random_bin
-            error = Gst.GError(Gst.ResourceError, Gst.ResourceError.FAILED, text)
-                
-            message = Gst.message_new_error(
-                src, error, 
-                str(random_bin)+"\nunknown system_error")
+            error = Gst.StreamError(Gst.ResourceError.FAILED)
+#            error = Glib.GError(Gst.ResourceError, Gst.ResourceError.FAILED, text)
+            
+
+            a = Gst.Structure.new_from_string('letpass')
+            message = Gst.Message.new_custom(Gst.MessageType.ERROR,src, a)   
+#            message = Gst.Message.new_error(src, error, str(random_bin)+"\nunknown system_error")
             self.bus.post(message)
             self.dispatcher.emit("recorder-error","Driver error")
             return False
@@ -196,10 +198,10 @@ class Recorder(object):
         logger.error(error_info)
         if not debug.count('canguro') and not self.error:
             self.stop(True)
-            Gtk.gdk.threads_enter()
+            Gdk.threads_enter()
             self.error = error_info
             self.dispatcher.emit("recorder-error", error_info)
-            Gtk.gdk.threads_leave()
+            Gdk.threads_leave()
             # return True
     
 
@@ -214,11 +216,11 @@ class Recorder(object):
                 gtk_player = self.players[name]
                 if not isinstance(gtk_player, Gtk.DrawingArea):
                     raise TypeError()
-                Gtk.gdk.threads_enter()
-                Gtk.gdk.display_get_default().sync()            
+                Gdk.threads_enter()
+                Gdk.Display.get_default().sync()            
                 message.src.set_property('force-aspect-ratio', True)
                 message.src.set_xwindow_id(gtk_player.get_property(window).get_xid())
-                Gtk.gdk.threads_leave()
+                Gdk.threads_leave()
 
             except KeyError:
                 pass
