@@ -11,37 +11,37 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
-import gobject
-import gst
+from os import path
 import re
 
-from os import path
+from gi.repository import Gst
+Gst.init(None)
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
-raise Exception("Not implemented. Using gst 0.10")
 
-videostr = ( ' decklinksrc connection=sdi mode=12 name=gc-blackmagic-src ! '
-             ' identity name=gc-blackmagic-idvideo ! videorate ! gc-blackmagic-capsfilter !'
+videostr = ( ' decklinksrc connection=sdi mode=12 name=gc-blackmagic-src ! videoconvert ! queue ! '
+             ' videorate ! gc-blackmagic-capsfilter !'
              ' queue ! videocrop name=gc-blackmagic-crop ! '
-             ' tee name=gc-blackmagic-tee  ! queue ! ffmpegcolorspace ! xvimagesink async=false sync=false name=gc-blackmagic-preview'
+             ' tee name=gc-blackmagic-tee  ! queue ! videoconvert ! xvimagesink async=false sync=false name=gc-blackmagic-preview'
              #REC VIDEO
-             ' gc-blackmagic-tee. ! queue ! valve drop=false name=gc-blackmagic-valve ! ffmpegcolorspace ! '
+             ' gc-blackmagic-tee. ! queue ! valve drop=false name=gc-blackmagic-valve ! videoconvert ! '
              ' gc-blackmagic-enc ! queue ! gc-blackmagic-muxer ! '
-             ' queue ! identity name=gc-blackmagic-idend ! filesink name=gc-blackmagic-sink async=false' 
+             ' queue ! filesink name=gc-blackmagic-sink async=false' 
              )
 audiostr= (
             #AUDIO
-            ' gc-blackmagic-src.audiosrc ! identity name=gc-blackmagic-idaudio ! queue ! '
+            ' gc-blackmagic-src.audiosrc ! queue ! '
             ' audiorate ! audioamplify name=gc-blackmagic-amplify amplification=1 ! '
             ' tee name=gc-blackmagic-audiotee ! queue ! '
             ' level name=gc-blackmagic-level message=true interval=100000000 ! '
-            ' volume name=gc-blackmagic-volume ! queue ! alsasink sync=false name=gc-blackmagic-audio-preview '
+            ' volume name=gc-blackmagic-volume ! queue ! autoaudiosink async=false sync=false name=gc-blackmagic-audio-preview '
             # REC AUDIO
             ' gc-blackmagic-audiotee. ! queue ! valve drop=false name=gc-blackmagic-audio-valve ! '
             ' audioconvert ! gc-blackmagic-audioenc ! queue ! gc-blackmagic-muxer. '
             )
+
 
 FRAMERATE = dict(zip(
     ["ntsc","ntsc2398", "pal", "ntsc-p","pal-p", "1800p2398", "1080p24", "1080p25", "1080p2997", "1080p30", "1080i50", "1080i5994", "1080i60", "1080p50", "1080p5994", "1080p60", "720p50", "720p5994","720p60"],
@@ -49,7 +49,7 @@ FRAMERATE = dict(zip(
     ))
 
 
-class GCblackmagic(gst.Bin, base.Base):
+class GCblackmagic(Gst.Bin, base.Base):
 
   order = ["name","flavor","location","file",
            "input-mode","input","audio-input","subdevice",
@@ -156,7 +156,7 @@ class GCblackmagic(gst.Bin, base.Base):
       },
     "videoencoder": {
       "type": "text",
-      "default": "x264enc quantizer=22 speed-preset=2 profile=1",
+      "default": "x264enc quantizer=22 speed-preset=2",
       #Other examples: "xvidenc bitrate=50000000" or "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000"
       "description": "Gstreamer video encoder element used in the bin",
       },
@@ -186,13 +186,13 @@ class GCblackmagic(gst.Bin, base.Base):
 
   def __init__(self, options={}):
         base.Base.__init__(self, options)
-        gst.Bin.__init__(self, self.options['name'])
+        Gst.Bin.__init__(self)
 
         pipestr = videostr
         aux = (pipestr.replace('gc-blackmagic-preview', 'sink-' + self.options['name'])
                .replace('gc-blackmagic-enc', self.options['videoencoder'])
                .replace('gc-blackmagic-muxer', self.options['muxer']+" name=gc-blackmagic-muxer")
-               .replace('gc-blackmagic-capsfilter', "video/x-raw-yuv,framerate={0}".format(
+               .replace('gc-blackmagic-capsfilter', "video/x-raw,framerate={0}".format(
               FRAMERATE[self.options["input-mode"]]))
                )
 
@@ -203,8 +203,8 @@ class GCblackmagic(gst.Bin, base.Base):
           aux += audiostr
           aux = aux.replace('gc-blackmagic-audioenc', self.options['audioencoder'])
 
-        #bin = gst.parse_bin_from_description(aux, False)
-        bin = gst.parse_launch("( {} )".format(aux))
+        #bin = Gst.parse_bin_from_description(aux, False)
+        bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
         sink = self.get_by_name('gc-blackmagic-sink')
@@ -236,7 +236,7 @@ class GCblackmagic(gst.Bin, base.Base):
           subdevice = int(self.options['subdevice'])
         except ValueError:
           subdevice = self.options['subdevice']                                
-        element.set_property('subdevice', subdevice)
+        element.set_property('device_number', subdevice)
 
         if self.has_audio:
           if "player" in self.options and self.options["player"] == False:
@@ -282,17 +282,13 @@ class GCblackmagic(gst.Bin, base.Base):
 
   def send_event_to_src(self, event):
     src = self.get_by_name('gc-blackmagic-src')
-    src.set_state(gst.STATE_NULL)
-    src.get_state()
-
-    src_video = self.get_by_name('gc-blackmagic-idvideo')
-    if self.has_audio:
-      src_audio = self.get_by_name('gc-blackmagic-idaudio')
-      src_audio.send_event(event)
-    src_video.send_event(event)
+    src.send_event(event)
     
 
 
-gobject.type_register(GCblackmagic)
-gst.element_register(GCblackmagic, 'gc-blackmagic-bin')
-module_register(GCblackmagic, 'blackmagic')
+#Gobject.type_register(GCblackmagic)
+#Gst.element_register(GCblackmagic, 'gc-blackmagic-bin')
+#module_register(GCblackmagic, 'blackmagic')
+
+#GCblackmagicType = GObject.type_register(GCblackmagic)
+#Gst.Element.register(GCblackmagic, 'gc-blackmagic-bin', 0, GCblackmagicType)
