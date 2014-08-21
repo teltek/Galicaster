@@ -11,26 +11,22 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-
-import gobject
-import gst
-
 from os import path
 
-from galicaster.recorder import base
+from gi.repository import GObject, Gst
 
-raise Exception("Not implemented. Using gst 0.10")
+from galicaster.recorder import base
 
 pipestr = ( ' dv1394src use-avc=false name=gc-firewire-src ! queue ! tee name=gc-firewire-maintee ! '
             ' queue ! dvdemux name=gc-firewire-demuxer ! '
             ' level name=gc-firewire-level message=true interval=100000000 ! '
-            ' volume name=gc-firewire-volume ! alsasink sync=false name=gc-firewire-audio-sink '
-            ' gc-firewire-demuxer. ! queue ! ffdec_dvvideo ! ffmpegcolorspace ! xvimagesink qos=false async=false sync=false name=gc-firewire-preview '
+            ' volume name=gc-firewire-volume ! autoaudiosink sync=false name=gc-firewire-audio-sink '
+            ' gc-firewire-demuxer. ! queue ! avdec_dvvideo ! videoconvert ! xvimagesink qos=false async=false sync=false name=gc-firewire-preview '
             ' gc-firewire-maintee. ! queue ! valve drop=false name=gc-firewire-valve ! filesink name=gc-firewire-sink async=false '
             )
 
 
-class GCfirewire(gst.Bin, base.Base):
+class GCfirewire(Gst.Bin, base.Base):
 
     order = [ 'name', 'flavor', 'location', 'file', 'vumeter', 'player', 'format']
 
@@ -92,11 +88,11 @@ class GCfirewire(gst.Bin, base.Base):
 
     def __init__(self, options={}): 
         base.Base.__init__(self, options)
-        gst.Bin.__init__(self, self.options["name"])
+        Gst.Bin.__init__(self)
 
         aux = pipestr.replace("gc-firewire-preview", "sink-" + self.options["name"])
-        #bin = gst.parse_bin_from_description(aux, False)
-        bin = gst.parse_launch("( {} )".format(aux))
+        #bin = Gst.parse_bin_from_description(aux, False)
+        bin = Gst.parse_launch("( {} )".format(aux))
 
         self.add(bin)
 
@@ -140,5 +136,8 @@ class GCfirewire(gst.Bin, base.Base):
         pass
      
 
-gobject.type_register(GCfirewire)
-gst.element_register(GCfirewire, "gc-firewire-bin")
+#GObject.type_register(GCfirewire)
+#Gst.element_register(GCfirewire, "gc-firewire-bin")
+
+#GCfirewireType = GObject.type_register(GCfirewire)
+#Gst.Element.register(GCfirewire, 'gc-firewire-bin', 0, GCfirewireType)
