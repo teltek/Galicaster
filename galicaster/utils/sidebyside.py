@@ -52,14 +52,14 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
     filesrc location="{SCREEN}" ! decodebin2 name=dbscreen ! deinterlace ! 
     aspectratiocrop aspect-ratio={screen_aspect} ! videoscale ! videorate !
     ffmpegcolorspace name=colorsp_screen !
-    video/x-raw-yuv,width=640,height=480,framerate=25/1 !
+    video/x-raw-yuv,width=640,height=480,pixel-aspect-ratio=1/1,framerate=25/1,interlaced=false !
     videobox right=-640 top=-120 bottom=-120 ! queue !
     mix.sink_0 
 
     filesrc location="{CAMERA}" ! decodebin2 name=dbcamera ! deinterlace ! 
     aspectratiocrop aspect-ratio={camera_aspect} ! videoscale ! videorate !
     ffmpegcolorspace name=colorsp_camera !
-    video/x-raw-yuv,width=640,height=480,framerate=25/1,interlaced=false ! queue !
+    video/x-raw-yuv,width=640,height=480,framerate=25/1,pixel-aspect-ratio=1/1,interlaced=false ! queue !
     mix.sink_1 
     """
 

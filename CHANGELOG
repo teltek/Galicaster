@@ -7,7 +7,7 @@ To get the diff between two versions, go to https://github.com/teltek/galicaster
 
 
 
-* 1.4.1-RC1 (YYYY-MM-DD)
+* 1.4.1 (2014-08-18)
 
  * New retry to recreate the pipeline periodically when a stream dies.
  * Fixed enable pause in datapath bin.

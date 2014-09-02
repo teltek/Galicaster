@@ -110,7 +110,7 @@ class Scheduler(object):
 
 
     def proccess_ical(self):
-        self.logger.info('Proccess ical')
+        self.logger.info('Process ical')
         try:
             ical_data = self.client.ical()
         except:

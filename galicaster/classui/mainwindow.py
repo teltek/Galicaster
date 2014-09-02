@@ -145,6 +145,7 @@ class GCWindow(gtk.Window):
             self.logger.debug("Delete Event Received")
         if self.dispatcher:
             self.dispatcher.emit('galicaster-quit')
+        return True
 
 
     def close(self, signal):

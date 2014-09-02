@@ -115,6 +115,7 @@ class RecorderClassUI(gtk.Box):
         self.error_text = None
         self.error_dialog = None
         self.error_count = 0
+        self.error_handle_id = None
         self.ok_to_show = False
         self.swap_active = None
         self.swap = False
@@ -219,6 +220,7 @@ class RecorderClassUI(gtk.Box):
 
         if self.ok_to_show:
             self.init_recorder()
+        self.error_handle_id = None
         return False
 
 
@@ -230,13 +232,13 @@ class RecorderClassUI(gtk.Box):
         """Preview at start - Galicaster initialization"""
         logger.info("Starting Preview")
         self.conf.reload()
-        self.error_count = 0
+        self.reset_recover_handler()
         self.select_devices()
         return True
 
     def on_start_button(self, button=None):
         """Triggers bin loading and start preview"""
-        self.error_count = 0
+        self.reset_recover_handler()
         self.select_devices()
 
     def init_recorder(self):
@@ -404,7 +406,7 @@ class RecorderClassUI(gtk.Box):
               context.get_mainwindow(), buttons
             )
             self.dispatcher.emit("enable-no-audio")
-            if warning.response not in message.POSITIVE:
+            if warning.response not in message.POSITIVE or self.status not in [GC_RECORDING]:
                 return False
             else:
                 self.on_stop("UI","current")
@@ -506,8 +508,10 @@ class RecorderClassUI(gtk.Box):
                 "text" : _(" ...or contact us on our community list.")
 		}
         buttons = None
+        self.dispatcher.emit("disable-no-audio")
         message.PopUp(message.INFO, text,
                       context.get_mainwindow(), buttons)
+        self.dispatcher.emit("enable-no-audio")
 
     def restart(self): # FIXME name confusing cause on_restart_preview
         """Called by Core, if in preview, reload configuration and restart preview."""
@@ -522,21 +526,31 @@ class RecorderClassUI(gtk.Box):
 
         return True
 
+
+    def reset_recover_handler(self):
+        self.error_count = 0
+        self.error_handle_id and gobject.source_remove(self.error_handle_id)
+        
+
     def handle_pipeline_error(self, origin, error_message):
         """ Captures a pipeline error.
         If the recording are is active, shows it
         """
         self.change_state(GC_ERROR)
+        self.timer_thread_id = None
         context.get_state().is_error = True
         self.recorder.stop_elements()
         context.get_state().is_recording = False
         self.error_count += 1
+
         if (self.error_count > 5):
             logger.error("Error. Show message ({})".format(self.error_count))
             self.show_pipeline_error(origin, error_message)
         elif(self.status not in [ GC_RECORDING, GC_PAUSED ]):
+            if self.error_count == 1:
+                self.repo.save_crash_recordings()
             logger.error("Error, retry intent {}".format(self.error_count))
-            gobject.timeout_add_seconds(13, self.select_devices)
+            self.error_handle_id = gobject.timeout_add_seconds(13, self.select_devices)
 
     def show_pipeline_error(self, origin, error_message):
         self.error_text = error_message
