@@ -14,8 +14,8 @@
 UI for the Media Manager and Player area
 """
 
-import gtk
-import gobject
+from gi.repository import Gtk
+from gi.repository import GObject
 from galicaster.utils import series
 
 from galicaster.core import context
@@ -41,7 +41,7 @@ OPERATION_NAMES = { 'Export to Zip': _('Export to Zip'),
             'Cancel': _('Cancel'),
              }
 
-class ManagerUI(gtk.Box):
+class ManagerUI(Gtk.Box):
     """
     Create Recording Listing in a VBOX with TreeView from an MP list
     """
@@ -49,7 +49,7 @@ class ManagerUI(gtk.Box):
 
     def __init__(self, element):
         """elements set the previous area to which the top bar's back button points to"""
-        gtk.Box.__init__(self)
+        Gtk.Box.__init__(self)
         self.strip = StripUI(element)
         
 	self.conf = context.get_conf()
@@ -71,7 +71,7 @@ class ManagerUI(gtk.Box):
 
         elif first == second:
             if regular:
-                if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:
+                if self.vista.get_column(self.equivalent[data]).get_sort_order() == Gtk.SortType.DESCENDING:
                     ascending=-1
                 # order by date
                 response = self.sorting(treemodel,iter1,iter2,6,False,ascending) 
@@ -92,20 +92,20 @@ class ManagerUI(gtk.Box):
             second = second.lower()
 
         if first in ["",None] and second in ["",None]:
-            if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:
+            if self.vista.get_column(self.equivalent[data]).get_sort_order() == Gtk.SortType.DESCENDING:
                 ascending=-1
             # order by date
             response = self.sorting(treemodel,iter1,iter2,6,False,ascending) 
             return response
 
         elif  first in ["",None]:
-            if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:	
+            if self.vista.get_column(self.equivalent[data]).get_sort_order() == Gtk.SortType.DESCENDING:	
                 return -1  
             else:
                 return 1
 
         elif  second in ["",None]:
-            if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:	
+            if self.vista.get_column(self.equivalent[data]).get_sort_order() == Gtk.SortType.DESCENDING:	
                 return 1  
             else:
                 return -1
@@ -114,7 +114,7 @@ class ManagerUI(gtk.Box):
         if first > second:
             return 1 * ascending
         elif first == second:
-            if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:
+            if self.vista.get_column(self.equivalent[data]).get_sort_order() == Gtk.SortType.DESCENDING:
                 ascending=-1
             # order by date
             response = self.sorting(treemodel,iter1,iter2,6,False,ascending) 
@@ -128,20 +128,20 @@ class ManagerUI(gtk.Box):
         first = treemodel[iter1][data]
         second = treemodel[iter2][data]
         if first in ["",None] and second in ["",None]:
-            if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:
+            if self.vista.get_column(self.equivalent[data]).get_sort_order() == Gtk.SortType.DESCENDING:
                 ascending=-1
             # order by date
             response = self.sorting(treemodel,iter1,iter2,6,False,ascending) 
             return response
 
         elif  first in ["",None]:
-            if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:	
+            if self.vista.get_column(self.equivalent[data]).get_sort_order() == Gtk.SortType.DESCENDING:	
                 return -1  
             else:
                 return 1
 
         elif  second in ["",None]:
-            if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:	
+            if self.vista.get_column(self.equivalent[data]).get_sort_order() == Gtk.SortType.DESCENDING:	
                 return 1  
             else:
                 return -1
@@ -150,7 +150,7 @@ class ManagerUI(gtk.Box):
         if first > second:
             return 1 * ascending
         elif first == second:
-            if self.vista.get_column(self.equivalent[data]).get_sort_order() == gtk.SORT_DESCENDING:
+            if self.vista.get_column(self.equivalent[data]).get_sort_order() == Gtk.SortType.DESCENDING:
                 ascending=-1
             # order by date
             response = self.sorting(treemodel,iter1,iter2,6,False,ascending) 
@@ -228,7 +228,7 @@ class ManagerUI(gtk.Box):
             return True
         elif warning.response == -4:
             return True # Escape key used
-        elif warning.response == gtk.RESPONSE_OK: # Warning
+        elif warning.response == Gtk.ResponseType.OK: # Warning
             return True
         else:
             chosen_job = response_dict[warning.response].lower().replace (" ", "_")
@@ -271,12 +271,12 @@ class ManagerUI(gtk.Box):
 	    button.set_property("height-request", int(k1*100) )
 
 	    image = button.get_children()
-	    if type(image[0]) == gtk.Image:
+	    if type(image[0]) == Gtk.Image:
 		image[0].set_pixel_size(int(k1*80))   
 
-	    elif type(image[0]) == gtk.VBox:
+	    elif type(image[0]) == Gtk.VBox:
 		for element in image[0].get_children():
-		    if type(element) == gtk.Image:
+		    if type(element) == Gtk.Image:
 			element.set_pixel_size(int(k1*46))
 
 	for name in secondlist:
@@ -285,13 +285,13 @@ class ManagerUI(gtk.Box):
 	    button2.set_property("height-request", int(k2*85) )
 
 	    image = button2.get_children()
-	    if type(image[0]) == gtk.Image:
+	    if type(image[0]) == Gtk.Image:
 		image[0].set_pixel_size(int(k1*56))
                 image[0].show()
 
-	    elif type(image[0]) == gtk.VBox:
+	    elif type(image[0]) == Gtk.VBox:
 		for element in image[0].get_children():
-		    if type(element) == gtk.Image:
+		    if type(element) == Gtk.Image:
 			element.set_pixel_size(int(k1*46))
 
 	return True
@@ -306,7 +306,7 @@ class ManagerUI(gtk.Box):
 		"main" : _("Are you sure you want to delete?"),
 		"text" : t1+"\n\n"+t2
 		    }
-	buttons = ( gtk.STOCK_DELETE, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
+	buttons = ( Gtk.STOCK_DELETE, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
 	warning = message.PopUp(message.WARNING, text,
                                 context.get_mainwindow(),
                                 buttons)
@@ -322,4 +322,4 @@ class ManagerUI(gtk.Box):
         """Updates the signal status from a received signal"""
         self.network = status           
 
-gobject.type_register(ManagerUI)
+GObject.type_register(ManagerUI)

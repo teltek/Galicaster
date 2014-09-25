@@ -13,9 +13,9 @@
 
 
 import glib
-import gtk
+from gi.repository import Gtk, Gdk, GObject
 glib.threads_init()
-gtk.gdk.threads_init()
+Gdk.threads_init()
 
 from galicaster import __version__
 from galicaster.core import context
@@ -42,20 +42,18 @@ class Main():
         logger.info('galicaster.__file__: %r', __file__)
 
         self.conf = context.get_conf()
-        self.state = context.get_state()
         self.dispatcher = context.get_dispatcher()
         self.modules = self.conf.get_modules()
         self.load_modules()
-        self.dispatcher.connect('net-up', self.check_net, True)
-        self.dispatcher.connect('net-down', self.check_net, False)
 
     def load_modules(self):
+        plugins.init()
+        
         self.window = context.get_mainwindow()
-               
         # Recorder
         self.recorder = RecorderClassUI()
         self.window.insert_page(self.recorder, 'REC', REC) 
-
+        
         if 'scheduler' in self.modules:        
             self.scheduler = context.get_scheduler()
 
@@ -76,18 +74,15 @@ class Main():
 
         self.window.start()
 
-        self.recorder.go_ahead() # allows record area to load devices and show preview
-
         if 'media_manager' in self.modules:            
             self.window.set_current_page(DIS)
-            self.state.area = DIS
         else:
             self.window.set_current_page(REC)
-            self.state.area = REC
             self.recorder.block()  
 
-        plugins.init()
         context.get_heartbeat().init_timer()
+        self.dispatcher.emit("galicaster-init")
+
 
     def emit_quit(self):
         self.dispatcher.emit('galicaster-notify-quit')
@@ -95,8 +90,4 @@ class Main():
     def change_mode(self, origin, page):
         old_page = self.window.get_current_page()
         self.window.set_current_page(page)  
-        self.state.area = page
         self.dispatcher.emit('galicaster-status', old_page, page)
-
-    def check_net(self, origin, data):
-        self.state.net = data

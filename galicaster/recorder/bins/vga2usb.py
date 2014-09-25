@@ -13,7 +13,7 @@
 
 from galicaster.core import context
 from galicaster.recorder.bins import epiphan
-from galicaster.recorder import module_register
+#from galicaster.recorder import module_register
 
 logger = context.get_logger()
 
@@ -24,4 +24,4 @@ class GCvga2usb(epiphan.GCepiphan):
         logger.error("This bin has been renamed to 'epiphan' and is only provided for compatibility. Use epiphan instead")
         epiphan.GCepiphan.__init__(self, options)
 
-module_register(GCvga2usb, 'vga2usb')
+#module_register(GCvga2usb, 'vga2usb')

@@ -11,19 +11,19 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import gtk
+from gi.repository import Gtk
 from galicaster.core import context
 
 
 def init():
     window = context.get_mainwindow()
-    window.add_events(gtk.gdk.KEY_PRESS_MASK)
+    window.add_events(Gdk.EventMask.KEY_PRESS_MASK)
     window.connect('key-press-event', check_key)
 
 
 def is_the_key(key, event):
-    return ((event.state & gtk.gdk.CONTROL_MASK)  and
-            (event.keyval in [gtk.gdk.keyval_from_name(key), gtk.gdk.keyval_from_name(key.upper())]))
+    return ((event.get_state() & Gdk.ModifierType.CONTROL_MASK)  and
+            (event.keyval in [Gdk.keyval_from_name(key), Gdk.keyval_from_name(key.upper())]))
 
 def check_key(source, event):
     """
@@ -31,16 +31,15 @@ def check_key(source, event):
     """
     dispatcher = context.get_dispatcher()
     window = context.get_mainwindow()
-    state = context.get_state()
-    if ((event.state & gtk.gdk.SHIFT_MASK and event.state & gtk.gdk.CONTROL_MASK) 
-        and event.state & gtk.gdk.MOD2_MASK and
-        (event.keyval in [gtk.gdk.keyval_from_name('q'), gtk.gdk.keyval_from_name('Q')])):
+    if ((event.get_state() & Gdk.ModifierType.SHIFT_MASK and event.get_state() & Gdk.ModifierType.CONTROL_MASK) 
+        and event.get_state() & Gdk.ModifierType.MOD2_MASK and
+        (event.keyval in [Gdk.keyval_from_name('q'), Gdk.keyval_from_name('Q')])):
         
-        if not state.is_recording:
+        if not context.get_recorder.is_recording():
             dispatcher.emit('galicaster-quit')
 
-    if ((event.state & gtk.gdk.CONTROL_MASK)  and
-        event.keyval == gtk.gdk.keyval_from_name('Return') ):
+    if ((event.get_state() & Gdk.ModifierType.CONTROL_MASK)  and
+        event.keyval == Gdk.keyval_from_name('Return') ):
         window.toggle_fullscreen(None)
                 
     return True  

@@ -14,7 +14,7 @@
 """
 """
 
-import gtk
+from gi.repository import Gtk
 from galicaster.core import context
 
 def init():
@@ -24,12 +24,12 @@ def init():
             
 
 def hide_cursor(): 
-    pixmap = gtk.gdk.Pixmap(None, 1, 1, 1)
-    color = gtk.gdk.Color()
-    invisible = gtk.gdk.Cursor(pixmap, pixmap, color, color, 0, 0)
-    window=gtk.gdk.get_default_root_window()
+    pixmap = Gdk.Pixmap(None, 1, 1, 1)
+    color = Gdk.Color()
+    invisible = Gdk.Cursor.new(pixmap, pixmap, color, color, 0, 0)
+    window=Gdk.get_default_root_window()
     window.set_cursor(invisible)
 
 def show_cursor(emiter=None):
-    window=gtk.gdk.get_default_root_window()
-    window.set_cursor(gtk.gdk.Cursor(gtk.gdk.ARROW)) 
+    window=Gdk.get_default_root_window()
+    window.set_cursor(Gdk.Cursor.new(Gdk.CursorType.ARROW)) 

@@ -23,6 +23,7 @@ from xml.dom import minidom
 from xml.dom.minidom import parseString
 from xml.parsers.expat import ExpatError
 from unittest import TestCase
+from unittest import skip
 
 from tests import get_resource
 from galicaster.mediapackage import repository
@@ -116,8 +117,8 @@ class TestFunctions(TestCase):
         rmtree(tmppath)
         remove(path_zip)
         
-
-    def no_test_operation_status(self):
+    @skip("skip")
+    def test_operation_status(self):
         mp = mediapackage.Mediapackage()
         mp.add(self.track1)
         mp.operation["ingest"] = 4

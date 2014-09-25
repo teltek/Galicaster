@@ -11,9 +11,9 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import gtk
-import gobject
-import pango
+from gi.repository import Gtk
+from gi.repository import GObject
+from gi.repository import Pango
 
 from galicaster.classui.managerui import ManagerUI
 from galicaster.core import context
@@ -35,8 +35,8 @@ class "GtkRange" style "big-scroll"
 
 """
 
-gtk.rc_parse_string(rcstring)
-#gtk.rc_reset_styles(self.main_window.get_settings())
+Gtk.rc_parse_string(rcstring)
+#Gtk.rc_reset_styles(self.main_window.get_settings())
 
 
 class ListingClassUI(ManagerUI):
@@ -49,14 +49,14 @@ class ListingClassUI(ManagerUI):
     def __init__(self):
         ManagerUI.__init__(self, 3)
 
-	builder = gtk.Builder()
+	builder = Gtk.Builder()
 	builder.add_from_file(get_ui_path('listing.glade'))
 	self.gui = builder
 
 	self.box = builder.get_object("listingbox")
 	self.vista = builder.get_object("vista")		
 	self.scroll = builder.get_object("scrolledw")
-	self.vista.get_selection().set_mode(gtk.SELECTION_SINGLE) # could SELECTION_MULTIPLE
+	self.vista.get_selection().set_mode(Gtk.SelectionMode.SINGLE) # could SELECTION_MULTIPLE
 
 	old_style = context.get_conf().get_color_style()
 	self.color = context.get_conf().get_palette(old_style)
@@ -103,21 +103,21 @@ class ListingClassUI(ManagerUI):
 
     def populate_treeview(self, mp):
 	"""Establishes which values to be shown, its properties"""
-	self.lista = gtk.ListStore(str, str, str, str, float, int, str, int, str, int, int, int)
-	# gobject.TYPE_PYOBJECT
+	self.lista = Gtk.ListStore(str, str, str, str, float, int, str, int, str, int, int, int)
+	# GObject.TYPE_PYOBJECT
 	self.insert_data_in_list(self.lista, mp)
 
 	# Edit Cells per column
-	render1 = gtk.CellRendererText() #name
-	render6 = gtk.CellRendererText() #presenter
-	render7 = gtk.CellRendererText() #series
-	render2 = gtk.CellRendererText() #size
-	render3 = gtk.CellRendererText() #duration
-	render4 = gtk.CellRendererText() #date
-	render5 = gtk.CellRendererText() #id
-	render8 = gtk.CellRendererText() #status
-	render9 = gtk.CellRendererText() #operation
-	#render9 = gtk.CellRendererText() #bg
+	render1 = Gtk.CellRendererText() #name
+	render6 = Gtk.CellRendererText() #presenter
+	render7 = Gtk.CellRendererText() #series
+	render2 = Gtk.CellRendererText() #size
+	render3 = Gtk.CellRendererText() #duration
+	render4 = Gtk.CellRendererText() #date
+	render5 = Gtk.CellRendererText() #id
+	render8 = Gtk.CellRendererText() #status
+	render9 = Gtk.CellRendererText() #operation
+	#render9 = Gtk.CellRendererText() #bg
 	self.renders= [render1, render2, render3, render4, render5, render6, render7, render8, render9]
 	self.renders[1].set_property('xalign',1.0)
 	self.renders[2].set_property('xalign',0.5)
@@ -126,26 +126,26 @@ class ListingClassUI(ManagerUI):
 	
 	
 	vbar = self.scroll.get_vscrollbar()
-	vbar.set_update_policy(gtk.UPDATE_DELAYED)
+#	vbar.set_update_policy(Gtk.UPDATE_DELAYED)
 		
 	# Create each column
-	#columna5 = gtk.TreeViewColumn("Id",render5,text = 0, background= 8) 
+	#columna5 = Gtk.TreeViewColumn("Id",render5,text = 0, background= 8) 
 	# column5 wont be append to the treeview
-	columna1 = gtk.TreeViewColumn(_("Name"),render1,text = 1, background= 8)
-	columna6 = gtk.TreeViewColumn(_("Presenter"), render6, text = 2, background= 8)
-	columna7 = gtk.TreeViewColumn(_("Series"), render7, text = 3, background= 8)
-	columna2 = gtk.TreeViewColumn(_("Size"), render2, text = 4, background= 8)
-	columna3 = gtk.TreeViewColumn(_("Duration"), render3, text = 5, background= 8)
-	columna4 = gtk.TreeViewColumn(_("Date"), render4, text = 6, background= 8)
+	columna1 = Gtk.TreeViewColumn(_("Name"),render1,text = 1, background= 8)
+	columna6 = Gtk.TreeViewColumn(_("Presenter"), render6, text = 2, background= 8)
+	columna7 = Gtk.TreeViewColumn(_("Series"), render7, text = 3, background= 8)
+	columna2 = Gtk.TreeViewColumn(_("Size"), render2, text = 4, background= 8)
+	columna3 = Gtk.TreeViewColumn(_("Duration"), render3, text = 5, background= 8)
+	columna4 = Gtk.TreeViewColumn(_("Date"), render4, text = 6, background= 8)
 	
-	#columna8 = gtk.TreeViewColumn("Status", render8, text = 7, background= 8)
-	columna9 = gtk.TreeViewColumn(_("Ingest"), render9)
-	columna10 = gtk.TreeViewColumn(_("Zip"), render9)
-	columna11 = gtk.TreeViewColumn(_("SbS"), render9)		
+	#columna8 = Gtk.TreeViewColumn("Status", render8, text = 7, background= 8)
+	columna9 = Gtk.TreeViewColumn(_("Ingest"), render9)
+	columna10 = Gtk.TreeViewColumn(_("Zip"), render9)
+	columna11 = Gtk.TreeViewColumn(_("SbS"), render9)		
 	
-	#columna8 = gtk.TreeViewColumn("Status", render8, text = 7, background= 8)
-	#columna9 = gtk.TreeViewColumn("Operations", render9, text = 9, background= 8)
-	#columna9 = gtk.TreeViewColumn("Background",render9, text = 8)
+	#columna8 = Gtk.TreeViewColumn("Status", render8, text = 7, background= 8)
+	#columna9 = Gtk.TreeViewColumn("Operations", render9, text = 9, background= 8)
+	#columna9 = Gtk.TreeViewColumn("Background",render9, text = 8)
 
 	# Edit columns				
 	columna1.set_expand(True)
@@ -210,7 +210,7 @@ class ListingClassUI(ManagerUI):
 	self.vista.connect('row-activated',self.on_double_click)
 	self.vista.connect('button-release-event',self.menu)
 
-	self.lista.set_sort_column_id(6,gtk.SORT_DESCENDING)
+	self.lista.set_sort_column_id(6,Gtk.SortType.DESCENDING)
 
     def refresh_treeview(self):
 	"""Refresh all the values on the list"""
@@ -299,7 +299,7 @@ class ListingClassUI(ManagerUI):
 
     def create_menu(self):
         """Creates a menu to be shown on right-button-click over a MP"""
-	menu = gtk.Menu()
+	menu = Gtk.Menu()
 	if self.conf.get_boolean('ingest', 'active'):
             operations = [ (_("Play"), "play_action"),
                            (_("Edit"), "edit_action"),
@@ -313,7 +313,7 @@ class ListingClassUI(ManagerUI):
                            (_("Delete"), "delete_action")]
 
 	for op in operations:
-            item = gtk.MenuItem(op[0])
+            item = Gtk.MenuItem(op[0])
             item.set_name(op[1])
 	    menu.append(item)
 	    item.connect("activate", self.on_action)
@@ -331,7 +331,7 @@ class ListingClassUI(ManagerUI):
 	    self.vista.get_selection().unselect_all()
 	    self.vista.get_selection().select_iter(c)	
 	    menu = self.create_menu()
-	    menu.popup(None,None,None,event.button,event.time)
+	    menu.popup(None,None,None,None,event.button,event.time)
 	    menu.show()
 	    return True
 	return False
@@ -369,7 +369,7 @@ class ListingClassUI(ManagerUI):
 	    text = {"title" : _("Media Manager"),
 		    "main" : _("This recording can't be played"),
 		   }
-	    buttons = ( gtk.STOCK_OK, gtk.RESPONSE_OK )
+	    buttons = ( Gtk.STOCK_OK, Gtk.ResponseType.OK )
 	    message.PopUp(message.WARNING, text, 
                           context.get_mainwindow(),
                           buttons)
@@ -408,7 +408,7 @@ class ListingClassUI(ManagerUI):
         """Sets text equivalent for numeric operation status of mediapackages."""	
         mp=self.repository.get((model[iterator])[0])
         status=mp.getOpStatus(operation)
-        out = mediapackage.op_status[status]
+        out = _(mediapackage.op_status[status])
         cell.set_property('text', out)
         old_style = context.get_conf().get_color_style()
         if old_style:
@@ -453,17 +453,17 @@ class ListingClassUI(ManagerUI):
 
 	fsize = 12*hprop
 	for cell in self.renders:
-            font = pango.FontDescription(str(fsize))
+            font = Pango.FontDescription(str(fsize))
 	    cell.set_property('font-desc', font)
 
 	for column in self.vista.get_columns():
             first = column.get_widget()
 	    if not first:
-                label = gtk.Label(" "+column.get_title())
+                label = Gtk.Label(label=" "+column.get_title())
 	    else:
                 label = column.get_widget()
-            attr = pango.AttrList()
-            attr.insert(pango.AttrFontDesc(font,0,-1))
+            attr = Pango.AttrList()
+#            attr.insert(Pango.AttrFontDesc(font,0,-1))
             label.set_attributes(attr)
             if not first:
                 label.show()			
@@ -474,5 +474,5 @@ class ListingClassUI(ManagerUI):
 	return True
 		
 
-gobject.type_register(ListingClassUI)
+GObject.type_register(ListingClassUI)
 

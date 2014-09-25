@@ -13,8 +13,9 @@
 
 import os
 import gettext
-import gtk
-import gtk.glade
+from gi.repository import Gtk
+from gettext import bindtextdomain, textdomain
+#import Gtk.glade
 
 
 i18n_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "i18n"))
@@ -22,6 +23,6 @@ i18n_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", 
 t = gettext.translation("galicaster", i18n_path, fallback=True)
 _ = t.ugettext
 
-gtk.glade.bindtextdomain("galicaster", i18n_path)
-gtk.glade.textdomain("galicaster")
+bindtextdomain("galicaster", i18n_path)
+textdomain("galicaster")
 

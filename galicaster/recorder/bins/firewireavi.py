@@ -14,11 +14,9 @@
 """
 Experimental bin which re-multiplexes the DV video to an AVI container so that it can be used in Windows operating systems.
 """
-
-import gobject
-import gst
-
 from os import path
+
+from gi.repository import GObject. Gst
 
 from galicaster.recorder import base
 
@@ -26,15 +24,15 @@ pipestr = (' dv1394src name=gc-firewireavi-src ! '
            ' queue ! dvdemux name=gc-firewireavi-demuxer ! '
            ' level name=gc-firewireavi-level message=true interval=100000000 ! '
            ' tee name=gc-firewireavi-audiotee ! '
-           ' queue ! volume name=gc-firewireavi-volume ! alsasink sync=false name=gc-firewireavi-audio-sink '
+           ' queue ! volume name=gc-firewireavi-volume ! autoaudiosink sync=false name=gc-firewireavi-audio-sink '
            ' gc-firewireavi-demuxer. ! queue ! tee name=gc-firewireavi-videotee ! '
-           ' queue ! ffdec_dvvideo ! ffmpegcolorspace ! xvimagesink qos=false async=false sync=false name=gc-firewireavi-preview '
-           ' gc-firewireavi-audiotee. ! queue ! valve drop=false name=gc-firewireavi-audio-valve ! audio/x-raw-int ! avimux name=gc-firewireavi-mux ! '
+           ' queue ! avdec_dvvideo ! videoconvert ! xvimagesink qos=false async=false sync=false name=gc-firewireavi-preview '
+           ' gc-firewireavi-audiotee. ! queue ! valve drop=false name=gc-firewireavi-audio-valve ! audio/x-raw ! avimux name=gc-firewireavi-mux ! '
            ' queue ! filesink name=gc-firewireavi-sink async=false '
            ' gc-firewireavi-videotee. ! queue ! valve drop=false name=gc-firewireavi-video-valve ! video/x-dv ! gc-firewireavi-mux.  '
            )
 
-class GCfirewireavi(gst.Bin, base.Base):
+class GCfirewireavi(Gst.Bin, base.Base):
     gc_parameters = {
         "name": {
             "type": "text",
@@ -93,11 +91,11 @@ class GCfirewireavi(gst.Bin, base.Base):
 
     def __init__(self, options={}): 
         base.Base.__init__(self, options)
-        gst.Bin.__init__(self, self.options["name"])
+        Gst.Bin.__init__(self)
 
         aux = pipestr.replace("gc-firewireavi-preview", "sink-" + self.options["name"])
-        #bin = gst.parse_bin_from_description(aux, False)
-        bin = gst.parse_launch("( {} )".format(aux))
+        #bin = Gst.parse_bin_from_description(aux, False)
+        bin = Gst.parse_launch("( {} )".format(aux))
 
         self.add(bin)
 
@@ -143,5 +141,8 @@ class GCfirewireavi(gst.Bin, base.Base):
         pass
      
 
-gobject.type_register(GCfirewireavi)
-gst.element_register(GCfirewireavi, "gc-firewireavi-bin")
+#GObject.type_register(GCfirewireavi)
+#Gst.element_register(GCfirewireavi, "gc-firewireavi-bin")
+
+#GCfirewireaviType = GObject.type_register(GCfirewireavi)
+#Gst.Element.register(GCfirewireavi, 'gc-firewireavi-bin', 0, GCfirewireaviType)

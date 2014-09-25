@@ -18,7 +18,7 @@ import math
 import threading
 import tempfile
 from bottle import route, run, response
-import gtk
+from gi.repository import Gtk
 
 from galicaster.core import context
 from galicaster.mediapackage.serializer import set_manifest
@@ -41,7 +41,6 @@ def init():
 @route('/')
 def index():
     response.content_type = 'application/json'
-    state = context.get_state()
     text="Galicaster REST endpoint plugin\n\n"
     endpoints = {
             "/state" : "show some state values",
@@ -62,8 +61,8 @@ def index():
 @route('/state')
 def state():
     response.content_type = 'application/json' 
-    state = context.get_state()
-    return json.dumps(state.get_all())
+    #TODO: Complete!
+    return json.dumps({"is-recording": context.get_recorder().is_recording()})
 
 @route('/repository')
 def list():
@@ -99,14 +98,16 @@ def metadata(id):
 @route('/start')
 def start():
     response.content_type = 'text/xml'
-    context.get_dispatcher().emit('start-before', None)
-    return "Signal to start recording sent"    
+    context.get_recorder().record(None)
+    
+    return "Request to start recording received"    
 
 @route('/stop')
 def stop():
     response.content_type = 'text/html'
-    context.get_dispatcher().emit('stop-record', 0)
-    return "Signal to stop recording sent"
+    context.get_recorder().stop()
+
+    return "Request to stop recording received"
 
 @route('/operation/:op/:mpid', method='GET')
 def operationt(op, mpid):
@@ -116,10 +117,10 @@ def operationt(op, mpid):
     return "{0} over {1}".format(op,mpid)
  
 def get_screenshot():
-    """makes screenshot of the current root window, yields gtk.Pixbuf"""
-    window = gtk.gdk.get_default_root_window()
+    """makes screenshot of the current root window, yields Gtk.Pixbuf"""
+    window = Gdk.get_default_root_window()
     size = window.get_size()         
-    pixbuf = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB, False, 8, size[0], size[1])        
+    pixbuf = GdkPixbuf.Pixbuf(GdkPixbuf.Colorspace.RGB, False, 8, size[0], size[1])        
     return pixbuf.get_from_drawable(window, window.get_colormap(), 
                                     0, 0, 0, 0, size[0], size[1])
 @route('/screen')

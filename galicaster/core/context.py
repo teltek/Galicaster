@@ -17,8 +17,6 @@ from galicaster.core.conf import Conf
 from galicaster.core.logger import Logger
 from galicaster.core.worker import Worker
 from galicaster.core.dispatcher import Dispatcher
-from galicaster.core.state import State
-from galicaster.classui.mainwindow import GCWindow
 from galicaster.scheduler.heartbeat import Heartbeat
 from galicaster.scheduler.scheduler import Scheduler
 
@@ -165,9 +163,10 @@ def get_mainwindow():
     """
     Get Galicaster Mainwindow from the App Context
     """
+    from galicaster.classui.mainwindow import GCWindow
+
     if 'mainwindow' not in __galicaster_context:
         __galicaster_context['mainwindow'] = GCWindow(get_dispatcher(), 
-                                                      get_state(), 
                                                       get_conf().get_size(), 
                                                       get_logger())
 
@@ -197,7 +196,7 @@ def get_scheduler():
     if 'scheduler' not in __galicaster_context:
         if get_conf().get_boolean("ingest", "active"):
             sch = Scheduler(get_repository(), get_conf(), get_dispatcher(), 
-                            get_mhclient(), get_logger(), get_state())
+                            get_mhclient(), get_logger(), get_recorder())
         else:
             sch = None
         __galicaster_context['scheduler'] = sch
@@ -205,13 +204,18 @@ def get_scheduler():
     return __galicaster_context['scheduler']
     
 
-def get_state():
+def get_recorder():
     """
-    Get Galicaster State
+    Get Recorder Service
     """
-    if 'state' not in __galicaster_context:
-        state = State(get_conf().hostname)
-        __galicaster_context['state'] = state
+    from galicaster.recorder.service import RecorderService
 
-    return __galicaster_context['state']
-    
+    if 'recorder' not in __galicaster_context:
+        recorder = RecorderService(get_dispatcher(),
+                                   get_repository(),
+                                   get_worker(),
+                                   get_conf(),
+                                   get_logger())
+        __galicaster_context['recorder'] = recorder
+
+    return __galicaster_context['recorder']

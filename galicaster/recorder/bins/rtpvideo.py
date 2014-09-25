@@ -16,14 +16,16 @@
 #  - In cameratype mpeg4 dont use decodebin2
 #
 
-import gobject
-import gst
+from gi.repository import GObject
+from gi.repository import Gst
 import re
 
 from os import path
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
+
+raise Exception("Not implemented. Using gst 0.10")
 
 pipe_config = {'mpeg4':
                    {'depay': 'rtpmp4vdepay', 'videoparse': 'mpeg4videoparse', 'dec': 'decodebin2'},
@@ -36,7 +38,7 @@ pipestr = (' rtspsrc name=gc-rtpvideo-src ! gc-rtpvideo-depay ! gc-rtpvideo-vide
            ' queue ! gc-rtpvideo-mux ! filesink name=gc-rtpvideo-sink async=false')
 
 
-class GCrtpvideo(gst.Bin, base.Base):
+class GCrtpvideo(Gst.Bin, base.Base):
 
 
     order = ["name", "flavor", "location", "file", "videomux", "cameratype"]
@@ -89,7 +91,7 @@ class GCrtpvideo(gst.Bin, base.Base):
 
     def __init__(self, options={}):
         base.Base.__init__(self, options)
-        gst.Bin.__init__(self, self.options['name'])
+        Gst.Bin.__init__(self, self.options['name'])
 
         aux = (pipestr.replace('gc-rtpvideo-preview', 'sink-' + self.options['name'])
                .replace('gc-rtpvideo-depay', pipe_config[self.options['cameratype']]['depay'])
@@ -97,7 +99,7 @@ class GCrtpvideo(gst.Bin, base.Base):
                .replace('gc-rtpvideo-dec', pipe_config[self.options['cameratype']]['dec'])
                .replace('gc-rtpvideo-mux', self.options['videomux']))
 
-        bin = gst.parse_bin_from_description(aux, False)
+        bin = Gst.parse_bin_from_description(aux, False)
         self.add(bin)
 
         self.set_option_in_pipeline('location', 'gc-rtpvideo-src', 'location')
@@ -119,6 +121,6 @@ class GCrtpvideo(gst.Bin, base.Base):
         src1.send_event(event)
 
 
-gobject.type_register(GCrtpvideo)
-gst.element_register(GCrtpvideo, 'gc-rtpvideo-bin')
+GObject.type_register(GCrtpvideo)
+Gst.element_register(GCrtpvideo, 'gc-rtpvideo-bin')
 module_register(GCrtpvideo, 'rtpvideo')

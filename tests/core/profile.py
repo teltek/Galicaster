@@ -14,6 +14,7 @@
 import os
 from os import path
 from unittest import TestCase
+from unittest import skip
 
 from tests import get_resource
 from galicaster.core.conf import Conf
@@ -21,7 +22,6 @@ from galicaster.core.conf import Profile
 from galicaster.core.conf import Track
 
 class TestFunctions(TestCase):
-
     def setUp(self):
         conf_file = get_resource('profile/conf_good.ini')
         conf_dist_file = get_resource('profile/conf-dist.ini')
@@ -29,17 +29,23 @@ class TestFunctions(TestCase):
 
         self.conf = Conf(conf_file,conf_dist_file, folder_path)
 
-    def no_test_create_profile(self):
+
+    @skip("out of scope")
+    def test_create_profile(self):
         profile=Profile("New profile")
         self.assertEqual(profile.name, "New profile")    
 
-    def no_test_create_and_add_profile(self):
+
+    @skip("out of scope")
+    def test_create_and_add_profile(self):
         self.setUp()
         profile=Profile("New")
         self.conf.add_profile(profile)
         self.assertEqual(self.conf.get_profiles().has_key("New"),True)    
+
     
-    def no_test_write_profile(self):
+    @skip("out of scope")
+    def test_write_profile(self):
         self.setUp()
         folder_path = path.join(path.dirname(path.abspath(__file__)), 
                                 'resources', 'profile', 'folder')
@@ -51,7 +57,9 @@ class TestFunctions(TestCase):
         path.isfile(path.join(folder_path,"profile11.ini"))
         os.remove(path.join(folder_path,"profile11.ini"))
 
-    def no_test_write_profile_default_naming(self):
+
+    @skip("out of scope")
+    def test_write_profile_default_naming(self):
         self.setUp()
         folder_path = path.join(path.dirname(path.abspath(__file__)),
                                 'resources', 'profile', 'folder')
@@ -63,7 +71,9 @@ class TestFunctions(TestCase):
         path.isfile(path.join(folder_path,"profile1.ini"))
         os.remove(path.join(folder_path,"profile1.ini"))
 
-    def no_test_delete_profile(self):
+
+    @skip("out of scope")
+    def test_delete_profile(self):
         self.setUp()
         folder_path = path.join(path.dirname(path.abspath(__file__)),
                                 'resources', 'profile', 'folder')

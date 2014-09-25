@@ -18,8 +18,8 @@ In case the focus is recovered the dialog may be shown again.
 The dialog blockade is cancelled when the profile is reloaded or changed and when a recording starts.
 """
 
-import gtk
-import pango
+from gi.repository import Gtk
+from gi.repository import Pango
 from galicaster.core import context
 from galicaster.classui import get_ui_path, get_image_path
 from galicaster.classui.elements.message_header import Header
@@ -178,10 +178,10 @@ def create_ui():
     Creates the No Audio Dialog interface
     """
     parent =  context.get_mainwindow().get_toplevel()
-    ui = gtk.Dialog("Warning", parent)
+    ui = Gtk.Dialog("Warning", parent)
 
     #Properties
-    ui.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
+    ui.set_type_hint(Gdk.WindowTypeHint.TOOLBAR)
     ui.set_skip_taskbar_hint(True)
     ui.set_modal(False)
     ui.set_accept_focus(False)
@@ -194,8 +194,8 @@ def create_ui():
         ui.set_property('width-request',int(size[0]/2.3)) 
     wprop = size[0]/1920.0
     hprop = size[1]/1080.0
-    ui.set_position(gtk.WIN_POS_CENTER_ON_PARENT)
-    ui.action_area.set_layout(gtk.BUTTONBOX_SPREAD)
+    ui.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
+    ui.action_area.set_layout(Gtk.ButtonBoxStyle.SPREAD)
 
     #Buttons
     conf = context.get_conf()
@@ -216,27 +216,27 @@ def create_ui():
     strip.show()
 
     #Labels
-    label1 = gtk.Label(_("No Audio!!"))
-    label2 = gtk.Label(_("Pick up the microphone\nPress the mute button"))
+    label1 = Gtk.Label(label=_("No Audio!!"))
+    label2 = Gtk.Label(label=_("Pick up the microphone\nPress the mute button"))
     desc1 = "bold " + str(int(hprop*64))+"px"
     desc2 = "bold " + str(int(hprop*24))+"px"
-    font1=pango.FontDescription(desc1)
-    font2=pango.FontDescription(desc2)
+    font1=Pango.FontDescription(desc1)
+    font2=Pango.FontDescription(desc2)
     label1.modify_font(font1)
     label2.modify_font(font2)
     label1.set_alignment(0.5,0.5)
     label2.set_alignment(0.5,0.5)
     # Warning icon
-    box = gtk.HBox(spacing=0) # between image and text
-    image = gtk.Image()
-    image.set_from_icon_name(gtk.STOCK_DIALOG_WARNING, gtk.ICON_SIZE_DIALOG)
+    box = Gtk.HBox(spacing=0) # between image and text
+    image = Gtk.Image()
+    image.set_from_icon_name(Gtk.STOCK_DIALOG_WARNING, Gtk.IconSize.DIALOG)
     image.set_pixel_size(int(wprop*80))
     box.pack_start(image,True,True,0)
     box.pack_start(label1,True,True,0)  
     image.show()
     box.show()
     #ui.vbox.pack_start(box, True, False, int(hprop*5))
-    another_box = gtk.VBox(spacing=int(hprop*20))
+    another_box = Gtk.VBox(spacing=int(hprop*20))
     another_box.pack_start(box, True, False, 0)
     another_box.pack_start(label2, True, False, 0)
     another_box.show()
@@ -245,7 +245,7 @@ def create_ui():
     #ui.vbox.pack_start(box, True, False, 0)
     #ui.vbox.pack_start(label2, True, False, 0)
     resize_buttons(ui.action_area,int(wprop*25),True)
-    ui.vbox.set_child_packing(ui.action_area, True, True, int(hprop*25), gtk.PACK_END)
+    ui.vbox.set_child_packing(ui.action_area, True, True, int(hprop*25), Gtk.PACK_END)
     
     label1.show()
     label2.show()
@@ -253,9 +253,9 @@ def create_ui():
 
 def set_font(description):
         """Asign a font description to a text"""
-        alist = pango.AttrList()
-        font=pango.FontDescription(description)
-        attr=pango.AttrFontDesc(font,0,-1)
+        alist = Pango.AttrList()
+        font=Pango.FontDescription(description)
+        attr=Pango.AttrFontDesc(font,0,-1)
         alist.insert(attr)
         return alist
 
@@ -264,7 +264,7 @@ def resize_buttons(area, fsize, equal = False):
         font = set_font("bold "+str(fsize)+"px")
         for button in area.get_children():
             for element in button.get_children():
-                if type(element) == gtk.Label:
+                if type(element) == Gtk.Label:
                     element.set_attributes(font)
                     if equal:
                         element.set_padding(-1,int(fsize/2.6))

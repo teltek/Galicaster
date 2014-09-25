@@ -12,10 +12,10 @@
 # San Francisco, California, 94105, USA.
 
 
-import gtk
-import pango
+from gi.repository import Gtk
+from gi.repository import Pango
 from os import path
-import gobject
+from gi.repository import GObject
 import datetime
 
 from galicaster.mediapackage import mediapackage
@@ -27,7 +27,7 @@ from galicaster.utils.i18n import _
 
 HOW_MANY=5
 
-class EventManager(gtk.Widget):
+class EventManager(Gtk.Widget):
     """
     Handle the event pop up
     """
@@ -47,7 +47,7 @@ class EventManager(gtk.Widget):
         k1 = anchura / 1920.0                                      
         k2 = altura / 1080.0
 
-        gui = gtk.Builder()
+        gui = Gtk.Builder()
         gui.add_from_file(get_ui_path('next.glade'))
         dialog = gui.get_object("dialog")
         table = gui.get_object("infobox")
@@ -57,7 +57,7 @@ class EventManager(gtk.Widget):
 
         width = int(size[0]/2.5)
         dialog.set_default_size(width,-1)
-        dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
+        dialog.set_type_hint(Gdk.WindowTypeHint.TOOLBAR)
         dialog.set_skip_taskbar_hint(True)
         dialog.set_modal(True)
         dialog.set_keep_above(False)
@@ -70,8 +70,8 @@ class EventManager(gtk.Widget):
         strip.show()
 
         modification = "bold "+str(int(k2*30))+"px"
-        title.modify_font(pango.FontDescription(modification))        
-        okl.modify_font(pango.FontDescription(modification))
+        title.modify_font(Pango.FontDescription(modification))        
+        okl.modify_font(Pango.FontDescription(modification))
 
         # mediapackages
         mps=context.get_repository().get_next_mediapackages()
@@ -107,9 +107,9 @@ class EventManager(gtk.Widget):
 
             #l = self.big_label("Record Now", int(k1*30))
 
-            b = gtk.Button(_("Record Now"))
+            b = Gtk.Button(_("Record Now"))
             l = b.get_child()
-            tamanho = pango.FontDescription(str(int(k1*25))+"px")
+            tamanho = Pango.FontDescription(str(int(k1*25))+"px")
             l.modify_font(tamanho)
             b.set_alignment(0.5,0.5)
             b.set_property("tooltip-text",_("Record Now"))
@@ -117,10 +117,10 @@ class EventManager(gtk.Widget):
             b.set_property("width-request", int (k1*180))
             b.set_property("height-request", int (k2*70))
 
-            table.attach(t,0,1,row-1,row,gtk.EXPAND|gtk.FILL,False,0,0)
-            table.attach(d,1,2,row-1,row,gtk.EXPAND|gtk.FILL,False,0,0)
-            table.attach(h,2,3,row-1,row,gtk.EXPAND|gtk.FILL,False,0,0)
-            table.attach(b,3,4,row-1,row,gtk.EXPAND|gtk.FILL,False,0,0)
+            table.attach(t,0,1,row-1,row,Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL,False,0,0)
+            table.attach(d,1,2,row-1,row,Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL,False,0,0)
+            table.attach(h,2,3,row-1,row,Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL,False,0,0)
+            table.attach(b,3,4,row-1,row,Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL,False,0,0)
             t.show()
             h.show()
             d.show()
@@ -135,15 +135,16 @@ class EventManager(gtk.Widget):
         return None
 
     def send_start(self,origin, event, data):
-        context.get_dispatcher().emit("start-before", data)
+        mp = context.get_repository().get(data)
+        context.get_recorder().record(mp)
         self.dialog.destroy()
         return True
 
     def big_label(self,text,fontsize): # TODO refactorize
-        label=gtk.Label(text)
-        tamanho = pango.FontDescription(str(fontsize)+"px")
+        label=Gtk.Label(label=text)
+        tamanho = Pango.FontDescription(str(fontsize)+"px")
         label.modify_font(tamanho)
-        label.set_justify(gtk.JUSTIFY_LEFT)
+        label.set_justify(Gtk.Justification.LEFT)
         label.set_alignment(0,0)
         return label
 
@@ -151,4 +152,4 @@ class EventManager(gtk.Widget):
         self.dialog.destroy()
         return True
 
-gobject.type_register(EventManager)
+GObject.type_register(EventManager)

@@ -12,14 +12,16 @@
 # San Francisco, California, 94105, USA.
 # 
 
-import gobject
-import gst
+from gi.repository import GObject
+from gi.repository import Gst
 import re
 
 from os import path
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
+
+raise Exception("Not implemented. Using gst 0.10")
 
 pipe_config = {'mpeg4':
                    {'depay': 'rtpmp4vdepay', 'parse': 'mpeg4videoparse', 'dec': 'ffdec_mpeg4'},
@@ -35,7 +37,7 @@ pipestr = (' rtspsrc name=gc-rtpraw-src ! gc-rtpraw-depay ! gc-rtpraw-videoparse
  
 
 
-class GCrtpraw(gst.Bin, base.Base):
+class GCrtpraw(Gst.Bin, base.Base):
 
 
     order = ["name", "flavor", "location", "file", "videoencoder", "muxer", "cameratype"]
@@ -100,7 +102,7 @@ class GCrtpraw(gst.Bin, base.Base):
 
     def __init__(self, options={}):
         base.Base.__init__(self, options)
-        gst.Bin.__init__(self, self.options['name'])
+        Gst.Bin.__init__(self, self.options['name'])
 
         aux = (pipestr.replace('gc-rtpraw-preview', 'sink-' + self.options['name'])
                .replace('gc-rtpraw-depay', pipe_config[self.options['cameratype']]['depay'])
@@ -109,10 +111,10 @@ class GCrtpraw(gst.Bin, base.Base):
                .replace('gc-rtpraw-enc', self.options['videoencoder'])
                .replace('gc-rtpraw-muxer', self.options['muxer']))
 
-        bin = gst.parse_bin_from_description(aux, False)
+        bin = Gst.parse_bin_from_description(aux, False)
         self.add(bin)
 
-        self.set_option_in_pipeline('caps', 'gc-rtpraw-filter', 'caps', gst.Caps)
+        self.set_option_in_pipeline('caps', 'gc-rtpraw-filter', 'caps', Gst.Caps)
         self.set_option_in_pipeline('location', 'gc-rtpraw-src', 'location')
         self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-rtpraw-sink', 'location')
 
@@ -132,6 +134,6 @@ class GCrtpraw(gst.Bin, base.Base):
         src1.send_event(event)
 
 
-gobject.type_register(GCrtpraw)
-gst.element_register(GCrtpraw, 'gc-rtpraw-bin')
+GObject.type_register(GCrtpraw)
+Gst.element_register(GCrtpraw, 'gc-rtpraw-bin')
 module_register(GCrtpraw, 'rtpraw')

@@ -12,9 +12,9 @@
 # San Francisco, California, 94105, USA.
 
 import datetime
-import gobject
 from os import path
 from threading import Timer, _Timer
+from gi.repository import GObject
 
 from galicaster.utils import ical
 from galicaster.mediapackage import mediapackage
@@ -22,14 +22,14 @@ from galicaster.mediapackage import mediapackage
 
 class Scheduler(object):
 
-    def __init__(self, repo, conf, disp, mhclient, logger, state):
+    def __init__(self, repo, conf, disp, mhclient, logger, recorder):
         """
         Arguments:
         repo -- the galicaster mediapackage repository
         conf -- galicaster configuration
         disp -- the galicaster event-dispatcher to emit signals
         mhclient -- matterhorn HTTP client
-        state -- galicaster state
+        recorder -- galicaster recorder service
         """
         self.ca_status = 'idle'
 
@@ -38,7 +38,7 @@ class Scheduler(object):
         self.dispatcher = disp
         self.client     = mhclient
         self.logger     = logger
-        self.state      = state
+        self.recorder   = recorder
 
         self.dispatcher.connect('galicaster-notify-timer-short', self.do_timers_short)
         self.dispatcher.connect('galicaster-notify-timer-long',  self.do_timers_long)
@@ -90,7 +90,12 @@ class Scheduler(object):
 
 
     def set_state(self):
-        self.ca_status = 'capturing' if self.state.is_recording else 'idle'
+        if self.recorder.is_error():
+            self.ca_status = 'unknown' #See AgentState.java
+        elif self.recorder.is_recording():
+            self.ca_status = 'capturing'
+        else:
+            self.ca_status = 'idle'
         self.logger.info('Set status %s to server', self.ca_status)
         try:
             self.client.setstate(self.ca_status)
@@ -151,6 +156,7 @@ class Scheduler(object):
     def create_new_timer(self, mp):
         diff = (mp.getDate() - datetime.datetime.utcnow())
         if diff < datetime.timedelta(minutes=30) and mp.getIdentifier() != self.mp_rec and not self.start_timers.has_key(mp.getIdentifier()): 
+            self.emit('upcoming-recording')
             ti = Timer(diff.seconds, self.start_record, [mp.getIdentifier()]) 
             self.start_timers[mp.getIdentifier()] = ti
             ti.start()
@@ -169,7 +175,7 @@ class Scheduler(object):
 
             self.t_stop = Timer(mp.getDuration()/1000, self.stop_record, [mp.getIdentifier()])
             self.t_stop.start()
-            self.emit('start-record', mp.getIdentifier())
+            self.recorder.record(mp)
 
             try:
                 self.client.setrecordingstate(key, 'capturing')
@@ -187,7 +193,8 @@ class Scheduler(object):
 
         mp = self.repo.get(key)
         if mp.status == mediapackage.RECORDING:
-            self.emit('stop-record', key)
+            self.recorder.stop()
+
             try:
                 self.client.setrecordingstate(key, 'capture_finished')
             except:
@@ -201,5 +208,5 @@ class Scheduler(object):
     def emit(self, *args, **kwargs):
         # self.dispatcher.emit(*args, **kwargs)
         #Allow only the main thread to touch the GUI
-        gobject.idle_add(self.dispatcher.emit, *args, **kwargs)
+        GObject.idle_add(self.dispatcher.emit, *args, **kwargs)
         

@@ -14,15 +14,15 @@
 UI for a Metadata Editor Pop UP
 """
 
-import gtk
+from gi.repository import Gtk, Gdk
 import datetime
 from os import path
-import gobject
-import pango
+from gi.repository import GObject
+from gi.repository import Pango
 import os
 
 from galicaster.classui.calendarwindow import CalendarWindow
-import galicaster.mediapackage.mediapackage as mediapackage
+from galicaster.mediapackage import mediapackage
 from galicaster.core import context
 from galicaster.utils import series as listseries
 from galicaster.classui import get_ui_path
@@ -46,7 +46,7 @@ metadata = { "title": _("Title:"), _("Title:"):"title",
              "contributor": _("Contributor:"),_("Contributor:"):"contributor", 
              "created":_("Start Time:"), _("Start Time:"):"created"} 
 
-class MetadataClass(gtk.Widget):
+class MetadataClass(Gtk.Widget):
     """
     Handle a pop up metadata editor, updating it if necessary
     """
@@ -72,7 +72,7 @@ class MetadataClass(gtk.Widget):
         self.series_list = series_list
         self.empty_series_label = empty_series_label
 
-        gui = gtk.Builder()
+        gui = Gtk.Builder()
         gui.add_from_file(get_ui_path('metadata.glade'))
 
         dialog = gui.get_object("metadatadialog")
@@ -85,7 +85,7 @@ class MetadataClass(gtk.Widget):
         gui.get_object("clabel").set_label(ko_label)
 
         dialog.set_property("width-request",int(anchura/2.2))
-        dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
+        dialog.set_type_hint(Gdk.WindowTypeHint.TOOLBAR)
         dialog.set_modal(True)
         dialog.set_keep_above(False)
 
@@ -98,19 +98,19 @@ class MetadataClass(gtk.Widget):
             dialog.set_transient_for(parent.get_toplevel())
         
         table = gui.get_object('infobox')
-        dialog.vbox.set_child_packing(table, True, True, int(self.hprop*25), gtk.PACK_END)    
+        dialog.vbox.set_child_packing(table, True, True, int(self.hprop*25), Gtk.PackType.END)    
         title = gui.get_object('title')
         sl = gui.get_object('slabel')
         cl = gui.get_object('clabel')
         talign = gui.get_object('table_align')
 
         modification = "bold "+str(int(k2*25))+"px"        
-        title.modify_font(pango.FontDescription(modification))
+        title.modify_font(Pango.FontDescription(modification))
         title.hide()
         talign.set_padding(int(k2*40),int(k2*40),0,0)
         mod2 = str(int(k1*35))+"px"        
-        sl.modify_font(pango.FontDescription(mod2))
-        cl.modify_font(pango.FontDescription(mod2))
+        sl.modify_font(Pango.FontDescription(mod2))
+        cl.modify_font(Pango.FontDescription(mod2))
 
         # Get "blocked" and "mandatory" parameters
         blocked = set()
@@ -142,7 +142,7 @@ class MetadataClass(gtk.Widget):
         self.check_mandatory(None, ok_button, check_all = True)
 
         talign.set_padding(int(self.hprop*25), int(self.hprop*10), int(self.hprop*25), int(self.hprop*25))
-        dialog.vbox.set_child_packing(dialog.action_area, True, True, int(self.hprop*25), gtk.PACK_END)   
+        dialog.vbox.set_child_packing(dialog.action_area, True, True, int(self.hprop*25), Gtk.PACK_END)   
         dialog.show_all()
 
         self.return_value = dialog.run()
@@ -161,15 +161,15 @@ class MetadataClass(gtk.Widget):
         row = 1
 
         for meta in DCTERMS:
-            t=gtk.Label(metadata[meta])
-            t.set_justify(gtk.JUSTIFY_LEFT)
+            t=Gtk.Label(label=metadata[meta])
+            t.set_justify(Gtk.Justification.LEFT)
             t.set_alignment(0,0)
             modification = str(int(self.hprop*16))+"px"        
-            t.modify_font(pango.FontDescription(modification))
+            t.modify_font(Pango.FontDescription(modification))
             t.set_width_chars(15)
 
             # Switch the INSENSITIVE state colour to red, so that we can mark the mandatory parameters
-            t.modify_fg(gtk.STATE_INSENSITIVE, gtk.gdk.color_parse('red'))            
+            t.modify_fg(Gtk.StateType.INSENSITIVE, Gdk.color_parse('red'))            
             
             if meta in ["ispartof", "isPartOf"]:
                 try:
@@ -180,7 +180,7 @@ class MetadataClass(gtk.Widget):
                 d = ComboBoxEntryExt(self.par, self.series_list, default=default_series, empty_label = self.empty_series_label)
                 d.set_name(meta)
             else:
-                d=gtk.Entry()
+                d=Gtk.Entry()
                 d.set_name(meta)
                 try:
                     d.set_text(mp.metadata_episode[meta] or '')
@@ -199,10 +199,10 @@ class MetadataClass(gtk.Widget):
             if meta == "title":
                 d.set_tooltip_text(d.get_text())
 
-            d.modify_font(pango.FontDescription(modification))
+            d.modify_font(Pango.FontDescription(modification))
 
             table.attach(t,0,1,row-1,row,False,False,0,0)
-            table.attach(d,1,2,row-1,row,gtk.EXPAND|gtk.FILL,False,0,0)
+            table.attach(d,1,2,row-1,row,Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL,False,0,0)
             row=row+1
 
     def check_mandatory(self, item, button, check_all = False):
@@ -268,7 +268,7 @@ class MetadataClass(gtk.Widget):
     def edit_date(self,element,event):
         """Filter a Right button double click, show calendar and update date"""
       
-        if event.type == gtk.gdk._2BUTTON_PRESS and event.button==1:
+        if event.type == Gdk._2BUTTON_PRESS and event.button==1:
             text= element.get_text()
             try:
                 date=datetime.datetime.strptime(text,"%Y-%m-%dT%H:%M:%S") 
@@ -281,7 +281,7 @@ class MetadataClass(gtk.Widget):
         return True
 
 
-class ComboBoxEntryExt(gtk.ComboBoxEntry):
+class ComboBoxEntryExt(Gtk.ComboBox):
 
     def __init__(self, parent, listing=None, default=None, empty_label=""):
         """
@@ -291,7 +291,7 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
         self.par = parent
         self.empty_label = empty_label
 
-        liststore = gtk.ListStore(str,str)
+        liststore = Gtk.ListStore(str,str)
 
         if listing is None:
             listing = []
@@ -310,6 +310,7 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
             liststore.append((empty_label, None))
 
         for element in listing:
+            print "element",element[0]
             liststore.append([element[1]['title'], element[0]]) # NAME ID
 
         self.liststore = liststore # CHECK
@@ -319,7 +320,7 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
         #combofilter.set_visible_func(self.filtering) 
 
         # Completion
-        completion = gtk.EntryCompletion()
+        completion = Gtk.EntryCompletion()
         completion.set_model(liststore)
         completion.set_match_func(self.filtering_match, completion)
         completion.set_text_column(0)
@@ -327,11 +328,11 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
         
         super(ComboBoxEntryExt, self).__init__(liststore,0)
 
-        liststore.set_sort_func(0, self.sorting, self.child) # Put default text first
-        liststore.set_sort_column_id(0,gtk.SORT_ASCENDING)
+        liststore.set_sort_func(0, self.sorting, self.get_child()) # Put default text first
+        liststore.set_sort_column_id(0,Gtk.SortType.ASCENDING)
      
         self.set_model(combofilter)
-        self.child.set_completion(completion)
+        self.get_child().set_completion(completion)
 
         # Set the appropriate value
         if empty_label is not None and self.default_text is not None:
@@ -339,27 +340,27 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
         else:
             self.set_active(0)
 
-        self.current = self.child.get_text()
+        self.current = self.get_child().get_text()
         self.current_iter = self.get_active_iter()
 
         # Signals   
-        self.child.connect('activate', self.on_activate)
-        self.child.connect('focus-out-event', self.ensure_match)
+        self.get_child().connect('activate', self.on_activate)
+        self.get_child().connect('focus-out-event', self.ensure_match)
         self.connect('changed', self.on_changed)
 
 
     def on_changed(self, myself):
         # This signal gets triggered when the Entry contents change
         if myself.get_active() < 0:
-            text = self.child.get_text()
+            text = self.get_child().get_text()
             model = self.get_model()
             iterator = model.get_iter_first()
 
             while iterator:
                 if text == model[iterator][0]:
-                #self.child.set_text(iterator[0])
+                #self.get_child().set_text(iterator[0])
                     self.set_active_iter(iterator)
-                    self.current = self.child.get_text()
+                    self.current = self.get_child().get_text()
                     self.current_iter = iterator
                     break
                 iterator = model.iter_next(iterator)
@@ -385,7 +386,7 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
                 # For some reason we cannot set the active iter using this iterator,
                 # but modifying the Entry contents triggers the "on_change" callback
                 # where the active iterator value is properly updated
-                self.child.set_text(rowtext)
+                self.get_child().set_text(rowtext)
                 break                
             iterator = self.liststore.iter_next(iterator)
 
@@ -407,7 +408,7 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
        
     def filtering(self, model, iterator):
         """Filtering ComboBox"""
-        key_string = self.child.get_text()
+        key_string = self.get_child().get_text()
         series =  model[iterator][0]
         if series == self.default_text: # always show default
             return True
@@ -440,5 +441,5 @@ class ComboBoxEntryExt(gtk.ComboBoxEntry):
         # If none of the previous conditions met, respect the original order
         return 0
 
-gobject.type_register(MetadataClass)
-gobject.type_register(ComboBoxEntryExt)
+GObject.type_register(MetadataClass)
+GObject.type_register(ComboBoxEntryExt)

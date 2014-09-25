@@ -14,7 +14,7 @@
 
 import os
 import sys
-import gtk
+from gi.repository import Gtk
 from StringIO import StringIO
 import pycurl
 import time
@@ -29,10 +29,10 @@ from galicaster.core import context
 sleep_period = 60
 
 def get_screenshot():
-    """makes screenshot of the current root window, yields gtk.Pixbuf"""
-    window = gtk.gdk.get_default_root_window()
+    """makes screenshot of the current root window, yields Gtk.Pixbuf"""
+    window = Gdk.get_default_root_window()
     size = window.get_size()
-    pixbuf = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB, False, 8, size[0], size[1])
+    pixbuf = GdkPixbuf.Pixbuf(GdkPixbuf.Colorspace.RGB, False, 8, size[0], size[1])
     pixbuf.get_from_drawable(window, window.get_colormap(),
                                     0, 0, 0, 0, size[0], size[1])
     b = StringIO()

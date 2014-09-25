@@ -25,6 +25,7 @@ from galicaster.core import context
 dispatcher = context.get_dispatcher()
 conf = context.get_conf()
 logger = context.get_logger()
+recorder = context.get_recorder()
 
 t_stop = None
 max_duration = conf.get_int('forcedurationrec', 'duration') or 300
@@ -47,7 +48,7 @@ def create_timer(sender=None):
 def stop_recording(sender=None):
     global t_stop
     t_stop = None
-    dispatcher.emit('stop-record', 0)
+    recorder.stop()
     logger.info("Forceduration plugin stops the recording".format(max_duration))
 
 

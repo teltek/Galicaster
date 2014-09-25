@@ -18,12 +18,14 @@ Unit tests for `galicaster.mediapackage` module.
 from unittest import TestCase
 from os import path
 import tempfile
-import glib
+
+from gi.repository import GLib
+if getattr(GLib, "threads_init", None) is not None:
+    GLib.threads_init()
 
 from tests import get_resource
 from galicaster.utils import sidebyside
 
-glib.threads_init()
 
 class TestFunctions(TestCase):
     
@@ -31,9 +33,9 @@ class TestFunctions(TestCase):
     
     def test_sbs_with_embeded_audio(self):   
         out = tempfile.NamedTemporaryFile()
-        screen = path.join(self.base_dir, 'SCREEN.mp4')
+        screen = path.join(self.base_dir, 'SCREEN_NO_AUDIO.mp4')
         camera = path.join(self.base_dir, 'CAMERA.mp4')
-        out = sidebyside.create_sbs(out.name, screen, camera)
+        out = sidebyside.create_sbs(out.name, camera, screen)
         self.assertTrue(out)
 
 
@@ -42,28 +44,28 @@ class TestFunctions(TestCase):
         screen = path.join(self.base_dir, 'SCREEN.mp4')
         camera = path.join(self.base_dir, 'CAMERA.mp4')
         audio = path.join(self.base_dir, 'AUDIO.mp3')
-        out = sidebyside.create_sbs(out.name, screen, camera, audio)
+        out = sidebyside.create_sbs(out.name, camera, screen, audio)
         self.assertTrue(out)
 
     def test_sbs_with_two_embeded_audio(self):   
         out = tempfile.NamedTemporaryFile()
         screen = path.join(self.base_dir, 'SCREEN.mp4')
         camera = path.join(self.base_dir, 'CAMERA.mp4')
-        out = sidebyside.create_sbs(out.name, screen, camera)
+        out = sidebyside.create_sbs(out.name, camera, screen)
         self.assertTrue(out)
 
     def test_sbs_without_audio(self):   
         out = tempfile.NamedTemporaryFile()
         screen = path.join(self.base_dir, 'SCREEN_NO_AUDIO.mp4')
         camera = path.join(self.base_dir, 'CAMERA_NO_AUDIO.mp4')
-        out = sidebyside.create_sbs(out.name, screen, camera)
+        out = sidebyside.create_sbs(out.name, camera, screen)
         self.assertTrue(out)
 
     def test_sbs_no_input_file(self):   
         out = tempfile.NamedTemporaryFile()
         screen = path.join(self.base_dir, 'NO_SCREEN.mp4')
         camera = path.join(self.base_dir, 'CAMERA.mp4')
-        self.assertRaises(IOError, sidebyside.create_sbs, out.name, screen, camera)
+        self.assertRaises(IOError, sidebyside.create_sbs, out.name, camera, screen)
 
     def test_sbs_less_than_two_files(self):   
         out = tempfile.NamedTemporaryFile()

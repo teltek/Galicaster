@@ -15,13 +15,13 @@ Top bar widget including back to previous page button and Galicaster logo
 """
 
 from os import path
-import gtk
+from gi.repository import Gtk, GObject, GdkPixbuf
 
 from galicaster.core import context
 from galicaster.classui import get_ui_path, get_image_path
 from galicaster.classui.about import GCAboutDialog
 
-class StripUI(gtk.Box):
+class StripUI(Gtk.Box):
     """
     GUI for the Welcoming - Distribution Screen
     """
@@ -32,9 +32,9 @@ class StripUI(gtk.Box):
         Creates a top bar widget with the Galicaster Logo.
         If a back_page is provided - the tab number on the Core notebook wiget - it will show a back to the previous page button. 
         """
-        gtk.Box.__init__(self)
-
-        builder = gtk.Builder()
+        Gtk.Box.__init__(self)
+        
+        builder = Gtk.Builder()
         builder.add_from_file(get_ui_path('strip.glade'))
         self.builder = builder
         self.strip = builder.get_object("stripbox")
@@ -60,11 +60,11 @@ class StripUI(gtk.Box):
         anchura = size[0]
         k = anchura / 1920.0
 
-        pixbuf = gtk.gdk.pixbuf_new_from_file(get_image_path('logo.svg'))    
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file(get_image_path('logo.svg'))    
         pixbuf = pixbuf.scale_simple(
             int(pixbuf.get_width()*k),
             int(pixbuf.get_height()*k),
-            gtk.gdk.INTERP_BILINEAR)
+            GdkPixbuf.InterpType.BILINEAR)
         align2 = self.builder.get_object("top_align")
         
         logo2 = self.builder.get_object("logo2")
@@ -78,5 +78,5 @@ class StripUI(gtk.Box):
             button.set_property("height-request", int(k*70) )
             
             image = button.get_children()
-            if type(image[0]) == gtk.Image:
+            if type(image[0]) == Gtk.Image:
                 image[0].set_pixel_size(int(k*56))

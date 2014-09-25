@@ -13,7 +13,7 @@
 
 
 from os import path
-import gtk
+from gi.repository import Gtk, Gdk, GdkPixbuf, GObject
 
 from galicaster.core import context
 from galicaster.classui import get_ui_path, get_image_path
@@ -23,12 +23,11 @@ from galicaster import __version__
 from galicaster.utils.i18n import _
 
 PROGRAM = "Galicaster"
-COPY1 = "Copyright © 2011 Teltek"
-COPY2 = "Copyright © 2011 Héctor Canto, Rubén González"
+COPY = "Copyright © 2014 Teltek Video Research"
 WEB = "http://galicaster.teltek.es"
 LICENSE = """
 Galicaster, Multistream Recorder and Player
-Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
+Copyright (c) 2014, Teltek Video Research <galicaster@teltek.es>
 
 This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License. 
 To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
@@ -37,28 +36,32 @@ or send a letter to Creative Commons, 171 Second Street, Suite 300, San Francisc
 
 AUTHORS = [
 "Héctor Canto",
-"Rubén González"
+"Hugo Caloto",
+"Rubén González",
+"Rubén Pérez"
 ]
 
 DOCS = (
 "Héctor Canto",
+"Hugo Caloto",
 "Rubén González",
 "Rubén Pérez"
 )
 
 ARTISTS = [
-"Natalia García",
-"Héctor Canto"
+"Héctor Canto",
+"Natalia García"
 ]
 
-class GCAboutDialog(gtk.AboutDialog):
+class GCAboutDialog(Gtk.AboutDialog):
 
      __gtype_name__ = 'GCAboutDialog'
 
      def __init__(self, parent=None):
          if not parent:
              parent = context.get_mainwindow()
-         gtk.AboutDialog.__init__(self)
+         Gtk.AboutDialog.__init__(self)
+#         GObject.GObject.__init__(self)
          if parent:
              self.set_transient_for(parent)
          
@@ -72,10 +75,10 @@ class GCAboutDialog(gtk.AboutDialog):
          self.vbox.pack_start(strip, False, True, 0)
          self.vbox.reorder_child(strip,0)
          strip.show()
-         self.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
+         self.set_type_hint(Gdk.WindowTypeHint.TOOLBAR)
          
          #self.set_decorated(True)
-         self.set_position(gtk.WIN_POS_CENTER_ON_PARENT)
+         self.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
 
          self.set_program_name(PROGRAM)
          self.set_version(__version__)
@@ -84,24 +87,24 @@ class GCAboutDialog(gtk.AboutDialog):
          self.set_authors(AUTHORS)
          self.set_documenters(DOCS)
          self.set_artists(ARTISTS)
-         self.set_copyright("\n".join((COPY1,COPY2)))
+         self.set_copyright(COPY)
          self.set_license(LICENSE)
-         pixbuf = gtk.gdk.pixbuf_new_from_file(get_image_path('logo.svg')) 
+         pixbuf = GdkPixbuf.Pixbuf.new_from_file(get_image_path('logo.svg')) 
          pixbuf = pixbuf.scale_simple(
               int(pixbuf.get_width()*k),
               int(pixbuf.get_height()*k),
-              gtk.gdk.INTERP_BILINEAR)
+              GdkPixbuf.InterpType.BILINEAR)
 
          #self.set_logo(pixbuf)
 
          #ADD TELTEK LOGO
          box=self.get_content_area()
-         company_logo=gtk.Image()
-         pixbuf = gtk.gdk.pixbuf_new_from_file(get_image_path('teltek.svg')) 
+         company_logo=Gtk.Image()
+         pixbuf = GdkPixbuf.Pixbuf.new_from_file(get_image_path('teltek.svg')) 
          pixbuf = pixbuf.scale_simple(
               int(pixbuf.get_width()*k),
               int(pixbuf.get_height()*k),
-            gtk.gdk.INTERP_BILINEAR)
+            GdkPixbuf.InterpType.BILINEAR)
 
          company_logo.set_from_pixbuf(pixbuf)
 
@@ -109,10 +112,10 @@ class GCAboutDialog(gtk.AboutDialog):
          company_logo.show()
 
          #ADD THANKS
-         #thanks=gtk.Button("Thanks")
+         #thanks=Gtk.Button("Thanks")
          #buttons=self.get_action_area()
          #thanks.connect("clicked",self.show_thanks)
-         #buttons.pack_start(thanks)
+         #buttons.pack_start(thanks, True, True, 0)
          #buttons.reorder_child(thanks,0)
          #thanks.show()
          
@@ -120,16 +123,16 @@ class GCAboutDialog(gtk.AboutDialog):
          #self.destroy()
 
      def show_thanks(self, orgin):
-         dialog = gtk.Dialog()
+         dialog = Gtk.Dialog()
          dialog.set_title(_("Special thanks to..."))
-         dialog.add_button("Close",gtk.RESPONSE_CLOSE)
+         dialog.add_button("Close",Gtk.ResponseType.CLOSE)
          dialog.set_default_size(350,150)
-         dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_SPLASHSCREEN)
+         dialog.set_type_hint(Gdk.WindowTypeHint.SPLASHSCREEN)
          box = dialog.get_content_area()
-         textbuffer= gtk.TextBuffer()
+         textbuffer= Gtk.TextBuffer()
          textbuffer.set_text("")
-         label= gtk.TextView(textbuffer)
-         align= gtk.Alignment()
+         label= Gtk.TextView(textbuffer)
+         align= Gtk.Alignment.new()
          align.set_padding(10,-1,10,10)
          align.add(label)
          box.pack_start(align, True, True, 0)

@@ -13,13 +13,13 @@
 # San Francisco, California, 94105, USA.
 
 import sys
-import gtk
 
-import pygtk
-pygtk.require('2.0')
-import pygst
-pygst.require('0.10')
+import gi
+gi.require_version('Gtk', '3.0')
+gi.require_version('Gst', '1.0')
 
+from gi.repository import Gtk
+from gi.repository import Gst
 
 from galicaster.core import core
 
@@ -32,7 +32,7 @@ def main(args):
         return usage()
     try:
         gc = core.Main()
-        gtk.main()
+        Gtk.main()
     except KeyboardInterrupt:
         gc.emit_quit()
         print "Interrupted by user!"

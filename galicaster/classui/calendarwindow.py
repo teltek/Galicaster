@@ -39,7 +39,7 @@ LICENSE = """
 from os import path
 import datetime
 import time
-import gtk
+from gi.repository import Gtk
 
 from galicaster.classui import get_ui_path
 
@@ -55,7 +55,7 @@ class CalendarWindow:
 
     def __init__(self, initial_value=0, parent_window=None):
         #print "Running CalendarWindow"
-        self.gi = gtk.Builder()
+        self.gi = Gtk.Builder()
         self.gi.add_from_file(get_ui_path('datetime.glade'))
         self.gi.connect_signals(self)   
 
@@ -109,7 +109,7 @@ class CalendarWindow:
 def main():
     CalendarWindow() 
     #print "through the main function"
-    gtk.main()
+    Gtk.main()
     
 
 if __name__=='__main__':

@@ -13,8 +13,8 @@
 
 
 from os import path
-import gtk
-import pango
+from gi.repository import Gtk, GObject, GdkPixbuf
+from gi.repository import Pango
 
 from galicaster.core import context
 from galicaster.classui import get_ui_path, get_image_path
@@ -25,15 +25,15 @@ from galicaster.utils.resize import relabel
 
 from galicaster.utils.i18n import _
 
-class DistribUI(gtk.Box):
+class DistribUI(Gtk.Box):
     """
     GUI for the Welcoming - Distribution Screen
     """
     __gtype_name__ = 'DistribUI'
     
     def __init__(self):  
-        gtk.Box.__init__(self)
-        dbuilder= gtk.Builder()
+        Gtk.Box.__init__(self)
+        dbuilder= Gtk.Builder()
         dbuilder.add_from_file(get_ui_path('distrib.glade'))
         self.builder = dbuilder
         dbox = dbuilder.get_object("distbox")
@@ -92,7 +92,7 @@ class DistribUI(gtk.Box):
         about_dialog.connect('response', self.on_about_dialog_response)
                 
     def on_about_dialog_response(self, origin, response_id):
-        if response_id == gtk.RESPONSE_CLOSE or response_id == gtk.RESPONSE_CANCEL:
+        if response_id == Gtk.ResponseType.CLOSE or response_id == Gtk.ResponseType.CANCEL:
             origin.hide()  
 
     def resize(self): 
@@ -127,15 +127,15 @@ class DistribUI(gtk.Box):
         lclass = builder.get_object("logo2")
         lcompany = builder.get_object("logo1")
 
-        iclass=gtk.gdk.pixbuf_new_from_file(get_image_path("logo.svg"))
-        icompany=gtk.gdk.pixbuf_new_from_file(get_image_path("teltek.svg"))
+        iclass=GdkPixbuf.Pixbuf.new_from_file(get_image_path("logo.svg"))
+        icompany=GdkPixbuf.Pixbuf.new_from_file(get_image_path("teltek.svg"))
         iclass = iclass.scale_simple(
             int(iclass.get_width()*k),
             int(iclass.get_height()*k),
-            gtk.gdk.INTERP_BILINEAR)
+            GdkPixbuf.InterpType.BILINEAR)
         icompany = icompany.scale_simple(
             int(icompany.get_width()*k),
             int(icompany.get_height()*k),
-            gtk.gdk.INTERP_BILINEAR)
+            GdkPixbuf.InterpType.BILINEAR)
         lclass.set_from_pixbuf(iclass)
         lcompany.set_from_pixbuf(icompany)

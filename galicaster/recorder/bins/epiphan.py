@@ -11,27 +11,27 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import gst
-import gobject
 from os import path
-import galicaster
 import re
 
+from gi.repository import GObject. Gst
+
+import galicaster
 from galicaster.core import context
 from galicaster.recorder.utils import Switcher
 from galicaster.recorder import base
-from galicaster.recorder import module_register
+#from galicaster.recorder import module_register
 
 logger = context.get_logger()
 
 pipestr = (" identity name=\"joint\" ! tee name=gc-epiphan-tee ! queue ! "
-           " ffmpegcolorspace ! valve name=gc-epiphan-valve drop=false ! "
+           " videoconvert ! valve name=gc-epiphan-valve drop=false ! "
            " gc-epiphan-enc ! queue ! gc-epiphan-mux ! "
            " queue ! filesink name=gc-epiphan-sink async=false "
-           " gc-epiphan-tee. ! queue ! ffmpegcolorspace ! identity single-segment=true ! "
+           " gc-epiphan-tee. ! queue ! videoconvert ! identity single-segment=true ! "
            " xvimagesink qos=false async=false sync=false name=gc-epiphan-preview " )
 
-class GCepiphan(gst.Bin, base.Base):
+class GCepiphan(Gst.Bin, base.Base):
 
     order = ["name","flavor","location","file",
              "videoencoder", "muxer", "resolution", "framerate"]
@@ -72,10 +72,7 @@ class GCepiphan(gst.Bin, base.Base):
             },
         "videoencoder": {
             "type": "text",
-            "default": "xvidenc bitrate=5000000",
-            # Other options
-            # "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000",
-            # "x264enc pass=5 quantizer=22 speed-preset=4 profile=1"
+            "default": "x264enc pass=5 quantizer=22 speed-preset=4",
             "description": "Gstreamer encoder element used in the bin",
             },
         "muxer": {
@@ -83,7 +80,6 @@ class GCepiphan(gst.Bin, base.Base):
             "default": "avimux",
             "description": "Gstreamer encoder muxer used in the bin",
             },
-
         "resolution": {
             "type": "text",
             "default": "1024,768",
@@ -110,7 +106,7 @@ class GCepiphan(gst.Bin, base.Base):
 
     def __init__(self, options={}): 
         base.Base.__init__(self, options)
-        gst.Bin.__init__(self, self.options['name'])
+        Gst.Bin.__init__(self)
 
         # FIXME check route in conf/recorderui and define options
         if "background" not in self.options:
@@ -128,7 +124,7 @@ class GCepiphan(gst.Bin, base.Base):
                       .replace('gc-epiphan-mux', self.options['muxer']))
         size = self.options['resolution']
         width, height =  [int(a) for a in size.split(re.search('[,x:]',size).group())]
-        bin_end = gst.parse_bin_from_description(aux, True)
+        bin_end = Gst.parse_bin_from_description(aux, True)
         logger.info("Setting background for Epiphan: %s", background)
         bin_start = Switcher("canguro", self.options['location'], background, 
                              driver_type, [width,height], self.options['framerate'])
@@ -157,6 +153,9 @@ class GCepiphan(gst.Bin, base.Base):
         
         
 
-gobject.type_register(GCepiphan)
-gst.element_register(GCepiphan, "gc-epiphan-bin")
-module_register(GCepiphan, 'epiphan')
+#GObject.type_register(GCepiphan)
+#Gst.element_register(GCepiphan, "gc-epiphan-bin")
+#module_register(GCepiphan, 'epiphan')
+
+#GCepiphanType = GObject.type_register(GCepiphan)
+#Gst.Element.register(GCepiphan, 'gc-epiphan-bin', 0, GCepiphanType)

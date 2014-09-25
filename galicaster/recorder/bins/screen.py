@@ -20,8 +20,7 @@ from os import path
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
-
-
+raise Exception("Not implemented. Using gst 0.10")
 
 pipestr = (' ximagesrc endx=gc-endx endy=gc-endy name=gc-screen-src use-damage=0 ! '
            ' queue ! tee name=tee-vt  ! '
