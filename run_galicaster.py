@@ -32,6 +32,7 @@ def main(args):
         return usage()
     try:
         gc = core.Main()
+        gtk.gdk.threads_enter()
         gtk.main()
     except KeyboardInterrupt:
         gc.emit_quit()
