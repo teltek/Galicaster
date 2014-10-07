@@ -134,7 +134,7 @@ class RecorderClassUI(Gtk.Box):
         self.audiobar=Vumeter()
 
         # UI
-        self.vubox.add(self.audiobar)
+        ###FIXME UI self.vubox.add(self.audiobar)
         self.pack_start(self.recorderui,True,True,0)
 
         # Event Manager       
@@ -613,7 +613,7 @@ class RecorderClassUI(Gtk.Box):
         relabel(rec_title, k1*25, True)
         rec_title.set_line_wrap(True)
         rec_title.set_width_chars(40)
-        relabel(rec_elapsed, k1*28, True)
+        ###FIXME UI relabel(rec_elapsed, k1*28, True)
 
         for child in status_panel.get_children():
             if type(child) is Gtk.Label:
@@ -660,9 +660,9 @@ class RecorderClassUI(Gtk.Box):
         talign = self.gui.get_object("top_align")
         talign.set_padding(int(k1*10),int(k1*25),0,0)
         calign = self.gui.get_object("control_align")
-        calign.set_padding(int(k1*10),int(k1*30),int(k1*50),int(k1*50))
+        calign.set_padding(int(k1*10),int(k1*30),0,0)
         vum = self.gui.get_object("vubox")
-        vum.set_padding(int(k1*20),int(k1*10),int(k1*40),int(k1*40))         
+        vum.set_padding(int(k1*20),int(k1*10),0,0)         
         pbox.set_property("width-request", int(k1*225) )        
         return True
 
