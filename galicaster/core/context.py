@@ -100,6 +100,8 @@ def get_mhclient():
                                     conf.get('ingest', 'workflow'),
                                     conf.get_dict('ingest', 'workflow-parameters'),
                                     conf.get_dict('ingest', 'ca-parameters'),
+                                    conf.get('heartbeat', 'short'),
+                                    conf.get('heartbeat', 'long'),
                                     get_repository(),
                                     get_logger())
         else:
