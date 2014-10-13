@@ -20,7 +20,7 @@ from galicaster.recorder import base
 
 pipestr = (" pulsesrc name=gc-audio-src  ! queue ! audioamplify name=gc-audio-amplify amplification=1 ! "
            " tee name=tee-aud  ! queue ! level name=gc-audio-level message=true interval=100000000 ! "
-           " volume name=gc-audio-volume ! autoaudiosink sync=false name=gc-audio-preview  "
+           " volume name=gc-audio-volume ! alsasink sync=false name=gc-audio-preview  "
            " tee-aud. ! queue ! valve drop=false name=gc-audio-valve ! "
            " audioconvert ! gc-audio-enc ! "
            " queue ! filesink name=gc-audio-sink async=false " )

@@ -24,7 +24,7 @@ pipestr = ( " filesrc name=gc-hauppauge-file-src ! valve drop=false name=gc-haup
             " filesrc name= gc-hauppauge-audio-src ! "
             " audio/x-raw, rate=48000, channels=2, endianness=1234, width=16, depth=16, signed=true ! queue ! "
             " level name=gc-hauppauge-level message=true interval=100000000 ! "
-            " volume name=gc-hauppauge-volume ! autoaudiosink name=gc-hauppauge-audio-sink" )
+            " volume name=gc-hauppauge-volume ! alsasink name=gc-hauppauge-audio-sink" )
 
 class GChauppauge(Gst.Bin, base.Base):
 

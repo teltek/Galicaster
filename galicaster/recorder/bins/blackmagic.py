@@ -36,7 +36,7 @@ audiostr= (
             ' audiorate ! audioamplify name=gc-blackmagic-amplify amplification=1 ! '
             ' tee name=gc-blackmagic-audiotee ! queue ! '
             ' level name=gc-blackmagic-level message=true interval=100000000 ! '
-            ' volume name=gc-blackmagic-volume ! queue ! autoaudiosink async=false sync=false name=gc-blackmagic-audio-preview '
+            ' volume name=gc-blackmagic-volume ! queue ! alsasink async=false sync=false name=gc-blackmagic-audio-preview '
             # REC AUDIO
             ' gc-blackmagic-audiotee. ! queue ! valve drop=false name=gc-blackmagic-audio-valve ! '
             ' audioconvert ! gc-blackmagic-audioenc ! queue ! gc-blackmagic-muxer. '
@@ -202,6 +202,7 @@ class GCblackmagic(Gst.Bin, base.Base):
           self.has_audio = True  
           aux += audiostr
           aux = aux.replace('gc-blackmagic-audioenc', self.options['audioencoder'])
+
 
         #bin = Gst.parse_bin_from_description(aux, False)
         bin = Gst.parse_launch("( {} )".format(aux))
