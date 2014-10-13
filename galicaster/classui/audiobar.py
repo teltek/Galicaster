@@ -27,7 +27,7 @@ class Vumeter(Gtk.Table):
     def __init__(self):
         Gtk.Table.__init__(self)
         self.resize(4,110)
-        self.set_homogeneous(True)
+        self.set_homogeneous(False)
         self.mute = False
         self.vumeter=Gtk.ProgressBar()
         self.rangeVum = 40

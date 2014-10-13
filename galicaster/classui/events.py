@@ -15,7 +15,7 @@
 from gi.repository import Gtk
 from gi.repository import Pango
 from os import path
-from gi.repository import GObject
+from gi.repository import GObject, Gdk
 import datetime
 
 from galicaster.mediapackage import mediapackage

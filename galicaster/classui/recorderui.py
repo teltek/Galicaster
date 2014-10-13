@@ -134,7 +134,7 @@ class RecorderClassUI(Gtk.Box):
         self.audiobar=Vumeter()
 
         # UI
-        ###FIXME UI self.vubox.add(self.audiobar)
+        self.vubox.add(self.audiobar)
         self.pack_start(self.recorderui,True,True,0)
 
         # Event Manager       
