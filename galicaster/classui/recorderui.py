@@ -567,12 +567,10 @@ class RecorderClassUI(Gtk.Box):
     def resize(self):
         """Adapts GUI elements to the screen size"""
         size = context.get_mainwindow().get_size()
-        print "recorderui.resize - size:", size
 
         altura = size[1]
         anchura = size[0]
 
-        print size
         k1 = anchura / 1920.0
         k2 = altura / 1080.0
         self.proportion = k1

@@ -310,7 +310,6 @@ class ComboBoxEntryExt(Gtk.ComboBox):
             liststore.append((empty_label, None))
 
         for element in listing:
-            print "element",element[0]
             liststore.append([element[1]['title'], element[0]]) # NAME ID
 
         self.liststore = liststore # CHECK

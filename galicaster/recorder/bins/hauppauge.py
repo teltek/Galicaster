@@ -125,7 +125,6 @@ class GChauppauge(Gst.Bin, base.Base):
 
         aux = pipestr.replace("gc-hauppauge-preview", "sink-" + self.options['name'])
 
-        print aux
         #bin = Gst.parse_bin_from_description(aux, True)
         bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)
