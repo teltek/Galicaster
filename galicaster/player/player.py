@@ -88,6 +88,7 @@ class Player(object):
             # Link elements
             self.pipeline.add(src)
             self.pipeline.add(dec)
+
             src.link(dec)
 
         return None
@@ -220,10 +221,17 @@ class Player(object):
                 assert self.audio_sink.set_state(Gst.State.PAUSED)
                 
         elif name.startswith('video/'):
+            vconvert = Gst.ElementFactory.make('videoconvert', 'vconvert-' + element_name)
+            self.pipeline.add(vconvert)
+
             sink = Gst.ElementFactory.make('xvimagesink', 'sink-' + element_name) 
             sink.set_property('force-aspect-ratio', True)
             self.pipeline.add(sink)
-            pad.link(sink.get_static_pad('sink'))
+
+            pad.link(vconvert.get_static_pad('sink'))
+            vconvert.link(sink)
+            vconvert.set_state(Gst.State.PAUSED)
+            
             assert sink.set_state(Gst.State.PAUSED)
             
         return sink
