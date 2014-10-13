@@ -278,7 +278,7 @@ class PopUp(Gtk.Widget):
                     break
 
         if has_ingest:
-            ingest = Gtk.Frame(_("Ingest"))
+            ingest = Gtk.Frame.new(_("Ingest"))
             ingest.set_label_align(0.5,0.5)
             ing_align = Gtk.Alignment.new(0.5,0.5,0.6,0.6)
             ing_align.set_padding(0,0,int(self.wprop*10),int(self.wprop*10))
