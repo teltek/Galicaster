@@ -14,13 +14,14 @@
 
 from os import path
 
-from gi.repository import GObject. Gst
+from gi.repository import GObject, Gst
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
 pipestr = ( " filesrc name=gc-hauppauge-file-src ! valve drop=false name=gc-hauppauge-valve !  filesink  name=gc-hauppauge-sink async=false "
-            " v4l2src name=gc-hauppauge-device-src ! queue name=queue-hauprevideo ! videoconvert ! xvimagesink qos=false async=false sync=false name=gc-hauppauge-preview " 
+            " v4l2src name=gc-hauppauge-device-src ! video/x-raw,format=YV12,framerate=25/1,width=720,height=576,pixel-aspect-ratio=1/1 ! "
+            " queue name=queue-hauprevideo ! videoconvert ! xvimagesink qos=false async=false sync=false name=gc-hauppauge-preview " 
             " filesrc name= gc-hauppauge-audio-src ! "
             " audio/x-raw, rate=48000, channels=2, endianness=1234, width=16, depth=16, signed=true ! queue ! "
             " level name=gc-hauppauge-level message=true interval=100000000 ! "
