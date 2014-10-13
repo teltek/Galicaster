@@ -31,6 +31,7 @@ def main(args):
     if len(args) != 1:
         return usage()
     try:
+        Gst.init(None)
         gc = core.Main()
         Gtk.main()
     except KeyboardInterrupt:
