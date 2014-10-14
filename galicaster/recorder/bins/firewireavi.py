@@ -16,7 +16,7 @@ Experimental bin which re-multiplexes the DV video to an AVI container so that i
 """
 from os import path
 
-from gi.repository import GObject. Gst
+from gi.repository import GObject, Gst
 
 from galicaster.recorder import base
 

@@ -17,7 +17,7 @@ Experimental bin to re-encode the dv video and audio with Galicaster on the fly.
 
 from os import path
 
-from gi.repository import GObject. Gst
+from gi.repository import GObject, Gst
 
 from galicaster.recorder import base
 

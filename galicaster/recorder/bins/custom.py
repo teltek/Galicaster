@@ -14,7 +14,7 @@
 from os import path
 import re
 
-from gi.repository import GObject. Gst
+from gi.repository import GObject, Gst
 
 from galicaster.recorder import base
 #rom galicaster.recorder import module_register

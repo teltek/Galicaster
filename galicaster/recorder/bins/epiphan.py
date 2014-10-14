@@ -14,7 +14,7 @@
 from os import path
 import re
 
-from gi.repository import GObject. Gst
+from gi.repository import GObject, Gst
 
 import galicaster
 from galicaster.core import context

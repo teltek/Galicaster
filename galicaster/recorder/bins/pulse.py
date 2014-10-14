@@ -13,7 +13,7 @@
 
 from os import path
 
-from gi.repository import GObject. Gst
+from gi.repository import GObject, Gst
 
 from galicaster.recorder import base
 #from galicaster.recorder import module_register
