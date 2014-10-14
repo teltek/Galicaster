@@ -210,7 +210,7 @@ class PlayerClassUI(ManagerUI):
             new_value=100;
         temp=new_value*self.duration*Gst.SECOND/100 # FIXME get_duration propertly
 
-        if scroll_type == Gtk.SCROLL_JUMP and not self.correct:
+        if scroll_type == Gtk.ScrollType.JUMP and not self.correct:
             self.seeking = True
             if self.player.is_playing():
                 self.player.pause()
@@ -223,8 +223,8 @@ class PlayerClassUI(ManagerUI):
         if self.correct:
             self.correct=False            
 
-        if scroll_type != Gtk.SCROLL_JUMP: # handel regular scroll
-            if scroll_type ==  Gtk.SCROLL_PAGE_FORWARD or scroll_type ==  Gtk.SCROLL_PAGE_BACKWARD:
+        if scroll_type != Gtk.ScrollType.JUMP: # handel regular scroll
+            if scroll_type ==  Gtk.ScrollType.PAGE_FORWARD or scroll_type ==  Gtk.ScrollType.PAGE_BACKWARD:
                 self.player.seek(temp, False)
 
             else: # handle jump
@@ -316,7 +316,7 @@ class PlayerClassUI(ManagerUI):
                     timer=(actual_time-self.initial_time)/Gst.SECOND
                 else:
                     try:
-                        actual_time, format_type =self.player.get_position()
+                        format_type, actual_time =self.player.get_position()
                     except:
                             actual_time = 0                        
                             log.warning("Query position failed")
