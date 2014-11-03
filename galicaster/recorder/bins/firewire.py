@@ -20,7 +20,7 @@ from galicaster.recorder import base
 pipestr = ( ' dv1394src use-avc=false name=gc-firewire-src ! queue ! tee name=gc-firewire-maintee ! '
             ' queue ! dvdemux name=gc-firewire-demuxer ! '
             ' level name=gc-firewire-level message=true interval=100000000 ! '
-            ' volume name=gc-firewire-volume ! autoaudiosink sync=false name=gc-firewire-audio-sink '
+            ' volume name=gc-firewire-volume ! alsasink sync=false name=gc-firewire-audio-sink '
             ' gc-firewire-demuxer. ! queue ! avdec_dvvideo ! videoconvert ! xvimagesink qos=false async=false sync=false name=gc-firewire-preview '
             ' gc-firewire-maintee. ! queue ! valve drop=false name=gc-firewire-valve ! filesink name=gc-firewire-sink async=false '
             )

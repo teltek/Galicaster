@@ -14,7 +14,8 @@
 UI for the welcoming page
 """
 import re
-import gtk
+from gi.repository import Gtk, GObject, Gdk
+from gi.repository import GdkPixbuf
 
 from galicaster import __version__
 from galicaster.classui import message
@@ -23,52 +24,53 @@ from galicaster.utils.shutdown import shutdown as UtilsShutdown
 
 from galicaster.utils.i18n import _
 
-class GCWindow(gtk.Window):
+class GCWindow(Gtk.Window):
     """
     GUI for the Welcoming - Distribution Screen
     """
     __gtype_name__ = 'GCWindow'
 
     def __init__(self, dispatcher=None, size=None, logger=None):  
+        Gtk.Window.__init__(self,Gtk.WindowType.TOPLEVEL)
+        self.logger = logger
 
-        gtk.Window.__init__(self,gtk.WINDOW_TOPLEVEL)
         self.full_size = self.discover_size() # Fullscreen size
         self.custom_size = self.full_size
         expr='[0-9]+[\,x\:][0-9]+' # Parse custom size     
         if re.match(expr,size): 
             self.custom_size = [int(a) for a in size.split(re.search('[,x:]',size).group())]
         elif size=="auto":
-            logger.info("Default resolution and fullscreen: "+str(self.full_size))
+            self.logger.info("Default resolution and fullscreen: "+str(self.full_size))
         else:
-            logger.warning("Invalid resolution, set default. Should be 'width,height'. "+size)
+            self.logger.warning("Invalid resolution, set default. Should be 'width,height'. "+size)
 
         if self.custom_size[0]>self.full_size[0]:
             self.custom_size[0]=self.full_size[0]
-            logger.warning("Resolution Width is bigger than the monitor, set to monitor maximum")
+            self.logger.warning("Resolution Width is bigger than the monitor, set to monitor maximum")
 
         if self.custom_size[1]>self.full_size[1]:
             self.custom_size[1]=self.full_size[1]
-            logger.warning("Resolution height is bigger than the monitor, set to monitor maximum")
+            self.logger.warning("Resolution height is bigger than the monitor, set to monitor maximum")
 
         self.__def_win_size__=(self.custom_size[0],self.custom_size[1])
         self.set_size_request(self.custom_size[0],self.custom_size[1])
+#        self.resize(self.custom_size[0],self.custom_size[1])
 
         self.set_title(_("GaliCASTER {0}").format(__version__));    
         self.set_decorated(False)
-        self.set_position(gtk.WIN_POS_CENTER)
+        self.set_position(Gtk.WindowPosition.CENTER)
         self.is_fullscreen = (self.custom_size == self.full_size)
-        self.logger = logger
 
-        pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(get_image_path('galicaster.svg'),48,48)        
-        pixbuf = pixbuf.scale_simple(128, 128, gtk.gdk.INTERP_BILINEAR)
-        self.set_icon(pixbuf)
+#        pixbuf = GdkPixbuf.Pixbuf.new_from_file_size(get_image_path('galicaster.svg'),48,48)        
+#        pixbuf = pixbuf.scale_simple(128, 128, GdkPixbuf.InterpType.BILINEAR)
+#        self.set_icon(pixbuf)
         self.connect('delete_event', lambda *x: self.__on_delete_event())    
         self.dispatcher = dispatcher
         if self.dispatcher:
             self.dispatcher.connect('galicaster-quit',self.close)
             self.dispatcher.connect('galicaster-shutdown',self.shutdown)
 
-        self.nbox = gtk.Notebook()
+        self.nbox = Gtk.Notebook()
         self.nbox.set_show_tabs(False)
         self.add(self.nbox)
 
@@ -77,6 +79,7 @@ class GCWindow(gtk.Window):
         """Shifts to fullscreen mode and triggers content resizing and drawing"""
         if self.is_fullscreen:
             self.fullscreen()
+            self.maximize()
         self.resize_childs()
         self.show_all()
         
@@ -113,10 +116,10 @@ class GCWindow(gtk.Window):
         """Retrieves the current size of the window where the application will be shown"""
         size = (1920,1080)
         try:
-            root = gtk.gdk.get_default_root_window()
+            root = Gdk.get_default_root_window()
             screen = root.get_screen()
-            pos1,pos2,w,h=screen.get_monitor_geometry(0)
-            size = [w,h]
+            rect =screen.get_monitor_geometry(0)
+            size = [rect.width,rect.height]
         except:
             if self.logger:
                 self.logger.error("Unable to get root screen size")
@@ -126,7 +129,7 @@ class GCWindow(gtk.Window):
 
     def insert_page(self, page, label, cod):
         """Insert an area on the main window notebook widget"""
-        self.nbox.insert_page(page, gtk.Label(label), cod) 
+        self.nbox.insert_page(page, Gtk.Label(label=label), cod) 
 
         
     def set_current_page(self, cod):
@@ -154,7 +157,7 @@ class GCWindow(gtk.Window):
                 "main" : _("Are you sure you want to QUIT? "), 
                 }
 
-        buttons = ( gtk.STOCK_QUIT, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
+        buttons = ( Gtk.STOCK_QUIT, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
         self.dispatcher.emit("disable-no-audio")
         warning = message.PopUp(message.WARNING, text,
                                 self, buttons)
@@ -165,7 +168,7 @@ class GCWindow(gtk.Window):
                 self.logger.info("Quit Galicaster")
             if self.dispatcher:
                 self.dispatcher.emit('galicaster-notify-quit')
-            gtk.main_quit()
+            Gtk.main_quit()
         else:
             if self.logger:
                 self.logger.info("Cancel Quit")
@@ -176,7 +179,7 @@ class GCWindow(gtk.Window):
                 "main" : _("Are you sure you want to SHUTDOWN? "), 
                 }
 
-        buttons = ( gtk.STOCK_QUIT, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
+        buttons = ( Gtk.STOCK_QUIT, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
         warning = message.PopUp(message.WARNING, text,
                                 self, buttons)
 
@@ -189,5 +192,4 @@ class GCWindow(gtk.Window):
         else:
             if self.logger:
                 self.logger.info("Cancel Shutdown")
-        
         

@@ -14,9 +14,9 @@
 Pop Up with exhaustive information of a Mediapackage
 """
 
-import gtk
+from gi.repository import Gtk
 from os import path
-import pango
+from gi.repository import Pango
 
 from galicaster.mediapackage import mediapackage
 from galicaster.core import context
@@ -58,7 +58,7 @@ ORDER_EPISODES = [ 'title', 'identifier', 'folder', 'duration', 'size', 'created
 
 ORDER_SERIES = [ 'title', 'identifier','creator', 'contributor', 'subject', 'language', 'license', 'decription']
 
-class MPinfo(gtk.Window):
+class MPinfo(Gtk.Window):
 
     __gtype_name__ = 'MPinfoUI'
 
@@ -71,13 +71,13 @@ class MPinfo(gtk.Window):
         width = int(size[0]/3)
         height = int(size[1]/2.5)
         
-        gtk.Window.__init__(self)
+        Gtk.Window.__init__(self)
         self.set_title(_("Mediapackage Info "))
-        self.set_position(gtk.WIN_POS_CENTER_ALWAYS)
+        self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
         self.set_default_size(width,height)
         self.set_modal(True)
         if parent:
-            self.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DIALOG)
+            self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
             self.set_transient_for(parent)
             self.set_destroy_with_parent(True)
 
@@ -147,21 +147,21 @@ class MPinfo(gtk.Window):
             self.add_data(cat_table,_("File:"),filename)
 
         #PACKING
-        box = gtk.VBox()
+        box = Gtk.VBox()
         box.pack_start(basic,False,True,int(self.hprop*10))
         box.pack_start(ops,False,True,int(self.hprop*10))
         if mp.getSeries():
             box.pack_start(series,False,True,int(self.hprop*10))
         box.pack_start(tracks,False,True,int(self.hprop*10))
         box.pack_start(cats,False,True,int(self.hprop*10))
-        external_align=gtk.Alignment(0.5,0,0.8,0.8)
+        external_align=Gtk.Alignment.new(0.5,0,0.8,0.8)
         external_align.add(box)
 
         self.add(external_align)
 
         #BUTTONS
-        self.buttons = gtk.HButtonBox()
-        self.buttons.set_layout(gtk.BUTTONBOX_SPREAD)
+        self.buttons = Gtk.HButtonBox()
+        self.buttons.set_layout(Gtk.ButtonBoxStyle.SPREAD)
 
         self.add_button(_("Close"), self.close)
         self.add_button(_("Open Folder"), self.openfolder, mp.getURI())
@@ -170,9 +170,9 @@ class MPinfo(gtk.Window):
 		    
     def add_framed_table(self,name, expanded = False):
         """Stablished a framed table for the information to be shown in"""
-        frame =gtk.Frame()
-        frame.set_shadow_type(gtk.SHADOW_ETCHED_IN)
-        expander= gtk.Expander()
+        frame =Gtk.Frame()
+        frame.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        expander= Gtk.Expander()
         if expanded:
             expander.set_label(name)
             expander.set_expanded(False)
@@ -180,8 +180,8 @@ class MPinfo(gtk.Window):
         else:
             frame.set_label(name)
             
-        table = gtk.Table()
-        align= gtk.Alignment(0.75,0,0.9,0.9)
+        table = Gtk.Table()
+        align= Gtk.Alignment.new(0.75,0,0.9,0.9)
         align.add(table)
         if expanded:
             expander.add(align)
@@ -194,38 +194,38 @@ class MPinfo(gtk.Window):
     def add_data(self,table,name,value):
         """Attach data to the table"""
         row = table.get_property("n-rows")
-        title = gtk.Label(name)
+        title = Gtk.Label(label=name)
         title.set_alignment(1,0)
 
         modification = str(int(self.hprop*16))+"px"        
-        title.modify_font(pango.FontDescription(modification))
+        title.modify_font(Pango.FontDescription(modification))
 
         title.set_width_chars(-1)
         title.set_max_width_chars(int(self.wprop*50))
             
-        data=gtk.Label(value)
+        data=Gtk.Label(label=value)
         data.set_selectable(True)
         data.set_alignment(0,0)
-        data.modify_font(pango.FontDescription(modification))
+        data.modify_font(Pango.FontDescription(modification))
 
-        table.attach(title,0,1,row,row+1,gtk.FILL,False,
+        table.attach(title,0,1,row,row+1,Gtk.AttachOptions.FILL,False,
                      0,0)
-        table.attach(data,1,2,row,row+1,gtk.EXPAND|gtk.FILL,False,
+        table.attach(data,1,2,row,row+1,Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL,False,
                      int(self.wprop*10),0)
 
     def add_button(self, text, connection, data = None, end=False):
         """Adds a action button on the bottom of the window"""
         k1 = self.wprop
-        button = gtk.Button(text)
+        button = Gtk.Button(text)
         button.set_property("width-request", int(k1*150))
         button.set_property("height-request", int(k1*50))
         label = button.get_children()[0]
         modification = str(int(self.hprop*17))
-        label.modify_font(pango.FontDescription(modification))
+        label.modify_font(Pango.FontDescription(modification))
         if not end:
-            self.buttons.pack_start(button)
+            self.buttons.pack_start(button, True, True, 0)
         else:
-            self.buttons.pack_end(button)
+            self.buttons.pack_end(button, True, True, 0)
         if data:
             button.connect("clicked",connection, data)
         else:

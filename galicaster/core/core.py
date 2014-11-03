@@ -13,9 +13,9 @@
 
 
 import glib
-import gtk
+from gi.repository import Gtk, Gdk, GObject
 glib.threads_init()
-gtk.gdk.threads_init()
+Gdk.threads_init()
 
 from galicaster import __version__
 from galicaster.core import context
@@ -50,11 +50,10 @@ class Main():
         plugins.init()
         
         self.window = context.get_mainwindow()
-               
         # Recorder
         self.recorder = RecorderClassUI()
         self.window.insert_page(self.recorder, 'REC', REC) 
-
+        
         if 'scheduler' in self.modules:        
             self.scheduler = context.get_scheduler()
 

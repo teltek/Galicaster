@@ -15,7 +15,7 @@ Hides controls from the Galicaster UI
 """
 
 from galicaster.core import context
-import gtk
+from gi.repository import Gtk
 
 ALL_TABS = { "events": "eventpanel",
              "status": "status_panel",
@@ -51,7 +51,7 @@ def post_init(source=None):
                 if tab in tabs_to_hide:
                     page.hide_all()
                 else:
-                    data_panel.set_tab_label_packing(page, False, True,gtk.PACK_START)
+                    data_panel.set_tab_label_packing(page, False, True,Gtk.PACK_START)
     except AttributeError as e:
         # The conf parameter isn't defined. Ignore
         print "Attribute error"

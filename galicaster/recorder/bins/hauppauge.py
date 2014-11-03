@@ -12,10 +12,9 @@
 # San Francisco, California, 94105, USA.
 
 
-import gobject
-import gst
-
 from os import path
+
+from gi.repository import GObject, Gst
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
@@ -23,13 +22,14 @@ from galicaster.recorder import module_register
 raise Exception("Not implemented. Using gst 0.10")
 
 pipestr = ( " filesrc name=gc-hauppauge-file-src ! valve drop=false name=gc-hauppauge-valve !  filesink  name=gc-hauppauge-sink async=false "
-            " v4l2src name=gc-hauppauge-device-src ! queue name=queue-hauprevideo ! ffmpegcolorspace ! xvimagesink qos=false async=false sync=false name=gc-hauppauge-preview " 
+            " v4l2src name=gc-hauppauge-device-src ! video/x-raw,format=YV12,framerate=25/1,width=720,height=576,pixel-aspect-ratio=1/1 ! "
+            " queue name=queue-hauprevideo ! videoconvert ! xvimagesink qos=false async=false sync=false name=gc-hauppauge-preview " 
             " filesrc name= gc-hauppauge-audio-src ! "
-            " audio/x-raw-int, rate=48000, channels=2, endianness=1234, width=16, depth=16, signed=true ! queue ! "
+            " audio/x-raw, rate=48000, channels=2, endianness=1234, width=16, depth=16, signed=true ! queue ! "
             " level name=gc-hauppauge-level message=true interval=100000000 ! "
             " volume name=gc-hauppauge-volume ! alsasink name=gc-hauppauge-audio-sink" )
 
-class GChauppauge(gst.Bin, base.Base):
+class GChauppauge(Gst.Bin, base.Base):
 
     order = ["name","flavor","location","locprevideo","locpreaudio","file", 
              "vumeter", "player"]
@@ -124,12 +124,12 @@ class GChauppauge(gst.Bin, base.Base):
 
     def __init__(self, options={}): 
         base.Base.__init__(self, options)
-        gst.Bin.__init__(self, self.options['name'])
+        Gst.Bin.__init__(self)
 
         aux = pipestr.replace("gc-hauppauge-preview", "sink-" + self.options['name'])
 
-        #bin = gst.parse_bin_from_description(aux, True)
-        bin = gst.parse_launch("( {} )".format(aux))
+        #bin = Gst.parse_bin_from_description(aux, True)
+        bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
         sink = self.get_by_name("gc-hauppauge-device-src")
@@ -188,6 +188,9 @@ class GChauppauge(gst.Bin, base.Base):
         pass
      
 
-gobject.type_register(GChauppauge)
-gst.element_register(GChauppauge, "gc-hauppauge-bin")
-module_register(GChauppauge, 'hauppauge')
+#GObject.type_register(GChauppauge)
+#Gst.element_register(GChauppauge, "gc-hauppauge-bin")
+#module_register(GChauppauge, 'hauppauge')
+
+#GChauppaugeType = GObject.type_register(GChauppauge)
+#Gst.Element.register(GChauppauge, 'gc-hauppauge-bin', 0, GChauppaugeType)

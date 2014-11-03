@@ -14,17 +14,17 @@
 Widget holding multiple information about video status
 """
 
-import gtk
-import gobject
+from gi.repository import Gtk
+from gi.repository import GObject
 import os
-import pango
+from gi.repository import Pango
 
 from galicaster.classui import get_ui_path
 
 EXP_STRINGS = [ (0, 'B'), (10, 'KB'),(20, 'MB'),(30, 'GB'),(40, 'TB'), (50, 'PB'),]
 ONE_MB = 1024*1024
 
-class StatusBarClass(gtk.Box):
+class StatusBarClass(Gtk.Box):
     """
     Status Information of Galicaster
     """
@@ -32,8 +32,8 @@ class StatusBarClass(gtk.Box):
     __gtype_name__ = 'StatusBarClass'
 
     def __init__(self):
-        gtk.Box.__init__(self)
-	builder = gtk.Builder()
+        GObject.GObject.__init__(self)
+	builder = Gtk.Builder()
         builder.add_from_file(get_ui_path('statusbar.glade'))
         self.bar = builder.get_object("statusbar")
         builder.connect_signals(self)
@@ -127,7 +127,7 @@ class StatusBarClass(gtk.Box):
                 modification = "bold "+str(size)
             else:
                 modification = str(size)
-            label.modify_font(pango.FontDescription(modification))
+            label.modify_font(Pango.FontDescription(modification))
 
 
         relabel(self.timer,k*32,True)
@@ -136,4 +136,4 @@ class StatusBarClass(gtk.Box):
        
         return True
     
-gobject.type_register(StatusBarClass)
+GObject.type_register(StatusBarClass)

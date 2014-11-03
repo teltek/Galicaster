@@ -14,7 +14,7 @@
 """This plugin will record an audio gstreamer pipeline of the specified device. if the audio file in the media package
 is quite then it is replaced with the recorded audio file"""
 
-import gst
+from gi.repository import Gst
 import os
 import shutil
 from galicaster.core import context
@@ -31,7 +31,7 @@ default_track = '1'
 # gstreamer pipeline amplitude temp file
 temp_amp = os.getenv('HOME') + '/gc_pipeline_amp'
 # gstreamer pipeline
-pipe = gst.Pipeline("failover_pipeline")
+pipe = Gst.Pipeline("failover_pipeline")
 
 
 def init():
@@ -54,23 +54,23 @@ def init():
 
 def set_pipeline():
     # create the gstreamer elements; pulse source mp3 192kbps cbr
-    faudiosrc = gst.element_factory_make("pulsesrc", "pulsesrc")
+    faudiosrc = Gst.ElementFactory.make("pulsesrc", "pulsesrc")
     if device is None:
         faudiosrc.set_property("device", "{0}".format(default_device))
     else:
         faudiosrc.set_property("device", "{0}".format(device))
-    faudioamp = gst.element_factory_make('audioamplify', "audioamplify")
+    faudioamp = Gst.ElementFactory.make('audioamplify', "audioamplify")
     faudioamp.set_property("amplification", 1)
-    faudiocon = gst.element_factory_make("audioconvert", "audioconvert")
-    faudioenc = gst.element_factory_make("lamemp3enc", "lamemp3enc")
+    faudiocon = Gst.ElementFactory.make("audioconvert", "audioconvert")
+    faudioenc = Gst.ElementFactory.make("lamemp3enc", "lamemp3enc")
     faudioenc.set_property("target", 1)
     faudioenc.set_property("bitrate", 192)
     faudioenc.set_property("cbr", "true")
-    faudiosink = gst.element_factory_make("filesink", "filesink")
+    faudiosink = Gst.ElementFactory.make("filesink", "filesink")
     faudiosink.set_property("location", "{0}".format(FAILOVER_FILE))
     # add elements to the pipeline
     pipe.add(faudiosrc, faudioamp, faudiocon, faudioenc, faudiosink)
-    gst.element_link_many(faudiosrc, faudioamp, faudiocon, faudioenc, faudiosink)
+    Gst.element_link_many(faudiosrc, faudioamp, faudiocon, faudioenc, faudiosink)
 
 
 def record(self):
@@ -82,12 +82,12 @@ def record(self):
         # logger.info("renaming file")
         shutil.move(FAILOVER_FILE, FAILOVER_FILE + "_" + str(filecount(FAIL_DIR)))
     # start recording
-    pipe.set_state(gst.STATE_PLAYING)
+    pipe.set_state(Gst.State.PLAYING)
 
 
 def stop(self):
     # stop recording
-    pipe.set_state(gst.STATE_NULL)
+    pipe.set_state(Gst.State.NULL)
 
 
 def filecount(files):

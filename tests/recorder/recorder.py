@@ -35,7 +35,7 @@ class TestFunctions(TestCase, Base):
         Base.setUp(self)
 
     def tearDown(self):
-        Base.tearDown(self)
+        #Base.tearDown(self)
 
 
     def test_constructor(self):

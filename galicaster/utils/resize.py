@@ -11,14 +11,14 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import pango
+from gi.repository import Pango
 
 def relabel(label,size,bold):           
     if bold:
         modification = "bold "+str(size)
     else:
         modification = str(size)
-    label.modify_font(pango.FontDescription(modification))
+    label.modify_font(Pango.FontDescription(modification))
 
 
 def relabel_updating_font(label,size,bold):           
@@ -26,6 +26,6 @@ def relabel_updating_font(label,size,bold):
         modification = "bold "+str(size)
     else:
         modification = str(size)
-    font = pango.FontDescription(modification)     
+    font = Pango.FontDescription(modification)     
     label.modify_font(font)
     return font

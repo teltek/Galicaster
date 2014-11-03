@@ -15,7 +15,7 @@
 import sys
 
 import gi
-from gi.repository import Gtk, Gst
+from gi.repository import Gtk, Gst, Gdk
 Gst.init(None)
 
 from galicaster.core import context
@@ -60,7 +60,7 @@ class Recorder(object):
 
         self.bus.add_signal_watch()
         self.bus.enable_sync_message_emission()
-        self.bus.connect('message', WeakMethod(self, '_debug')) # TO DEBUG
+#        self.bus.connect('message', WeakMethod(self, '_debug')) # TO DEBUG
         self.bus.connect('message::error', WeakMethod(self, '_on_error'))        
         self.bus.connect('message::element', WeakMethod(self, '_on_message_element'))
         self.bus.connect('sync-message::element', WeakMethod(self, '_on_sync_message'))
@@ -219,7 +219,8 @@ class Recorder(object):
                 Gdk.threads_enter()
                 Gdk.Display.get_default().sync()            
                 message.src.set_property('force-aspect-ratio', True)
-                message.src.set_xwindow_id(gtk_player.get_property(window).get_xid())
+#                message.src.set_xwindow_id(gtk_player.get_property(window).get_xid())
+                message.src.set_window_handle(gtk_player.get_property('window').get_xid())
                 Gdk.threads_leave()
 
             except KeyError:
@@ -236,10 +237,10 @@ class Recorder(object):
 
     def __set_vumeter(self, message):
         struct = message.get_structure()
-        if  struct['rms'][0] == float("-inf"):
+        if float(struct.get_value('rms')[0]) == float("-inf"):
             valor = "Inf"
         else:            
-            valor = struct['rms'][0]
+            valor = float(struct.get_value('rms')[0])
         self.dispatcher.emit("recorder-vumeter", valor)
 
 

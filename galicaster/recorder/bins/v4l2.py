@@ -15,7 +15,7 @@ from os import path
 import re
 
 from gi.repository import GObject, Gst
-Gst.init(None)
+#Gst.init(None)
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register

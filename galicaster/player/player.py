@@ -18,7 +18,7 @@
 #
 
 import gi
-from gi.repository import Gtk, Gst
+from gi.repository import Gtk, Gst, Gdk
 # Needed for window.get_xid(), xvimagesink.set_window_handle(), respectively:
 from gi.repository import GdkX11, GstVideo
 
@@ -77,7 +77,7 @@ class Player(object):
 
         # Create elements
         for name, location in self.files.iteritems():
-            #logger.info('playing %r', location)
+            logger.info('playing %r', location)
             src = Gst.ElementFactory.make('filesrc', 'src-' + name)
             src.set_property('location', location)
             dec = Gst.ElementFactory.make('decodebin', 'decode-' + name)
@@ -220,10 +220,17 @@ class Player(object):
                 assert self.audio_sink.set_state(Gst.State.PAUSED)
                 
         elif name.startswith('video/'):
+            vconvert = Gst.ElementFactory.make('videoconvert', 'vconvert-' + element_name)
+            self.pipeline.add(vconvert)
+
             sink = Gst.ElementFactory.make('xvimagesink', 'sink-' + element_name) 
             sink.set_property('force-aspect-ratio', True)
             self.pipeline.add(sink)
-            pad.link(sink.get_static_pad('sink'))
+
+            pad.link(vconvert.get_static_pad('sink'))
+            vconvert.link(sink)
+            vconvert.set_state(Gst.State.PAUSED)
+            
             assert sink.set_state(Gst.State.PAUSED)
             
         return sink
@@ -255,12 +262,11 @@ class Player(object):
                     raise TypeError()
                 Gdk.threads_enter()
                 Gdk.Display.get_default().sync()
-                message.src.set_xwindow_id(Gtk_player.get_property('window').get_xid())
+                message.src.set_window_handle(gtk_player.get_property('window').get_xid())
                 message.src.set_property('force-aspect-ratio', True)
                 Gdk.threads_leave()
 
             except TypeError:
-                pass
                 #logger.error('players[%r]: need a %r; got a %r: %r' % (
                 #        name, Gtk.DrawingArea, type(gtk_player), gtk_player))
             except KeyError:
@@ -275,11 +281,11 @@ class Player(object):
     def __set_vumeter(self, message):
         struct = message.get_structure()
         
-        if  struct['rms'][0] == float("-inf"):
+        if  float(struct.get_value('rms')[0]) == float("-inf"):
             valor = "Inf"
         else:            
-            valor = struct['rms'][0]
-        #self.dispatcher.emit("update-play-vumeter", valor)
+            valor = float(struct.get_value('rms')[0])
+        self.dispatcher.emit("update-play-vumeter", valor)
 
 
     def __discover(self, filepath):

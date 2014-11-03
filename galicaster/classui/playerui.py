@@ -16,9 +16,9 @@ UI for the player area
 
 
 from os import path
-import gobject
-import gtk
-import gst
+from gi.repository import GObject
+from gi.repository import Gtk, Gdk
+from gi.repository import Gst
 import time
 import threading
 
@@ -37,7 +37,7 @@ from galicaster.classui.audiobar import AudioBarClass
 from galicaster.classui import get_ui_path
 
 
-gtk.gdk.threads_init()
+Gdk.threads_init()
 
 GC_EXIT=-1
 GC_INIT=0
@@ -58,7 +58,7 @@ class PlayerClassUI(ManagerUI):
     
     def __init__(self,package=None):       
         ManagerUI.__init__(self,1)
-	builder = gtk.Builder()
+	builder = Gtk.Builder()
         builder.add_from_file(get_ui_path('player.glade'))
         self.gui=builder
 
@@ -74,7 +74,7 @@ class PlayerClassUI(ManagerUI):
         self.jump_id=0 # seek signal id
         self.correct=False # To correct SCROLL_JUMP, after release it
         self.seek_bar=self.gui.get_object("seekbar")
-        self.seek_bar.add_events(gtk.gdk.SCROLL_MASK)
+        self.seek_bar.add_events(Gdk.EventMask.SCROLL_MASK)
         self.seek_bar.connect("change-value", self.on_seek) 
       
         # VUMETER
@@ -185,16 +185,16 @@ class PlayerClassUI(ManagerUI):
 
     def on_quit_clicked(self, button):
         """Stops the preview and close the player"""
-        gui = gtk.Builder()
+        gui = Gtk.Builder()
         gui.add_from_file(get_ui_path("quit.glade"))
         dialog = gui.get_object("dialog")
         response = dialog.run()
-        if response == gtk.RESPONSE_OK:   
+        if response == Gtk.ResponseType.OK:   
             dialog.destroy()
             if self.status > 0:
                 self.player.quit()
             self.change_state(GC_EXIT)
-            self.emit("delete_event", gtk.gdk.Event(gtk.gdk.DELETE))            
+            self.emit("delete_event", Gdk.Event(Gdk.DELETE))            
         else:
             dialog.destroy()
         return True
@@ -208,9 +208,9 @@ class PlayerClassUI(ManagerUI):
         """Move to the new position"""
         if new_value>100:
             new_value=100;
-        temp=new_value*self.duration*gst.SECOND/100 # FIXME get_duration propertly
+        temp=new_value*self.duration*Gst.SECOND/100 # FIXME get_duration propertly
 
-        if scroll_type == gtk.SCROLL_JUMP and not self.correct:
+        if scroll_type == Gtk.ScrollType.JUMP and not self.correct:
             self.seeking = True
             if self.player.is_playing():
                 self.player.pause()
@@ -223,8 +223,8 @@ class PlayerClassUI(ManagerUI):
         if self.correct:
             self.correct=False            
 
-        if scroll_type != gtk.SCROLL_JUMP: # handel regular scroll
-            if scroll_type ==  gtk.SCROLL_PAGE_FORWARD or scroll_type ==  gtk.SCROLL_PAGE_BACKWARD:
+        if scroll_type != Gtk.ScrollType.JUMP: # handel regular scroll
+            if scroll_type ==  Gtk.ScrollType.PAGE_FORWARD or scroll_type ==  Gtk.ScrollType.PAGE_BACKWARD:
                 self.player.seek(temp, False)
 
             else: # handle jump
@@ -252,10 +252,10 @@ class PlayerClassUI(ManagerUI):
         areas = None
         areas = dict()
         for key in source.keys():
-            new_area = gtk.DrawingArea()
+            new_area = Gtk.DrawingArea()
             new_area.set_name("playerarea "+str(key))
             areas[key]=new_area
-            areas[key].modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse("black"))
+            areas[key].modify_bg(Gtk.StateType.NORMAL, Gdk.color_parse("black"))
             main.pack_start(new_area,True,True,3)#TODO editable padding=3
 
         for child in main.get_children():
@@ -303,9 +303,9 @@ class PlayerClassUI(ManagerUI):
         thread_id= self.thread_id
         self.initial_time=self.player.get_time()
         self.duration = self.player.get_duration()
-        gtk.gdk.threads_enter()
+        Gdk.threads_enter()
         self.statusbar.SetTimer2(0,self.duration)
-        gtk.gdk.threads_leave()        
+        Gdk.threads_leave()        
               
         self.volume_bar.set_value(0.5)
 
@@ -313,20 +313,20 @@ class PlayerClassUI(ManagerUI):
             if not self.seeking :
                 if not self.duration:
                     actual_time=self.player.get_time()  
-                    timer=(actual_time-self.initial_time)/gst.SECOND
+                    timer=(actual_time-self.initial_time)/Gst.SECOND
                 else:
                     try:
-                        actual_time, format_type =self.player.get_position()
+                        format_type, actual_time =self.player.get_position()
                     except:
                             actual_time = 0                        
                             log.warning("Query position failed")
 
-                    timer = actual_time / gst.SECOND
+                    timer = actual_time / Gst.SECOND
                     self.seek_bar.set_value(timer*100/self.duration)
                 if thread_id==self.thread_id:
-                    gtk.gdk.threads_enter()
+                    Gdk.threads_enter()
                     self.statusbar.SetTimer2(timer,self.duration)
-                    gtk.gdk.threads_leave()
+                    Gdk.threads_leave()
                     
             time.sleep(0.2)          
         return True
@@ -410,4 +410,4 @@ class PlayerClassUI(ManagerUI):
             self.player.quit()
         return True        
 
-gobject.type_register(PlayerClassUI)
+GObject.type_register(PlayerClassUI)

@@ -1,20 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.16.1 -->
 <interface>
-  <requires lib="gtk+" version="2.16"/>
-  <!-- interface-naming-policy project-wide -->
+  <requires lib="gtk+" version="3.0"/>
   <object class="GtkHBox" id="audiobar">
     <property name="visible">True</property>
+    <property name="can_focus">False</property>
     <child>
       <object class="GtkVBox" id="vbox">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <child>
           <object class="GtkProgressBar" id="vumeter">
             <property name="width_request">50</property>
             <property name="visible">True</property>
-            <property name="orientation">bottom-to-top</property>
-            <property name="discrete_blocks">20</property>
+            <property name="can_focus">False</property>
+            <property name="orientation">vertical</property>
+            <property name="inverted">True</property>
           </object>
           <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
             <property name="position">0</property>
           </packing>
         </child>
@@ -23,6 +28,8 @@
         </child>
       </object>
       <packing>
+        <property name="expand">True</property>
+        <property name="fill">True</property>
         <property name="pack_type">end</property>
         <property name="position">0</property>
       </packing>

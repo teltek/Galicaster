@@ -15,7 +15,7 @@ from os import path
 import re
 
 from gi.repository import Gst
-Gst.init(None)
+#Gst.init(None)
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
@@ -36,7 +36,7 @@ audiostr= (
             ' audiorate ! audioamplify name=gc-blackmagic-amplify amplification=1 ! '
             ' tee name=gc-blackmagic-audiotee ! queue ! '
             ' level name=gc-blackmagic-level message=true interval=100000000 ! '
-            ' volume name=gc-blackmagic-volume ! queue ! autoaudiosink async=false sync=false name=gc-blackmagic-audio-preview '
+            ' volume name=gc-blackmagic-volume ! queue ! alsasink async=false sync=false name=gc-blackmagic-audio-preview '
             # REC AUDIO
             ' gc-blackmagic-audiotee. ! queue ! valve drop=false name=gc-blackmagic-audio-valve ! '
             ' audioconvert ! gc-blackmagic-audioenc ! queue ! gc-blackmagic-muxer. '
