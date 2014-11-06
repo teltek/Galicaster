@@ -17,7 +17,7 @@ import json
 import math
 import threading
 import tempfile
-from bottle import route, run, response
+from bottle import route, run, response, abort
 import gtk
 
 from galicaster.core import context
@@ -96,17 +96,35 @@ def metadata(id):
         json.dumps({key:value})
     return json.dumps(line)
 
+
 @route('/start')
 def start():
-    response.content_type = 'text/xml'
-    context.get_dispatcher().emit('start-before', None)
-    return "Signal to start recording sent"    
+    response.content_type = 'text/html'
+    state = context.get_state()
+
+    # Already Recording
+    if state.is_recording:
+        abort(500, "couldn't start capture")
+    else:
+        gtk.gdk.threads_enter()
+        context.get_dispatcher().emit('start-before', None)
+        gtk.gdk.threads_leave()
+        return "Signal to start recording sent"    
 
 @route('/stop')
 def stop():
     response.content_type = 'text/html'
-    context.get_dispatcher().emit('stop-record', 0)
-    return "Signal to stop recording sent"
+    state = context.get_state()
+
+    if state.is_recording:
+        #Emit the signal to begin the recording
+        gtk.gdk.threads_enter()
+        context.get_dispatcher().emit('stop-record', 0)
+        gtk.gdk.threads_leave()
+        return "Signal to stop recording sent"
+    else:
+        abort(500, "failed to stop the capture, or no current active capture")
+
 
 @route('/operation/:op/:mpid', method='GET')
 def operationt(op, mpid):
