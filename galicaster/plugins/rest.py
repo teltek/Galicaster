@@ -165,3 +165,11 @@ def logstale():
     else:
         return "Error: no filepath provided" 
 
+@route('/quit')
+def quit():
+    if not context.get_state().is_recording:
+        # Emit quit signal and exit
+        gtk.gdk.threads_enter()
+        context.get_dispatcher().emit('galicaster-notify-quit')
+        gtk.main_quit()
+        gtk.gdk.threads_leave()
