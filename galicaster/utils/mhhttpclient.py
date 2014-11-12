@@ -87,7 +87,7 @@ class MHHTTPClient(object):
         b = StringIO()
 
         url = list(urlparse.urlparse(theServer, 'http'))
-        url[2] = endpoint.format(**path_params)
+        url[2] = url[2] + endpoint.format(**path_params)
         url[4] = urllib.urlencode(query_params)
         c.setopt(pycurl.URL, urlparse.urlunparse(url))
 
