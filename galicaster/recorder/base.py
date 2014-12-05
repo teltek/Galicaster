@@ -14,7 +14,6 @@
 from os import path
 import re
 
-FLAVOR = ['presenter', 'presentation', 'other']
 
 class Base(object):
     gc_parameters = {
@@ -101,10 +100,6 @@ class Base(object):
                 else:
                     raise SystemError(
                         'Parameter "{0}" on {1} must be an accepted {2}.\n{3}. Boolean parser ignores case"'.format(k,type(self).__name__,v['type'],'true, yes, 1, false, no, 0')) 
-
-            if v['type'] == 'flavor' and self.options[k] not in FLAVOR:
-                 raise SystemError('{0} is not a valid {1}.\nValid flavors are {2}.'.format(
-                         self.options[k],v['type'],FLAVOR)) #
 
             #TODO add check location tests and check only in bins with location
             #if v['type'] == 'device' and type(self).__name__ != 'GCpulse' and not path.exists(self.options[k]):
