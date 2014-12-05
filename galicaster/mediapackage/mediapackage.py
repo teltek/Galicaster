@@ -155,7 +155,7 @@ class Element(object):
     
     def setMimeType(self, mime):
         self.mime = mime
-    
+
     def getFlavor(self):
         return self.flavor
     
@@ -213,9 +213,17 @@ class Attachment(Element):
     """
     Arquivos adxuntos dun MP
     """
-    def __init__(self, uri, flavor=None, mimetype=None, identifier=None):
+    def __init__(self, uri, flavor=None, mimetype=None, identifier=None, ref=None):
         super(Attachment, self).__init__(uri=uri, flavor=flavor, mimetype=mimetype, identifier=identifier)
         self.etype = TYPE_ATTACHMENT
+	self.ref = ref
+
+    def getRef(self):
+        return self.ref
+    
+    def setRef(self, ref):
+        self.ref = ref
+    
 
 
 
@@ -568,7 +576,7 @@ class Mediapackage(object):
     def hasUnclassifiedElements(self):
         return self.hasElements(TYPE_OTHER)
     
-    def add(self, item, etype=None, flavor=None, mime=None, duration=None, identifier=None): # FIXME incluir starttime?
+    def add(self, item, etype=None, flavor=None, mime=None, duration=None, ref=None, identifier=None): # FIXME incluir starttime?
         if isinstance(item, Element):
             elem = item
             etype = elem.getElementType()
@@ -578,7 +586,7 @@ class Mediapackage(object):
                 if etype == TYPE_TRACK:
                     elem = Track(uri=item, duration=duration, flavor=flavor, mimetype=mime, identifier=identifier)
                 elif etype == TYPE_ATTACHMENT:
-                    elem = Attachment(uri=item, flavor=flavor, mimetype=mime, identifier=identifier)
+                    elem = Attachment(uri=item, flavor=flavor, mimetype=mime, ref=ref, identifier=identifier)
                 elif etype == TYPE_CATALOG:
                     elem = Catalog(uri=item, flavor=flavor, mimetype=mime, identifier=identifier)
                 else: 
