@@ -240,7 +240,7 @@ def set_manifest(mp, use_namespace=True):
         uutext = doc.createTextNode(path.basename(a.getURI()))
         loc.appendChild(uutext)
         mim = doc.createElement("mimetype")
-        mmtext = doc.createTextNode(c.getMimeType())
+        mmtext = doc.createTextNode(a.getMimeType())
         mim.appendChild(mmtext)
         attachment.appendChild(mim)
         attachment.appendChild(loc)
