@@ -474,6 +474,8 @@ class Mediapackage(object):
         return results
              
     def getElementById(self, identifier, etype=None):
+        if identifier not in self.elements:
+            return None     
         elem = self.elements[identifier]
         if etype == None or elem.getElementType() == etype:
             return elem
