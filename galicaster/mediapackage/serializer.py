@@ -239,10 +239,11 @@ def set_manifest(mp, use_namespace=True):
         loc = doc.createElement("url")
         uutext = doc.createTextNode(path.basename(a.getURI()))
         loc.appendChild(uutext)
-        mim = doc.createElement("mimetype")
-        mmtext = doc.createTextNode(a.getMimeType())
-        mim.appendChild(mmtext)
-        attachment.appendChild(mim)
+        if (a.getMimeType() != None):
+            mim = doc.createElement("mimetype")
+            mmtext = doc.createTextNode(a.getMimeType())
+            mim.appendChild(mmtext)
+            attachment.appendChild(mim)
         attachment.appendChild(loc)
         attachments.appendChild(attachment)   
         
