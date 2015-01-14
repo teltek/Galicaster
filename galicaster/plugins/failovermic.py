@@ -73,7 +73,7 @@ def set_pipeline():
     gst.element_link_many(faudiosrc, faudioamp, faudiocon, faudioenc, faudiosink)
 
 
-def record(self):
+def record(self, recorderui=None):
     # check to see if temp dir exists if not make one
     if not os.path.exists(FAIL_DIR):
         os.makedirs(FAIL_DIR)
