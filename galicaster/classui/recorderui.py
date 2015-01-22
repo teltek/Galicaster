@@ -297,6 +297,8 @@ class RecorderClassUI(gtk.Box):
         self.mediapackage.properties['origin'] = self.conf.hostname
         self.repo.add_after_rec(self.mediapackage, self.recorder.get_bins_info(), 
                                 close_duration, self.mediapackage.manual)
+        mp_mod_Uri = self.mediapackage.getURI()
+        self.dispatcher.emit("recording-closed", mp_mod_Uri)
         
         code = 'manual' if self.mediapackage.manual else 'scheduled'
         if self.conf.get_lower('ingest', code) == 'immediately':
