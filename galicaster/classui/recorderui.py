@@ -431,8 +431,6 @@ class RecorderClassUI(gtk.Box):
             self.error_text = None
         self.recorder.stop_record_and_restart_preview()
         self.change_state(GC_STOP)
-        mp_mod_Uri = self.mediapackage.getURI()
-        self.dispatcher.emit("recording-closed", mp_mod_Uri)
 
         context.get_state().is_recording = False
         self.timer_thread_id = None
