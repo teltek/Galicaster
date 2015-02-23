@@ -866,6 +866,7 @@ class RecorderClassUI(gtk.Box):
         """Handles the focus or the Rercording Area, launching messages when focus is recoverde"""
         if new_state == 0: 
             self.focus_is_active = True
+            self.check_status_area(None, None, None)
             if self.recorder:
                 self.recorder.mute_preview(False)
             if self.error_text:            
