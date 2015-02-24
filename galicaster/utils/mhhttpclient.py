@@ -47,7 +47,7 @@ class MHHTTPClient(object):
     
     def __init__(self, server, user, password, hostname='galicaster', address=None, multiple_ingest=False, 
                  connect_timeout=2, timeout=2, workflow='full', workflow_parameters={'trimHold':'true'}, 
-                 ca_parameters={}, repo=None, logger=None):
+                 ca_parameters={}, polling_short=10, polling_long=60, repo=None, logger=None):
         """
         Arguments:
 
@@ -79,6 +79,12 @@ class MHHTTPClient(object):
         self.workflow_parameters = workflow_parameters
         self.ca_parameters = ca_parameters
         self.search_server = None
+        self.polling_schedule = polling_long
+        self.polling_state = polling_short
+        # FIXME should be long? https://github.com/teltek/Galicaster/issues/114
+        self.polling_caps = polling_short
+        self.polling_config = polling_short        
+
 
 
     def __call(self, method, endpoint, path_params={}, query_params={}, postfield={}, urlencode=True, server=None, timeout=True):
@@ -88,7 +94,7 @@ class MHHTTPClient(object):
         b = StringIO()
 
         url = list(urlparse.urlparse(theServer, 'http'))
-        url[2] = endpoint.format(**path_params)
+        url[2] = url[2] + endpoint.format(**path_params)
         url[4] = urllib.urlencode(query_params)
         c.setopt(pycurl.URL, urlparse.urlunparse(url))
 
@@ -162,15 +168,15 @@ class MHHTTPClient(object):
             'service.pid': 'galicaster',
             'capture.confidence.debug': 'false',
             'capture.confidence.enable': 'false',            
-            'capture.config.remote.polling.interval': '600',
+            'capture.config.remote.polling.interval': self.polling_config,
             'capture.agent.name': self.hostname,
-            'capture.agent.state.remote.polling.interval': '10',
-            'capture.agent.capabilities.remote.polling.interval': '10',
+            'capture.agent.state.remote.polling.interval': self.polling_state,
+            'capture.agent.capabilities.remote.polling.interval': self.polling_caps,
             'capture.agent.state.remote.endpoint.url': self.server + '/capture-admin/agents',
             'capture.recording.shutdown.timeout': '60',
             'capture.recording.state.remote.endpoint.url': self.server + '/capture-admin/recordings',
             'capture.schedule.event.drop': 'false',
-            'capture.schedule.remote.polling.interval': '1',
+            'capture.schedule.remote.polling.interval': int(self.polling_schedule)/60,
             'capture.schedule.event.buffertime': '1',
             'capture.schedule.remote.endpoint.url': self.server + '/recordings/calendars',
             'capture.schedule.cache.url': '/opt/matterhorn/storage/cache/schedule.ics',

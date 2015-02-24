@@ -234,9 +234,16 @@ def set_manifest(mp, use_namespace=True):
     for a in mp.getAttachments():
         attachment = doc.createElement("attachment")
         attachment.setAttribute("id", a.getIdentifier())
+        attachment.setAttribute("type", a.getFlavor())
+        attachment.setAttribute("ref", a.getRef())
         loc = doc.createElement("url")
         uutext = doc.createTextNode(path.basename(a.getURI()))
         loc.appendChild(uutext)
+        if (a.getMimeType() != None):
+            mim = doc.createElement("mimetype")
+            mmtext = doc.createTextNode(a.getMimeType())
+            mim.appendChild(mmtext)
+            attachment.appendChild(mim)
         attachment.appendChild(loc)
         attachments.appendChild(attachment)   
         
