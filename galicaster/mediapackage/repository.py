@@ -73,9 +73,33 @@ class Repository(object):
         for temp_file in os.listdir(self.get_rectemp_path()):
             full_path = os.path.join(self.get_rectemp_path(), temp_file)
             if os.path.isfile(full_path) and os.path.getsize(full_path):
+                self.crash_file_creator()
+
                 if not os.path.isdir(backup_dir):
                     os.mkdir(backup_dir)
                 os.rename(full_path, os.path.join(backup_dir, temp_file))
+
+
+    def crash_file_exists(self):
+        filename = os.path.join(self.get_rectemp_path(), ".recording_crash")
+        if os.path.isfile(filename):
+            return True
+        return False
+
+
+    def crash_file_creator(self):
+        from galicaster.core import context
+        if context.get_conf().get_boolean("plugins", "notifycrash"):
+            filename = os.path.join(self.get_rectemp_path(), ".recording_crash")
+            file = open(filename, 'w')
+            file.close()
+        return
+
+
+    def crash_file_remove(self):
+        filename = os.path.join(self.get_rectemp_path(), ".recording_crash")
+        os.remove(filename)
+        return
 
 
     def __refresh(self, check_inconsistencies=False):
