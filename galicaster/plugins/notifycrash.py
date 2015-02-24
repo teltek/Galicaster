@@ -36,12 +36,6 @@ def init():
     subject = context.get_conf().get('notifycrash', 'mailsubject') or "Recording crashed"
     to = context.get_conf().get('notifycrash', 'mailto')
     default_message = context.get_conf().get('notifycrash', 'mailmessage') or "Recording failed"
-
-    try:
-      a = parseaddr(to)  
-      print a
-    except Exception as exc:
-        print "exc", exc
       
     mail_user = context.get_conf().get('notifycrash', 'mailuser')
     mail_pass = context.get_conf().get('notifycrash', 'mailpass')
