@@ -20,7 +20,6 @@ from datetime import datetime
 from galicaster.mediapackage import serializer
 from galicaster.mediapackage import mediapackage
 from galicaster.utils import sidebyside
-import context
 
 INGEST = 'Ingest'
 ZIPPING = 'Export to Zip'
@@ -83,14 +82,6 @@ class Worker(object):
         self.t.start()
 
         self.dispatcher.connect('galicaster-notify-nightly', self.exec_nightly)
-
-        # Set the ingest mode
-        conf = context.get_conf()
-        if conf.get_boolean('ingest', 'splittedmode'):
-            self._ingest = self._ingest_splitted
-        else:
-            self._ingest = self._ingest_zipped
-
 
     def get_all_job_types(self):
         nn = ' Nightly'
@@ -167,80 +158,7 @@ class Worker(object):
         self.repo.update(mp)
         self.jobs.put((self._ingest, (mp,)))
 
-    def _ingest_splitted(self, mp):
-        if not self.mh_client:
-            mp.setOpStatus('ingest', mediapackage.OP_FAILED)
-            self.dispatcher.emit('stop-operation', 'ingest', mp, False)
-            self.repo.update(mp)
-            return
-            
-        self.logger.info('Executing Ingest for MP {0}'.format(mp.getIdentifier()))
-        mp.setOpStatus('ingest',mediapackage.OP_PROCESSING)
-        self.repo.update(mp)
-
-        self.dispatcher.emit('start-operation', 'ingest', mp)
-        self.dispatcher.emit('refresh-row', mp.identifier)
-
-        mp_manifest = ('<?xml version="1.0" encoding="utf-8"?>'
-                       '<mediapackage duration="' +  unicode(mp.getDuration()) + '" id="' + mp.getIdentifier() +'" start="' + mp.getDate().isoformat() + '" xmlns="http://mediapackage.opencastproject.org">'
-                       '<media></media><metadata></metadata><attachments/></mediapackage>')        
-        # tracks
-        for track in mp.getTracks():
-            if os.path.isfile(track.getURI()):
-                self.logger.info('Ingesting track {} ({}) {}'.format(track.getIdentifier(), track.getFlavor(), os.path.basename(track.getURI())))
-                mp_manifest = self.mh_client.ingest_add_track(mp_manifest, track.getURI(), track.getFlavor())
-
-        for catalog in mp.getCatalogs():
-            if os.path.isfile(catalog.getURI()):
-                self.logger.info('Ingesting catalog {} ({}) {}'.format(catalog.getIdentifier(), catalog.getFlavor(), os.path.basename(catalog.getURI())))
-                mp_manifest = self.mh_client.ingest_add_catalog(mp_manifest, catalog.getURI(), catalog.getFlavor())
-
-        for attach in mp.getAttachments():
-            if os.path.isfile(attach.getURI()) and attach.getFlavor(): #TODO check org.opencastproject.capture.agent.properties
-                self.logger.info('Ingesting attachment {} ({}) {}'.format(attach.getIdentifier(), attach.getFlavor(), os.path.basename(attach.getURI())))
-                mp_manifest = self.mh_client.ingest_add_attach(mp_manifest, attach.getURI(), attach.getFlavor())
-     
-
-        if mp.manual:
-            try:
-                self.mh_client.ingest_ingest(mp_manifest)
-
-                self.logger.info("Finalized Ingest for MP {0}".format(mp.getIdentifier()))
-                mp.setOpStatus('ingest',mediapackage.OP_DONE)
-                self.dispatcher.emit('stop-operation', 'ingest', mp, True)
-            except:
-                self.logger.error("Failed Ingest for MP {0}".format(mp.getIdentifier()))
-                mp.setOpStatus("ingest",mediapackage.OP_FAILED)
-                self.dispatcher.emit('stop-operation', 'ingest', mp, False)
-        else:
-            properties = mp.getOCCaptureAgentProperties()
-
-            try:
-                workflow = properties['org.opencastproject.workflow.definition']
-            except:
-                workflow = None
-
-            workflow_parameters = {}
-            for k, v in properties.iteritems():
-                if k[0:36] == 'org.opencastproject.workflow.config.':
-                    workflow_parameters[k[36:]] = v
-            try:
-                self.mh_client.ingest_ingest(mp_manifest, workflow, mp.getIdentifier(), workflow_parameters)
-
-                self.logger.info("Finalized Ingest for MP {0}".format(mp.getIdentifier()))
-                mp.setOpStatus("ingest",mediapackage.OP_DONE)
-                self.dispatcher.emit('stop-operation', 'ingest', mp, True)
-            except:
-                self.logger.error("Failed Ingest for MP {0}".format(mp.getIdentifier()))
-                mp.setOpStatus("ingest",mediapackage.OP_FAILED)
-                self.dispatcher.emit('stop-operation', 'ingest', mp, False)
-            
-        self.repo.update(mp)
-            
-        self.dispatcher.emit('refresh-row', mp.identifier)
-
-
-    def _ingest_zipped(self, mp):
+    def _ingest(self, mp):
         if not self.mh_client:
             mp.setOpStatus('ingest', mediapackage.OP_FAILED)
             self.dispatcher.emit('stop-operation', 'ingest', mp, False)

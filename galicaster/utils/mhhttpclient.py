@@ -20,7 +20,6 @@ from StringIO import StringIO
 import pycurl
 from collections import OrderedDict
 import urlparse
-import os
 
 INIT_ENDPOINT = '/welcome.html'
 ME_ENDPOINT = '/info/me.json'
@@ -31,12 +30,6 @@ INGEST_ENDPOINT = '/ingest/addZippedMediaPackage'
 ICAL_ENDPOINT = '/recordings/calendars'
 SERIES_ENDPOINT = '/series/series.json'
 SERVICE_REGISTRY_ENDPOINT = '/services/available.json'
-
-INGEST_ADDTRACK_ENDPOINT = '/ingest/addTrack'
-INGEST_ADDCATALOG_ENDPOINT = '/ingest/addCatalog'
-INGEST_ADDATTACHMENT_ENDPOINT = '/ingest/addAttachment'
-INGEST_INGEST_ENDPOINT = '/ingest/ingest'
-
 SEARCH_ENDPOINT = '/search/episode.json'
 
 SEARCH_SERVICE_TYPE = 'org.opencastproject.search'
@@ -206,7 +199,7 @@ class MHHTTPClient(object):
         return self.__call('POST', SETCONF_ENDPOINT, {'hostname': self.hostname}, postfield={'configuration': client_conf})
 
 
-    def _prepare_ingest(self, mp_file=None, workflow=None, workflow_instance=None, workflow_parameters=None):
+    def _prepare_ingest(self, mp_file, workflow=None, workflow_instance=None, workflow_parameters=None):
         "refactor of ingest to unit test"
         postdict = OrderedDict()
         postdict[u'workflowDefinitionId'] = workflow or self.workflow
@@ -218,9 +211,7 @@ class MHHTTPClient(object):
             postdict.update(workflow_parameters)
         else:
             postdict.update(self.workflow_parameters)
-
-        if mp_file:
-            postdict[u'track'] = (pycurl.FORM_FILE, mp_file)
+        postdict[u'track'] = (pycurl.FORM_FILE, mp_file)
         return postdict
 
     def _get_endpoints(self, service_type):
@@ -282,48 +273,11 @@ class MHHTTPClient(object):
         return None # it will use the admin server
  
     def ingest(self, mp_file, workflow=None, workflow_instance=None, workflow_parameters=None):
-        postdict = self._prepare_ingest(workflow, workflow_instance, workflow_parameters)
-        postdict[u'track'] = (pycurl.FORM_FILE, mp_file)
-
+        postdict = self._prepare_ingest(mp_file, workflow, workflow_instance, workflow_parameters)
         server = self.server if not self.multiple_ingest else self.get_ingest_server()
         if self.logger:
             self.logger.info( 'Ingesting to Server {0}'.format(server) ) 
         return self.__call('POST', INGEST_ENDPOINT, {}, {}, postdict.items(), False, server, False)
-
-
-    def ingest_add_attach(self, mp, from_file, flavor):
-        postdict = OrderedDict()
-        postdict[u'flavor'] = str(flavor)
-        postdict[u'mediaPackage'] = str(mp)
-        postdict[u'track'] = (pycurl.FORM_FILE, str(from_file))
-        server = self.server if not self.multiple_ingest else self.get_ingest_server()
-        self.logger.info( 'Ingesting {} to Server {}'.format(os.path.basename(from_file), server) ) 
-        return self.__call('POST', INGEST_ADDATTACHMENT_ENDPOINT, {}, {}, postdict.items(), False, server, False)
-
-    def ingest_add_catalog(self, mp, from_file, flavor):
-        postdict = OrderedDict()
-        postdict[u'flavor'] = str(flavor)
-        postdict[u'mediaPackage'] = str(mp)
-        postdict[u'track'] = (pycurl.FORM_FILE, str(from_file))
-        server = self.server if not self.multiple_ingest else self.get_ingest_server()
-        self.logger.info( 'Ingesting {} to Server {}'.format(os.path.basename(from_file), server) ) 
-        return self.__call('POST', INGEST_ADDCATALOG_ENDPOINT, {}, {}, postdict.items(), False, server, False)
-
-    def ingest_add_track(self, mp, from_file, flavor):
-        postdict = OrderedDict()
-        postdict[u'flavor'] = str(flavor)
-        postdict[u'mediaPackage'] = str(mp)
-        postdict[u'track'] = (pycurl.FORM_FILE, str(from_file))
-        server = self.server if not self.multiple_ingest else self.get_ingest_server()
-        self.logger.info( 'Ingesting {} to Server {}'.format(os.path.basename(from_file), server) ) 
-        return self.__call('POST', INGEST_ADDTRACK_ENDPOINT, {}, {}, postdict.items(), False, server, False)
-
-    def ingest_ingest(self, mp, workflow=None, workflow_instance=None, workflow_parameters=None):
-        postdict = self._prepare_ingest(workflow, workflow_instance, workflow_parameters)
-        postdict[u'mediaPackage'] = str(mp)
-        server = self.server if not self.multiple_ingest else self.get_ingest_server()
-        self.logger.info( 'Ingesting to Server {}'.format(server) ) 
-        return self.__call('POST', INGEST_INGEST_ENDPOINT, {}, {}, postdict.items(), True, server, True)
 
 
     def getseries(self, **query):
