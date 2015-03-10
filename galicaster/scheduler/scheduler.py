@@ -119,6 +119,10 @@ class Scheduler(object):
             self.emit('net-down')
             return
 
+        # No data but no error implies that the calendar has not been modified (ETAG)
+        if ical_data == None:
+            return
+
         try:
             events = ical.get_events_from_string_ical(ical_data)
             delete_events = ical.get_delete_events(self.last_events, events)

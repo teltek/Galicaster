@@ -76,11 +76,13 @@ class MHHTTPClient(object):
         self.polling_state = polling_short
         # FIXME should be long? https://github.com/teltek/Galicaster/issues/114
         self.polling_caps = polling_short
-        self.polling_config = polling_short        
+        self.polling_config = polling_short
+        self.response = {'Status-Code': '', 'Content-Type': '', 'ETag': ''}
+        self.ical_etag = -1
 
 
 
-    def __call(self, method, endpoint, path_params={}, query_params={}, postfield={}, urlencode=True, server=None, timeout=True):
+    def __call(self, method, endpoint, path_params={}, query_params={}, postfield={}, urlencode=True, server=None, timeout=True, headers={}):
 
         theServer = server or self.server
         c = pycurl.Curl()
@@ -98,7 +100,13 @@ class MHHTTPClient(object):
         c.setopt(pycurl.NOSIGNAL, 1)
         c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_DIGEST)
         c.setopt(pycurl.USERPWD, self.user + ':' + self.password)
-        c.setopt(pycurl.HTTPHEADER, ['X-Requested-Auth: Digest', 'X-Opencast-Matterhorn-Authorization: true'])
+        sendheaders = ['X-Requested-Auth: Digest', 'X-Opencast-Matterhorn-Authorization: true']
+        if headers:
+            for h, v in headers.iteritems():
+                sendheaders.append('{}: {}'.format(h, v))
+            # implies we might be interested in passing the response headers
+            c.setopt(pycurl.HEADERFUNCTION, self.scanforetag)
+        c.setopt(pycurl.HTTPHEADER, sendheaders)
         c.setopt(pycurl.USERAGENT, 'Galicaster')
        
         if (method == 'POST'):
@@ -109,20 +117,26 @@ class MHHTTPClient(object):
                 c.setopt(pycurl.HTTPPOST, postfield)
         c.setopt(pycurl.WRITEFUNCTION, b.write)
 
-        #c.setopt(pycurl.VERBOSE, True)
+        #c.setopt(pycurl.VERBOSE, True) ##TO DEBUG
         try:
             c.perform()
         except:
             raise RuntimeError, 'connect timed out!'
         status_code = c.getinfo(pycurl.HTTP_CODE)
+        self.response['Status-Code'] = status_code
+        self.response['Content-Type'] = c.getinfo(pycurl.CONTENT_TYPE)
         c.close() 
-        if status_code != 200:
+        if status_code != 200 and status_code != 302 and status_code != 304:
             if self.logger:
-                self.logger.error('call error in %s, status code {%r}: %s', 
+                self.logger.error('call error in %s, status code {%r}: %s',
                                   urlparse.urlunparse(url), status_code, b.getvalue())   
             raise IOError, 'Error in Matterhorn client'
         return b.getvalue()
 
+    def scanforetag(self, buffer):
+        if buffer.startswith('ETag:'):
+            etag = buffer[5:]
+            self.response['ETag'] = etag.strip()
 
     def whoami(self):
         return json.loads(self.__call('GET', ME_ENDPOINT))
@@ -132,7 +146,17 @@ class MHHTTPClient(object):
 
 
     def ical(self):
-        return self.__call('GET', ICAL_ENDPOINT, query_params = {'agentid': self.hostname})
+        icalendar = self.__call('GET', ICAL_ENDPOINT, {'hostname': self.hostname}, headers={'If-None-Match': self.ical_etag})
+
+        if self.response['Status-Code'] == 304:
+            if self.logger:
+                self.logger.info("iCal Not modified")
+            return None
+
+        self.ical_etag = self.response['ETag']
+        if self.logger:
+                self.logger.info("iCal modified")
+        return icalendar
 
 
     def setstate(self, state):
