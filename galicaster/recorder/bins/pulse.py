@@ -18,7 +18,8 @@ from os import path
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
-pipestr = (" pulsesrc name=gc-audio-src  ! queue ! audioamplify name=gc-audio-amplify amplification=1 ! "
+pipestr = (" pulsesrc name=gc-audio-src ! queue name=gc-min-threshold-time gc-max-size-time gc-max-size-buffers gc-max-size-bytes gc-leaky ! "
+           " audioamplify name=gc-audio-amplify amplification=1 ! "
            " tee name=tee-aud  ! queue ! level name=gc-audio-level message=true interval=100000000 ! "
            " volume name=gc-audio-volume ! alsasink sync=false name=gc-audio-preview  "
            " tee-aud. ! queue ! valve drop=false name=gc-audio-valve ! "
@@ -93,6 +94,17 @@ class GCpulse(gst.Bin, base.Base):
         aux = (pipestr.replace("gc-audio-preview", "sink-" + self.options["name"])
                       .replace("gc-audio-enc", self.options["audioencoder"]))
 
+        if "delay" in self.options:
+            aux = aux.replace('gc-max-size-time', 'max-size-time=0')
+            aux = aux.replace('gc-max-size-buffers', 'max-size-buffers=0')
+            aux = aux.replace('gc-max-size-bytes', 'max-size-bytes=0')
+            aux = aux.replace('gc-leaky', 'leaky=0')
+        else:
+            aux = aux.replace('gc-max-size-time', '')
+            aux = aux.replace('gc-max-size-buffers', '')
+            aux = aux.replace('gc-max-size-bytes', '')
+            aux = aux.replace('gc-leaky', '')
+
         #bin = gst.parse_bin_from_description(aux, True)
         bin = gst.parse_launch("( {} )".format(aux))
         self.add(bin)
@@ -119,7 +131,10 @@ class GCpulse(gst.Bin, base.Base):
         if "amplification" in self.options:
             ampli = self.get_by_name("gc-audio-amplify")
             ampli.set_property("amplification", float(self.options["amplification"]))
-
+        if "delay" in self.options:
+            delay = float(self.options["delay"])
+            minttime = self.get_by_name('gc-min-threshold-time')
+            minttime.set_property('min-threshold-time', long(delay * 1000000000))
 
     def changeValve(self, value):
         valve1=self.get_by_name('gc-audio-valve')
