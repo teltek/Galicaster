@@ -37,6 +37,15 @@ def main(args):
     except KeyboardInterrupt:
         gc.emit_quit()
         print "Interrupted by user!"
+    except Exception as exc:
+        from galicaster.core import context
+        logger = context.get_logger()
+        logger and logger.error("Error starting Galicaster: {0}".format(exc))
+
+        d = context.get_dispatcher()
+        d.emit("galicaster-notify-quit")
+        return -1
+
 
     return 0
 
