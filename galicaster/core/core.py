@@ -17,6 +17,7 @@ import gtk
 glib.threads_init()
 gtk.gdk.threads_init()
 
+import os
 from galicaster import __version__
 from galicaster.core import context
 from galicaster import plugins
@@ -40,6 +41,8 @@ class Main():
 
         logger.info('galicaster.__version__: %r', __version__)
         logger.info('galicaster.__file__: %r', __file__)
+
+        self.change_cwd()
 
         self.conf = context.get_conf()
         self.state = context.get_state()
@@ -103,3 +106,10 @@ class Main():
 
     def check_net(self, origin, data):
         self.state.net = data
+
+    def change_cwd(self):
+        repo = context.get_repository()
+        rectemp = repo.get_rectemp_path()
+
+        logger.info("Changing current working dir (cwd) to {}".format(rectemp))
+        os.chdir(rectemp)
