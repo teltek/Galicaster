@@ -76,7 +76,7 @@ class MHHTTPClient(object):
         self.polling_state = polling_short
         # FIXME should be long? https://github.com/teltek/Galicaster/issues/114
         self.polling_caps = polling_short
-        self.polling_config = polling_short        
+        self.polling_config = polling_long        
 
 
 
