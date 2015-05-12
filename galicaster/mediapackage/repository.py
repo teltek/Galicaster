@@ -36,7 +36,14 @@ class Repository(object):
         param: hostname: galicaster name use in folder prefix
         param: folder_template
         """ 
-        self.root = root or os.path.expanduser('~/Repository')
+
+        self.logger = logger
+
+        if not root:
+            self.root = os.path.expanduser('~/Repository')
+            self.logger.warning("Repository folder not specified, using {}".format(self.root))
+        else:
+            self.root = root
 
         self.hostname = hostname
         self.folder_template = folder_template
@@ -44,8 +51,6 @@ class Repository(object):
         self.create_repo(hostname)
         self.save_crash_recordings()
         
-        self.logger = logger
-
         self.__list = dict()
         self.__refresh(True)
 
@@ -66,7 +71,7 @@ class Repository(object):
                 conf.set('repository', 'version', __version__)
                 conf.set('repository', 'hostname', hostname)
                 conf.write(configfile)
-        
+
 
     def save_crash_recordings(self):
         backup_dir = self.get_rectemp_path(datetime.datetime.now().replace(microsecond=0).isoformat())
