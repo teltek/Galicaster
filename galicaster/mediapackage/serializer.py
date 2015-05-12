@@ -99,7 +99,11 @@ def save_system_zip(mp, loc, use_namespace=True, logger=None):
     if logger:
         logger.debug("Using System Zip")
 
-    tmp_file = 'manifest.xml'
+    root = mp.getURI()
+    tmp_folder = os.path.join(root, "tmp_data")
+    tmp_file = os.path.join(tmp_folder, "manifest.xml")
+    os.mkdir(tmp_folder)
+
     m = open(tmp_file,'w')
     m.write(set_manifest(mp, use_namespace))
     m.close()    
@@ -136,6 +140,7 @@ def save_system_zip(mp, loc, use_namespace=True, logger=None):
     #subprocess.check_call(['zip','-j0',loc]+files,stdout=FNULL)
     loc = None
     os.remove(tmp_file)
+    os.rmdir(tmp_folder)
 
 if ziptype == "system":
     save_in_zip = save_system_zip
