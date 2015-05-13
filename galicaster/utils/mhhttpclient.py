@@ -117,10 +117,13 @@ class MHHTTPClient(object):
         status_code = c.getinfo(pycurl.HTTP_CODE)
         c.close() 
         if status_code != 200:
-            if self.logger:
-                self.logger.error('call error in %s, status code {%r}: %s', 
-                                  urlparse.urlunparse(url), status_code, b.getvalue())   
-            raise IOError, 'Error in Matterhorn client'
+            if (status_code > 200) and (status_code < 300):
+                self.logger and self.logger.debug("Matterhorn client ({}) sent a response with status code {}".format(urlparse.urlunparse(url), status_code))
+            else:
+                self.logger and self.logger.error('call error in %s, status code {%r}: %s', 
+                                                  urlparse.urlunparse(url), status_code, b.getvalue())   
+                raise IOError, 'Error in Matterhorn client'
+
         return b.getvalue()
 
 
