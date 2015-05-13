@@ -88,7 +88,6 @@ class Base(object):
                             k,type(self).__name__,v['type']))
 
                 if self.options[k] < v['range'][0] or self.options[k] > v['range'][1]:
-                    print " dentro"
                     raise SystemError(
                         'Parameter "{0}" on {1} out of range. {2}.'.format(
                             k,type(self).__name__,v['range']))
