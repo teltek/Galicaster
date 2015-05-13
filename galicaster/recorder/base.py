@@ -82,14 +82,16 @@ class Base(object):
             if v['type'] == 'float':
                 try:
                     self.options[k] = float(self.options[k])
-                    if self.options[k] < v['range'][0] or self.options[k] > v['range'][1]:
-                        raise SystemError(
-                            'Parameter "{0}" on {1} out of range. {2}.'.format(
-                                k,type(self).__name__,v['range']))
                 except:
                     raise SystemError(
                         'Parameter "{0}" on {1} must be {2}.'.format(
                             k,type(self).__name__,v['type']))
+
+                if self.options[k] < v['range'][0] or self.options[k] > v['range'][1]:
+                    print " dentro"
+                    raise SystemError(
+                        'Parameter "{0}" on {1} out of range. {2}.'.format(
+                            k,type(self).__name__,v['range']))
 
             if v['type'] == 'boolean':
                 parse = self.options[k].lower()
