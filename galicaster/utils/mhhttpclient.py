@@ -21,7 +21,7 @@ import pycurl
 from collections import OrderedDict
 import urlparse
 
-INIT_ENDPOINT = '/welcome.html'
+INIT_ENDPOINT = '/info/me.json'
 ME_ENDPOINT = '/info/me.json'
 SETRECORDINGSTATE_ENDPOINT = '/capture-admin/recordings/{id}'
 SETSTATE_ENDPOINT = '/capture-admin/agents/{hostname}'
