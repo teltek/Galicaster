@@ -88,9 +88,9 @@ class GCv4l2(gst.Bin, base.Base):
             },
         "videoencoder": {
             "type": "text",
-            "default": "xvidenc bitrate=5000000",
+            "default": "x264enc pass=5 quantizer=22 speed-preset=4 profile=1",
             # "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000",
-            # "x264enc pass=5 quantizer=22 speed-preset=4 profile=1"
+            # "xvidenc bitrate=5000000"
             "description": "Gstreamer encoder element used in the bin",
             },
         "muxer": {
