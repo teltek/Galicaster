@@ -443,6 +443,7 @@ class RecorderClassUI(gtk.Box):
         logger.info("Scheduled Start")
         self.conf.reload()
         self.current_mediapackage = identifier
+        context.get_state().mp = identifier
         self.scheduled_recording = True
 
         if self.status == GC_PREVIEW: # Record directly

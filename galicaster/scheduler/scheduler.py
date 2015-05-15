@@ -42,6 +42,7 @@ class Scheduler(object):
 
         self.dispatcher.connect('galicaster-notify-timer-short', self.do_timers_short)
         self.dispatcher.connect('galicaster-notify-timer-long',  self.do_timers_long)
+        self.dispatcher.connect("recorder-error", self.on_recorder_error)
 
         self.t_stop = None
 
@@ -206,6 +207,25 @@ class Scheduler(object):
             
         self.t_stop = None
 
+
+    def on_recorder_error(self, origin=None, error_message=None):
+        current_mp_id = self.state.mp
+        if not current_mp_id:
+            return
+        
+        mp = self.repo.get(current_mp_id)
+        
+        if mp and not mp.manual:
+            now_is_recording_time = mp.getDate() < datetime.datetime.utcnow() and mp.getDate() + datetime.timedelta(seconds=(mp.getDuration()/1000)) > datetime.datetime.utcnow()
+
+            if now_is_recording_time:
+                try:
+                    self.client.setrecordingstate(current_mp_id, 'capture_error')
+                except:
+                    self.logger.warning("Problems to connect to matterhorn server trying to send the state 'capture_error' ")
+                    self.net = False
+                    self.emit('net-down')
+                    
 
     def emit(self, *args, **kwargs):
         # self.dispatcher.emit(*args, **kwargs)
