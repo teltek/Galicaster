@@ -22,7 +22,7 @@ from galicaster.recorder import base
 from galicaster.recorder import module_register
 
 pipestr = (' v4l2src name=gc-v4l2-src ! capsfilter name=gc-v4l2-filter ! queue ! gc-v4l2-dec '
-           ' videorate ! ffmpegcolorspace ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! '
+           ' videorate ! ffmpegcolorspace ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! gc-videofilter ! '
            ' tee name=gc-v4l2-tee  ! queue !  xvimagesink async=false sync=false qos=false name=gc-v4l2-preview'
            ' gc-v4l2-tee. ! queue ! valve drop=false name=gc-v4l2-valve ! ffmpegcolorspace ! queue ! '
            ' gc-v4l2-enc ! queue ! gc-v4l2-mux ! '
@@ -98,6 +98,11 @@ class GCv4l2(gst.Bin, base.Base):
             "default": "avimux",
             "description": "Gstreamer encoder muxer used in the bin",
             },
+        "videofilter": {
+            "type": "text",
+            "default": "",
+            "description": "Videofilter elements (like: videoflip method=rotate-180)",
+            },
         }
     
     is_pausable = True
@@ -118,6 +123,13 @@ class GCv4l2(gst.Bin, base.Base):
         aux = (pipestr.replace('gc-v4l2-preview', 'sink-' + self.options['name'])
                       .replace('gc-v4l2-enc', self.options['videoencoder'])
                       .replace('gc-v4l2-mux', self.options['muxer']))
+
+
+        if self.options['videofilter']:
+            aux = aux.replace('gc-videofilter', self.options['videofilter'])
+        else:
+            aux = aux.replace('gc-videofilter !', '')
+            
 
         if 'image/jpeg' in self.options['caps']:
             aux = aux.replace('gc-v4l2-dec', 'jpegdec max-errors=-1 ! queue !')
