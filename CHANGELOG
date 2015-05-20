@@ -30,6 +30,7 @@ To get the diff between two versions, go to https://github.com/teltek/galicaster
  * Add the option to execute the clear job on init, fixes #111
  * Don't log call errors for 2xx response codes, fixes #105
  * Print the correct error message when a float value is out of range, closes #68
+ * Enable videofilter elements when using v4l2 devices, fixes #62
 
 * 1.4.1 (2014-08-18)
 
