@@ -149,7 +149,7 @@ class MHHTTPClient(object):
 
 
     def ical(self):
-        icalendar = self.__call('GET', ICAL_ENDPOINT, {'hostname': self.hostname}, headers={'If-None-Match': self.ical_etag})
+        icalendar = self.__call('GET', ICAL_ENDPOINT, query_params={'agentid': self.hostname}, headers={'If-None-Match': self.ical_etag})
 
         if self.response['Status-Code'] == 304:
             if self.logger:
