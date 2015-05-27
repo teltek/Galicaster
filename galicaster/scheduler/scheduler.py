@@ -69,6 +69,7 @@ class Scheduler(object):
 
     def do_timers_long(self, sender):
         if self.net:
+            self.client.setconfiguration(self.conf.get_tracks_in_mh_dict())
             self.proccess_ical()
             self.emit('after-process-ical')
         for mp in self.repo.get_next_mediapackages():
@@ -100,7 +101,6 @@ class Scheduler(object):
         self.logger.info('Set status %s to server', self.ca_status)
         try:
             self.client.setstate(self.ca_status)
-            self.client.setconfiguration(self.conf.get_tracks_in_mh_dict()) 
             self.net = True
             self.emit('net-up')
         except:
