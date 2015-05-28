@@ -330,7 +330,7 @@ class RecorderClassUI(gtk.Box):
         now = datetime.datetime.utcnow().replace(microsecond=0)
         self.mediapackage.setDate(now)
 
-        if not self.scheduled_recording:
+        if self.mediapackage.manual:
             self.mediapackage.setTitle(_("Recording started at {0}").format(now.isoformat()))
 
         self.timer_thread_id = 1
