@@ -21,6 +21,11 @@ import pycurl
 from collections import OrderedDict
 import urlparse
 
+try:
+    from galicaster import __version__ as version
+except:
+    version = ""
+
 INIT_ENDPOINT = '/info/me.json'
 ME_ENDPOINT = '/info/me.json'
 SETRECORDINGSTATE_ENDPOINT = '/capture-admin/recordings/{id}'
@@ -107,7 +112,7 @@ class MHHTTPClient(object):
             # implies we might be interested in passing the response headers
             c.setopt(pycurl.HEADERFUNCTION, self.scanforetag)
         c.setopt(pycurl.HTTPHEADER, sendheaders)
-        c.setopt(pycurl.USERAGENT, 'Galicaster')
+        c.setopt(pycurl.USERAGENT, 'Galicaster' + version)
        
         if (method == 'POST'):
             if urlencode:
