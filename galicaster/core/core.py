@@ -52,10 +52,11 @@ class Main():
         self.dispatcher.connect('net-up', self.check_net, True)
         self.dispatcher.connect('net-down', self.check_net, False)
 
-    def load_modules(self):
-        plugins.init()
-        
+    def load_modules(self):        
         self.window = context.get_mainwindow()
+
+        # Load plugins after loading the main window (fixes a problem with the plugin 'nocursor')
+        plugins.init()
                
         # Recorder
         self.recorder = RecorderClassUI()
