@@ -321,7 +321,7 @@ class RecorderClassUI(gtk.Box):
                 self.dispatcher.emit("recorder-error", "Error executing command configuring profile")
 
 
-    def on_rec(self,button=None): 
+    def on_rec(self,button=None, pre_filled=False): 
         """Manual Recording """
         logger.info("Recording")
         self.dispatcher.emit("starting-record")
@@ -330,7 +330,7 @@ class RecorderClassUI(gtk.Box):
         now = datetime.datetime.utcnow().replace(microsecond=0)
         self.mediapackage.setDate(now)
 
-        if self.mediapackage.manual:
+        if self.mediapackage.manual and not pre_filled:
             self.mediapackage.setTitle(_("Recording started at {0}").format(now.isoformat()))
 
         self.timer_thread_id = 1
