@@ -14,6 +14,8 @@
 
 import sys
 import gtk
+# debug
+# import traceback
 
 import pygtk
 pygtk.require('2.0')
@@ -38,9 +40,15 @@ def main(args):
         gc.emit_quit()
         print "Interrupted by user!"
     except Exception as exc:
+        # debug
+        # print traceback.format_exc()
+
+        msg = "Error starting Galicaster: {0}".format(exc)
+        print msg
+
         from galicaster.core import context
         logger = context.get_logger()
-        logger and logger.error("Error starting Galicaster: {0}".format(exc))
+        logger and logger.error(msg)
 
         d = context.get_dispatcher()
         d.emit("galicaster-notify-quit")
