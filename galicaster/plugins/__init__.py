@@ -27,8 +27,8 @@ def init():
                 __import__(name)
                 sys.modules[name].init()
                 logger.info('Plugin {0} started'.format(plugin))
-            except:
-                logger.error('Error starting plugin {0}'.format(plugin))
+            except Exception as exc:
+                logger.error('Error starting plugin {0}: {1}'.format(plugin, exc))
         else:
             logger.debug('Plugin {0} not enabled in conf'.format(plugin))
             

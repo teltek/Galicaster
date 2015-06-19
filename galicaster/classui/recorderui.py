@@ -321,7 +321,7 @@ class RecorderClassUI(gtk.Box):
                 self.dispatcher.emit("recorder-error", "Error executing command configuring profile")
 
 
-    def on_rec(self,button=None): 
+    def on_rec(self,button=None, pre_filled=False): 
         """Manual Recording """
         logger.info("Recording")
         self.dispatcher.emit("starting-record")
@@ -329,6 +329,10 @@ class RecorderClassUI(gtk.Box):
         self.mediapackage.status=mediapackage.RECORDING
         now = datetime.datetime.utcnow().replace(microsecond=0)
         self.mediapackage.setDate(now)
+
+        if self.mediapackage.manual and not pre_filled:
+            self.mediapackage.setTitle(_("Recording started at {0}").format(now.isoformat()))
+
         self.timer_thread_id = 1
         self.timer_thread = thread(target=self.timer_launch_thread) 
         self.timer_thread.daemon = True
@@ -442,6 +446,7 @@ class RecorderClassUI(gtk.Box):
         logger.info("Scheduled Start")
         self.conf.reload()
         self.current_mediapackage = identifier
+        context.get_state().mp = identifier
         self.scheduled_recording = True
 
         if self.status == GC_PREVIEW: # Record directly
@@ -868,6 +873,7 @@ class RecorderClassUI(gtk.Box):
         """Handles the focus or the Rercording Area, launching messages when focus is recoverde"""
         if new_state == 0: 
             self.focus_is_active = True
+            self.check_status_area(None, None, None)
             if self.recorder:
                 self.recorder.mute_preview(False)
             if self.error_text:            

@@ -102,7 +102,9 @@ def save_system_zip(mp, loc, use_namespace=True, logger=None):
     root = mp.getURI()
     tmp_folder = os.path.join(root, "tmp_data")
     tmp_file = os.path.join(tmp_folder, "manifest.xml")
-    os.mkdir(tmp_folder)
+
+    if not os.path.exists(tmp_folder):
+        os.mkdir(tmp_folder)
 
     m = open(tmp_file,'w')
     m.write(set_manifest(mp, use_namespace))

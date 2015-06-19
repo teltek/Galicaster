@@ -21,7 +21,12 @@ import pycurl
 from collections import OrderedDict
 import urlparse
 
-INIT_ENDPOINT = '/welcome.html'
+try:
+    from galicaster import __version__ as version
+except:
+    version = ""
+
+INIT_ENDPOINT = '/info/me.json'
 ME_ENDPOINT = '/info/me.json'
 SETRECORDINGSTATE_ENDPOINT = '/capture-admin/recordings/{id}'
 SETSTATE_ENDPOINT = '/capture-admin/agents/{hostname}'
@@ -76,7 +81,7 @@ class MHHTTPClient(object):
         self.polling_state = polling_short
         # FIXME should be long? https://github.com/teltek/Galicaster/issues/114
         self.polling_caps = polling_short
-        self.polling_config = polling_short
+        self.polling_config = polling_long        
         self.response = {'Status-Code': '', 'Content-Type': '', 'ETag': ''}
         self.ical_etag = -1
 
@@ -107,7 +112,7 @@ class MHHTTPClient(object):
             # implies we might be interested in passing the response headers
             c.setopt(pycurl.HEADERFUNCTION, self.scanforetag)
         c.setopt(pycurl.HTTPHEADER, sendheaders)
-        c.setopt(pycurl.USERAGENT, 'Galicaster')
+        c.setopt(pycurl.USERAGENT, 'Galicaster' + version)
        
         if (method == 'POST'):
             if urlencode:
@@ -127,10 +132,13 @@ class MHHTTPClient(object):
         self.response['Content-Type'] = c.getinfo(pycurl.CONTENT_TYPE)
         c.close() 
         if status_code != 200 and status_code != 302 and status_code != 304:
-            if self.logger:
-                self.logger.error('call error in %s, status code {%r}: %s',
-                                  urlparse.urlunparse(url), status_code, b.getvalue())   
-            raise IOError, 'Error in Matterhorn client'
+            if (status_code > 200) and (status_code < 300):
+                self.logger and self.logger.debug("Matterhorn client ({}) sent a response with status code {}".format(urlparse.urlunparse(url), status_code))
+            else:
+                self.logger and self.logger.error('call error in %s, status code {%r}: %s', 
+                                                  urlparse.urlunparse(url), status_code, b.getvalue())   
+                raise IOError, 'Error in Matterhorn client'
+
         return b.getvalue()
 
     def scanforetag(self, buffer):
@@ -172,6 +180,7 @@ class MHHTTPClient(object):
         Los posibles estados son: unknown, capturing, capture_finished, capture_error, manifest, 
         manifest_error, manifest_finished, compressing, compressing_error, uploading, upload_finished, upload_error
         """
+        self.logger and self.logger.info("Sending state {} of recording {}".format(state, recording_id))
         return self.__call('POST', SETRECORDINGSTATE_ENDPOINT, {'id': recording_id}, postfield={'state': state})
 
 

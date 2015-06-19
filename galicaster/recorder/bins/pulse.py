@@ -23,7 +23,7 @@ pipestr = (" pulsesrc name=gc-audio-src ! queue name=gc-min-threshold-time gc-ma
            " tee name=tee-aud  ! queue ! level name=gc-audio-level message=true interval=100000000 ! "
            " volume name=gc-audio-volume ! alsasink sync=false name=gc-audio-preview  "
            " tee-aud. ! queue ! valve drop=false name=gc-audio-valve ! "
-           " audioconvert ! gc-audio-enc ! "
+           " audioconvert ! gc-audio-enc ! gc-audio-mux ! "
            " queue ! filesink name=gc-audio-sink async=false " )
 
 
@@ -69,9 +69,20 @@ class GCpulse(gst.Bin, base.Base):
             "range": (0,10),
             "description": "Audio amplification",
             },
+        "delay": {
+            "type": "float",
+            "default": 1.0,
+            "range": (0,10),
+            "description": "Audio delay",
+            },
         "audioencoder": {
             "type": "text",
             "default": "lamemp3enc target=1 bitrate=192 cbr=true",
+            "description": "Gstreamer audio encoder element used in the bin",
+            },
+        "audiomuxer": {
+            "type": "text",
+            "default": "",
             "description": "Gstreamer audio encoder element used in the bin",
             },
         }
@@ -92,7 +103,12 @@ class GCpulse(gst.Bin, base.Base):
         gst.Bin.__init__(self, self.options["name"])
 
         aux = (pipestr.replace("gc-audio-preview", "sink-" + self.options["name"])
-                      .replace("gc-audio-enc", self.options["audioencoder"]))
+               .replace("gc-audio-enc", self.options["audioencoder"]))
+        
+        if self.options["audiomuxer"]:
+            aux = aux.replace("gc-audio-mux", self.options["audiomuxer"])
+        else:
+            aux = aux.replace("gc-audio-mux !", "")
 
         if "delay" in self.options:
             aux = aux.replace('gc-max-size-time', 'max-size-time=0')

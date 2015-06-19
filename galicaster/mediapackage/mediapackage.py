@@ -732,6 +732,7 @@ class Mediapackage(object):
                 stop =  datetime.strptime(g.group(2), "%Y-%m-%dT%H:%M:%S")
                 diff = stop - start 
                 self.setDuration(diff.seconds*1000)
+                self.setDate(start)
             except:
                 pass
             

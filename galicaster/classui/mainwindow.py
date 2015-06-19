@@ -114,6 +114,7 @@ class GCWindow(gtk.Window):
         size = (1920,1080)
         try:
             root = gtk.gdk.get_default_root_window()
+            root.set_cursor(gtk.gdk.Cursor(gtk.gdk.ARROW))
             screen = root.get_screen()
             pos1,pos2,w,h=screen.get_monitor_geometry(0)
             size = [w,h]
