@@ -1,0 +1,7 @@
+[default]
+name = Hauppage
+type = v4l2
+source = filesrc
+device = /dev/video1
+input = 1
+standard = pal-bg
