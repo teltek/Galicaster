@@ -71,7 +71,7 @@ class GCpulse(gst.Bin, base.Base):
             },
         "delay": {
             "type": "float",
-            "default": 1.0,
+            "default": 0.0,
             "range": (0,10),
             "description": "Audio delay",
             },
