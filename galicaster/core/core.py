@@ -12,9 +12,9 @@
 # San Francisco, California, 94105, USA.
 
 
-import glib
+from gi.repository import GLib
 from gi.repository import Gtk, Gdk, GObject
-glib.threads_init()
+GLib.threads_init()
 Gdk.threads_init()
 
 from galicaster import __version__

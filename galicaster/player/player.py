@@ -267,6 +267,7 @@ class Player(object):
                 Gdk.threads_leave()
 
             except TypeError:
+                pass
                 #logger.error('players[%r]: need a %r; got a %r: %r' % (
                 #        name, Gtk.DrawingArea, type(gtk_player), gtk_player))
             except KeyError:
