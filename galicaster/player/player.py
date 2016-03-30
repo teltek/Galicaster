@@ -77,7 +77,7 @@ class Player(object):
 
         # Create elements
         for name, location in self.files.iteritems():
-            logger.info('playing %r', location)
+            #logger.info('playing %r', location)
             src = Gst.ElementFactory.make('filesrc', 'src-' + name)
             src.set_property('location', location)
             dec = Gst.ElementFactory.make('decodebin', 'decode-' + name)
