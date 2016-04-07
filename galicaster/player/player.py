@@ -24,11 +24,11 @@ from gi.repository import GdkX11, GstVideo
 
 import os
 
-#from galicaster.core import context
+from galicaster.core import context
 from galicaster.utils.gstreamer import WeakMethod
 from galicaster.utils.mediainfo import get_duration
 
-#logger = context.get_logger()
+logger = context.get_logger()
 
 class Player(object):
 
@@ -51,7 +51,7 @@ class Player(object):
                 '%s: need a %r; got a %r: %r' % ('players', dict, type(players), players)
             )
 
-        #self.dispatcher = context.get_dispatcher() 
+        self.dispatcher = context.get_dispatcher() 
         self.files = files
         self.players = players
         self.duration = 0
