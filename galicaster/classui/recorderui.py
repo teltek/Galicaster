@@ -89,10 +89,7 @@ class RecorderClassUI(Gtk.Box):
         Gtk.Box.__init__(self)
        
 	builder = Gtk.Builder()
-        print "== Antes del Warning"
         builder.add_from_file(get_ui_path('recorder.glade'))
-        print "== Despues del Warning"
-
         
         # TEST
         recorderui = builder.get_object("recorderbox")
