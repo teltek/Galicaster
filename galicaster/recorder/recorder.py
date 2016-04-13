@@ -139,18 +139,14 @@ class Recorder(object):
             error = Gst.StreamError(Gst.ResourceError.FAILED)
 #            error = Glib.GError(Gst.ResourceError, Gst.ResourceError.FAILED, text)
             
-
             a = Gst.Structure.new_from_string('letpass')
             message = Gst.Message.new_custom(Gst.MessageType.ERROR,src, a)   
 #            message = Gst.Message.new_error(src, error, str(random_bin)+"\nunknown system_error")
             self.bus.post(message)
             self.dispatcher.emit("recorder-error","Driver error")
             return False
-        while True:
-            message = self.bus.timed_pop_filtered(Gst.CLOCK_TIME_NONE, Gst.MessageType.STATE_CHANGED)
-            old, new, pending = message.parse_state_changed()
-            if (message.src == self.pipeline and new == new_state):
-                break
+
+        self.pipeline.get_state(Gst.CLOCK_TIME_NONE)
         return True
 
 
