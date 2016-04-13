@@ -24,56 +24,56 @@ from galicaster.utils.shutdown import shutdown as UtilsShutdown
 
 from galicaster.utils.i18n import _
 
+
 class GCWindow(Gtk.Window):
     """
     GUI for the Welcoming - Distribution Screen
     """
     __gtype_name__ = 'GCWindow'
 
-    def __init__(self, dispatcher=None, size=None, logger=None):  
-        Gtk.Window.__init__(self,Gtk.WindowType.TOPLEVEL)
+    def __init__(self, dispatcher=None, size=None, logger=None):
+        Gtk.Window.__init__(self, Gtk.WindowType.TOPLEVEL)
         self.logger = logger
 
-        self.full_size = self.discover_size() # Fullscreen size
+        self.full_size = self.discover_size()  # Fullscreen size
         self.custom_size = self.full_size
-        expr='[0-9]+[\,x\:][0-9]+' # Parse custom size     
-        if re.match(expr,size): 
-            self.custom_size = [int(a) for a in size.split(re.search('[,x:]',size).group())]
-        elif size=="auto":
-            self.logger.info("Default resolution and fullscreen: "+str(self.full_size))
+        expr = '[0-9]+[\,x\:][0-9]+'  # Parse custom size
+        if re.match(expr, size):
+            self.custom_size = [int(a) for a in size.split(re.search('[,x:]', size).group())]
+        elif size == "auto":
+            self.logger.info("Default resolution and fullscreen: " + str(self.full_size))
         else:
-            self.logger.warning("Invalid resolution, set default. Should be 'width,height'. "+size)
+            self.logger.warning("Invalid resolution, set default. Should be 'width,height'. " + size)
 
-        if self.custom_size[0]>self.full_size[0]:
-            self.custom_size[0]=self.full_size[0]
+        if self.custom_size[0] > self.full_size[0]:
+            self.custom_size[0] = self.full_size[0]
             self.logger.warning("Resolution Width is bigger than the monitor, set to monitor maximum")
 
-        if self.custom_size[1]>self.full_size[1]:
-            self.custom_size[1]=self.full_size[1]
+        if self.custom_size[1] > self.full_size[1]:
+            self.custom_size[1] = self.full_size[1]
             self.logger.warning("Resolution height is bigger than the monitor, set to monitor maximum")
 
-        self.__def_win_size__=(self.custom_size[0],self.custom_size[1])
-        self.set_size_request(self.custom_size[0],self.custom_size[1])
-#        self.resize(self.custom_size[0],self.custom_size[1])
+        self.__def_win_size__ = (self.custom_size[0], self.custom_size[1])
+        self.set_size_request(self.custom_size[0], self.custom_size[1])
+        #        self.resize(self.custom_size[0],self.custom_size[1])
 
-        self.set_title(_("GaliCASTER {0}").format(__version__));    
+        self.set_title(_("GaliCASTER {0}").format(__version__))
         self.set_decorated(False)
         self.set_position(Gtk.WindowPosition.CENTER)
         self.is_fullscreen = (self.custom_size == self.full_size)
 
-#        pixbuf = GdkPixbuf.Pixbuf.new_from_file_size(get_image_path('galicaster.svg'),48,48)        
-#        pixbuf = pixbuf.scale_simple(128, 128, GdkPixbuf.InterpType.BILINEAR)
-#        self.set_icon(pixbuf)
-        self.connect('delete_event', lambda *x: self.__on_delete_event())    
+        #        pixbuf = GdkPixbuf.Pixbuf.new_from_file_size(get_image_path('galicaster.svg'),48,48)
+        #        pixbuf = pixbuf.scale_simple(128, 128, GdkPixbuf.InterpType.BILINEAR)
+        #        self.set_icon(pixbuf)
+        self.connect('delete_event', lambda *x: self.__on_delete_event())
         self.dispatcher = dispatcher
         if self.dispatcher:
-            self.dispatcher.connect('galicaster-quit',self.close)
-            self.dispatcher.connect('galicaster-shutdown',self.shutdown)
+            self.dispatcher.connect('galicaster-quit', self.close)
+            self.dispatcher.connect('galicaster-shutdown', self.shutdown)
 
         self.nbox = Gtk.Notebook()
         self.nbox.set_show_tabs(False)
         self.add(self.nbox)
-
 
     def start(self):
         """Shifts to fullscreen mode and triggers content resizing and drawing"""
@@ -82,8 +82,8 @@ class GCWindow(Gtk.Window):
             self.maximize()
         self.resize_childs()
         self.show_all()
-        
-    def toggle_fullscreen(self, other = None):
+
+    def toggle_fullscreen(self, other=None):
         """Allows shifting between full and regular screen mode.
         For development purposes."""
         if self.is_fullscreen:
@@ -103,7 +103,7 @@ class GCWindow(Gtk.Window):
         for child in nbook.get_children():
             if child is current:
                 continue
-            child.resize()            
+            child.resize()
 
     def get_size(self):
         """Returns the current size of the main window. """
@@ -114,33 +114,29 @@ class GCWindow(Gtk.Window):
 
     def discover_size(self):
         """Retrieves the current size of the window where the application will be shown"""
-        size = (1920,1080)
+        size = (1920, 1080)
         try:
             root = Gdk.get_default_root_window()
             screen = root.get_screen()
-            rect =screen.get_monitor_geometry(0)
-            size = [rect.width,rect.height]
+            rect = screen.get_monitor_geometry(0)
+            size = [rect.width, rect.height]
         except:
             if self.logger:
                 self.logger.error("Unable to get root screen size")
-            
+
         return size
-        
 
     def insert_page(self, page, label, cod):
         """Insert an area on the main window notebook widget"""
-        self.nbox.insert_page(page, Gtk.Label(label=label), cod) 
+        self.nbox.insert_page(page, Gtk.Label(label=label), cod)
 
-        
     def set_current_page(self, cod):
         """Changes active area"""
         self.nbox.set_current_page(cod)
 
-
     def get_current_page(self):
         """Gets the current page id number"""
         return self.nbox.get_current_page()
-
 
     def __on_delete_event(self):
         """Emits the quit signal to its childs"""
@@ -150,14 +146,13 @@ class GCWindow(Gtk.Window):
             self.dispatcher.emit('galicaster-quit')
         return True
 
-
     def close(self, signal):
         """Pops up a dialog asking to quit"""
-        text = {"title" : _("Quit"),
-                "main" : _("Are you sure you want to QUIT? "), 
+        text = {"title": _("Quit"),
+                "main": _("Are you sure you want to QUIT? "),
                 }
 
-        buttons = ( Gtk.STOCK_QUIT, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
+        buttons = (Gtk.STOCK_QUIT, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
         self.dispatcher.emit("disable-no-audio")
         warning = message.PopUp(message.WARNING, text,
                                 self, buttons)
@@ -175,11 +170,11 @@ class GCWindow(Gtk.Window):
 
     def shutdown(self, signal):
         """Pops up a dialog asking to shutdown the computer"""
-        text = {"title" : _("Shutdwon"),
-                "main" : _("Are you sure you want to SHUTDOWN? "), 
+        text = {"title": _("Shutdwon"),
+                "main": _("Are you sure you want to SHUTDOWN? "),
                 }
 
-        buttons = ( Gtk.STOCK_QUIT, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
+        buttons = (Gtk.STOCK_QUIT, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
         warning = message.PopUp(message.WARNING, text,
                                 self, buttons)
 
@@ -192,4 +187,3 @@ class GCWindow(Gtk.Window):
         else:
             if self.logger:
                 self.logger.info("Cancel Shutdown")
-        
