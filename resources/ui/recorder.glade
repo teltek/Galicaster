@@ -156,6 +156,7 @@
     </child>
     <child>
       <object class="GtkAlignment" id="control_align">
+        <property name="vexpand">False</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="xscale">0</property>
