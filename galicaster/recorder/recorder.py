@@ -93,6 +93,9 @@ class Recorder(object):
 
     def get_recorded_time(self):
         """Get recorded time in usec"""
+        if self.__start_record_time == 0:
+            return 0
+
         if self.pipeline.get_state(Gst.CLOCK_TIME_NONE)[1] == Gst.State.NULL:
             return self.__duration
         return self.__query_position() - self.__start_record_time

@@ -147,23 +147,21 @@ class Base(object):
         self.assertTrue(recorder.get_recorded_time() > 0)
         self.assertCorrectRecording(bins, 4)
 
-    #TODO
-    @skip("TODO")
+
     def todo_test_stop_on_paused(self, bins):
         recorder = Recorder(bins)
         recorder.preview()
         self.assertEqual(recorder.get_status()[1], Gst.State.PLAYING)
         time.sleep(2)
         rec_time = recorder.get_recorded_time()
-        #self.assertEqual(rec_time, 0)
+        self.assertEqual(rec_time, 0)
         recorder.record()
         time.sleep(2)
         recorder.pause()
-#        print recorder.get_status()
         time.sleep(2)
         recorder.stop()
         self.assertTrue(recorder.get_recorded_time() > 0)
-        self.assertCorrectRecording(bins, self.tmppath, 2)
+        self.assertCorrectRecording(bins, 2)
 
 
     def test_preview_error(self, bins):
@@ -173,7 +171,7 @@ class Base(object):
         time.sleep(2)
 
         rec_time = recorder.get_recorded_time()
-        #self.assertEqual(rec_time, 0)
+        self.assertEqual(rec_time, 0)
         recorder.record()
         time.sleep(2)
         recorder.stop(True)
@@ -186,7 +184,7 @@ class Base(object):
         self.assertEqual(recorder.get_status()[1], Gst.State.PLAYING)
         time.sleep(2)
         rec_time = recorder.get_recorded_time()
-        #self.assertEqual(rec_time, 0)
+        self.assertEqual(rec_time, 0)
         recorder.record()
         time.sleep(2)
         recorder.stop(True)
