@@ -165,13 +165,19 @@ class Recorder(object):
 
 
     def resume(self):
-        logger.debug("resume paused")
+        logger.debug("recorder resumed")
         self.__set_state(Gst.State.PLAYING)
         return True
 
 
     def stop(self, force=False):
+        if self.get_status()[1] == Gst.State.PAUSED:
+            logger.debug("Resume recorder before stopping")
+            self.resume()
+
         if self.is_recording and not force:
+            logger.debug("Stopping recorder")
+
             self.is_recording = False
             self.__duration = self.__query_position() - self.__start_record_time
             a = Gst.Structure.new_from_string('letpass')
