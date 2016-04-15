@@ -49,7 +49,7 @@ class Recorder(object):
         self.mute = False
         self.error = False
         self.is_recording = False
-        self.__start_record_time = 0
+        self.__start_record_time = -1
         self.__duration = 0
 
         self.pipeline = Gst.Pipeline.new("galicaster_recorder")
@@ -93,7 +93,7 @@ class Recorder(object):
 
     def get_recorded_time(self):
         """Get recorded time in usec"""
-        if self.__start_record_time == 0:
+        if self.__start_record_time == -1:
             return 0
 
         if self.pipeline.get_state(Gst.CLOCK_TIME_NONE)[1] == Gst.State.NULL:
