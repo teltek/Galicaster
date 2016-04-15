@@ -65,10 +65,9 @@ class TestFunctions(TestCase, Base):
         bins = self.firewireavi_bin + self.getVideoTestBin() + self.getAudioTestBin()
         Base.test_record_multi(self, bins)
 
-    #TODO
-    def todo_test_stop_on_paused(self):
+    def test_stop_on_paused(self):
         bins = self.firewireavi_bin
-        Base.todo_test_stop_on_paused(self, bins)
+        Base.test_stop_on_paused(self, bins)
 
     def test_preview_error(self):
         bins = self.firewireavi_bin

@@ -95,7 +95,7 @@ class Base(object):
         time.sleep(4)
         recorder.stop()
         self.assertEqual(recorder.get_recorded_time(), 0)
-#        self.assertCorrectRecording(bins, 0)
+        self.assertCorrectRecording(bins, 0)
 
 
     def test_preview_and_record(self, bins):
@@ -123,8 +123,7 @@ class Base(object):
         recorder.preview()
         self.assertEqual(recorder.get_status()[1], Gst.State.PLAYING)
         time.sleep(2)
-        rec_time = recorder.get_recorded_time()
-        self.assertTrue(recorder.get_recorded_time() > 0)
+        self.assertEqual(recorder.get_recorded_time(), 0)
 
         recorder.record()
         time.sleep(2)
@@ -138,8 +137,7 @@ class Base(object):
         recorder.preview()
         self.assertEqual(recorder.get_status()[1], Gst.State.PLAYING)
         time.sleep(4)
-        rec_time = recorder.get_recorded_time()
-        self.assertTrue(recorder.get_recorded_time() > 0)
+        self.assertEqual(recorder.get_recorded_time(), 0)
 
         recorder.record()
         time.sleep(4)
@@ -148,18 +146,19 @@ class Base(object):
         self.assertCorrectRecording(bins, 4)
 
 
-    def todo_test_stop_on_paused(self, bins):
+    def test_stop_on_paused(self, bins):
         recorder = Recorder(bins)
         recorder.preview()
         self.assertEqual(recorder.get_status()[1], Gst.State.PLAYING)
         time.sleep(2)
-        rec_time = recorder.get_recorded_time()
-        self.assertEqual(rec_time, 0)
+        self.assertEqual(recorder.get_recorded_time(), 0)
+
         recorder.record()
         time.sleep(2)
         recorder.pause()
         time.sleep(2)
         recorder.stop()
+
         self.assertTrue(recorder.get_recorded_time() > 0)
         self.assertCorrectRecording(bins, 2)
 

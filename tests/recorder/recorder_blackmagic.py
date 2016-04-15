@@ -72,9 +72,9 @@ class TestFunctions(TestCase, Base):
 
     #TODO
     @skip("Not pausable")
-    def todo_test_stop_on_paused(self):
+    def test_stop_on_paused(self):
         bins = self.blackmagic_bin
-        Base.todo_test_stop_on_paused(self, bins)
+        Base.test_stop_on_paused(self, bins)
 
     def test_preview_error(self):
         bins = self.blackmagic_bin
