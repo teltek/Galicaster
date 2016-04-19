@@ -348,7 +348,6 @@ class ComboBoxEntryExt(Gtk.ComboBox):
 
     def on_changed(self, myself):
         # This signal gets triggered when the Entry contents change
-        print "on_changed"
         if myself.get_active() < 0:
             text = self.get_child().get_text()
             model = self.get_model()
