@@ -23,7 +23,7 @@ from galicaster.utils.gstreamer import WeakMethod
 
 logger = context.get_logger()
 
-TIMEOUT= Gst.SECOND*8
+GST_TIMEOUT= Gst.SECOND*10
 
 class Recorder(object):
 
@@ -84,7 +84,7 @@ class Recorder(object):
             self.pipeline.add(self.bins[name])
 
 
-    def get_status(self, timeout=TIMEOUT):        
+    def get_status(self, timeout=GST_TIMEOUT):        
         status = self.pipeline.get_state(timeout)        
 
         if status[0] == Gst.StateChangeReturn.SUCCESS or status[0] == Gst.StateChangeReturn.NO_PREROLL:
@@ -195,7 +195,7 @@ class Recorder(object):
             for bin_name, bin in self.bins.iteritems():
                 bin.send_event_to_src(event)
 
-            msg = self.bus.timed_pop_filtered(TIMEOUT, Gst.MessageType.EOS)            
+            msg = self.bus.timed_pop_filtered(GST_TIMEOUT, Gst.MessageType.EOS)            
             if not msg:
                 self.__emit_error('Timeout trying to receive EOS message', '', stop=False)
 
