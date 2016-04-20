@@ -155,8 +155,6 @@ class MetadataClass(Gtk.Widget):
         """
         Fill the table with available data, empty otherwise
         """
-        for child in table.get_children():
-            table.remove(child) #FIXME maybe change the glade to avoid removing any widget
         table.resize(1,2)
         row = 1
 
