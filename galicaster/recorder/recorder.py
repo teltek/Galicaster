@@ -90,8 +90,7 @@ class Recorder(object):
         if status[0] == Gst.StateChangeReturn.SUCCESS or status[0] == Gst.StateChangeReturn.NO_PREROLL:
             return status
 
-        logger.error("Timeout getting recorder status, current status: {}".format(status))
-        # self.__emit_error('Timeout getting recorder status', '', stop=False)
+        self.__emit_error('Timeout getting recorder status, current status: {}'.format(status), '', stop=False)
         return status
 
     def get_time(self):
@@ -215,6 +214,7 @@ class Recorder(object):
 
     
     def __emit_error(self, error_info, debug, stop=True):
+        logger.error(error_info)
         if not debug.count('canguro') and not self.error:
             if stop:
                 self.stop(True)
