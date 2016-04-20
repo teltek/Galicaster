@@ -276,9 +276,7 @@ class Player(object):
         self.dispatcher.emit("update-play-vumeter", valor)
 
     def __discover(self, filepath):
-        discoverer = GstPbutils.Discoverer(1 * Gst.SECOND)
-        info = discoverer.discover_uri('file://' + filepath)
-        self.duration = info.get_duration() / 1000000000
+        self.duration = get_duration(filepath)
         logger.info("Duration ON_DISCOVERED: " + str(self.duration))
         self.create_pipeline()
         return True
