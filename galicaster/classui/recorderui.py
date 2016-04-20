@@ -165,8 +165,7 @@ class RecorderClassUI(Gtk.Box):
         GObject.timeout_add(500, self.update_scheduler_timeout, *deps)
         self.update_clock_timeout(self.gui.get_object("local_clock"))
         GObject.timeout_add(10000, self.update_clock_timeout, self.gui.get_object("local_clock"))
-
-
+        
     def swap_videos(self, button=None):
         """GUI callback"""
         self.swap = not self.swap
@@ -521,7 +520,7 @@ class RecorderClassUI(Gtk.Box):
         four_gb = 4000000000.0
         hours = int(freespace/four_gb)
         s2.set_text(_("{0} hours left").format(str(hours)))
-        agent = self.conf.hostname # TODO just consult it once
+        agent = self.conf.get_hostname() # TODO just consult it once
         if s4.get_text() != agent:
             s4.set_text(agent)
 

@@ -248,7 +248,7 @@ class RecorderService(object):
         now = datetime.now().replace(microsecond=0)
         title = _("Recording started at {0}").format(now.isoformat())
         mp = mediapackage.Mediapackage(title=title)
-        mp.properties['origin'] = self.conf.hostname
+        mp.properties['origin'] = self.conf.get_hostname()
         return mp
 
 
