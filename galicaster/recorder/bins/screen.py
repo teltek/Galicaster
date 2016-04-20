@@ -10,8 +10,8 @@
 # this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
-import gobject
-import gst
+from gi.repository import GObject
+from gi.repository import Gst
 import re
 
 from os import path

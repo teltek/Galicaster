@@ -31,7 +31,7 @@ default_track = '1'
 # gstreamer pipeline amplitude temp file
 temp_amp = os.getenv('HOME') + '/gc_pipeline_amp'
 # gstreamer pipeline
-pipe = Gst.Pipeline("failover_pipeline")
+pipe = Gst.Pipeline.new("failover_pipeline")
 
 
 def init():
