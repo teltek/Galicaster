@@ -18,7 +18,7 @@ In case the focus is recovered the dialog may be shown again.
 The dialog blockade is cancelled when the profile is reloaded or changed and when a recording starts.
 """
 
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk
 from gi.repository import Pango
 from galicaster.core import context
 from galicaster.classui import get_ui_path, get_image_path

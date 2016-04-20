@@ -44,7 +44,7 @@ def push_pic(sender=None):
     conf = context.get_conf()
     mhclient = context.get_mhclient()
 
-    endpoint = "/dashboard/rest/agents/{hostname}/snapshot.png".format(hostname=conf.hostname)
+    endpoint = "/dashboard/rest/agents/{hostname}/snapshot.png".format(hostname=conf.get_hostname())
     postfield = [ ("snapshot", get_screenshot() ) ]
     
     try:

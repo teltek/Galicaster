@@ -57,6 +57,7 @@ def get_conf():
     """
     if 'conf' not in __galicaster_context:
         __galicaster_context['conf'] = Conf()
+        __galicaster_context['conf'].reload()
 
     return __galicaster_context['conf']
 
@@ -68,7 +69,7 @@ def get_logger():
     if 'logger' not in __galicaster_context:
         conf = get_conf()
         logger = Logger(conf.get('logger', 'path'),
-                        conf.get('logger', 'level').upper(),
+                        conf.get('logger', 'level', 'DEBUG').upper(),
                         conf.get_boolean('logger', 'rotate'),
                         conf.get_boolean('logger', 'use_syslog'))
         __galicaster_context['logger'] = logger
@@ -90,7 +91,7 @@ def get_mhclient():
             mhclient = MHHTTPClient(conf.get('ingest', 'host'), 
                                     conf.get('ingest', 'username'), 
                                     conf.get('ingest', 'password'), 
-                                    conf.hostname, 
+                                    conf.get_hostname(), 
                                     conf.get('ingest', 'address'),
                                     multiple_ingest, 
                                     connect_timeout,
@@ -127,12 +128,12 @@ def get_repository():
         if template is None:
             __galicaster_context['repository'] = Repository(
                 conf.get('basic', 'repository'), 
-                conf.hostname,
+                conf.get_hostname(),
                 logger=get_logger())
         else:
             __galicaster_context['repository'] = Repository(
                 conf.get('basic', 'repository'), 
-                conf.hostname,
+                conf.get_hostname(),
                 conf.get('repository', 'foldertemplate'),
                 get_logger())
 
@@ -182,7 +183,7 @@ def get_heartbeat():
         heartbeat = Heartbeat(get_dispatcher(), 
                       get_conf().get_int('heartbeat', 'short'),
                       get_conf().get_int('heartbeat', 'long'),                      
-                      get_conf().get('heartbeat', 'night'),
+                      get_conf().get_hour('heartbeat', 'night'),
                       get_logger())
         __galicaster_context['heartbeat'] = heartbeat
 
