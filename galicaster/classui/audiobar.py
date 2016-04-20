@@ -31,6 +31,9 @@ class Vumeter(Gtk.Table):
         self.mute = False
         self.vumeter=Gtk.ProgressBar()
         self.rangeVum = 40
+        conf = context.get_conf()
+        self.minimum =  float(conf.get('audio','min') or -70)
+
 	    #numbers
         label0 = Gtk.Label(label="0 dB")
         label1 = Gtk.Label(label="-3")
@@ -92,9 +95,7 @@ class Vumeter(Gtk.Table):
     def scale_vumeter(self,data):
 	
         data_aux = data
-        conf = context.get_conf()
         dispatcher = context.get_dispatcher()
-        minimum= float(conf.get('audio','min') or -70)
 
         if data == "Inf":
             valor = 0
@@ -105,10 +106,10 @@ class Vumeter(Gtk.Table):
                 data = 0
 	    valor=(data+self.rangeVum)/float(self.rangeVum)
         if not self.mute:
-	    if data_aux == "Inf" or data_aux < minimum:
+	    if data_aux == "Inf" or data_aux < self.minimum:
                 dispatcher.emit("audio-mute")
                 self.mute = True
-	if self.mute and data_aux > minimum+5.0:
+	if self.mute and data_aux > self.minimum+5.0:
             dispatcher.emit("audio-recovered")
             self.mute = False 
         return valor
