@@ -23,63 +23,9 @@ from gi.repository import Gst
 from unittest import TestCase, skip
 from nose.plugins.attrib import attr
 
-from tests.recorder.base import Base
+from tests.recorder.recorder_v4l2 import TestFunctions as TestFunctionsV4l2
 
 @attr('nodefault', 'recorder_v4l2')
-class TestFunctions(TestCase, Base):
+class TestFunctions(TestFunctionsV4l2):
+    pass
 
-    datapath_bin = [{'name'     : 'datapath',
-                 'device'   : 'datapath',
-                 'location' : '/dev/video1',
-                 'caps'     : 'video/x-raw,framerate=24/1,width=640,height=480',
-                 'path'     :  '/tmp/',
-                 'file'     : 'DATAPATH.avi'}]
-
-    def setUp(self):
-        Base.setUp(self)
-        self.datapath_bin[0]['path'] = self.tmppath
-        
-    def tearDown(self):
-        Base.tearDown(self)
-
-
-    def test_preview(self):
-        bins = self.datapath_bin
-        Base.test_preview(self, bins)
-
-    def test_preview_multi(self):
-        bins = self.datapath_bin + self.getVideoTestBin() + self.getAudioTestBin()
-        Base.test_preview_multi(self, bins)
-
-    def test_preview_and_record(self):
-        bins = self.datapath_bin
-        Base.test_preview_and_record(self, bins)
-
-    def test_preview_and_record_multi(self):
-        bins = self.datapath_bin + self.getVideoTestBin() + self.getAudioTestBin()
-        Base.test_preview_and_record_multi(self, bins)
-
-    def test_record(self):
-        bins = self.datapath_bin
-        Base.test_record(self, bins)
-
-    def test_record_multi(self):
-        bins = self.datapath_bin + self.getVideoTestBin() + self.getAudioTestBin()
-        Base.test_record_multi(self, bins)
-
-    #TODO
-    def todo_test_stop_on_paused(self):
-        bins = self.datapath_bin
-        Base.todo_test_stop_on_paused(self, bins)
-
-    def test_preview_error(self):
-        bins = self.datapath_bin
-        Base.test_preview_error(self, bins)
-
-    def test_record_error(self):
-        bins = self.datapath_bin
-        Base.test_record_error(self, bins)
-
-    def test_pause_error(self):
-        bins = self.datapath_bin
-        Base.test_pause_error(self, bins)

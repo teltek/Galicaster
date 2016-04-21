@@ -35,8 +35,7 @@ class TestFunctions(TestCase, Base):
         Base.setUp(self)
 
     def tearDown(self):
-        #Base.tearDown(self)
-
+        Base.tearDown(self)
 
     def test_constructor(self):
         self.assertRaises(TypeError, Recorder)
@@ -91,10 +90,9 @@ class TestFunctions(TestCase, Base):
         Base.test_record_multi(self, bins)
 
 
-    #TODO
-    def todo_test_stop_on_paused(self):
+    def test_stop_on_paused(self):
         bins = self.getVideoTestBin()
-        Base.todo_test_stop_on_paused(self, bins)
+        Base.test_stop_on_paused(self, bins)
 
     def test_preview_error(self):
         bins = self.getVideoTestBin()

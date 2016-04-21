@@ -31,7 +31,7 @@ class TestFunctions(TestCase, Base):
     v4l2_bin = [{'name'     : 'v4l2',
                  'device'   : 'v4l2',
                  'location' : '/dev/video0',
-                 'caps'     : 'video/x-raw,framerate=24/1,width=640,height=480',
+                 'caps'     : 'video/x-raw,framerate=20/1,width=640,height=480',
                  'path'     :  '/tmp/',
                  'file'     : 'V4L2.avi'}]
 
@@ -67,10 +67,9 @@ class TestFunctions(TestCase, Base):
         bins = self.v4l2_bin + self.getVideoTestBin() + self.getAudioTestBin()
         Base.test_record_multi(self, bins)
 
-    #TODO
-    def todo_test_stop_on_paused(self):
+    def test_stop_on_paused(self):
         bins = self.v4l2_bin
-        Base.todo_test_stop_on_paused(self, bins)
+        Base.test_stop_on_paused(self, bins)
 
     def test_preview_error(self):
         bins = self.v4l2_bin

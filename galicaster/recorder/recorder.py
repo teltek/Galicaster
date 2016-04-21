@@ -23,6 +23,7 @@ from galicaster.utils.gstreamer import WeakMethod
 
 logger = context.get_logger()
 
+GST_TIMEOUT= Gst.SECOND*10
 
 class Recorder(object):
 
@@ -83,9 +84,14 @@ class Recorder(object):
             self.pipeline.add(self.bins[name])
 
 
-    def get_status(self):
-        return self.pipeline.get_state(Gst.CLOCK_TIME_NONE)
+    def get_status(self, timeout=GST_TIMEOUT):        
+        status = self.pipeline.get_state(timeout)        
 
+        if status[0] == Gst.StateChangeReturn.SUCCESS or status[0] == Gst.StateChangeReturn.NO_PREROLL:
+            return status
+
+        self.__emit_error('Timeout getting recorder status, current status: {}'.format(status), '', stop=False)
+        return status
 
     def get_time(self):
         return self.pipeline.get_clock().get_time()
@@ -96,7 +102,7 @@ class Recorder(object):
         if self.__start_record_time == -1:
             return 0
 
-        if self.pipeline.get_state(Gst.CLOCK_TIME_NONE)[1] == Gst.State.NULL:
+        if self.get_status()[1] == Gst.State.NULL:
             return self.__duration
         return self.__query_position() - self.__start_record_time
 
@@ -149,12 +155,12 @@ class Recorder(object):
             self.dispatcher.emit("recorder-error","Driver error")
             return False
 
-        self.pipeline.get_state(Gst.CLOCK_TIME_NONE)
+        self.get_status()
         return True
 
 
     def record(self):
-        if self.pipeline.get_state(Gst.CLOCK_TIME_NONE)[1] == Gst.State.PLAYING:
+        if self.get_status()[1] == Gst.State.PLAYING:
             for bin in self.bins.values():
                 bin.changeValve(False)
         self.__start_record_time = self.__query_position()
@@ -187,8 +193,11 @@ class Recorder(object):
             event = Gst.Event.new_custom(Gst.EventType.EOS, a)
             for bin_name, bin in self.bins.iteritems():
                 bin.send_event_to_src(event)
-            #TODO If timeout send error.
-            self.bus.timed_pop_filtered(Gst.CLOCK_TIME_NONE, Gst.MessageType.EOS)
+
+            msg = self.bus.timed_pop_filtered(GST_TIMEOUT, Gst.MessageType.EOS)            
+            if not msg:
+                self.__emit_error('Timeout trying to receive EOS message', '', stop=False)
+
         self.pipeline.set_state(Gst.State.NULL)
 
 
@@ -201,14 +210,20 @@ class Recorder(object):
         error, debug = msg.parse_error()
         error_info = "{} ({})".format(error, debug)
         logger.error(error_info)
+        return self.__emit_error(error_info, debug)
+
+    
+    def __emit_error(self, error_info, debug, stop=True):
+        logger.error(error_info)
         if not debug.count('canguro') and not self.error:
-            self.stop(True)
+            if stop:
+                self.stop(True)
             Gdk.threads_enter()
             self.error = error_info
             self.dispatcher.emit("recorder-error", error_info)
             Gdk.threads_leave()
             # return True
-    
+        
 
     def _on_sync_message(self, bus, message):
         if message.get_structure() is None:
