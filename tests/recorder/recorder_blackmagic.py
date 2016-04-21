@@ -20,7 +20,7 @@ import time
 
 from gi.repository import Gst
 
-from unittest import TestCase, skip
+from unittest import TestCase
 from nose.plugins.attrib import attr
 
 from tests.recorder.base import Base
@@ -70,8 +70,6 @@ class TestFunctions(TestCase, Base):
         bins = self.blackmagic_bin + self.getVideoTestBin() + self.getAudioTestBin()
         Base.test_record_multi(self, bins)
 
-    #TODO
-    @skip("Not pausable")
     def test_stop_on_paused(self):
         bins = self.blackmagic_bin
         Base.test_stop_on_paused(self, bins)
@@ -84,7 +82,6 @@ class TestFunctions(TestCase, Base):
         bins = self.blackmagic_bin
         Base.test_record_error(self, bins)
 
-    @skip("Not pausable")
     def test_pause_error(self):
         bins = self.blackmagic_bin
         Base.test_pause_error(self, bins)
