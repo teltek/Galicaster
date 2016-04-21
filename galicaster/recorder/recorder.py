@@ -64,7 +64,7 @@ class Recorder(object):
 #        self.bus.connect('message', WeakMethod(self, '_debug')) # TO DEBUG
         self.bus.connect('message::error', WeakMethod(self, '_on_error'))        
         self.bus.connect('message::element', WeakMethod(self, '_on_message_element'))
-        self.bus.connect('sync-message::element', WeakMethod(self, '_on_sync_message'))
+
 
         for bin in bins:
             name = bin['name']
@@ -242,7 +242,13 @@ class Recorder(object):
 #                message.src.set_xwindow_id(gtk_player.get_property(window).get_xid())
                 message.src.set_window_handle(gtk_player.get_property('window').get_xid())
                 Gdk.threads_leave()
-
+                
+                # Disconnect from on_sync_message (From now on it's not needed)
+                del self.players[name]
+                if not self.players:
+                    #self.bus.disable_sync_message_emission()
+                    self.bus.handler_disconnect(self.__sync_handle)
+                
             except KeyError:
                 pass
             except TypeError:
@@ -276,6 +282,8 @@ class Recorder(object):
 
     def set_drawing_areas(self, players):
         self.players = players        
+        if self.players:
+            self.__sync_handle = self.bus.connect('sync-message::element', WeakMethod(self, '_on_sync_message'))
 
 
     def get_display_areas_info(self):
