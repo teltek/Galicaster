@@ -11,14 +11,6 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-from galicaster.mediapackage.repository import Repository
-from galicaster.utils.mhhttpclient import MHHTTPClient
-from galicaster.core.conf import Conf
-from galicaster.core.logger import Logger
-from galicaster.core.worker import Worker
-from galicaster.core.dispatcher import Dispatcher
-from galicaster.scheduler.heartbeat import Heartbeat
-from galicaster.scheduler.scheduler import Scheduler
 
 __galicaster_context = {}
 
@@ -55,6 +47,8 @@ def get_conf():
     """
     Get the Conf class from the App Context
     """
+    from galicaster.core.conf import Conf
+
     if 'conf' not in __galicaster_context:
         __galicaster_context['conf'] = Conf()
         __galicaster_context['conf'].reload()
@@ -66,10 +60,12 @@ def get_logger():
     """
     Get the Logger class from the App Context
     """
+    from galicaster.core.logger import Logger
+
     if 'logger' not in __galicaster_context:
         conf = get_conf()
         logger = Logger(conf.get('logger', 'path'),
-                        conf.get('logger', 'level', 'DEBUG').upper(),
+                        conf.get_choice_uppercase('logger', 'level', ['CRITICAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'], 'DEBUG'),
                         conf.get_boolean('logger', 'rotate'),
                         conf.get_boolean('logger', 'use_syslog'))
         __galicaster_context['logger'] = logger
@@ -82,6 +78,8 @@ def get_mhclient():
     """
     Get the Mhclient class from the App Context
     """
+    from galicaster.utils.mhhttpclient import MHHTTPClient
+
     if 'mhclient' not in __galicaster_context:
         conf = get_conf()
         multiple_ingest  = conf.get_boolean('ingest','multiple-ingest') or False
@@ -112,6 +110,8 @@ def get_dispatcher():
     """
     Get the Dispatcher class from the App Context
     """
+    from galicaster.core.dispatcher import Dispatcher
+
     if 'dispatcher' not in __galicaster_context:
         __galicaster_context['dispatcher'] = Dispatcher()
 
@@ -122,6 +122,8 @@ def get_repository():
     """
     Get the Mediapackage Repository from the App Context
     """
+    from galicaster.mediapackage.repository import Repository
+
     if 'repository' not in __galicaster_context:
         conf = get_conf()
         template = conf.get('repository','foldertemplate')
@@ -144,6 +146,8 @@ def get_worker():
     """
     Get Galicaster Worker from the App Context
     """
+    from galicaster.core.worker import Worker
+
     legacy = get_conf().get_boolean('ingest', 'legacy') or get_conf().get_boolean('basic', 'legacy')
     if 'worker' not in __galicaster_context:
         __galicaster_context['worker'] = Worker(get_dispatcher(),
@@ -178,12 +182,14 @@ def get_heartbeat():
     """
     Get Galicaster Heartbeat from the App Context
     """
+    from galicaster.scheduler.heartbeat import Heartbeat
+
     # TODO Review
     if 'heartbeat' not in __galicaster_context:
         heartbeat = Heartbeat(get_dispatcher(), 
-                      get_conf().get_int('heartbeat', 'short'),
-                      get_conf().get_int('heartbeat', 'long'),                      
-                      get_conf().get_hour('heartbeat', 'night'),
+                      get_conf().get_int('heartbeat', 'short', 10),
+                      get_conf().get_int('heartbeat', 'long', 60),                      
+                      get_conf().get_hour('heartbeat', 'night', '00:00'),
                       get_logger())
         __galicaster_context['heartbeat'] = heartbeat
 
@@ -194,6 +200,8 @@ def get_scheduler():
     """
     Get Galicaster Scheduler from the App Context
     """
+    from galicaster.scheduler.scheduler import Scheduler
+    
     if 'scheduler' not in __galicaster_context:
         if get_conf().get_boolean("ingest", "active"):
             sch = Scheduler(get_repository(), get_conf(), get_dispatcher(), 
