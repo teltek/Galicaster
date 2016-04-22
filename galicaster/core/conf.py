@@ -234,13 +234,37 @@ class Conf(object): # TODO list get and other ops arround profile
         Args:
             sect (str): section of configuration file.
             opt (str): option of configuration file.
-            options List[str]: a list of options (in uppercase)
+            options List[str]: a list of options (in lowercase)
             default (str): default output if there is no value.
         Returns:
             Str: the value of option opt in section sect if it is in the options list and there are no errors. Default otherwise.
         """ 
         try:
             data = self.get(sect, opt).lower()
+            if data in options:
+                return data
+            else:
+                self.logger and self.logger.warning('The parameter "{0}" in section "{1}" with value {2} is not in {3}, FORCED TO "{4}"'.format(opt, sect, data, options, default))
+                return default
+
+        except Exception as exc:
+            self.logger and self.logger.warning('There was an error before obtaining the parameter "{0}" in section "{1}", FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
+        return default
+
+
+    def get_choice_uppercase(self, sect, opt, options, default=None):
+        """Tries to return a value of an option in a section if it is in the options list. 
+        If else returns the given default value.
+        Args:
+            sect (str): section of configuration file.
+            opt (str): option of configuration file.
+            options List[str]: a list of options (in uppercase)
+            default (str): default output if there is no value.
+        Returns:
+            Str: the value of option opt in section sect if it is in the options list and there are no errors. Default otherwise.
+        """ 
+        try:
+            data = self.get(sect, opt).upper()
             if data in options:
                 return data
             else:
