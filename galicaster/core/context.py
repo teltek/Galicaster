@@ -14,38 +14,57 @@
 
 __galicaster_context = {}
 
+"""
+This module initializes:
+    Conf: parser of the user's configuration. See core/conf.py
+    Logger: in charge of printing warnings, errors and information messages. See core/logger.py
+    Dispatcher: contains all the signals that communicates different parts of Galicaster app. See core/dispatcher.py
+    Repository: contains and manages all the mediapackages. See mediapackage/repository.py
+    Worker: in charge of processing long mediapackage operations. See core/worker.py
+    MHClient (Matterhorn's client): communicates with Matterhorn. See utils/mhttpclient.py
+    Mainwindow: the UI. See classui/mainwindow.py
+    Heartbeat: in charge of emitting signals in long and short periods of time. See scheduler/heartbeat.py
+    Scheduler: manages scheduled recordings. See scheduler/scheduler.py
+    State: state of Galicaster. See core/state.py
+"""
 
 def get(service_name):
-    """
-    Get service by name from the App Context
+    """Gets service by name from the App Context.
+    Returns:
+        Obj: the service of the given name.
     """
     return __galicaster_context[service_name]
 
 
 def has(service_name):
-    """
-    Has service by name from the App Context
+    """Checks if the service of the given service name is in the App Context.
+    Args:
+        service_name (str): the name of the service whose belonging to context is going to be checked.
     """
     return service_name in __galicaster_context
 
 
 def set(service_name, service):
-    """
-    Set service by name from the App Context
+    """Sets service by name in the App Context.
+    Args:
+        service_name (str): the name of the service that is going to be set.
+        service (Obj): the service that is going to be set. 
     """
     __galicaster_context[service_name] = service
 
 
 def delete(service_name):
-    """
-    Delete service by name from the App Context
+    """Deletes service by name from the App Context.
+    Args:
+        service_name (str): the name of the service that is going to be deleted.
     """
     del __galicaster_context[service_name]
     
 
 def get_conf():
-    """
-    Get the Conf class from the App Context
+    """Creates if necessary and retrieves the Conf class from the App Context.
+    Returns:
+        Conf: the conf instantiation in galicaster context.
     """
     from galicaster.core.conf import Conf
 
@@ -57,8 +76,9 @@ def get_conf():
 
 
 def get_logger():
-    """
-    Get the Logger class from the App Context
+    """Creates if necessary and retrieves the Logger class from the App Context.
+    Returns:
+        Logger: the logger in galicaster app.
     """
     from galicaster.core.logger import Logger
 
@@ -75,8 +95,9 @@ def get_logger():
 
 
 def get_mhclient():
-    """
-    Get the Mhclient class from the App Context
+    """Creates if necessary and retrieves the Mhclient class from the App Context.
+    Returns:
+        MHTTPClient: the matterhorn client of galicaster context.
     """
     from galicaster.utils.mhhttpclient import MHHTTPClient
 
@@ -107,8 +128,9 @@ def get_mhclient():
 
 
 def get_dispatcher():
-    """
-    Get the Dispatcher class from the App Context
+    """Creates if necessary and retrieves the Dispatcher class from the App Context.
+    Returns:
+      Dispatcher: the dispatcher instance in galicaster context. 
     """
     from galicaster.core.dispatcher import Dispatcher
 
@@ -119,8 +141,9 @@ def get_dispatcher():
 
 
 def get_repository():
-    """
-    Get the Mediapackage Repository from the App Context
+    """Creates if necessary and retrieves the Mediapackage Repository from the App Context.
+    Returns:
+        Mediapackage: mediapackage instance in galicaster context.
     """
     from galicaster.mediapackage.repository import Repository
 
@@ -143,8 +166,9 @@ def get_repository():
 
 
 def get_worker():
-    """
-    Get Galicaster Worker from the App Context
+    """Creates if necessary and retrieves the Galicaster Worker from the App Context.
+    Returns:
+        Worker: the worker instance in galicaster context.
     """
     from galicaster.core.worker import Worker
 
@@ -165,8 +189,9 @@ def get_worker():
 
 
 def get_mainwindow():
-    """
-    Get Galicaster Mainwindow from the App Context
+    """Creates if necessary and retrieves Galicaster Mainwindow from the App Context.
+    Returns:
+        GCWindow: the galicaster main window instance in galicaster context. 
     """
     from galicaster.classui.mainwindow import GCWindow
 
@@ -179,8 +204,9 @@ def get_mainwindow():
 
 
 def get_heartbeat():
-    """
-    Get Galicaster Heartbeat from the App Context
+    """Creates if necessary and retrieves Galicaster Heartbeat from the App Context.
+    Returns:
+        Heartbeat: the heartbeat instance in galicaster context.
     """
     from galicaster.scheduler.heartbeat import Heartbeat
 
@@ -197,8 +223,9 @@ def get_heartbeat():
     
 
 def get_scheduler():
-    """
-    Get Galicaster Scheduler from the App Context
+    """Creates if necessary and retrieves Galicaster Scheduler from the App Context.
+    Returns:
+        Scheduler: the scheduler instance in galicaster context.
     """
     from galicaster.scheduler.scheduler import Scheduler
     
@@ -214,8 +241,9 @@ def get_scheduler():
     
 
 def get_recorder():
-    """
-    Get Recorder Service
+    """Creates if necessary and retrives Galicaster Recorder from the App Context.
+    Returns:
+        Recorder: the recorder instance in galicaster context.
     """
     from galicaster.recorder.service import RecorderService
 
