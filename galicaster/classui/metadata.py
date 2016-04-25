@@ -18,7 +18,6 @@ from gi.repository import Gtk, Gdk
 import datetime
 from os import path
 from gi.repository import GObject
-from gi.repository import Pango
 import os
 
 from galicaster.classui.calendarwindow import CalendarWindow
@@ -252,7 +251,8 @@ class MetadataClass(Gtk.Widget):
                         if catalog:
                             mp.remove(catalog[0])
                 else:
-                    mp.metadata_episode[name]=child.get_text()
+                    unicode_text = unicode(child.get_text(),encoding='utf-8')
+                    mp.metadata_episode[name]=unicode_text
 
     def edit_date(self,element,event):
         """Filter a Right button double click, show calendar and update date"""
