@@ -104,13 +104,7 @@ class MetadataClass(Gtk.Widget):
         cl = gui.get_object('clabel')
         talign = gui.get_object('table_align')
 
-        modification = "bold "+str(int(k2*25))+"px"
-        title.modify_font(Pango.FontDescription(modification))
         title.hide()
-        talign.set_padding(int(k2*40),int(k2*40),0,0)
-        mod2 = str(int(k1*35))+"px"
-        sl.modify_font(Pango.FontDescription(mod2))
-        cl.modify_font(Pango.FontDescription(mod2))
 
         # Get "blocked" and "mandatory" parameters
         blocked = set()
@@ -155,15 +149,12 @@ class MetadataClass(Gtk.Widget):
         """
         Fill the table with available data, empty otherwise
         """
-        table.resize(1,2)
         row = 1
 
         for meta in DCTERMS:
             t=Gtk.Label(label=metadata[meta])
             t.set_justify(Gtk.Justification.LEFT)
             t.set_alignment(0,0)
-            modification = str(int(self.hprop*16))+"px"
-            t.modify_font(Pango.FontDescription(modification))
             t.set_width_chars(15)
 
             # Switch the INSENSITIVE state colour to red, so that we can mark the mandatory parameters
@@ -197,10 +188,9 @@ class MetadataClass(Gtk.Widget):
             if meta == "title":
                 d.set_tooltip_text(d.get_text())
 
-            d.modify_font(Pango.FontDescription(modification))
 
-            table.attach(t,0,1,row-1,row,False,False,0,0)
-            table.attach(d,1,2,row-1,row,Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL,False,0,0)
+            table.attach(t,0,row-1,1,1)
+            table.attach(d,1,row-1,2,1)
             row=row+1
 
     def check_mandatory(self, item, button, check_all = False):
