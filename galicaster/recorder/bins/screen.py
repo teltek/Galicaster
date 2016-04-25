@@ -20,17 +20,15 @@ from os import path
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
-raise Exception("Not implemented. Using gst 0.10")
-
-pipestr = (' ximagesrc endx=gc-endx endy=gc-endy name=gc-screen-src use-damage=0 ! '
-           ' queue ! tee name=tee-vt  ! '
-           ' queue !  ffmpegcolorspace  ! xvimagesink sync=false async=false qos=false name=gc-screen-preview'
-           ' tee-vt. ! queue ! valve drop=false name=gc-screen-valve ! ffmpegcolorspace ! videorate ! video/x-raw-yuv,framerate=5/1 ! ffmpegcolorspace !'
-           ' x264enc ! queue ! mp4mux ! '
+pipestr = (' ximagesrc startx=gc-startx starty=gc-starty endx=gc-endx endy=gc-endy name=gc-screen-src use-damage=0 ! queue ! '
+           ' videorate ! videoconvert ! videocrop name=gc-v4l2-crop ! '
+           ' tee name=gc-screen-tee  ! queue !  videoconvert  ! xvimagesink sync=false async=false qos=false name=gc-screen-preview'
+           ' gc-screen-tee. ! queue ! valve drop=false name=gc-screen-valve ! videoconvert ! videorate ! capsfilter name=gc-v4l2-filter ! queue ! videoconvert ! '
+           ' gc-screen-enc ! queue ! gc-screen-mux ! '
            ' queue ! filesink name=gc-screen-sink async=false')
 
 
-class GCscreen(gst.Bin, base.Base):
+class GCscreen(Gst.Bin, base.Base):
 
     order = ["name","flavor","location","file","caps", 
              "muxer", "endx"
@@ -57,17 +55,69 @@ class GCscreen(gst.Bin, base.Base):
             "default": "CAMERA.avi",
             "description": "The file name where the track will be recorded.",
              },
-        "endx":{
+        "caps": {
+            "type": "caps",
+            "default": "video/x-raw,format=I420,framerate=25/1", 
+            "description": "Forced capabilities",
+            },
+        "videocrop-right": {
+            "type": "integer",
+            "default": 0,
+            "range": (0,200),
+            "description": "Right  Cropping",
+            },
+        "videocrop-left": {
+            "type": "integer",
+            "default": 0,
+            "range": (0,200),
+            "description": "Left  Cropping",
+            },
+        "videocrop-top": {
+            "type": "integer",
+            "default": 0,
+            "range": (0,200),
+            "description": "Top  Cropping",
+            },
+        "videocrop-bottom": {
+            "type": "integer",
+            "default": 0,
+            "range": (0,200),
+            "description": "Bottom  Cropping",
+            },
+        "videoencoder": {
             "type": "text",
-            "default": "1919",
+            "default": "x264enc pass=5 quantizer=22 speed-preset=4",
+            "description": "Gstreamer encoder element used in the bin",
+            },
+        "muxer": {
+            "type": "text",
+            "default": "avimux",
+            "description": "Gstreamer encoder muxer used in the bin",
+        },
+        "startx":{
+            "type": "integer",
+            "default": 0,
+            "range": (1,10000),
+            "description": "top left. Must be odd (since we start at 0)",
+        },
+        "starty":{
+            "type": "integer",
+            "default": 0,
+            "range": (1,10000),
+            "description": "top left.  Must be odd (since we start at 0)",
+        },    
+        "endx":{
+            "type": "integer",
+            "default": 1919,
+            "range": (1,10000),
             "description": "bottom right. Must be odd (since we start at 0)",
         },
         "endy":{
-            "type": "text",
-            "default": "1079",
+            "type": "integer",
+            "default": 1079,
+            "range": (1,10000),
             "description": "bottom right.  Must be odd (since we start at 0)",
-        }    
-       
+        },           
     }
     
     is_pausable = True
@@ -84,25 +134,23 @@ class GCscreen(gst.Bin, base.Base):
 
     def __init__(self, options={}):
         base.Base.__init__(self, options)
-        gst.Bin.__init__(self, self.options['name'])
+        Gst.Bin.__init__(self)
 
         aux = (pipestr.replace('gc-screen-preview', 'sink-' + self.options['name'])
-                      .replace('gc-endx', self.options['endx'])
-                      .replace('gc-endy', self.options['endy']))
+                      .replace('gc-screen-enc', self.options['videoencoder'])
+                      .replace('gc-screen-mux', self.options['muxer'])
+                      .replace('gc-startx', str(self.options['startx']))
+                      .replace('gc-starty', str(self.options['starty']))
+                      .replace('gc-endx', str(self.options['endx']))
+                      .replace('gc-endy', str(self.options['endy'])))
 
-        #bin = gst.parse_bin_from_description(aux, False)
-        bin = gst.parse_launch("( {} )".format(aux))
+        bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
         self.get_by_name('gc-screen-sink').set_property('location', path.join(self.options['path'], self.options['file']))
-        #self.get_by_name('gc-endx').set_property('endx', self.options['endx'])
-        
 
-        #self.get_by_name('gc-screen-filter').set_property('caps', gst.Caps(self.options['caps']))
-        #fr = re.findall("framerate *= *[0-9]+/[0-9]+", self.options['caps'])
-        #if fr:
-        #    newcaps = 'video/x-raw-yuv,' + fr[0]
-        #    self.get_by_name('gc-screen-caps').set_property('caps', gst.Caps(newcaps))
+        self.set_option_in_pipeline('caps', 'gc-v4l2-filter', 'caps', None)
+
      
     def changeValve(self, value):
         valve1=self.get_by_name('gc-screen-valve')
@@ -119,6 +167,3 @@ class GCscreen(gst.Bin, base.Base):
         src1.send_event(event)
 
 
-gobject.type_register(GCscreen)
-gst.element_register(GCscreen, 'gc-screen-bin')
-module_register(GCscreen, 'screen')
