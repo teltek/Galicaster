@@ -64,6 +64,7 @@ class GCWindow(Gtk.Window):
         self.is_fullscreen = (self.custom_size == self.full_size)
 
         self.set_style()
+        self.set_width_interval_class(self.get_size()[0])
 
         #        pixbuf = GdkPixbuf.Pixbuf.new_from_file_size(get_image_path('galicaster.svg'),48,48)
         #        pixbuf = pixbuf.scale_simple(128, 128, GdkPixbuf.InterpType.BILINEAR)
@@ -95,6 +96,22 @@ class GCWindow(Gtk.Window):
             style_provider,
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
+
+    def set_width_interval_class(self, size):
+        """ Set the window width class: small, medium or large.
+        By default is medium.
+        Arguments:
+            size (int): the width of the main window in pixels
+        """
+        max_small = 992
+        min_large = 1200
+        style_context = self.get_style_context()
+        if size < max_small:
+            style_context.add_class('small')
+        elif size > min_large:
+            style_context.add_class('large')
+        else:
+            style_context.add_class('medium')
 
     def toggle_fullscreen(self, other=None):
         """Allows shifting between full and regular screen mode.
