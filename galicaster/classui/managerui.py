@@ -173,11 +173,7 @@ class ManagerUI(Gtk.Box):
         text['text'] = ''
         icon = message.QUESTION
 
-        if disabled:                                         
-            text['text']=text['text']+_("The ingest service is disabled.")
-
-        if not self.network:                                         
-            text['text']=text['text']+_("Ingest disabled because of network problems. ")
+        if disabled or not self.network:
             for job in day:
                 if job.lower().count("ingest"):
                     jobs.remove(job)            
@@ -187,6 +183,11 @@ class ManagerUI(Gtk.Box):
                     pass
                     #jobs.remove(job)            
                     #night.remove(job)
+
+        if disabled:                                         
+            text['text']=text['text']+_("The ingest service is disabled. ")
+        elif not self.network:
+            text['text'] = text['text'] + _("Ingest disabled because of network problems. ")
 
         for job in day:
             op_state = package.operation[job.lower().replace(" ", "")]

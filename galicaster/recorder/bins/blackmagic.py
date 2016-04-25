@@ -130,6 +130,12 @@ class GCblackmagic(Gst.Bin, base.Base):
         ],
       "description": "Audio  input mode",
       },
+    "framerate" : {
+      "type": "select",
+      "default": "auto",
+      "options": ["auto", "24/1", "25/1","30/1"],
+      "description": "Output framerate",
+      },
     "subdevice" : {
       "type": "select",
       "default": "0",
@@ -189,11 +195,14 @@ class GCblackmagic(Gst.Bin, base.Base):
         Gst.Bin.__init__(self)
 
         pipestr = videostr
+
+        if self.options['framerate'] == "auto":
+          self.options['framerate'] = FRAMERATE[self.options["input-mode"]]
+          
         aux = (pipestr.replace('gc-blackmagic-preview', 'sink-' + self.options['name'])
                .replace('gc-blackmagic-enc', self.options['videoencoder'])
                .replace('gc-blackmagic-muxer', self.options['muxer']+" name=gc-blackmagic-muxer")
-               .replace('gc-blackmagic-capsfilter', "video/x-raw,framerate={0}".format(
-              FRAMERATE[self.options["input-mode"]]))
+               .replace('gc-blackmagic-capsfilter', "video/x-raw,framerate={0}".format(self.options['framerate']))
                )
 
         if self.options["audio-input"] == "none":

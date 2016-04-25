@@ -5,9 +5,34 @@ Web version of the changelog in http://wiki.teltek.es/display/Galicaster/Release
 To get the diff for a specific change, go to https://github.com/teltek/galicaster/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/teltek/galicaster/compare/1.2.1...1.2.3
 
+* 1.4.2 (2015-06-19)
+ * Add compatibility to use Opencast 1.6 and 2.1.x
+ * Change in the default videoencoder due to better multicore capabilities of x264enc
+ * Use calendar response etags to optimize requests. (Issue #64)
+ * New plugin (notifycrash) to send an email when a recording has failed
+ * Fixed bug: crash on repeated stop with rest-interface
+ * Added an endpoint to close Galicaster through the rest API
+ * Fixed bug: Properly take the thread mutex before entering the mainloop (oaubert)
+ * Fixed bug: map polling values to short or long heartbeat (JamesUoM)
+ * Fix a problem when you proxy the matterhorn server in an URL that is not the root folder of the server (miesgre)
+ * Added ref/mimetype attributes to mediapackage attachments (miesgre)
+ * Allow to name a flavor track as you want, not only presenter, presentation or other (miesgre)
+ * Fixed a bug when attachment has not mimetype info (miesgre)
+ * Changes to signals to allow failovermic plugin to run (androidwiltron)
+ * Added the option to configure the output framerate using Blackmagic devices
+ * Force to reload available space on entering in the recorder UI
+ * Use a temporal folder to save the manifest (save zip), closes #15
+ * Change the current working directory to the rectemp folder
+ * Capture any general exception in order to print it to the log file
+ * Set the polling_config interval to the long heartbeat, fixes #114
+ * Support audio containers for pulse devices, fixes #113
+ * Set the correct title on start a recording, fixes #110
+ * Add the option to execute the clear job on init, fixes #111
+ * Don't log call errors for 2xx response codes, fixes #105
+ * Print the correct error message when a float value is out of range, closes #68
+ * Enable videofilter elements when using v4l2 devices, fixes #62
 
-
-* 1.4.1-RC1 (YYYY-MM-DD)
+* 1.4.1 (2014-08-18)
 
  * New retry to recreate the pipeline periodically when a stream dies.
  * Fixed enable pause in datapath bin.

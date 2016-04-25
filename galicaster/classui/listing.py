@@ -16,6 +16,7 @@ from gi.repository import GObject
 from gi.repository import Pango
 
 from galicaster.classui.managerui import ManagerUI
+from galicaster.classui import message
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 from galicaster.classui import get_ui_path

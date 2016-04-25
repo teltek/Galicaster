@@ -117,6 +117,7 @@ class GCWindow(Gtk.Window):
         size = (1920, 1080)
         try:
             root = Gdk.get_default_root_window()
+#            root.set_cursor(gtk.gdk.Cursor(gtk.gdk.ARROW))
             screen = root.get_screen()
             rect = screen.get_monitor_geometry(0)
             size = [rect.width, rect.height]
@@ -145,6 +146,10 @@ class GCWindow(Gtk.Window):
         if self.dispatcher:
             self.dispatcher.emit('galicaster-quit')
         return True
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1.4.x
 
     def close(self, signal):
         """Pops up a dialog asking to quit"""

@@ -753,6 +753,7 @@ class Conf(object): # TODO list get and other ops arround profile
                 self.__current_profile = self.__profiles[name]
                 self.force_set_current_profile(name)
             else:
+<<<<<<< HEAD
                 self.logger and self.logger.warning('Error trying to change the profile, {} does not exist. Ignoring this action...'.format(name))
 
 

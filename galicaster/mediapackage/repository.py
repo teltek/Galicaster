@@ -36,7 +36,14 @@ class Repository(object):
         param: hostname: galicaster name use in folder prefix
         param: folder_template
         """ 
-        self.root = root or os.path.expanduser('~/Repository')
+
+        self.logger = logger
+
+        if not root:
+            self.root = os.path.expanduser('~/Repository')
+            self.logger.warning("Repository folder not specified, using {}".format(self.root))
+        else:
+            self.root = root
 
         self.hostname = hostname
         self.folder_template = folder_template
@@ -44,8 +51,6 @@ class Repository(object):
         self.create_repo(hostname)
         self.save_crash_recordings()
         
-        self.logger = logger
-
         self.__list = dict()
         self.__refresh(True)
 
@@ -66,16 +71,40 @@ class Repository(object):
                 conf.set('repository', 'version', __version__)
                 conf.set('repository', 'hostname', hostname)
                 conf.write(configfile)
-        
+
 
     def save_crash_recordings(self):
         backup_dir = self.get_rectemp_path(datetime.datetime.now().replace(microsecond=0).isoformat())
         for temp_file in os.listdir(self.get_rectemp_path()):
             full_path = os.path.join(self.get_rectemp_path(), temp_file)
             if os.path.isfile(full_path) and os.path.getsize(full_path):
+                self.crash_file_creator()
+
                 if not os.path.isdir(backup_dir):
                     os.mkdir(backup_dir)
                 os.rename(full_path, os.path.join(backup_dir, temp_file))
+
+
+    def crash_file_exists(self):
+        filename = os.path.join(self.get_rectemp_path(), ".recording_crash")
+        if os.path.isfile(filename):
+            return True
+        return False
+
+
+    def crash_file_creator(self):
+        from galicaster.core import context
+        if context.get_conf().get_boolean("plugins", "notifycrash"):
+            filename = os.path.join(self.get_rectemp_path(), ".recording_crash")
+            file = open(filename, 'w')
+            file.close()
+        return
+
+
+    def crash_file_remove(self):
+        filename = os.path.join(self.get_rectemp_path(), ".recording_crash")
+        os.remove(filename)
+        return
 
 
     def __refresh(self, check_inconsistencies=False):
