@@ -146,10 +146,6 @@ class GCWindow(Gtk.Window):
         if self.dispatcher:
             self.dispatcher.emit('galicaster-quit')
         return True
-<<<<<<< HEAD
-=======
-
->>>>>>> 1.4.x
 
     def close(self, signal):
         """Pops up a dialog asking to quit"""
