@@ -95,6 +95,11 @@ class MetadataClass(Gtk.Widget):
 
         if parent != None:
             dialog.set_transient_for(parent.get_toplevel())
+            dialog_style_context = dialog.get_style_context()
+            window_classes = parent.get_style_context().list_classes()
+            for style_class in window_classes:
+                dialog_style_context.add_class(style_class)
+
 
         table = gui.get_object('infobox')
         dialog.vbox.set_child_packing(table, True, True, int(self.hprop*25), Gtk.PackType.END)

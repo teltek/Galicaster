@@ -225,7 +225,7 @@ class RecorderClassUI(Gtk.Box):
                     "main" : _("Are you sure you want to\nstop the recording?")}
             buttons = (Gtk.STOCK_STOP, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
             self.dispatcher.emit("disable-no-audio")
-            warning = message.PopUp(message.WARNING, text,
+            warning = message.PopUp(message.WARN_STOP, text,
               context.get_mainwindow(), buttons)
             self.dispatcher.emit("enable-no-audio")
             if warning.response not in message.POSITIVE:

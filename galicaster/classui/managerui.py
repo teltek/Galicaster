@@ -307,7 +307,7 @@ class ManagerUI(Gtk.Box):
 		"text" : t1+"\n\n"+t2
 		    }
 	buttons = ( Gtk.STOCK_DELETE, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
-	warning = message.PopUp(message.WARNING, text,
+	warning = message.PopUp(message.WARN_DELETE, text,
                                 context.get_mainwindow(),
                                 buttons)
 

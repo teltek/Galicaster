@@ -19,6 +19,7 @@ from galicaster.classui.managerui import ManagerUI
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 from galicaster.classui import get_ui_path
+from galicaster.classui import message
 from galicaster.utils import readable
 
 from galicaster.utils.i18n import _
@@ -370,7 +371,7 @@ class ListingClassUI(ManagerUI):
 		    "main" : _("This recording can't be played"),
 		   }
 	    buttons = ( Gtk.STOCK_OK, Gtk.ResponseType.OK )
-	    message.PopUp(message.WARNING, text, 
+	    message.PopUp(message.WARN_OK, text,
                           context.get_mainwindow(),
                           buttons)
 	return True	

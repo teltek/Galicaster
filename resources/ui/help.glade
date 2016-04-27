@@ -2,7 +2,7 @@
 <interface>
   <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy project-wide -->
-  <object class="GtkDialog" id="dialog">
+  <object class="GtkDialog" id="helpdialog">
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Help</property>
     <property name="destroy_with_parent">True</property>

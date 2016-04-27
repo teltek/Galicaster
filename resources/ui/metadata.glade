@@ -110,11 +110,32 @@
                 <child>
                   <placeholder/>
                 </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
                 <style>
                   <class name="dialog_body"/>
                 </style>
               </object>
             </child>
+            <style>
+              <class name="metadata_body"/>
+            </style>
           </object>
           <packing>
             <property name="expand">False</property>
