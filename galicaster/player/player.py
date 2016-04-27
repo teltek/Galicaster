@@ -61,6 +61,7 @@ class Player(object):
         self.duration = 0
         self.has_audio = False
         self.pipeline_complete = False
+        self.pipeline = None
         self.audio_sink = None
 
         self.__get_duration_and_run()
@@ -68,7 +69,6 @@ class Player(object):
     def create_pipeline(self):
         self.pipeline = Gst.Pipeline.new("galicaster_player")
         bus = self.pipeline.get_bus()
-
         # Create bus and connect several handlers
         bus.add_signal_watch()
         bus.enable_sync_message_emission()
@@ -111,7 +111,10 @@ class Player(object):
         """
         Get the player current time.
         """
-        return self.pipeline.get_clock().get_time()
+        clock = self.pipeline.get_clock()
+        if clock:
+            return clock.get_time()
+        return 0
 
     def play(self):
         """
