@@ -42,7 +42,7 @@ ERROR_STATUS = Status('error')
 
 
 class RecorderService(object):
-    def __init__(self, dispatcher, repo, worker, conf, logger, recorderklass=Recorder):
+    def __init__(self, dispatcher, repo, worker, conf, logger, autoreload, recorderklass=Recorder):
         """
         Initialize the recorder service.
 
@@ -69,11 +69,14 @@ class RecorderService(object):
         self.__recorderklass = recorderklass
         self.__create_drawing_areas_func = None
         self.__handle_recover_id = None
+        self.autoreload = autoreload
 
+        self.logger.debug("Autorecover mode: {}".format(self.autoreload))
+        
         self.dispatcher.connect("galicaster-init", WeakMethod(self, '_handle_init'))
         self.dispatcher.connect("reload-profile", WeakMethod(self, '_handle_reload_profile'))
         self.dispatcher.connect("recorder-error", WeakMethod(self, '_handle_error'))
- 
+        
 
 
     def set_create_drawing_areas_func(self, func):
@@ -220,7 +223,8 @@ class RecorderService(object):
         self.recorder.stop(True)
         self.error_msg = error_msg
         self.__set_status(ERROR_STATUS)
-        if not self.__handle_recover_id:
+
+        if self.autoreload and not self.__handle_recover_id:
             self.repo.save_crash_recordings()
             self.logger.debug("Connecting recover recorder callback")
             self.__handle_recover_id = self.dispatcher.connect("galicaster-notify-timer-long", 
