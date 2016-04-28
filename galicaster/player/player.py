@@ -111,9 +111,14 @@ class Player(object):
         """
         Get the player current time.
         """
-        clock = self.pipeline.get_clock()
-        if clock:
-            return clock.get_time()
+        try:
+            clock = self.pipeline.get_clock()
+            if clock:
+                return clock.get_time()
+        except Exception as exc:
+            # logger.debug("Exception trying to get current time: {}".format(exc))
+            pass
+        
         return 0
 
     def play(self):
