@@ -20,6 +20,7 @@ from StringIO import StringIO
 import pycurl
 from collections import OrderedDict
 import urlparse
+import urllib
 
 try:
     from galicaster import __version__ as version
@@ -36,6 +37,7 @@ ICAL_ENDPOINT = '/recordings/calendars'
 SERIES_ENDPOINT = '/series/series.json'
 SERVICE_REGISTRY_ENDPOINT = '/services/available.json'
 SEARCH_ENDPOINT = '/search/episode.json'
+WORKFLOWS_ENDPOINT = '/workflow/definitions.json'
 
 SEARCH_SERVICE_TYPE = 'org.opencastproject.search'
 INGEST_SERVICE_TYPE = 'org.opencastproject.ingest'
@@ -67,7 +69,16 @@ class MHHTTPClient(object):
         self.user = user
         self.password = password
         self.hostname = hostname
-        self.address = address or socket.gethostbyname(socket.gethostname())
+
+        if address:
+            self.address = address
+        else:
+            try:
+                self.address = socket.gethostbyname(socket.gethostname())
+            except Exception as exc:
+                logger and logger.error('Problem on obtaining the IP of "{}", forced to "127.0.0.1". Exception: {}'.format(socket.gethostname(),exc))
+                self.address = '127.0.0.1'
+
         self.multiple_ingest = multiple_ingest
         self.connect_timeout = connect_timeout
         self.timeout = timeout
@@ -75,6 +86,7 @@ class MHHTTPClient(object):
         self.logger = logger
         self.repo = repo
         self.workflow_parameters = workflow_parameters
+        self.workflow_names = []
         self.ca_parameters = ca_parameters
         self.search_server = None
         self.polling_schedule = polling_long
@@ -113,6 +125,11 @@ class MHHTTPClient(object):
             c.setopt(pycurl.HEADERFUNCTION, self.scanforetag)
         c.setopt(pycurl.HTTPHEADER, sendheaders)
         c.setopt(pycurl.USERAGENT, 'Galicaster' + version)
+        c.setopt(pycurl.SSL_VERIFYPEER, False) # equivalent to curl's --insecure
+
+        c.setopt(pycurl.HTTPHEADER, ['X-Requested-Auth: Digest', 'X-Opencast-Matterhorn-Authorization: true'])
+        c.setopt(pycurl.USERAGENT, 'Galicaster')
+        c.setopt(pycurl.SSL_VERIFYPEER, False) # equivalent to curl's --insecure
        
         if (method == 'POST'):
             if urlencode:
@@ -130,7 +147,7 @@ class MHHTTPClient(object):
         status_code = c.getinfo(pycurl.HTTP_CODE)
         self.response['Status-Code'] = status_code
         self.response['Content-Type'] = c.getinfo(pycurl.CONTENT_TYPE)
-        c.close() 
+        c.close()
         if status_code != 200 and status_code != 302 and status_code != 304:
             if (status_code > 200) and (status_code < 300):
                 self.logger and self.logger.debug("Matterhorn client ({}) sent a response with status code {}".format(urlparse.urlunparse(url), status_code))
@@ -171,6 +188,7 @@ class MHHTTPClient(object):
         """
         Los posibles estados son: shutting_down, capturing, uploading, unknown, idle
         """
+        self.logger and self.logger.info("Sending state {}".format(state))
         return self.__call('POST', SETSTATE_ENDPOINT, {'hostname': self.hostname},
                            postfield={'address': self.address, 'state': state})
 
@@ -180,7 +198,6 @@ class MHHTTPClient(object):
         Los posibles estados son: unknown, capturing, capture_finished, capture_error, manifest, 
         manifest_error, manifest_finished, compressing, compressing_error, uploading, upload_finished, upload_error
         """
-        self.logger and self.logger.info("Sending state {} of recording {}".format(state, recording_id))
         return self.__call('POST', SETRECORDINGSTATE_ENDPOINT, {'id': recording_id}, postfield={'state': state})
 
 
@@ -193,7 +210,7 @@ class MHHTTPClient(object):
         client_conf = {
             'service.pid': 'galicaster',
             'capture.confidence.debug': 'false',
-            'capture.confidence.enable': 'false',            
+            'capture.confidence.enable': 'false',
             'capture.config.remote.polling.interval': self.polling_config,
             'capture.agent.name': self.hostname,
             'capture.agent.state.remote.polling.interval': self.polling_state,
@@ -238,7 +255,7 @@ class MHHTTPClient(object):
         postdict[u'workflowDefinitionId'] = workflow or self.workflow
         if workflow_instance:
             postdict['workflowInstanceId'] = str(workflow_instance)
-        if isinstance(workflow_parameters, basestring):
+        if isinstance(workflow_parameters, basestring) and workflow_parameters != '':
             postdict.update(dict(item.split(":") for item in workflow_parameters.split(";")))
         elif isinstance(workflow_parameters, dict) and workflow_parameters:
             postdict.update(workflow_parameters)
@@ -274,7 +291,7 @@ class MHHTTPClient(object):
         we can meke sure that it doesn't come up through a DNS alias, If all ingest 
         services are offline the ingest will still fall back to the server provided 
         to Galicaster as then None will be returned by get_ingest_server  """   
-    
+
         p = '(?:http.*://)?(?P<host>[^:/ ]+).?(?P<port>[0-9]*).*'
         m = re.search(p,server['host'])
         host=m.group('host')
@@ -284,10 +301,18 @@ class MHHTTPClient(object):
             return False
         if (server['maintenance']):
             return False
-        adminIP = socket.gethostbyname(adminHost);
-        hostIP = socket.gethostbyname(host)
-        if (adminIP != hostIP):
-            return True
+        
+        try:
+            adminIP = socket.gethostbyname(adminHost);
+            hostIP  = socket.gethostbyname(host)
+            if (adminIP != hostIP):
+                return True
+            else:
+                if adminHost != host:
+                    self.logger and self.logger.debug("Shared IP address ({}) between {} and {}, it will be used {}".format(adminIP, adminHost, host, server['host']))
+                    return True
+        except Exception as exc:
+            self.logger and self.logger.error("Problem on verifying the ingest server {} (on getting the IP of adminHost={} and host={})".format(server['host'], adminHost, host))
         return False
 
 
@@ -309,7 +334,7 @@ class MHHTTPClient(object):
         postdict = self._prepare_ingest(mp_file, workflow, workflow_instance, workflow_parameters)
         server = self.server if not self.multiple_ingest else self.get_ingest_server()
         if self.logger:
-            self.logger.info( 'Ingesting {} to Server {}'.format(mp_id, server) ) 
+            self.logger.info( 'Ingesting MP {} to Server {}'.format(mp_id, server) ) 
         return self.__call('POST', INGEST_ENDPOINT, {}, {}, postdict.items(), False, server, False)
 
 
@@ -318,3 +343,28 @@ class MHHTTPClient(object):
 
         return self.__call('GET', SERIES_ENDPOINT, query_params = query)
         
+
+    def get_workflows(self, server=None):
+        """ Get workflow names """
+        theServer = server or self.server
+        validworkflows = ["schedule", "schedule-ng"]
+        workflows = []
+
+        if self.logger:
+            self.logger.info( 'Getting workflow names for {}'.format(theServer) ) 
+
+        # Get Workflow definitions
+        definitions = self.__call('GET', WORKFLOWS_ENDPOINT)
+
+        # Convert to JSON
+        if definitions:
+            definitions = json.loads(definitions)
+
+            for d in definitions["definitions"]["definition"]:
+                if d["tags"]:
+                    if "tag" in d["tags"]:
+                        if any(x in validworkflows for x in d["tags"]["tag"]):
+                            workflows.append({"id"    : d["id"],
+                                              "title" : d["title"]})
+                    
+        return workflows
