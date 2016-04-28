@@ -95,4 +95,4 @@ GObject.signal_new('show-about', Dispatcher, GObject.SignalFlags.RUN_LAST, None,
 GObject.signal_new('create-mock-mp', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 #WORKER
 GObject.signal_new('start-operation', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,) )
-GObject.signal_new('stop-operation', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT) )
+GObject.signal_new('stop-operation', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT) )

@@ -101,7 +101,6 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
 
     parameters = {'OUT': out, 'SCREEN': screen, 'CAMERA': camera}
     parameters.update(layouts[layout])
-
     pipeline = Gst.parse_launch(pipestr.format(**parameters))
     bus = pipeline.get_bus()
 

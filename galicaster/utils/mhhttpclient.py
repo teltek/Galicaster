@@ -305,11 +305,11 @@ class MHHTTPClient(object):
             return str(all_servers['host']) # There's only one server
         return None # it will use the admin server
  
-    def ingest(self, mp_file, workflow=None, workflow_instance=None, workflow_parameters=None):
+    def ingest(self, mp_file, mp_id, workflow=None, workflow_instance=None, workflow_parameters=None):
         postdict = self._prepare_ingest(mp_file, workflow, workflow_instance, workflow_parameters)
         server = self.server if not self.multiple_ingest else self.get_ingest_server()
         if self.logger:
-            self.logger.info( 'Ingesting to Server {0}'.format(server) ) 
+            self.logger.info( 'Ingesting {} to Server {}'.format(mp_id, server) ) 
         return self.__call('POST', INGEST_ENDPOINT, {}, {}, postdict.items(), False, server, False)
 
 

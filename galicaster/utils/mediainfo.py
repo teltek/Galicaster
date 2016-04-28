@@ -25,3 +25,7 @@ def get_duration(path):
     info = d.discover_uri('file://' + path)
     return int(round(1.0 * info.get_duration() / Gst.SECOND))
     
+def get_info(path):
+    d = GstPbutils.Discoverer.new(Gst.SECOND)
+    info = d.discover_uri('file://' + path)
+    return info
