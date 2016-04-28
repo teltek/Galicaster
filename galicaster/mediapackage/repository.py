@@ -15,7 +15,7 @@ import os
 import datetime
 import re
 import itertools
-from shutil import rmtree
+import glob, json
 import ConfigParser
 
 from galicaster import __version__
@@ -23,6 +23,11 @@ from galicaster.mediapackage import mediapackage
 from galicaster.mediapackage import serializer
 from galicaster.mediapackage import deserializer
 
+from galicaster.core import context
+
+"""
+This class manages (add, list, remove...) all the mediapackages in the repository.
+"""
 class Repository(object):
     attach_dir = 'attach'
     rectemp_dir = 'rectemp'
@@ -31,12 +36,15 @@ class Repository(object):
     def __init__(self, root=None, hostname='', 
                  folder_template='gc_{hostname}_{year}-{month}-{day}T{hour}h{minute}m{second}',
                  logger=None):
+        """Initializes a repository that will contain a set of mediapackage.
+        Args:
+            root (str): absolute path to the working folder. ~/Repository used if it is None
+            hostname (str): galicaster name use in folder prefix
+            folder_template (str): name of the mediapackage folder with the timestamp. See get_folder_name mapping.
+            logger (Logger): logger that prints information, warnings and errors in the log file. See galicaster/context/logger
+        Attributes:
+            __list (Dict{str,Mediapackage}): the mediapackages in the repository and its identifiers as keys
         """
-        param: root: absolute path to the working folder. ~/Repository use if is None
-        param: hostname: galicaster name use in folder prefix
-        param: folder_template
-        """ 
-
         self.logger = logger
 
         if not root:
@@ -45,17 +53,29 @@ class Repository(object):
         else:
             self.root = root
 
+
         self.hostname = hostname
         self.folder_template = folder_template
 
-        self.create_repo(hostname)
-        self.save_crash_recordings()
-        
+        self.logger = logger
+
+        self.create_repo(hostname)        
+
         self.__list = dict()
+        
+        if self.logger:
+            self.logger.info("Creating repository from {}".format(self.root))
+        self.__list.clear()
         self.__refresh(True)
 
 
     def create_repo(self, hostname):
+        """Creates the directories root and repository if necessary.      
+        Configures the information repository file.
+        Sets version and hostname information.
+        Args:
+            hostname (str): galicaster name used in folder prefix .
+        """
         if not os.path.isdir(self.root):
             os.mkdir(self.root)
            
@@ -71,47 +91,60 @@ class Repository(object):
                 conf.set('repository', 'version', __version__)
                 conf.set('repository', 'hostname', hostname)
                 conf.write(configfile)
-
+        
 
     def save_crash_recordings(self):
+        """Saves the files with the crashed recordings in a directory named with its timestamp. 
+        """
         backup_dir = self.get_rectemp_path(datetime.datetime.now().replace(microsecond=0).isoformat())
         for temp_file in os.listdir(self.get_rectemp_path()):
             full_path = os.path.join(self.get_rectemp_path(), temp_file)
+
             if os.path.isfile(full_path) and os.path.getsize(full_path):
                 self.crash_file_creator()
 
                 if not os.path.isdir(backup_dir):
-                    os.mkdir(backup_dir)
+                    os.mkdir(backup_dir)                    
                 os.rename(full_path, os.path.join(backup_dir, temp_file))
 
 
     def crash_file_exists(self):
+        """Checks if the hidden file ".recording_crash" exists.
+        Returns:
+            Bool: True if exists. False otherwise.
+        """
         filename = os.path.join(self.get_rectemp_path(), ".recording_crash")
         if os.path.isfile(filename):
             return True
-        return False
-
+        else:
+            return False
+    
 
     def crash_file_creator(self):
-        from galicaster.core import context
-        if context.get_conf().get_boolean("plugins", "notifycrash"):
-            filename = os.path.join(self.get_rectemp_path(), ".recording_crash")
-            file = open(filename, 'w')
-            file.close()
+        """Creates a empty file named .recording_crash in the temporary recordings directory"""
+        filename = os.path.join(self.get_rectemp_path(), ".recording_crash")
+        file = open(filename, 'w')
+        file.close()
         return
 
 
-    def crash_file_remove(self):
+    def crash_file_remover(self):
+        """Removes the hidden file .recording_crash in the temporary recordings directory"""
         filename = os.path.join(self.get_rectemp_path(), ".recording_crash")
         os.remove(filename)
         return
 
 
-    def __refresh(self, check_inconsistencies=False):
+    def __refresh(self, check_inconsistencies=False, first_time=True):
+        """Tries to check if it's been done a new recording. If true, it updates the repository with the new recordings.
+        If error, logs it appropriately.
+        Args:
+            check_inconsistencies (bool): True if inconsistencies are going to be checked. False otherwise.
+            first_time (bool): True if Galicaster is refreshing its repository while starting. False otherwise. Used to avoid logging that the mediapackages are added the first time.
+        """
         if self.logger:
-            self.logger.info("Creating repository from {}".format(self.root))
+            self.logger.info("Refreshing repository list")
 
-        self.__list.clear()
         if self.root != None:
             for folder in os.listdir(self.root):
                 if folder in self.repo_dirs:
@@ -120,16 +153,24 @@ class Repository(object):
                     manifest = os.path.join(self.root, folder, "manifest.xml")
                     if os.path.exists(manifest):
                         new_mp = deserializer.fromXML(manifest, self.logger)
-                        self.__list[new_mp.getIdentifier()] = new_mp
-                        if check_inconsistencies: self.repair_inconsistencies(new_mp)
-                except:
+
+                        if not self.__contains__(new_mp.getIdentifier()):
+                            self.__list[new_mp.getIdentifier()] = new_mp
+                            if check_inconsistencies: 
+                                self.repair_inconsistencies(new_mp)
+                            self.logger and not first_time and self.logger.info("Added new MP {} of folder {}".format(new_mp.getIdentifier(), new_mp.getURI()))
+                        else:
+                            self.logger and first_time and self.logger.warning("Found duplicated MP id {} so ignoring {}".format(new_mp.getIdentifier(), new_mp.getURI()))
+                except Exception as exc:
                     if self.logger:
-                        self.logger.error('Error in deserializer {0}'.format(folder))
+                        self.logger.error('Error in deserializer {0}. Exception: {1}'.format(folder, exc))
 
 
     def repair_inconsistencies(self, mp):
-        """
-        Check if any operations was being processed before the previous running
+        """Checks if any operations were being processed before the previous running.
+        If true, update the mediapackage.    
+        Args:
+            mp (Mediapackage): the mediapackage whose inconsistencies are going to be repaired.
         """
         change = False
         if mp.status > mediapackage.FAILED:
@@ -145,11 +186,27 @@ class Repository(object):
 
 
     def list(self):
+        """Gets the set of mediapackages in the repository and its identifiers as a dictionary.
+        Returns:
+            Dict{str,Mediapackage}: the complete list of mediapackages and its identifiers (as keys) in the repository.
+        """
         return self.__list
 
 
     def list_by_status(self, status):
+        """Gets the mediapackages with a particular status.
+        Args:
+            status (str): the status of the mediapackage that are going to be obtained.
+        Returns:
+            List[Mediapackage]: the list of mediapackages in the repository that has the status given.
+        """
         def is_valid(mp):
+            """Checks if the status of the mediapackage is the same as the status recieved as an argument in list_by_status.
+            Args:
+                mp (Mediapackage): the mediapackage whose status is going to be checked.
+            Returns:
+                Bool: True if the status match. False otherwise.
+            """
             return mp.status == status
 
         next = filter(is_valid, self.__list.values())
@@ -157,34 +214,87 @@ class Repository(object):
 
 
     def list_by_operation_status(self, job, status):
+        """Gets the mediapackages with a particular operation in a particular status.
+        Args:
+            job (str): name of the operation.
+            status (int): status of the operation. See Mediapackage constants in galicaster/mediapackage/mediapackage.py .
+        Returns:
+            List[Mediapackage]: the list of mediapackages in the repository that have the given operation with the given status.
+        """
+
         def is_valid(mp):
+            """Checks if the status of the given operation of the mediapackage is in the given status.
+            Args:
+                mp (Mediapackage): mediapackage whose operations status are going to be checked.
+            Returns:
+                Bool: True if the status of the operation job match. False otherwise.
+            """
             return (mp.getOpStatus(job) == status)
 
         next = filter(is_valid, self.__list.values())
         return next
 
+
     def size(self):
+        """Gets the number of mediapackages in the repository.
+        Returns:
+            Int: the quantity of mediapackages in the repository.
+        """
         return len(self.__list)
 
     def values(self):
+        """Gets al the mediapackages from the repository.
+        Returns:
+            List[Mediapackage]: list of all the mediapackages in the repository.
+        """
         return self.__list.values()
 
     def items(self):
+        """Gets all the mediapackages from the repository and its identifiers as a list of pairs.
+        Returns:
+            List[(str,Mediapackage)]: the complete list of pairs (mediapackage ID, mediapackage) in the repository.
+        """
         return self.__list.items()
 
     def iteritems(self):
-        return self.__list.iteritems()
+        """Gets a generator of a list with all the mediapackages from the repository and its identifiers as a list of pairs.
+        Returns:
+            List[(str,Mediapackage)]: a generator of the complete list of pairs (mediapackage ID, mediapackage) in the repository. 
+        """
+        # Avoid error: dictionary changed size during iteration
+        to_return = self.__list.copy()
+        return to_return.iteritems()
 
     def __iter__(self):
+        """Allows the Repository to be iterable so that it's possible to obtain a list of mediapackages identifiers in the repository
+        Returns:
+            List[str]: a generator of the complete list of mediapackages identifiers.
+        """
         return self.__list.__iter__()
 
     def __len__(self):
+        """Gets the size of the repository.
+        Returns:
+            Int: the quantity of mediapackages in the repository.
+        """
         return len(self.__list)
 
     def __contains__(self, v):
+        """Checks if the repository contains a mediapackage with the given identifier.
+        Args:
+            v (str): mediapackage ID
+        Returns:
+            Bool: True if the set of keys from __list contains v. False otherwise.    
+        """
         return v in self.__list
 
     def __getitem__(self, k):
+        """Gets the mediapackage with the given identifier.    
+        Args:
+            k: ID of a mediapackage
+        Returns:
+            Mediapackage: mediapackage with the ID k
+        """
         return self.__list[k]
 
     def filter(self):
@@ -192,10 +302,17 @@ class Repository(object):
         return self.__list
 
     def get_next_mediapackages(self):
-        """
-        Return de next mediapackages to be record.
+        """Gets the mediapackage that are going to be recorded in the future.
+        Returns:
+            List[Mediapackage]: list of mediapackages to be recorded in the future, sorted by the start time.
         """
         def is_future(mp):
+            """Checks if the date of a mediapackage is later than now.
+            Args:
+                mp: the mediapackage whose recording date is going to be checked.
+            Returns:
+                Bool: True if the date is later than now. False otherwise.
+            """
             return mp.getDate() > datetime.datetime.utcnow()
 
         next = filter(is_future, self.__list.values())
@@ -204,8 +321,9 @@ class Repository(object):
 
 
     def get_next_mediapackage(self):
-        """
-        Retrive de next mediapackage to be record.
+        """Gets the mediapackage that is going to be recorded next.
+        Returns:
+            Mediapackage: the next mediapackage to be recorded.
         """
         next = None
         for mp in self.__list.values():
@@ -219,11 +337,46 @@ class Repository(object):
         return next
 
 
-    def get_past_mediapackages(self, days=0):
+    def get_last_mediapackage(self):
+        """Gets the last mediapackage added to the repository.
+        Returns:
+            Mediapackage: the last mediapackage added.
         """
-        Return de next mediapackages to be record.
+
+        RECORDED = 4
+
+        def is_recorded(mp):
+            """Checks if the given mediapackage recording date is sooner than now-days.
+            Args:
+                mp: the mediapackage whose recording date is going to be checked.
+            Returns:
+                Bool: True if the date of the mediapackage is sooner than now-days. False otherwise.
+            """
+            return True if mp.status == RECORDED else False
+
+        next = filter(is_recorded, self.__list.values())
+        mps_sorted = sorted(self.__list.values(), key=lambda mp: (mp.getDate()), reverse=True)
+
+        if mps_sorted:
+            return mps_sorted[0]
+
+        return None
+
+
+    def get_past_mediapackages(self, days=0):
+        """Gets the mediapackage that has been recorded before the given amount of days.
+        Args:
+            days (int): the actual date must be decremented this amount of days to obtain the date until we want to get recordings.
+        Returns:
+            List[Mediapackage]: list of the mediapackages that were recorded before (now-days)
         """
         def is_stale(mp):
+            """Checks if the given mediapackage recording date is sooner than now-days.
+            Args:
+                mp: the mediapackage whose recording date is going to be checked.
+            Returns:
+                Bool: True if the date of the mediapackage is sooner than now-days. False otherwise.
+            """
             return mp.getDate() < (datetime.datetime.utcnow() - datetime.timedelta(days=days))
 
         next = filter(is_stale, self.__list.values())
@@ -232,19 +385,46 @@ class Repository(object):
 
 
     def get(self, key):
-        """Returns the Mediapackage identified by key"""
+        """Gets the mediapackage with the specified identifier.
+        Args:
+            key (str): the ID from the mediapackage that is going to be returned.
+        Returns:
+            Mediapackage: the Mediapackage identified by the given key.
+        """
         return self.__list.get(key)
 
 
     def has(self, mp):
+        """Checks if a mediapackage is in the repository.
+        Args:
+            mp (Mediapackage): mediapackage.
+        Returns:
+            Bool: True if the mediapackage mp is in the repository. False otherwise. 
+        """
         return self.__list.has_key(mp.getIdentifier())
 
 
     def has_key(self, key):
+        """Checks if the repository has a mediapackage with a particular ID.
+        Args:
+            key (str): the ID ftom the mediapackage we want to know if it's on the repository
+        Returns:
+            Bool: True if the repository has a mediapackage with the ID key. False otherwise.
+        """
         return self.__list.has_key(key)
     
 
     def add(self, mp): 
+        """Checks if the mediapackage already exists and the URI is correct.
+        If it hasn't have URI, calls the __get_folder_name method.
+        Then calls the private method __add.
+        Args:
+            mp (Mediapackage): the mediapackage to be added.
+        Returns:
+            Mediapackage: the medipackage that has been added.
+        Raises:
+            KeyError: if the ID of the mediapackage is already in the repository.
+        """
         if self.has(mp):
             raise KeyError('Key Repeated')
         if mp.getURI() == None:
@@ -256,7 +436,17 @@ class Repository(object):
         return self.__add(mp)
 
 
-    def add_after_rec(self, mp, bins, duration, add_catalogs=True): 
+    def add_after_rec(self, mp, bins, duration, add_catalogs=True, remove_tmp_files=True): 
+        """Adds information to the mediapackage when a recording ends and adds it to the repository.
+        Args:
+            mp (Mediapackage): the mediapackage whose recordings are going to be updated.
+            bins (Dict{str,str}): the information about mediapackage recordings.
+            duration (str): duration of the mediapackage.
+            add_catalogs (bool): true if the mediapackage belongs to a catalog, false otherwise.
+            remove_tmp_files (bool): true if the temporary file are going to be removed. 
+        Returns:
+            Str: the URI of the mediapackage
+        """
         if not self.has(mp):
             mp.setURI(self.__get_folder_name(mp))
             os.mkdir(mp.getURI())
@@ -268,11 +458,14 @@ class Repository(object):
                 filename = os.path.join(bin['path'], bin['file'])
                 dest = os.path.join(mp.getURI(), os.path.basename(filename))
                 os.rename(filename, dest)
-                etype = bin['mimetype']
+                etype = 'audio/mp3' if bin['device'] in ['pulse', 'autoaudio', 'audiotest'] else 'video/' + dest.split('.')[1].lower()
+                
                 flavour = bin['flavor'] + '/source'
+
                 mp.add(dest, mediapackage.TYPE_TRACK, flavour, etype, duration) # FIXME MIMETYPE
         mp.forceDuration(duration)
 
+    
         if add_catalogs:
             mp.add(os.path.join(mp.getURI(), 'episode.xml'), mediapackage.TYPE_CATALOG, 'dublincore/episode', 'text/xml')
             if mp.getSeriesIdentifier():
@@ -281,8 +474,18 @@ class Repository(object):
         # ADD MP to repo
         self.__add(mp) 
 
+        return mp.getURI()
+
 
     def delete(self, mp):
+        """Deletes a mediapackage from de repository.
+        Args:
+            mp (Mediapackage): the mediapackage that is going to be removed.
+        Returns:
+            Mediapackage: the removed mediapackage.
+        Raises:
+            KeyError: if the mediapackage is not in the repository.
+        """
         if not self.has(mp):
             raise KeyError('Key not Exists')
 
@@ -292,22 +495,47 @@ class Repository(object):
 
         
     def update(self, mp):
+        """If a mediapackage is in the repository, calls the private method __add in order to add it to the repository.
+        Args:
+            mp (Mediapackage): the mediapackage that is going to be added.
+        Returns:
+            Mediapackage (Mediapackage): updated madiapackage.
+        Raises:
+            KeyError: if key doesn't exist.
+        """
         if not self.has(mp):
             raise KeyError('Key not Exists')
-        #Si cambio URI error.
+        # If change the URI gives error.
         return self.__add(mp)
 
 
     def save_attach(self, name, data):
+        """Writes data in a file of the attach directory.
+        Args:
+            name (str): name of the file that is going to be modified.
+            data (str): data to be written in the file.
+        """
         with open(os.path.join(self.root, self.attach_dir, name), 'w') as m:
             m.write(data)  
         
 
     def get_attach(self, name):
+        """Opens a file of the attached directory.
+        Args:
+            name (str): name of the file to be opened.
+        Returns:
+            Bool: True if not errors. False otherwise.
+        """
         return open(os.path.join(self.root, self.attach_dir, name))  
 
 
     def get_attach_path(self, name=None):
+        """Gets the path of the attach folder.
+        Args:
+            name (str): name of a file in the attach folder.
+        Returns:
+            Str: absolute path of the attach directory or a file in this folder if the name is specified.
+        """
         if name:
             return os.path.join(self.root, self.attach_dir, name)
         else:
@@ -315,6 +543,10 @@ class Repository(object):
 
 
     def get_rectemp_path(self, name=None):
+        """Gets the temporary recording directory path.
+        Returns:
+            Str: path from the temporary recording directory.
+        """
         if name:
             return os.path.join(self.root, self.rectemp_dir, name)
         else:
@@ -322,11 +554,21 @@ class Repository(object):
 
 
     def get_free_space(self):
+        """Gets the free space in the folder.
+        Returns:
+            Int: Free space in the folder.
+        """
         s = os.statvfs(self.root)
         return s.f_bsize * s.f_bavail
 
 
     def __get_folder_name(self, mp):
+        """Sets the absolute path of the folder where a mediapackage is by adding the correct timestamp.
+        Args:
+            mp (Mediapackage): the mediapackage whose folder is going to be created.
+        Returns:
+            Str: absolute path of the folder where the given mediapackage is.
+        """
         utcdate = mp.getDate()
         date = mp.getLocalDate()
 
@@ -361,13 +603,21 @@ class Repository(object):
         
     
     def __add(self, mp):
+        """Adds a mediapackage in the repository. 
+        Then checks if the mediapackage serie identifier and serie title are consistent.
+        If not, updates appropriately.
+        Args:
+            mp (Mediapackage): the mediapackage that is going to be added.
+        Returns:
+            mp (Mediapackage): the added mediapackage.
+        """
         self.__list[mp.getIdentifier()] = mp
 
         # This makes sure the series gets properly included/removed from the manifest                                                                                                                              
         # FIXME: Probably shouldn't go here                                                                                                                                                                        
         catalogs = mp.getCatalogs("dublincore/series")
         if mp.getSeriesIdentifier() and not catalogs:
-                mp.add(os.path.join(mp.getURI(), 'series.xml'), mediapackage.TYPE_CATALOG, 'dublincore/series', 'text/xml')
+            mp.add(os.path.join(mp.getURI(), 'series.xml'), mediapackage.TYPE_CATALOG, 'dublincore/series', 'text/xml')
         elif not mp.getSeriesIdentifier() and catalogs:
             mp.remove(catalogs[0])
             # FIXME: Remove the file from disk?                                                                                                                                                                     
