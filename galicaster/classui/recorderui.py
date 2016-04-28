@@ -59,10 +59,10 @@ logger = context.get_logger()
 # No-op function for i18n
 def N_(string): return string
 
-STATUS = [  [N_("Initialization"),"#F7F6F6"],
-            [N_("Waiting"),"#F7F6F6"],
+STATUS = [  [N_("Initialization"),"#484848"],
+            [N_("Waiting"),"#484848"],
             [N_("Recording"),"#FF0000"],
-            [N_("Paused"),"#F7F6F6"],
+            [N_("Paused"),"#484848"],
             [N_("Error"),"#FF0000"],
             ]
 
@@ -225,7 +225,7 @@ class RecorderClassUI(Gtk.Box):
                     "main" : _("Are you sure you want to\nstop the recording?")}
             buttons = (Gtk.STOCK_STOP, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
             self.dispatcher.emit("disable-no-audio")
-            warning = message.PopUp(message.WARNING, text,
+            warning = message.PopUp(message.WARN_STOP, text,
               context.get_mainwindow(), buttons)
             self.dispatcher.emit("enable-no-audio")
             if warning.response not in message.POSITIVE or self.recorder.status not in [RECORDING_STATUS]:
@@ -476,13 +476,13 @@ class RecorderClassUI(Gtk.Box):
 
 #        bgcolor = style.bg[Gtk.StateType.PRELIGHT]  
 #        fgcolor = style.fg[Gtk.StateType.PRELIGHT]  
-#
-#        for i in STATUS:
-#            if i[0] in ["Recording", "Error"]:
-#                l.append([_(i[0]), i[1], fgcolor])
-#            else:            
-#                l.append([_(i[0]), bgcolor, fgcolor])
-#
+
+        for i in STATUS:
+            if i[0] in ["Recording", "Error"]:
+                l.append([_(i[0]), i[1], "#484848"])
+            else:
+                l.append([_(i[0]), "#F7F6F6", i[1]])
+                
         v = Gtk.CellView()
         v.set_model(l)
 

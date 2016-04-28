@@ -20,6 +20,7 @@ from gi.repository import GdkPixbuf
 from galicaster import __version__
 from galicaster.classui import message
 from galicaster.classui import get_image_path
+from galicaster.classui import get_ui_path
 from galicaster.utils.shutdown import shutdown as UtilsShutdown
 
 from galicaster.utils.i18n import _
@@ -62,6 +63,9 @@ class GCWindow(Gtk.Window):
         self.set_position(Gtk.WindowPosition.CENTER)
         self.is_fullscreen = (self.custom_size == self.full_size)
 
+        self.set_style()
+        self.set_width_interval_class(self.get_size()[0])
+
         #        pixbuf = GdkPixbuf.Pixbuf.new_from_file_size(get_image_path('galicaster.svg'),48,48)
         #        pixbuf = pixbuf.scale_simple(128, 128, GdkPixbuf.InterpType.BILINEAR)
         #        self.set_icon(pixbuf)
@@ -82,6 +86,32 @@ class GCWindow(Gtk.Window):
             self.maximize()
         self.resize_childs()
         self.show_all()
+
+    def set_style(self):
+        """ Apply the main style of the application from the CSS """
+        style_provider = Gtk.CssProvider()
+        style_provider.load_from_path(get_ui_path('style.css'))
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(),
+            style_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
+    def set_width_interval_class(self, size):
+        """ Set the window width class: small, medium or large.
+        By default is medium.
+        Arguments:
+            size (int): the width of the main window in pixels
+        """
+        max_small = 992
+        min_large = 1200
+        style_context = self.get_style_context()
+        if size < max_small:
+            style_context.add_class('small')
+        elif size > min_large:
+            style_context.add_class('large')
+        else:
+            style_context.add_class('medium')
 
     def toggle_fullscreen(self, other=None):
         """Allows shifting between full and regular screen mode.
@@ -155,7 +185,7 @@ class GCWindow(Gtk.Window):
 
         buttons = (Gtk.STOCK_QUIT, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
         self.dispatcher.emit("disable-no-audio")
-        warning = message.PopUp(message.WARNING, text,
+        warning = message.PopUp(message.WARN_QUIT, text,
                                 self, buttons)
         self.dispatcher.emit("enable-no-audio")
 
@@ -176,7 +206,7 @@ class GCWindow(Gtk.Window):
                 }
 
         buttons = (Gtk.STOCK_QUIT, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
-        warning = message.PopUp(message.WARNING, text,
+        warning = message.PopUp(message.WARN_QUIT, text,
                                 self, buttons)
 
         if warning.response in message.POSITIVE:

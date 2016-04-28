@@ -6,7 +6,7 @@
     <property name="can_focus">False</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
-    <property name="type_hint">dialog</property>
+    <property name="type_hint">normal</property>
     <property name="accept_focus">False</property>
     <property name="deletable">False</property>
     <child internal-child="vbox">
@@ -35,41 +35,59 @@
                 <property name="position">0</property>
               </packing>
             </child>
-            <child>
-              <object class="GtkButton" id="button1">
-                <property name="label">gtk-cancel</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-                <style>
-                  <class name="dialog_button"/>
-                </style>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
             <property name="position">0</property>
           </packing>
         </child>
         <child>
-          <object class="GtkBox" id="box">
+          <object class="GtkBox" id="bigbox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="GtkImage" id="image">
+              <object class="GtkBox" id="box">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xpad">10</property>
-                <property name="icon_name">dialog-warning</property>
-                <property name="icon_size">6</property>
+                <property name="spacing">10</property>
+                <child>
+                  <object class="GtkImage" id="image">
+                    <property name="width_request">-1</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <property name="xpad">10</property>
+                    <property name="icon_name">dialog-error</property>
+                    <property name="icon_size">6</property>
+                    <style>
+                      <class name="image"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="main">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="xpad">10</property>
+                    <property name="label" translatable="yes">Please, review your configuration or load another profile.</property>
+                    <property name="wrap">True</property>
+                    <property name="xalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -78,12 +96,15 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="main">
+              <object class="GtkLabel" id="text">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xpad">10</property>
-                <property name="label" translatable="yes">This recording can't be played</property>
-                <property name="xalign">0</property>
+                <property name="label" translatable="yes">Error description</property>
+                <property name="wrap">True</property>
+                <property name="wrap_mode">char</property>
+                <style>
+                  <class name="error_label"/>
+                </style>
               </object>
               <packing>
                 <property name="expand">True</property>

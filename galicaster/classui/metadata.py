@@ -18,7 +18,6 @@ from gi.repository import Gtk, Gdk
 import datetime
 from os import path
 from gi.repository import GObject
-from gi.repository import Pango
 import os
 
 from galicaster.classui.calendarwindow import CalendarWindow
@@ -96,6 +95,11 @@ class MetadataClass(Gtk.Widget):
 
         if parent != None:
             dialog.set_transient_for(parent.get_toplevel())
+            dialog_style_context = dialog.get_style_context()
+            window_classes = parent.get_style_context().list_classes()
+            for style_class in window_classes:
+                dialog_style_context.add_class(style_class)
+
 
         table = gui.get_object('infobox')
         dialog.vbox.set_child_packing(table, True, True, int(self.hprop*25), Gtk.PackType.END)
@@ -104,13 +108,7 @@ class MetadataClass(Gtk.Widget):
         cl = gui.get_object('clabel')
         talign = gui.get_object('table_align')
 
-        modification = "bold "+str(int(k2*25))+"px"
-        title.modify_font(Pango.FontDescription(modification))
         title.hide()
-        talign.set_padding(int(k2*40),int(k2*40),0,0)
-        mod2 = str(int(k1*35))+"px"
-        sl.modify_font(Pango.FontDescription(mod2))
-        cl.modify_font(Pango.FontDescription(mod2))
 
         # Get "blocked" and "mandatory" parameters
         blocked = set()
@@ -155,17 +153,12 @@ class MetadataClass(Gtk.Widget):
         """
         Fill the table with available data, empty otherwise
         """
-        for child in table.get_children():
-            table.remove(child) #FIXME maybe change the glade to avoid removing any widget
-        table.resize(1,2)
         row = 1
 
         for meta in DCTERMS:
             t=Gtk.Label(label=metadata[meta])
             t.set_justify(Gtk.Justification.LEFT)
             t.set_alignment(0,0)
-            modification = str(int(self.hprop*16))+"px"
-            t.modify_font(Pango.FontDescription(modification))
             t.set_width_chars(15)
 
             # Switch the INSENSITIVE state colour to red, so that we can mark the mandatory parameters
@@ -199,10 +192,9 @@ class MetadataClass(Gtk.Widget):
             if meta == "title":
                 d.set_tooltip_text(d.get_text())
 
-            d.modify_font(Pango.FontDescription(modification))
 
-            table.attach(t,0,1,row-1,row,False,False,0,0)
-            table.attach(d,1,2,row-1,row,Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL,False,0,0)
+            table.attach(t,0,row-1,1,1)
+            table.attach(d,1,row-1,2,1)
             row=row+1
 
     def check_mandatory(self, item, button, check_all = False):
@@ -264,7 +256,8 @@ class MetadataClass(Gtk.Widget):
                         if catalog:
                             mp.remove(catalog[0])
                 else:
-                    mp.metadata_episode[name]=child.get_text()
+                    unicode_text = unicode(child.get_text(),encoding='utf-8')
+                    mp.metadata_episode[name]=unicode_text
 
     def edit_date(self,element,event):
         """Filter a Right button double click, show calendar and update date"""
