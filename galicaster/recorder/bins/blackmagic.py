@@ -21,10 +21,10 @@ from galicaster.recorder import base
 from galicaster.recorder import module_register
 
 
-videostr = ( ' decklinksrc connection=sdi mode=12 name=gc-blackmagic-src ! videoconvert ! queue ! '
+videostr = ( ' decklinkvideosrc connection=hdmi mode=720p60 name=gc-blackmagic-src ! videoconvert ! queue ! '
              ' videorate ! gc-blackmagic-capsfilter !'
              ' queue ! videocrop name=gc-blackmagic-crop ! '
-             ' tee name=gc-blackmagic-tee  ! queue ! videoconvert ! xvimagesink async=false sync=false name=gc-blackmagic-preview'
+             ' tee name=gc-blackmagic-tee  ! queue ! videoconvert ! xvimagesink async=false name=gc-blackmagic-preview'
              #REC VIDEO
              ' gc-blackmagic-tee. ! queue ! valve drop=false name=gc-blackmagic-valve ! videoconvert ! '
              ' gc-blackmagic-enc ! queue ! gc-blackmagic-muxer ! '
@@ -32,7 +32,7 @@ videostr = ( ' decklinksrc connection=sdi mode=12 name=gc-blackmagic-src ! video
              )
 audiostr= (
             #AUDIO
-            ' gc-blackmagic-src.audiosrc ! queue ! '
+            ' decklinkaudiosrc device-number=0 connection=auto name=gc-blackmagic-audiosrc ! queue ! '
             ' audiorate ! audioamplify name=gc-blackmagic-amplify amplification=1 ! '
             ' tee name=gc-blackmagic-audiotee ! queue ! '
             ' level name=gc-blackmagic-level message=true interval=100000000 ! '
@@ -126,7 +126,7 @@ class GCblackmagic(Gst.Bin, base.Base):
       "type": "select",
       "default": "auto",
       "options": [
-        "auto", "embedded", "aes","analog", "none"
+        "auto", "embedded", "aes","analog", "analog-xlr", "analog-rca", "none"
         ],
       "description": "Audio  input mode",
       },
@@ -219,6 +219,7 @@ class GCblackmagic(Gst.Bin, base.Base):
         sink = self.get_by_name('gc-blackmagic-sink')
         sink.set_property('location', path.join(self.options['path'], self.options['file']))
         
+        # Video properties
         element = self.get_by_name('gc-blackmagic-src')
         try:
             value = int(self.options['input'])
@@ -232,22 +233,27 @@ class GCblackmagic(Gst.Bin, base.Base):
             mode = self.options['input-mode']                                
         element.set_property('mode', mode)
 
+        try:
+          subdevice = int(self.options['subdevice'])
+        except ValueError:
+          subdevice = self.options['subdevice']                                
+        element.set_property('device-number', subdevice)
+
+        # Video cropping
+        for pos in ['right','left','top','bottom']:
+            element = self.get_by_name('gc-blackmagic-crop')
+            element.set_property(pos, int(self.options['videocrop-' + pos]))
+
+        # Audio properties
+        element_audio = self.get_by_name('gc-blackmagic-src')
+        element_audio.set_property('device-number', subdevice)
         if self.has_audio:
           try:
             audio = int(self.options['audio-input'])
           except ValueError:
             audio = self.options['audio-input']                                
-          element.set_property('audio-input', audio)
-        else:
-          element.set_property('audio-input', "auto")
-          
-        try:
-          subdevice = int(self.options['subdevice'])
-        except ValueError:
-          subdevice = self.options['subdevice']                                
-        element.set_property('device_number', subdevice)
+          element_audio.set_property('connection', audio)
 
-        if self.has_audio:
           if "player" in self.options and self.options["player"] == False:
             self.mute = True
             element = self.get_by_name("gc-blackmagic-volume")
@@ -264,9 +270,6 @@ class GCblackmagic(Gst.Bin, base.Base):
             ampli = self.get_by_name("gc-blackmagic-amplify")
             ampli.set_property("amplification", float(self.options["amplification"]))
 
-        for pos in ['right','left','top','bottom']:
-            element = self.get_by_name('gc-blackmagic-crop')
-            element.set_property(pos, int(self.options['videocrop-' + pos]))
 
   def changeValve(self, value):
     valve1=self.get_by_name('gc-blackmagic-valve')
@@ -291,6 +294,8 @@ class GCblackmagic(Gst.Bin, base.Base):
 
   def send_event_to_src(self, event):
     src = self.get_by_name('gc-blackmagic-src')
+    src.send_event(event)
+    src = self.get_by_name('gc-blackmagic-audiosrc')
     src.send_event(event)
     
 

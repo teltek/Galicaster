@@ -184,7 +184,7 @@ class Recorder(object):
             self.resume()
 
         if self.is_recording and not force:
-            logger.debug("Stopping recorder")
+            logger.debug("Stopping recorder, sending EOS event to sources")
 
             self.is_recording = False
             self.__duration = self.__query_position() - self.__start_record_time
@@ -196,6 +196,8 @@ class Recorder(object):
             msg = self.bus.timed_pop_filtered(GST_TIMEOUT, Gst.MessageType.EOS)            
             if not msg:
                 self.__emit_error('Timeout trying to receive EOS message', '', stop=False)
+            else:
+                logger.debug('EOS message successfully received')
 
         self.pipeline.set_state(Gst.State.NULL)
 
