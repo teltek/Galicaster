@@ -19,19 +19,45 @@ from gi.repository import GObject
 from galicaster.utils import ical
 from galicaster.mediapackage import mediapackage
 
+"""
+This class manages the timers and its respective signals in order to start and stop scheduled recordings.
+It also toggles capture agent status and communicates it to Matterhorn server.
+"""
 
 class Scheduler(object):
 
     def __init__(self, repo, conf, disp, mhclient, logger, recorder):
-        """
-        Arguments:
-        repo -- the galicaster mediapackage repository
-        conf -- galicaster configuration
-        disp -- the galicaster event-dispatcher to emit signals
-        mhclient -- matterhorn HTTP client
-        recorder -- galicaster recorder service
+        """Initializes the scheduler of future recordings.
+        The instance of this class is in charge of set all the necessary timers in order to manage scheduled recordings.
+        It also manages the update of mediapackages with scheduled recordings and capture agent status.
+        Args:
+            repo (Repository): the galicaster mediapackage repository. See mediapackage/repository.py.
+            conf (Conf): galicaster users and default configuration. See galicaster/core/conf.py.
+            disp (Dispatcher): the galicaster event-dispatcher to emit signals. See core/dispatcher.py.
+            mhclient (MHTTPClient): matterhorn HTTP client. See utils/mhttpclient.py.
+            logger (Logger): the object that prints all the information, warning and error messages. See core/logger.py
+            recorder (Recorder)
+        Attributes:
+            ca_status (str): actual capture agent status.
+            old_ca_status (str): old capture agent status.
+            conf (Conf): galicaster users and default configuration given as an argument. 
+            repo (Repository): the galicaster mediapackage repository given as an argument.
+            dispatcher (Dispatcher): the galicaster event-dispatcher to emit signals given by the argument disp.
+            client (MHTTPClient): matterhorn HTTP client given by the argument mhclient. 
+            logger (Logger): the object that prints all the information, warning and error messages.
+            recorder (Recorder)
+            t_stop (Timer): timer with the duration of a scheduled recording. 
+            start_timers (Dict{str,Timer}): set of timers with the time remaining for all the scheduled recordings that are going to start in less than 30 minutes.
+            mp_rec (str): identifier of the mediapackage that is going to be recorded at the scheduled time.
+            last_events (List[Events]): list of calendar Events.
+            net (bool): True if the connectivity with matterhorn is up. False otherwise.
+        Notes:
+            Possible values of ca_status and old_ca_status:
+                - idle
+                - recording
         """
         self.ca_status = 'idle'
+        self.old_ca_status = None
 
         self.conf       = conf
         self.repo       = repo
@@ -43,7 +69,7 @@ class Scheduler(object):
         self.dispatcher.connect('galicaster-notify-timer-short', self.do_timers_short)
         self.dispatcher.connect('galicaster-notify-timer-long',  self.do_timers_long)
         self.dispatcher.connect("recorder-error", self.on_recorder_error)
-
+        
         self.t_stop = None
 
         self.start_timers = dict()
@@ -53,6 +79,10 @@ class Scheduler(object):
 
 
     def init_last_events(self):
+        """Initializes the last_events parameter with the events represented in calendar.ical (attach directory).
+        Returns:
+            List[Events]: list of calendar events. 
+        """
         ical_path = self.repo.get_attach_path('calendar.ical')
         if path.isfile(ical_path):
             return ical.get_events_from_file_ical(ical_path)
@@ -61,6 +91,13 @@ class Scheduler(object):
 
 
     def do_timers_short(self, sender):
+        """Reviews state of capture agent if connectivity with matterhorn is up.
+        Otherwise initializes matterhorn's client.
+        Args:
+            sender (Dispatcher): instance of the class in charge of emitting signals.
+        Notes:
+            This method is invoked every short beat duration. (10 seconds by default)
+        """
         if self.net:
             self.set_state()
         else:
@@ -68,8 +105,14 @@ class Scheduler(object):
 
 
     def do_timers_long(self, sender):
+        """Calls proccess_ical method in order to process the icalendar received from matterhorn if connectivity is up.
+        Then, calls create_new_timer method with the mediapackages that have scheduled recordings in order to create a new timer if necessary.
+        Args:
+            sender (Dispatcher): instance of the class in charge of emitting signals.
+        Notes:
+            This method is invoked every long beat duration (1 minute by default).
+        """
         if self.net:
-            self.client.setconfiguration(self.conf.get_tracks_in_mh_dict())
             self.proccess_ical()
             self.emit('after-process-ical')
         for mp in self.repo.get_next_mediapackages():
@@ -77,12 +120,16 @@ class Scheduler(object):
 
     
     def init_client(self):
+        """Tries to initialize matterhorn's client and set net's state.
+        If it's unable to connecto to matterhorn server, logger prints ir properly and net is set True.
+        """
         self.logger.info('Init matterhorn client')
+        self.old_ca_status = None
 
         try:
             self.client.welcome()
-        except:
-            self.logger.warning('Unable to connect to matterhorn server')
+        except Exception as exc:
+            self.logger.warning('Unable to connect to matterhorn server: {0}'.format(exc))
             self.net = False
             self.emit('net-down')
         else:
@@ -92,6 +139,11 @@ class Scheduler(object):
 
 
     def set_state(self):
+        """Sets the state of the capture agent.
+        Then tries to set matterhorns' client state and configuration if there is connectivity.
+        If not, logger prints the warning appropriately.
+        """
+
         if self.recorder.is_error():
             self.ca_status = 'unknown' #See AgentState.java
         elif self.recorder.is_recording():
@@ -99,23 +151,27 @@ class Scheduler(object):
         else:
             self.ca_status = 'idle'
         self.logger.info('Set status %s to server', self.ca_status)
+        
         try:
             self.client.setstate(self.ca_status)
+            self.client.setconfiguration(self.conf.get_tracks_in_mh_dict()) 
             self.net = True
             self.emit('net-up')
-        except:
-            self.logger.warning('Problems to connect to matterhorn server ')
+        except Exception as exc:
+            self.logger.warning('Problems to connect to matterhorn server: {0}'.format(exc))
             self.net = False
             self.emit('net-down')
             return
 
 
     def proccess_ical(self):
-        self.logger.info('Process ical')
+        """Creates, deletes or updates mediapackages according to scheduled events information given by matterhorn.
+        """
+        self.logger.info('Proccess ical')
         try:
             ical_data = self.client.ical()
-        except:
-            self.logger.warning('Problems to connect to matterhorn server ')
+        except Exception as exc:
+            self.logger.warning('Problems to connect to matterhorn server: {0}'.format(exc))
             self.net = False
             self.emit('net-down')
             return
@@ -123,19 +179,19 @@ class Scheduler(object):
         # No data but no error implies that the calendar has not been modified (ETAG)
         if ical_data == None:
             return
-
+        
         try:
             events = ical.get_events_from_string_ical(ical_data)
             delete_events = ical.get_delete_events(self.last_events, events)
             update_events = ical.get_update_events(self.last_events, events)
-        except:
-            self.logger.error('Error proccessing ical')
+        except Exception as exc:
+            self.logger.error('Error proccessing ical: {0}'.format(exc))
             return
 
         self.repo.save_attach('calendar.ical', ical_data)
         
         for event in events:
-            self.logger.info('Creating MP with UID {0} from ical'.format(event['UID']))
+            self.logger.debug('Creating MP with UID {0} from ical'.format(event['UID']))
             ical.create_mp(self.repo, event)
         
         for event in delete_events:
@@ -159,8 +215,12 @@ class Scheduler(object):
 
 
     def create_new_timer(self, mp):
+        """Creates a timer for a future mediapackage recording if there are less than 30 minutes to the scheduled event.
+        Args:
+            mp (Mediapackage): the mediapackage whose timer is going to be created.
+        """
         diff = (mp.getDate() - datetime.datetime.utcnow())
-        if diff < datetime.timedelta(minutes=30) and mp.getIdentifier() != self.mp_rec and not self.start_timers.has_key(mp.getIdentifier()): 
+        if diff < datetime.timedelta(minutes=30) and mp.getIdentifier() != self.mp_rec and not self.start_timers.has_key(mp.getIdentifier()):
             self.emit('upcoming-recording')
             ti = Timer(diff.seconds, self.start_record, [mp.getIdentifier()]) 
             self.start_timers[mp.getIdentifier()] = ti
@@ -168,6 +228,12 @@ class Scheduler(object):
 
 
     def start_record(self, key):
+        """Sets the timer for the duration of the scheduled recording that is about to start.
+        Then tries to notify matterhorn that the capture agent started the recording.
+        If any connectivity errors occur, logger prints it properly.
+        Args:
+            key (str): the new mediapackage identifier.
+        """
         mp = self.repo.get(key) # FIXME what if the mp doesnt exist?
         if mp.status == mediapackage.SCHEDULED:
             
@@ -184,14 +250,20 @@ class Scheduler(object):
 
             try:
                 self.client.setrecordingstate(key, 'capturing')
-            except:
-                self.logger.warning('Problems to connect to matterhorn server ')
+            except Exception as exc:
+                self.logger.warning('Problems to connect to matterhorn server: {0}'.format(exc))
 
 
         del self.start_timers[mp.getIdentifier()]
 
 
     def stop_record(self, key):
+        """Sets the status of the capture agent when has just finished a scheduled recording.
+        Sets the mediapackage status too and tries to notify matterhorn of the new capture agent status.
+        If any connectivity errors occur, logger prints it properly.
+        Args:
+            key (str): the mediapackage identifier.
+        """
         self.ca_status = 'idle'
         self.mp_rec = None
         self.logger.info('Stop record %s', key)
@@ -199,17 +271,16 @@ class Scheduler(object):
         mp = self.repo.get(key)
         if mp.status == mediapackage.RECORDING:
             self.recorder.stop()
-
             try:
                 self.client.setrecordingstate(key, 'capture_finished')
-            except:
-                self.logger.warning('Problems to connect to matterhorn server ')
+            except Exception as exc:
+                self.logger.warning('Problems to connect to matterhorn server: {0}'.format(exc))
                 self.net = False
                 self.emit('net-down')
             
         self.t_stop = None
 
-
+        
     def on_recorder_error(self, origin=None, error_message=None):
         current_mp_id = self.state.mp
         if not current_mp_id:
@@ -227,9 +298,14 @@ class Scheduler(object):
                     self.logger.warning("Problems to connect to matterhorn server trying to send the state 'capture_error' ")
                     self.net = False
                     self.emit('net-down')
-                    
 
+        
     def emit(self, *args, **kwargs):
+        """Emits messages in order to inform of different events, for example, that the connectivity with matterhorn was lost.
+        Args:
+            *args: strings with messages and useful information.
+            **kwargs: dictionary of strings with useful information about the message that is going to be emitted.
+        """
         # self.dispatcher.emit(*args, **kwargs)
         #Allow only the main thread to touch the GUI
         GObject.idle_add(self.dispatcher.emit, *args, **kwargs)
