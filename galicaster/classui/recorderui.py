@@ -228,7 +228,7 @@ class RecorderClassUI(Gtk.Box):
             warning = message.PopUp(message.WARNING, text,
               context.get_mainwindow(), buttons)
             self.dispatcher.emit("enable-no-audio")
-            if warning.response not in message.POSITIVE or self.status not in [GC_RECORDING]:
+            if warning.response not in message.POSITIVE or self.recorder.status not in [RECORDING_STATUS]:
                 return False
         self.recorder.stop()
 
