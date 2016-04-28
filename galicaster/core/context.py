@@ -248,7 +248,8 @@ def get_recorder():
                                    get_repository(),
                                    get_worker(),
                                    get_conf(),
-                                   get_logger())
+                                   get_logger(),
+                                   get_conf().get_boolean('recorder','autorecover', False))
         __galicaster_context['recorder'] = recorder
 
     return __galicaster_context['recorder']

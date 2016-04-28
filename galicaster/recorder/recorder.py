@@ -87,10 +87,9 @@ class Recorder(object):
     def get_status(self, timeout=GST_TIMEOUT):        
         status = self.pipeline.get_state(timeout)        
 
-        if status[0] == Gst.StateChangeReturn.SUCCESS or status[0] == Gst.StateChangeReturn.NO_PREROLL:
-            return status
-
-        self.__emit_error('Timeout getting recorder status, current status: {}'.format(status), '', stop=False)
+        if status[0] == Gst.StateChangeReturn.ASYNC:
+            self.__emit_error('Timeout getting recorder status, current status: {}'.format(status), '', stop=False)
+        
         return status
 
     def get_time(self):
@@ -209,20 +208,20 @@ class Recorder(object):
     def _on_error(self, bus, msg):
         error, debug = msg.parse_error()
         error_info = "{} ({})".format(error, debug)
-        logger.error(error_info)
         return self.__emit_error(error_info, debug)
 
     
     def __emit_error(self, error_info, debug, stop=True):
-        logger.error(error_info)
-        if not debug.count('canguro') and not self.error:
-            if stop:
-                self.stop(True)
-            Gdk.threads_enter()
-            self.error = error_info
-            self.dispatcher.emit("recorder-error", error_info)
-            Gdk.threads_leave()
-            # return True
+        if not self.error:
+            logger.error(error_info)
+            if not debug or (debug and not debug.count('canguro')):
+                if stop:
+                    self.stop(True)
+                Gdk.threads_enter()
+                self.error = error_info
+                self.dispatcher.emit("recorder-error", error_info)
+                Gdk.threads_leave()
+                # return True
         
 
     def _on_sync_message(self, bus, message):
