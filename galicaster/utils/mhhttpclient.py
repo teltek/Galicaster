@@ -21,7 +21,12 @@ import pycurl
 from collections import OrderedDict
 import urlparse
 
-INIT_ENDPOINT = '/welcome.html'
+try:
+    from galicaster import __version__ as version
+except:
+    version = ""
+
+INIT_ENDPOINT = '/info/me.json'
 ME_ENDPOINT = '/info/me.json'
 SETRECORDINGSTATE_ENDPOINT = '/capture-admin/recordings/{id}'
 SETSTATE_ENDPOINT = '/capture-admin/agents/{hostname}'
@@ -40,7 +45,7 @@ class MHHTTPClient(object):
     
     def __init__(self, server, user, password, hostname='galicaster', address=None, multiple_ingest=False, 
                  connect_timeout=2, timeout=2, workflow='full', workflow_parameters={'trimHold':'true'}, 
-                 ca_parameters={}, repo=None, logger=None):
+                 ca_parameters={}, polling_short=10, polling_long=60, repo=None, logger=None):
         """
         Arguments:
 
@@ -72,16 +77,24 @@ class MHHTTPClient(object):
         self.workflow_parameters = workflow_parameters
         self.ca_parameters = ca_parameters
         self.search_server = None
+        self.polling_schedule = polling_long
+        self.polling_state = polling_short
+        # FIXME should be long? https://github.com/teltek/Galicaster/issues/114
+        self.polling_caps = polling_short
+        self.polling_config = polling_long        
+        self.response = {'Status-Code': '', 'Content-Type': '', 'ETag': ''}
+        self.ical_etag = -1
 
 
-    def __call(self, method, endpoint, path_params={}, query_params={}, postfield={}, urlencode=True, server=None, timeout=True):
+
+    def __call(self, method, endpoint, path_params={}, query_params={}, postfield={}, urlencode=True, server=None, timeout=True, headers={}):
 
         theServer = server or self.server
         c = pycurl.Curl()
         b = StringIO()
 
         url = list(urlparse.urlparse(theServer, 'http'))
-        url[2] = endpoint.format(**path_params)
+        url[2] = url[2] + endpoint.format(**path_params)
         url[4] = urllib.urlencode(query_params)
         c.setopt(pycurl.URL, urlparse.urlunparse(url))
 
@@ -92,8 +105,14 @@ class MHHTTPClient(object):
         c.setopt(pycurl.NOSIGNAL, 1)
         c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_DIGEST)
         c.setopt(pycurl.USERPWD, self.user + ':' + self.password)
-        c.setopt(pycurl.HTTPHEADER, ['X-Requested-Auth: Digest', 'X-Opencast-Matterhorn-Authorization: true'])
-        c.setopt(pycurl.USERAGENT, 'Galicaster')
+        sendheaders = ['X-Requested-Auth: Digest', 'X-Opencast-Matterhorn-Authorization: true']
+        if headers:
+            for h, v in headers.iteritems():
+                sendheaders.append('{}: {}'.format(h, v))
+            # implies we might be interested in passing the response headers
+            c.setopt(pycurl.HEADERFUNCTION, self.scanforetag)
+        c.setopt(pycurl.HTTPHEADER, sendheaders)
+        c.setopt(pycurl.USERAGENT, 'Galicaster' + version)
        
         if (method == 'POST'):
             if urlencode:
@@ -103,20 +122,29 @@ class MHHTTPClient(object):
                 c.setopt(pycurl.HTTPPOST, postfield)
         c.setopt(pycurl.WRITEFUNCTION, b.write)
 
-        #c.setopt(pycurl.VERBOSE, True)
+        #c.setopt(pycurl.VERBOSE, True) ##TO DEBUG
         try:
             c.perform()
         except:
             raise RuntimeError, 'connect timed out!'
         status_code = c.getinfo(pycurl.HTTP_CODE)
+        self.response['Status-Code'] = status_code
+        self.response['Content-Type'] = c.getinfo(pycurl.CONTENT_TYPE)
         c.close() 
-        if status_code != 200:
-            if self.logger:
-                self.logger.error('call error in %s, status code {%r}: %s', 
-                                  urlparse.urlunparse(url), status_code, b.getvalue())   
-            raise IOError, 'Error in Matterhorn client'
+        if status_code != 200 and status_code != 302 and status_code != 304:
+            if (status_code > 200) and (status_code < 300):
+                self.logger and self.logger.debug("Matterhorn client ({}) sent a response with status code {}".format(urlparse.urlunparse(url), status_code))
+            else:
+                self.logger and self.logger.error('call error in %s, status code {%r}: %s', 
+                                                  urlparse.urlunparse(url), status_code, b.getvalue())   
+                raise IOError, 'Error in Matterhorn client'
+
         return b.getvalue()
 
+    def scanforetag(self, buffer):
+        if buffer.startswith('ETag:'):
+            etag = buffer[5:]
+            self.response['ETag'] = etag.strip()
 
     def whoami(self):
         return json.loads(self.__call('GET', ME_ENDPOINT))
@@ -126,7 +154,17 @@ class MHHTTPClient(object):
 
 
     def ical(self):
-        return self.__call('GET', ICAL_ENDPOINT, query_params = {'agentid': self.hostname})
+        icalendar = self.__call('GET', ICAL_ENDPOINT, query_params={'agentid': self.hostname}, headers={'If-None-Match': self.ical_etag})
+
+        if self.response['Status-Code'] == 304:
+            if self.logger:
+                self.logger.info("iCal Not modified")
+            return None
+
+        self.ical_etag = self.response['ETag']
+        if self.logger:
+                self.logger.info("iCal modified")
+        return icalendar
 
 
     def setstate(self, state):
@@ -142,6 +180,7 @@ class MHHTTPClient(object):
         Los posibles estados son: unknown, capturing, capture_finished, capture_error, manifest, 
         manifest_error, manifest_finished, compressing, compressing_error, uploading, upload_finished, upload_error
         """
+        self.logger and self.logger.info("Sending state {} of recording {}".format(state, recording_id))
         return self.__call('POST', SETRECORDINGSTATE_ENDPOINT, {'id': recording_id}, postfield={'state': state})
 
 
@@ -155,15 +194,15 @@ class MHHTTPClient(object):
             'service.pid': 'galicaster',
             'capture.confidence.debug': 'false',
             'capture.confidence.enable': 'false',            
-            'capture.config.remote.polling.interval': '600',
+            'capture.config.remote.polling.interval': self.polling_config,
             'capture.agent.name': self.hostname,
-            'capture.agent.state.remote.polling.interval': '10',
-            'capture.agent.capabilities.remote.polling.interval': '10',
+            'capture.agent.state.remote.polling.interval': self.polling_state,
+            'capture.agent.capabilities.remote.polling.interval': self.polling_caps,
             'capture.agent.state.remote.endpoint.url': self.server + '/capture-admin/agents',
             'capture.recording.shutdown.timeout': '60',
             'capture.recording.state.remote.endpoint.url': self.server + '/capture-admin/recordings',
             'capture.schedule.event.drop': 'false',
-            'capture.schedule.remote.polling.interval': '1',
+            'capture.schedule.remote.polling.interval': int(self.polling_schedule)/60,
             'capture.schedule.event.buffertime': '1',
             'capture.schedule.remote.endpoint.url': self.server + '/recordings/calendars',
             'capture.schedule.cache.url': '/opt/matterhorn/storage/cache/schedule.ics',

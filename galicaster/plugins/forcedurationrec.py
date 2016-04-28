@@ -28,7 +28,7 @@ logger = context.get_logger()
 recorder = context.get_recorder()
 
 t_stop = None
-max_duration = conf.get_int('forcedurationrec', 'duration') or 300
+max_duration = conf.get_int('forcedurationrec', 'duration') or 240
 
 
 def init():

@@ -17,8 +17,8 @@ import json
 import math
 import threading
 import tempfile
-from bottle import route, run, response
-from gi.repository import Gtk
+from bottle import route, run, response, abort
+from gi.repository import Gtk, Gdk
 
 from galicaster.core import context
 from galicaster.mediapackage.serializer import set_manifest
@@ -95,19 +95,30 @@ def metadata(id):
         json.dumps({key:value})
     return json.dumps(line)
 
+
 @route('/start')
 def start():
     response.content_type = 'text/xml'
-    context.get_recorder().record(None)
+    recorder = context.get_recorder()
+    if recorder.is_recording():
+        abort(500, "couldn't start capture")
+    else:
+        recorder.record(None)
+    return "Signal to start recording sent"
     
-    return "Request to start recording received"    
 
 @route('/stop')
 def stop():
     response.content_type = 'text/html'
-    context.get_recorder().stop()
+    recorder = context.get_recorder()
 
-    return "Request to stop recording received"
+    if recorder.is_recording():
+        recorder.stop()
+    else:
+        abort(500, "failed to stop the capture, or no current active capture")
+        
+    return "Signal to stop recording sent"
+    
 
 @route('/operation/:op/:mpid', method='GET')
 def operationt(op, mpid):
@@ -148,3 +159,11 @@ def logstale():
     else:
         return "Error: no filepath provided" 
 
+@route('/quit')
+def quit():
+    if not context.get_state().is_recording:
+        # Emit quit signal and exit
+        gtk.gdk.threads_enter()
+        context.get_dispatcher().emit('galicaster-notify-quit')
+        gtk.main_quit()
+        gtk.gdk.threads_leave()

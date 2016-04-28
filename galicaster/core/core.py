@@ -17,6 +17,7 @@ from gi.repository import Gtk, Gdk, GObject
 GLib.threads_init()
 Gdk.threads_init()
 
+import os
 from galicaster import __version__
 from galicaster.core import context
 from galicaster import plugins
@@ -41,15 +42,18 @@ class Main():
         logger.info('galicaster.__version__: %r', __version__)
         logger.info('galicaster.__file__: %r', __file__)
 
+        self.change_cwd()
+
         self.conf = context.get_conf()
         self.dispatcher = context.get_dispatcher()
         self.modules = self.conf.get_modules()
         self.load_modules()
 
-    def load_modules(self):
-        plugins.init()
-        
+    def load_modules(self):        
         self.window = context.get_mainwindow()
+        # Load plugins after loading the main window (fixes a problem with the plugin 'nocursor')
+        plugins.init()
+
         # Recorder
         self.recorder = RecorderClassUI()
         self.window.insert_page(self.recorder, 'REC', REC) 
@@ -91,3 +95,13 @@ class Main():
         old_page = self.window.get_current_page()
         self.window.set_current_page(page)  
         self.dispatcher.emit('galicaster-status', old_page, page)
+
+    def check_net(self, origin, data):
+        self.state.net = data
+
+    def change_cwd(self):
+        repo = context.get_repository()
+        rectemp = repo.get_rectemp_path()
+
+        logger.info("Changing current working dir (cwd) to {}".format(rectemp))
+        os.chdir(rectemp)

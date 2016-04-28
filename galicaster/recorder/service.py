@@ -156,6 +156,10 @@ class RecorderService(object):
         self.repo.add_after_rec(self.current_mediapackage, self.recorder.get_bins_info(),
                                 close_duration, self.current_mediapackage.manual)
 
+        # FIXME
+        mp_mod_Uri = self.current_mediapackage.getURI()
+        self.dispatcher.emit("recorder-closed", mp_mod_Uri)
+        
         code = 'manual' if self.current_mediapackage.manual else 'scheduled'
         if self.conf.get_lower('ingest', code) == 'immediately':
             self.worker.ingest(self.current_mediapackage)

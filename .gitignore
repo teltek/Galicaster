@@ -22,7 +22,8 @@ pip-log.txt
 #IDE
 *~
 \#*\#
-.idea*
+nbproject/
+.idea/
 
 #Galicaster unit test / coverage reports
 .coverage
@@ -31,5 +32,5 @@ tests/resources/attach/
 tests/resources/repository/attach/
 tests/resources/profile/folder/
 
-# IDE project files
-nbproject/
+# log dir
+log/

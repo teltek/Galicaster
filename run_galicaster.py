@@ -13,6 +13,8 @@
 # San Francisco, California, 94105, USA.
 
 import sys
+# debug
+# import traceback
 
 import gi
 gi.require_version('Gst', '1.0')
@@ -38,6 +40,21 @@ def main(args):
     except KeyboardInterrupt:
         gc.emit_quit()
         print "Interrupted by user!"
+    except Exception as exc:
+        # debug
+        # print traceback.format_exc()
+
+        msg = "Error starting Galicaster: {0}".format(exc)
+        print msg
+
+        from galicaster.core import context
+        logger = context.get_logger()
+        logger and logger.error(msg)
+
+        d = context.get_dispatcher()
+        d.emit("galicaster-notify-quit")
+        return -1
+
 
     return 0
 

@@ -44,7 +44,7 @@ def init():
         MAX_AMPLITUDE = context.get_conf().get('failovermic', 'failover_threshold')
         audio_track = context.get_conf().get('failovermic', 'audio_track')
         dispatcher.connect('update-rec-vumeter', check_pipeline_amp)
-        dispatcher.connect('recording-closed', failover_audio)
+        dispatcher.connect('recorder-closed', failover_audio)
         dispatcher.connect('starting-record', record)
         dispatcher.connect('restart-preview', stop)
         set_pipeline()
@@ -151,11 +151,6 @@ def failover_audio(self, mpUri):
                 if filecount(FAIL_DIR) > 1:
                     merge(FAIL_DIR)
                 logger.info('audio quiet - will be replaced')
-                for t in mp.getTracks():
-                    mimetype = t.getMimeType()
-                    logger.debug('Examine track type %s', mimetype)
-                    if mimetype.split('/')[0].lower() == 'audio':
-                        mp.remove(t)
                 filename = get_audio_track()
                 dest = os.path.join(mpUri, os.path.basename(filename))
                 shutil.copyfile(FAILOVER_FILE, dest)

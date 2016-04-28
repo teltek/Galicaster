@@ -98,6 +98,6 @@ def on_rec(button):
     popup = MetadataClass(**arguments)
     
     if popup.return_value == -8:
-        recorder_ui.on_rec()
+        recorder_ui.on_rec(button=None, pre_filled=True)
     dispatcher.emit("enable-no-audio")
     

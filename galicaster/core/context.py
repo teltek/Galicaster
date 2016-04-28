@@ -118,6 +118,8 @@ def get_mhclient():
                                     conf.get('ingest', 'workflow'),
                                     conf.get_dict('ingest', 'workflow-parameters'),
                                     conf.get_dict('ingest', 'ca-parameters'),
+                                    conf.get('heartbeat', 'short'),
+                                    conf.get('heartbeat', 'long'),
                                     get_repository(),
                                     get_logger())
         else:
@@ -150,17 +152,11 @@ def get_repository():
     if 'repository' not in __galicaster_context:
         conf = get_conf()
         template = conf.get('repository','foldertemplate')
-        if template is None:
-            __galicaster_context['repository'] = Repository(
-                conf.get('basic', 'repository'), 
-                conf.get_hostname(),
-                logger=get_logger())
-        else:
-            __galicaster_context['repository'] = Repository(
-                conf.get('basic', 'repository'), 
-                conf.get_hostname(),
-                conf.get('repository', 'foldertemplate'),
-                get_logger())
+        __galicaster_context['repository'] = Repository(
+            conf.get('basic', 'repository'), 
+            conf.hostname,
+            template,
+            get_logger())
 
     return __galicaster_context['repository']
 

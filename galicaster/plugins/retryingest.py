@@ -31,9 +31,9 @@ conf = context.get_conf()
 mhclient = context.get_mhclient()
 repo = context.get_repository()
 
-check_published = conf.get_boolean('retryingest', 'check_published') or True
+check_published = conf.get_boolean('retryingest', 'check_published')
 check_after = conf.get_int('retryingest', 'check_after') or 300
-check_nightly = conf.get_boolean('retryingest', 'nightly') or False
+check_nightly = conf.get_boolean('retryingest', 'nightly')
 last_checked = time.time()
 
 logger.debug('check_published set to {}'.format(check_published))
