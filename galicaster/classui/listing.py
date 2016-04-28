@@ -234,7 +234,7 @@ class ListingClassUI(ManagerUI):
         if i:
             self._refresh(mp,i)
 
-    def refresh_operation(self, origin, operation, package, success = None):
+    def refresh_operation(self, origin, operation, package, success = None, extra=None):
         """Refresh the status of an operation in a given row"""
 	identifier = package.identifier
 	self.refresh_row_from_mp(origin,identifier)
