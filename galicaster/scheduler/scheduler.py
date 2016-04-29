@@ -21,12 +21,12 @@ from galicaster.mediapackage import mediapackage
 
 """
 This class manages the timers and its respective signals in order to start and stop scheduled recordings.
-It also toggles capture agent status and communicates it to Matterhorn server.
+It also toggles capture agent status and communicates it to Opencast server.
 """
 
 class Scheduler(object):
 
-    def __init__(self, repo, conf, disp, mhclient, logger, recorder):
+    def __init__(self, repo, conf, disp, occlient, logger, recorder):
         """Initializes the scheduler of future recordings.
         The instance of this class is in charge of set all the necessary timers in order to manage scheduled recordings.
         It also manages the update of mediapackages with scheduled recordings and capture agent status.
@@ -34,7 +34,7 @@ class Scheduler(object):
             repo (Repository): the galicaster mediapackage repository. See mediapackage/repository.py.
             conf (Conf): galicaster users and default configuration. See galicaster/core/conf.py.
             disp (Dispatcher): the galicaster event-dispatcher to emit signals. See core/dispatcher.py.
-            mhclient (MHTTPClient): matterhorn HTTP client. See utils/mhttpclient.py.
+            occlient (MHTTPClient): opencast HTTP client. See utils/mhttpclient.py.
             logger (Logger): the object that prints all the information, warning and error messages. See core/logger.py
             recorder (Recorder)
         Attributes:
@@ -43,14 +43,14 @@ class Scheduler(object):
             conf (Conf): galicaster users and default configuration given as an argument. 
             repo (Repository): the galicaster mediapackage repository given as an argument.
             dispatcher (Dispatcher): the galicaster event-dispatcher to emit signals given by the argument disp.
-            client (MHTTPClient): matterhorn HTTP client given by the argument mhclient. 
+            client (MHTTPClient): opencast HTTP client given by the argument occlient. 
             logger (Logger): the object that prints all the information, warning and error messages.
             recorder (Recorder)
             t_stop (Timer): timer with the duration of a scheduled recording. 
             start_timers (Dict{str,Timer}): set of timers with the time remaining for all the scheduled recordings that are going to start in less than 30 minutes.
             mp_rec (str): identifier of the mediapackage that is going to be recorded at the scheduled time.
             last_events (List[Events]): list of calendar Events.
-            net (bool): True if the connectivity with matterhorn is up. False otherwise.
+            net (bool): True if the connectivity with opencast is up. False otherwise.
         Notes:
             Possible values of ca_status and old_ca_status:
                 - idle
@@ -62,7 +62,7 @@ class Scheduler(object):
         self.conf       = conf
         self.repo       = repo
         self.dispatcher = disp
-        self.client     = mhclient
+        self.client     = occlient
         self.logger     = logger
         self.recorder   = recorder
 
@@ -91,8 +91,8 @@ class Scheduler(object):
 
 
     def do_timers_short(self, sender):
-        """Reviews state of capture agent if connectivity with matterhorn is up.
-        Otherwise initializes matterhorn's client.
+        """Reviews state of capture agent if connectivity with opencast is up.
+        Otherwise initializes opencast's client.
         Args:
             sender (Dispatcher): instance of the class in charge of emitting signals.
         Notes:
@@ -105,7 +105,7 @@ class Scheduler(object):
 
 
     def do_timers_long(self, sender):
-        """Calls proccess_ical method in order to process the icalendar received from matterhorn if connectivity is up.
+        """Calls proccess_ical method in order to process the icalendar received from opencast if connectivity is up.
         Then, calls create_new_timer method with the mediapackages that have scheduled recordings in order to create a new timer if necessary.
         Args:
             sender (Dispatcher): instance of the class in charge of emitting signals.
@@ -120,16 +120,16 @@ class Scheduler(object):
 
     
     def init_client(self):
-        """Tries to initialize matterhorn's client and set net's state.
-        If it's unable to connecto to matterhorn server, logger prints ir properly and net is set True.
+        """Tries to initialize opencast's client and set net's state.
+        If it's unable to connecto to opencast server, logger prints ir properly and net is set True.
         """
-        self.logger.info('Init matterhorn client')
+        self.logger.info('Init opencast client')
         self.old_ca_status = None
 
         try:
             self.client.welcome()
         except Exception as exc:
-            self.logger.warning('Unable to connect to matterhorn server: {0}'.format(exc))
+            self.logger.warning('Unable to connect to opencast server: {0}'.format(exc))
             self.net = False
             self.emit('net-down')
         else:
@@ -140,7 +140,7 @@ class Scheduler(object):
 
     def set_state(self):
         """Sets the state of the capture agent.
-        Then tries to set matterhorns' client state and configuration if there is connectivity.
+        Then tries to set opencasts' client state and configuration if there is connectivity.
         If not, logger prints the warning appropriately.
         """
 
@@ -154,24 +154,24 @@ class Scheduler(object):
         
         try:
             self.client.setstate(self.ca_status)
-            self.client.setconfiguration(self.conf.get_tracks_in_mh_dict()) 
+            self.client.setconfiguration(self.conf.get_tracks_in_oc_dict()) 
             self.net = True
             self.emit('net-up')
         except Exception as exc:
-            self.logger.warning('Problems to connect to matterhorn server: {0}'.format(exc))
+            self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
             self.net = False
             self.emit('net-down')
             return
 
 
     def proccess_ical(self):
-        """Creates, deletes or updates mediapackages according to scheduled events information given by matterhorn.
+        """Creates, deletes or updates mediapackages according to scheduled events information given by opencast.
         """
         self.logger.info('Proccess ical')
         try:
             ical_data = self.client.ical()
         except Exception as exc:
-            self.logger.warning('Problems to connect to matterhorn server: {0}'.format(exc))
+            self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
             self.net = False
             self.emit('net-down')
             return
@@ -229,7 +229,7 @@ class Scheduler(object):
 
     def start_record(self, key):
         """Sets the timer for the duration of the scheduled recording that is about to start.
-        Then tries to notify matterhorn that the capture agent started the recording.
+        Then tries to notify opencast that the capture agent started the recording.
         If any connectivity errors occur, logger prints it properly.
         Args:
             key (str): the new mediapackage identifier.
@@ -251,7 +251,7 @@ class Scheduler(object):
             try:
                 self.client.setrecordingstate(key, 'capturing')
             except Exception as exc:
-                self.logger.warning('Problems to connect to matterhorn server: {0}'.format(exc))
+                self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
 
 
         del self.start_timers[mp.getIdentifier()]
@@ -259,7 +259,7 @@ class Scheduler(object):
 
     def stop_record(self, key):
         """Sets the status of the capture agent when has just finished a scheduled recording.
-        Sets the mediapackage status too and tries to notify matterhorn of the new capture agent status.
+        Sets the mediapackage status too and tries to notify opencast of the new capture agent status.
         If any connectivity errors occur, logger prints it properly.
         Args:
             key (str): the mediapackage identifier.
@@ -274,7 +274,7 @@ class Scheduler(object):
             try:
                 self.client.setrecordingstate(key, 'capture_finished')
             except Exception as exc:
-                self.logger.warning('Problems to connect to matterhorn server: {0}'.format(exc))
+                self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
                 self.net = False
                 self.emit('net-down')
             
@@ -295,13 +295,13 @@ class Scheduler(object):
                 try:
                     self.client.setrecordingstate(current_mp_id, 'capture_error')
                 except:
-                    self.logger.warning("Problems to connect to matterhorn server trying to send the state 'capture_error' ")
+                    self.logger.warning("Problems to connect to opencast server trying to send the state 'capture_error' ")
                     self.net = False
                     self.emit('net-down')
 
         
     def emit(self, *args, **kwargs):
-        """Emits messages in order to inform of different events, for example, that the connectivity with matterhorn was lost.
+        """Emits messages in order to inform of different events, for example, that the connectivity with opencast was lost.
         Args:
             *args: strings with messages and useful information.
             **kwargs: dictionary of strings with useful information about the message that is going to be emitted.

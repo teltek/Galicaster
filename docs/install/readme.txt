@@ -71,18 +71,18 @@ Sections:
       - {utc second}: MP's UTC second of recording, as a decimal number [00,59].
 
 -- ingest
-   The data to connect Galicaster to an Opencast-Matterhorn server.
-   * active: Enables the connection to a Opencast-Matterhorn server (True|False).
-   * legacy: activates Openacast Matterhonr 1.2 and 1.3 compatibility, excluding the namespace field on the xml files from the mediapackages. (True|False) 
-   * visible_tracks:Makes tracks visible to Matterhorn. If active, the tracks are selectable so only the chosen ones will be recorded.If not, Galicaster will record the tracks on the profile active at the moment of the scheduled start.
+   The data to connect Galicaster to an Opencast server.
+   * active: Enables the connection to a Opencast server (True|False).
+   * legacy: activates Openacast Opencast 1.2 and 1.3 compatibility, excluding the namespace field on the xml files from the mediapackages. (True|False) 
+   * visible_tracks:Makes tracks visible to Opencast. If active, the tracks are selectable so only the chosen ones will be recorded.If not, Galicaster will record the tracks on the profile active at the moment of the scheduled start.
    * manual: Configure the method to automatically ingest the manual recordings. The possible options are: disable the automatic ingestion (none), ingest immediately after the recording (immediately) or ingest nightly all the recordings of the previous day (nightly). Defaults to 'none'. (none|immediately|nightly)
    * scheduled: Configure the method to automatically ingest the scheduled recordings. The possible options are: disable the automatic ingestion (none), ingest immediately after the recording (immediately) or ingest nightly all the recordings of the previous day (nightly). Defaults to 'none'. (none|immediately|nightly)
-   * host: Matterhorn server URL.
-   * username: Username for the account used to operate the Matterhorn REST endpoints service.
-   * password: Password for the account  used to operate the Matterhorn REST endpoints service.
+   * host: Opencast server URL.
+   * username: Username for the account used to operate the Opencast REST endpoints service.
+   * password: Password for the account  used to operate the Opencast REST endpoints service.
    * hostname: Name of the Galicaster unit. Defaults to the host name as defined in the OS, prepended by "GC-" if it is a Galicaster Class or "GCMobile-" if it is a Galicaster Mobile.
    * workflow: name of the workflow used to ingest the recordings.
-   * workflow-parameters: pairs of parameter and value (parameter:value) to be parsed on the Matterhorn workflow, separated by semicolon.
+   * workflow-parameters: pairs of parameter and value (parameter:value) to be parsed on the Opencast workflow, separated by semicolon.
 
 -- track
    A section for each device used in the capturer. Each section is set according to the device type: test, v4l2, pulse, epiphan, datapath, hauppauge, blackmagic, firewire or rtp. For more information on device plugin configuration on docs/device/.  

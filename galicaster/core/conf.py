@@ -422,10 +422,10 @@ class Conf(object): # TODO list get and other ops arround profile
         """
         return self.get_boolean('basic', 'admin') or False
     
-    def tracks_visible_to_matterhorn(self):
-        """Checks if the tracks are visible to matterhorn.
+    def tracks_visible_to_opencast(self):
+        """Checks if the tracks are visible to opencast.
         Returns:
-		    Bool: True if the tracks are visible to matterhorn (section ingest, option visible_tracks from configfile). False otherwise.
+		    Bool: True if the tracks are visible to opencast (section ingest, option visible_tracks from configfile). False otherwise.
         """
         return self.get_boolean('ingest', 'visible_tracks') or False
         
@@ -538,17 +538,17 @@ class Conf(object): # TODO list get and other ops arround profile
                     self.__conf.set('basic','profile',profile.name)
                 
 
-    def get_tracks_in_mh_dict(self):
-        """Returns the tracks names and information if they are configurable by matterhorn. 
+    def get_tracks_in_oc_dict(self):
+        """Returns the tracks names and information if they are configurable by opencast. 
         Returns:
-            Dict {Str,str}: If the tracks are configurable by matterhorn, returns its flavor, outputfile and source. Also it returns the names of all tracks. Otherwise returns defaults as names.
+            Dict {Str,str}: If the tracks are configurable by opencast, returns its flavor, outputfile and source. Also it returns the names of all tracks. Otherwise returns defaults as names.
         """
         # Tracks blocked by Galicaster
-        if not self.tracks_visible_to_matterhorn(): 
+        if not self.tracks_visible_to_opencast(): 
             return {'capture.device.names': 'defaults'}
-        # Tracks configurable by matterhorn
+        # Tracks configurable by opencast
         if self.logger:
-            self.logger.info('Be careful using profiles and matterhorn scheduler')
+            self.logger.info('Be careful using profiles and opencast scheduler')
         default  = self.get_current_profile()
         names = []
         tracks = {}

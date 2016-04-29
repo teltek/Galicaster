@@ -18,7 +18,7 @@ import pycurl
 from galicaster.core import context
 
 """
-Description: Galicaster Dashboard PUSH mode. It fetchs a screenchoot of the window through gtk and sends it with Galicaster's Matterhorn HTTP client to the Dashboard endpoint.
+Description: Galicaster Dashboard PUSH mode. It fetchs a screenchoot of the window through gtk and sends it with Galicaster's Opencast HTTP client to the Dashboard endpoint.
 This module can work as a plugin or as a separated application.
 Status: Experimental 
 """
@@ -42,13 +42,13 @@ def get_screenshot():
 
 def push_pic(sender=None):
     conf = context.get_conf()
-    mhclient = context.get_mhclient()
+    occlient = context.get_occlient()
 
     endpoint = "/dashboard/rest/agents/{hostname}/snapshot.png".format(hostname=conf.get_hostname())
     postfield = [ ("snapshot", get_screenshot() ) ]
     
     try:
-        aux = mhclient._MHHTTPClient__call('POST', endpoint, {}, {}, postfield, False, None, False)
+        aux = occlient._OCHTTPClient__call('POST', endpoint, {}, {}, postfield, False, None, False)
     except IOError as e:
         # This endpoint return 204, not 200.
         aux = None

@@ -40,7 +40,7 @@ class TestFunctions(TestCase):
         def update(self, mp):
             pass
 
-    class MHHTTPClientMock(object):
+    class OCHTTPClientMock(object):
         def __init__(self):
             self.calls = []
 
@@ -59,7 +59,7 @@ class TestFunctions(TestCase):
 
     def test_init_parameters(self):
         repo = self.RepoMock()
-        client = self.MHHTTPClientMock()
+        client = self.OCHTTPClientMock()
         dispatcher = self.DispatcherMock()
         logger = Logger(None)
         w = worker.Worker(dispatcher, repo, logger, client)
@@ -81,7 +81,7 @@ class TestFunctions(TestCase):
 
     def test_manual(self):
         repo = self.RepoMock()
-        client = self.MHHTTPClientMock()
+        client = self.OCHTTPClientMock()
         dispatcher = self.DispatcherMock()
         logger = Logger(None)
         w = worker.Worker(dispatcher, repo, logger, client)
@@ -97,7 +97,7 @@ class TestFunctions(TestCase):
 
     def test_no_manual(self):
         repo = self.RepoMock()
-        client = self.MHHTTPClientMock()
+        client = self.OCHTTPClientMock()
         dispatcher = self.DispatcherMock()
         logger = Logger(None)
         w = worker.Worker(dispatcher, repo, logger, client)
@@ -114,7 +114,7 @@ class TestFunctions(TestCase):
 
     def test_no_manual_only_workflow(self):
         repo = self.RepoMock()
-        client = self.MHHTTPClientMock()
+        client = self.OCHTTPClientMock()
         dispatcher = self.DispatcherMock()
         logger = Logger(None)
         w = worker.Worker(dispatcher, repo, logger, client)
@@ -132,7 +132,7 @@ class TestFunctions(TestCase):
 
     def test_exec_nightly(self):
         repo = Repository('/tmp/repo_night')
-        client = self.MHHTTPClientMock()
+        client = self.OCHTTPClientMock()
         dispatcher = Dispatcher()
         logger = Logger(None)
         w = worker.Worker(dispatcher, repo, logger, client)

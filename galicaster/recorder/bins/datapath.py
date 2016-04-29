@@ -29,7 +29,7 @@ class GCdatapath(v4l2.GCv4l2):
         "flavor": {
             "type": "flavor",
             "default": "presentation",
-            "description": "Matterhorn flavor associated to the track",
+            "description": "Opencast flavor associated to the track",
             },
         "location": {
             "type": "device",

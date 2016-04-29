@@ -6,7 +6,7 @@ Admitted values:
 
 name: Name assigned to the device.
 device: Device type: pulse
-flavor: Matterhorn "flavor" associated to the track. (presenter|presentation|other)
+flavor: Opencast "flavor" associated to the track. (presenter|presentation|other)
 location: PulseAudio source name. Use default to select the same Input as the Sound Control
 file: The file name where the track will be recorded.
 vumeter: Activates data sending to the program's vumeter. (True|False) Only one device should be activated.

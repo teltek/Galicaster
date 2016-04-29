@@ -88,7 +88,7 @@ Admitted values:
 
 {name}: Name assigned to the device.
 {device}: Device type: epiphan
-{flavor}: Matterhorn "flavor" associated to the track. (*presenter|presentation|other)
+{flavor}: Opencast "flavor" associated to the track. (*presenter|presentation|other)
 {location}}: Device's mount point in the system (e.g. /dev/screen).
 {file}}: The file name where the track will be recorded. (default:CAMERA.avi)
 {drivertype}}: Wheter the device use a v4l or a v4l2 interface to guarantee compatibility (v4l|v4l2)

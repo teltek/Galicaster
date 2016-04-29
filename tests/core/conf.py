@@ -75,8 +75,8 @@ class TestFunctions(TestCase):
         self.assertEqual('/tmp/repo', self.conf.get('basic', 'temp'))
         
 
-    def test_get_tracks_in_mh_dict(self):
-        conf = self.conf.get_tracks_in_mh_dict()
+    def test_get_tracks_in_oc_dict(self):
+        conf = self.conf.get_tracks_in_oc_dict()
         self.assertEqual(len(conf), 3*3 +1)
         self.assertEqual(conf['capture.device.names'], 'track1,track3,track2')
         self.assertEqual(conf['capture.device.track2.outputfile'], 'SCREEN.mpeg')
@@ -224,8 +224,8 @@ class TestFunctions(TestCase):
         conf.set('basic', 'admin', 'True')
         conf.set('ingest', 'hostname', None)
         self.assertEqual('GCMobile-' + socket.gethostname(), conf.get_hostname())
-        self.assertEqual(1, len(conf.get_tracks_in_mh_dict()))
-        self.assertEqual({'capture.device.names': 'defaults'}, conf.get_tracks_in_mh_dict())
+        self.assertEqual(1, len(conf.get_tracks_in_oc_dict()))
+        self.assertEqual({'capture.device.names': 'defaults'}, conf.get_tracks_in_oc_dict())
         conf.set('basic', 'admin', 'False')
         self.assertEqual('GC-' + socket.gethostname(), conf.get_hostname())
         name = "123456_654321"

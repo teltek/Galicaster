@@ -16,7 +16,7 @@ name: Name assigned to the device.
 device: Device type: blackmagic
 location: Device's mount point in the system.
 file: The file name where the track will be recorded.
-flavor: Matterhorn "flavor" associated to the track. (presenter|presentation|other)
+flavor: Opencast "flavor" associated to the track. (presenter|presentation|other)
 input: Input signal format. (sdi|hdmi|opticalsdi|component|composite|svideo)
 input-mode: Input video mode and framerate (eg. 1080i60). More information here.
 audio-input: Input audio mode (none|auto|embedded|aes|analog). More information here.

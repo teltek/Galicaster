@@ -11,7 +11,7 @@ Admitted values:
 
 name: Name assigned to the device.
 device: Device type: rtp
-lavor: Matterhorn "flavor" associated to the track. (presenter|presentation|other)
+lavor: Opencast "flavor" associated to the track. (presenter|presentation|other)
 location: URL to the RTP source. (e.g. rtsp://127.0.0.1:554/mpeg4).
 file: The file name where the track will be recorded.
 cameratype: Wheter the device streams a MPEG4 or H264 stream. (mpeg4|h264)

@@ -17,7 +17,7 @@ Admitted values:
 
 name: Name assigned to the device.
 device: Device type: epiphan
-flavor: Matterhorn "flavor" associated to the track. (presenter|presentation|other)
+flavor: Opencast "flavor" associated to the track. (presenter|presentation|other)
 location: Device's mount point in the system (e.g. /dev/epiphan).
 file: The file name where the track will be recorded.
 drivertype: Wheter the device use a v4l2 or a v4l interface, to guarantee backwards compatibility (v4l2|v4l)

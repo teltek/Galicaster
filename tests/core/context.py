@@ -48,56 +48,56 @@ class TestFunctions(TestCase):
         self.assertEqual(type(context.get_repository()), galicaster.mediapackage.repository.Repository)
 
 
-    def test_get_scheduler_and_mhclient_none(self):
+    def test_get_scheduler_and_occlient_none(self):
         conf = context.get_conf()
 
         conf.set('ingest', 'active', 'False')
-        self.assertEqual(context.get_mhclient(), None)
+        self.assertEqual(context.get_occlient(), None)
         self.assertEqual(context.get_scheduler(), None)
 
-        context.delete('mhclient')
+        context.delete('occlient')
         context.delete('scheduler')
         conf.set('ingest', 'active', 'True')
-        self.assertEqual(type(context.get_mhclient()), galicaster.utils.mhhttpclient.MHHTTPClient)
+        self.assertEqual(type(context.get_occlient()), galicaster.opencast.client.OCHTTPClient)
         self.assertEqual(type(context.get_scheduler()), galicaster.scheduler.scheduler.Scheduler)
 
 
-    def test_get_mhclient_with_config(self):
+    def test_get_occlient_with_config(self):
         # Context init in other test
-        if context.has('mhclient'):
-            context.delete('mhclient') 
+        if context.has('occlient'):
+            context.delete('occlient') 
 
         host = "http://servertest.www.es"
         conf = context.get_conf()
         conf.set('ingest', 'active', 'True')
         original_host = conf.get('ingest', 'host')
         conf.set('ingest', 'host', host)
-        client = context.get_mhclient()
+        client = context.get_occlient()
         self.assertNotEqual(original_host, client.server)
         self.assertEqual(host, client.server)
 
-        context.delete('mhclient') # Context init in other test
+        context.delete('occlient') # Context init in other test
         hostname = 'foobar'
         conf.hostname = hostname
-        client = context.get_mhclient()
+        client = context.get_occlient()
         self.assertEqual(hostname, client.hostname)
 
-        context.delete('mhclient') # Context init in other test
+        context.delete('occlient') # Context init in other test
         conf.set('basic', 'admin', 'False')
         conf.remove_option('ingest', 'hostname')
         conf.hostname = conf.get_hostname()
-        client = context.get_mhclient()
+        client = context.get_occlient()
         self.assertEqual('GC-' + socket.gethostname(), client.hostname)
 
-        context.delete('mhclient') # Context init in other test
+        context.delete('occlient') # Context init in other test
         conf.set('basic', 'admin', 'True')
         conf.remove_option('ingest', 'hostname')
         conf.hostname = conf.get_hostname()
-        client = context.get_mhclient()
+        client = context.get_occlient()
         self.assertEqual('GCMobile-' + socket.gethostname(), client.hostname)
 
         context.delete('conf') # To other test
-        context.delete('mhclient') # To other test
+        context.delete('occlient') # To other test
 
 
         

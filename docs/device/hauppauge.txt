@@ -6,7 +6,7 @@ Admitted values
 
 name: Name assigned to the device.
 device: Device type: hauppauge
-flavor: Matterhorn "flavor" associated to the track. (presenter|presentation|other)
+flavor: Opencast "flavor" associated to the track. (presenter|presentation|other)
 location: Device's mount point of the MPEG output.
 locprevideo: Device's mount point of the RAW output.
 locpreaudio: Device's mount point of the PCM output.

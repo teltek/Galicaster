@@ -23,7 +23,6 @@ from unittest import TestCase
 from tests import get_resource
 from galicaster.mediapackage import repository
 from galicaster.mediapackage import mediapackage
-from galicaster.utils.mhhttpclient import MHHTTPClient
 
 class TestFunctions(TestCase):
 

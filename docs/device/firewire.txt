@@ -11,7 +11,7 @@ Admmited values:
 
 name: Name assigned to the device.
 device: Device type: firewire
-flavor: Matterhorn "flavor" associated to the track. (presenter|presentation|other)
+flavor: Opencast "flavor" associated to the track. (presenter|presentation|other)
 location: Device's mount point in the system (e.g. /dev/video0).
 file: The file name where the track will be recorded.
 vumeter: Activates data sending to the program's vumeter. (True|False) Only one device should be activated.

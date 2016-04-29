@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       tests/utils/mh_client
+#       tests/opencast/client
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
@@ -13,7 +13,7 @@
 
 
 """
-Unit tests for `galicaster.utils` module.
+Unit tests for `galicaster.opencast` module.
 
 Disble by default. You can enable it to test MatterHorn HTTP Client.
 """
@@ -25,43 +25,51 @@ from xml.dom.minidom import parseString
 from unittest import TestCase
 from nose.plugins.attrib import attr
 
-from galicaster.utils.mhhttpclient import MHHTTPClient
+from galicaster.opencast.client import OCHTTPClient
 
 
-@attr('nodefault', 'matterhorn')
+@attr('nodefault', 'opencast')
 class TestFunctions(TestCase):
 
-    def test_userandaddressinit(self):
+    def test_init(self):
         server = 'http://demo.opencastproject.org'
-        user = 'matterhorn_system_account';
+        user = 'opencast_system_account';
         password = 'CHANGE_ME';
-        hostname = 'rubenruaHost'
+        hostname = 'GalicasterTestHost'
         address = '8.8.8.8'
+        multiple_ingest = False
+        connect_timeout = 2
+        timeout = 2
         workflow = 'mini-full'
         workflow_parameters = {'uno': 'uno'}
         workflow_parameters_2 = {'uno': 'uno', 'dos': 'dos'}
 
-        client = MHHTTPClient(server, user, password)
+        client = OCHTTPClient(server, user, password)
         self.assertEqual(client.hostname, 'galicaster')
         self.assertEqual(client.address, socket.gethostbyname(socket.gethostname()))
 
-        client = MHHTTPClient(server, user, password, hostname)
+        client = OCHTTPClient(server, user, password, hostname)
         self.assertEqual(client.hostname, hostname)
         self.assertEqual(client.address, socket.gethostbyname(socket.gethostname()))
 
-        client = MHHTTPClient(server, user, password, hostname, address)
+        client = OCHTTPClient(server, user, password, hostname, address)
         self.assertEqual(client.hostname, hostname)
         self.assertEqual(client.address, address)
 
-        client = MHHTTPClient(server, user, password, hostname, address)
+        client = OCHTTPClient(server, user, password, hostname, address)
         self.assertEqual(client.workflow, 'full')
         self.assertEqual(client.workflow_parameters, {'trimHold': 'true'})
 
-        client = MHHTTPClient(server, user, password, hostname, address, workflow, workflow_parameters)
+        client = OCHTTPClient(server, user, password, hostname, address, multiple_ingest, connect_timeout, timeout)
+        self.assertEqual(client.multiple_ingest, multiple_ingest)
+        self.assertEqual(client.connect_timeout, connect_timeout)
+        self.assertEqual(client.timeout, timeout)
+
+        client = OCHTTPClient(server, user, password, hostname, address, multiple_ingest, connect_timeout, timeout, workflow, workflow_parameters)
         self.assertEqual(client.workflow, 'mini-full')
         self.assertEqual(client.workflow_parameters, workflow_parameters)
 
-        client = MHHTTPClient(server, user, password, hostname, address, workflow, workflow_parameters_2)
+        client = OCHTTPClient(server, user, password, hostname, address, multiple_ingest, connect_timeout, timeout, workflow, workflow_parameters_2)
         self.assertEqual(client.workflow, 'mini-full')
         self.assertEqual(client.workflow_parameters, workflow_parameters_2)
 
@@ -70,7 +78,7 @@ class TestFunctions(TestCase):
     def test_prepare_ingest(self):
         workflow = 'mini-full'
         workflow_parameters = {'uno': 'uno', 'dos': 'dos'}
-        client = MHHTTPClient(None, None, None, None, None, workflow, workflow_parameters)
+        client = OCHTTPClient(None, None, None, None, None, False, 2, 2, workflow, workflow_parameters)
         
         # Default values
         postdict = client._prepare_ingest('file')
@@ -106,32 +114,32 @@ class TestFunctions(TestCase):
     # OC-MH whoami endpoint return anonymous.
     def test_whoami(self):
         server = 'http://demo.opencastproject.org'
-        user = 'matterhorn_system_account'
+        user = 'opencast_system_account'
         password = 'CHANGE_ME'
 
-        client = MHHTTPClient(server, user, password)
-        mh_user = client.whoami()
+        client = OCHTTPClient(server, user, password)
+        oc_user = client.whoami()
 
-        self.assertEqual(mh_user['username'], 'matterhorn_system_account')
+        self.assertEqual(oc_user['username'], 'opencast_system_account')
 
 
     def test_whoami(self):
         server = 'http://demo.opencastproject.org'
-        user = 'matterhorn_system_account'
+        user = 'opencast_system_account'
         password = 'CHANGE_ME'
 
-        client = MHHTTPClient(server, user, password)
-        mh_user = client.welcome()
+        client = OCHTTPClient(server, user, password)
+        oc_user = client.welcome()
 
         self.assertTrue(True)
 
 
     def test_series(self):
         server = 'http://demo.opencastproject.org'
-        user = 'matterhorn_system_account'
+        user = 'opencast_system_account'
         password = 'CHANGE_ME'
 
-        client = MHHTTPClient(server, user, password)
+        client = OCHTTPClient(server, user, password)
         series = client.getseries()    
 
         self.assertTrue(isinstance(series, basestring))
@@ -140,13 +148,13 @@ class TestFunctions(TestCase):
 
     def test_setstate(self):
         server = 'http://demo.opencastproject.org'
-        user = 'matterhorn_system_account'
+        user = 'opencast_system_account'
         password = 'CHANGE_ME'
         client_name = 'rubenrua_pr'
         client_address = '172.20.209.225'
         client_states = [ 'shutting_down', 'capturing', 'uploading', 'unknown', 'idle' ]        
 
-        client = MHHTTPClient(server, user, password)
+        client = OCHTTPClient(server, user, password)
         client.hostname = client_name
         client.address = client_address
         
@@ -157,12 +165,12 @@ class TestFunctions(TestCase):
 
     def test_setcapabilities(self):
         server = 'http://demo.opencastproject.org'
-        user = 'matterhorn_system_account'
+        user = 'opencast_system_account'
         password = 'CHANGE_ME'
         client_name = 'rubenrua_pr'
         client_address = '172.20.209.225'
 
-        client = MHHTTPClient(server, user, password)
+        client = OCHTTPClient(server, user, password)
         client.hostname = client_name
         client.address = client_address
         
@@ -174,9 +182,9 @@ class TestFunctions(TestCase):
 
     def test_limit_init_duration(self):
         server = 'http://10.10.10.10:10'
-        user = 'matterhorn_system_account'
+        user = 'opencast_system_account'
         password = 'CHANGE_ME'
 
-        client = MHHTTPClient(server, user, password)
+        client = OCHTTPClient(server, user, password)
 
         self.assertRaises(RuntimeError, client.welcome)

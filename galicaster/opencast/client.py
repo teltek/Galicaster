@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       galicaster/utils/mhhttpclient
+#       galicaster/opencast/client
 #
-# Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
+# Copyright (c) 2016, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
 # NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
@@ -43,7 +43,7 @@ SEARCH_SERVICE_TYPE = 'org.opencastproject.search'
 INGEST_SERVICE_TYPE = 'org.opencastproject.ingest'
 
 
-class MHHTTPClient(object):
+class OCHTTPClient(object):
     
     def __init__(self, server, user, password, hostname='galicaster', address=None, multiple_ingest=False, 
                  connect_timeout=2, timeout=2, workflow='full', workflow_parameters={'trimHold':'true'}, 
@@ -51,9 +51,9 @@ class MHHTTPClient(object):
         """
         Arguments:
 
-        server -- Matterhorn server URL.
-        user -- Account used to operate the Matterhorn REST endpoints service.
-        password -- Password for the account  used to operate the Matterhorn REST endpoints service.
+        server -- Opencast server URL.
+        user -- Account used to operate the Opencast REST endpoints service.
+        password -- Password for the account  used to operate the Opencast REST endpoints service.
         hostname -- Capture agent hostname, optional galicaster by default.
         address -- Capture agent IP address, optional socket.gethostbyname(socket.gethostname()) by default.
         multiple_ingest -- Use an ingest node, optional False by default.
@@ -117,7 +117,7 @@ class MHHTTPClient(object):
         c.setopt(pycurl.NOSIGNAL, 1)
         c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_DIGEST)
         c.setopt(pycurl.USERPWD, self.user + ':' + self.password)
-        sendheaders = ['X-Requested-Auth: Digest', 'X-Opencast-Matterhorn-Authorization: true']
+        sendheaders = ['X-Requested-Auth: Digest', 'X-Matterhorn-Opencast-Authorization: true']
         if headers:
             for h, v in headers.iteritems():
                 sendheaders.append('{}: {}'.format(h, v))
@@ -127,7 +127,7 @@ class MHHTTPClient(object):
         c.setopt(pycurl.USERAGENT, 'Galicaster' + version)
         c.setopt(pycurl.SSL_VERIFYPEER, False) # equivalent to curl's --insecure
 
-        c.setopt(pycurl.HTTPHEADER, ['X-Requested-Auth: Digest', 'X-Opencast-Matterhorn-Authorization: true'])
+        c.setopt(pycurl.HTTPHEADER, ['X-Requested-Auth: Digest', 'X-Matterhorn-Opencast-Authorization: true'])
         c.setopt(pycurl.USERAGENT, 'Galicaster')
         c.setopt(pycurl.SSL_VERIFYPEER, False) # equivalent to curl's --insecure
        
@@ -150,11 +150,11 @@ class MHHTTPClient(object):
         c.close()
         if status_code != 200 and status_code != 302 and status_code != 304:
             if (status_code > 200) and (status_code < 300):
-                self.logger and self.logger.debug("Matterhorn client ({}) sent a response with status code {}".format(urlparse.urlunparse(url), status_code))
+                self.logger and self.logger.debug("Opencast client ({}) sent a response with status code {}".format(urlparse.urlunparse(url), status_code))
             else:
                 self.logger and self.logger.error('call error in %s, status code {%r}: %s', 
-                                                  urlparse.urlunparse(url), status_code, b.getvalue())   
-                raise IOError, 'Error in Matterhorn client'
+                                                  urlparse.urlunparse(url), status_code, b.getvalue())
+                raise IOError, 'Error in Opencast client'
 
         return b.getvalue()
 
@@ -222,7 +222,7 @@ class MHHTTPClient(object):
             'capture.schedule.remote.polling.interval': int(self.polling_schedule)/60,
             'capture.schedule.event.buffertime': '1',
             'capture.schedule.remote.endpoint.url': self.server + '/recordings/calendars',
-            'capture.schedule.cache.url': '/opt/matterhorn/storage/cache/schedule.ics',
+            'capture.schedule.cache.url': '/opt/opencast/storage/cache/schedule.ics',
             'capture.ingest.retry.interval': '300',
             'capture.ingest.retry.limit': '5',
             'capture.ingest.pause.time': '3600',
@@ -266,7 +266,7 @@ class MHHTTPClient(object):
 
     def _get_endpoints(self, service_type):
         if self.logger:
-            self.logger.debug('Looking up Matterhorn endpoint for %s', service_type)
+            self.logger.debug('Looking up Opencast endpoint for %s', service_type)
         services = self.__call('GET', SERVICE_REGISTRY_ENDPOINT, {}, {'serviceType': service_type})
         services = json.loads(services)
         return services['services']['service']
@@ -278,7 +278,7 @@ class MHHTTPClient(object):
         return self.search_server
 
     def search_by_mp_id(self, mp_id):
-        """ Returns search result from matterhorn """
+        """ Returns search result from opencast """
         search_server = self._get_search_server()
         result = self.__call('GET', SEARCH_ENDPOINT, {}, {'id': mp_id}, {}, True, search_server, True)
         search_result = json.loads(result)

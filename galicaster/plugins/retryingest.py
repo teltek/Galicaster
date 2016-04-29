@@ -28,7 +28,7 @@ from galicaster.mediapackage import mediapackage
 
 logger = context.get_logger()
 conf = context.get_conf()
-mhclient = context.get_mhclient()
+occlient = context.get_occlient()
 repo = context.get_repository()
 
 check_published = conf.get_boolean('retryingest', 'check_published')
@@ -51,11 +51,11 @@ def init():
 
 def is_published(mp_id, mp):
     # check if the mediapackage is published to the search index
-    search_result = mhclient.search_by_mp_id(mp_id)
+    search_result = occlient.search_by_mp_id(mp_id)
     if int(search_result['total']):
         logger.debug('mediapackage {} is already published'.format(mp_id))
         # mediapackage has actually been ingested successfully at some point
-        # as it is published in matterhorn so set the state to "done"
+        # as it is published in opencast so set the state to "done"
         mp.setOpStatus('ingest', mediapackage.OP_DONE)
         repo.update(mp)
         return True
@@ -77,7 +77,7 @@ def reingest(sender=None):
         # only finished recordings
         if not (mp.status == mediapackage.SCHEDULED or mp.status == mediapackage.RECORDING):
             if mp.getOpStatus('ingest') == mediapackage.OP_FAILED:
-                # check mediapackage status on matterhorn if needed
+                # check mediapackage status on opencast if needed
                 if (check_published and not is_published(mp_id, mp)) or not check_published:
                     # postpone the ingest until the 'nightly' ingest time else ingest immediately
                     if check_nightly:
