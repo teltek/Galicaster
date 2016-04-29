@@ -66,22 +66,29 @@ class Recorder(object):
         self.bus.connect('message::element', WeakMethod(self, '_on_message_element'))
 
 
-        for bin in bins:
-            name = bin['name']
-
-            try:
+        try:            
+            for bin in bins:
+                name = bin['name']
+                
                 mod_name = 'galicaster.recorder.bins.' + bin['device']
                 __import__(mod_name)
                 mod = sys.modules[mod_name]
                 Klass = getattr(mod, "GC" + bin['device'])
-            except Exception as exc:
-                message = 'Invalid track type "{}" for "{}" track: {}'.format(bin.get('device'), name, exc)
-                logger.error(message)
-                raise NameError(message)
+                
+                logger.debug("Init bin {} {}".format(name, mod_name))
+                self.bins[name] = Klass(bin)
+                self.pipeline.add(self.bins[name])
+                
+        except Exception as exc:
+            logger.info("Removing loaded bins due to an error...")
+            for bin_name in self.bins:
+                self.pipeline.remove(self.bins[bin_name])
+            self.bins.clear()
+            
+            self.error = str(exc)
+            message = 'Invalid track type "{}" for "{}" track: {}'.format(bin.get('device'), name, exc)
+            raise NameError(message)
 
-            logger.debug("Init bin {} {}".format(name, mod_name))
-            self.bins[name] = Klass(bin)
-            self.pipeline.add(self.bins[name])
 
 
     def get_status(self, timeout=GST_TIMEOUT):        

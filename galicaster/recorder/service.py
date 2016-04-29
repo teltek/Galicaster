@@ -88,10 +88,12 @@ class RecorderService(object):
             return False
         
         self.logger.info("Starting recording service in the preview status")
-        self.__prepare()
-        self.recorder.preview()
-        self.__set_status(PREVIEW_STATUS)
-        return True
+        ok = self.__prepare()
+        if ok:
+            self.recorder.preview()
+            self.__set_status(PREVIEW_STATUS)
+            return True
+        return False
 
 
     def __prepare(self):
@@ -101,13 +103,21 @@ class RecorderService(object):
         for objectbin in bins:
             objectbin['path'] = self.repo.get_rectemp_path()
 
-        self.recorder = self.__recorderklass(bins)
-        self.mute_preview(self.mute)
-        if self.__create_drawing_areas_func:
-            info = self.recorder.get_display_areas_info()
-            areas = self.__create_drawing_areas_func(info)
-            self.recorder.set_drawing_areas(areas)
+        try:
+            self.recorder = self.__recorderklass(bins)
 
+            self.mute_preview(self.mute)
+            if self.__create_drawing_areas_func:
+                info = self.recorder.get_display_areas_info()
+                areas = self.__create_drawing_areas_func(info)
+                self.recorder.set_drawing_areas(areas)
+
+        except Exception as exc:
+            self.__set_status(ERROR_STATUS)
+            self.dispatcher.emit("recorder-error", str(exc))
+            return False
+        
+        return True
 
     def record(self, mp=None):
         self.logger.info("Recording")
@@ -220,7 +230,8 @@ class RecorderService(object):
     def _handle_error(self, origin, error_msg):
         self.logger.error("Handle error ({})". format(error_msg))
         self.current_mediapackage = None
-        self.recorder.stop(True)
+        if self.recorder:
+            self.recorder.stop(True)
         self.error_msg = error_msg
         self.__set_status(ERROR_STATUS)
 
@@ -247,7 +258,8 @@ class RecorderService(object):
     def _handle_reload_profile(self, origin):
         if self.status in (PREVIEW_STATUS, ERROR_STATUS):
             self.logger.debug("Resetting recorder after reloading the profile")
-            self.recorder.stop(True)
+            if self.recorder:
+                self.recorder.stop(True)
             self.__set_status(INIT_STATUS)
             self.preview()
             
