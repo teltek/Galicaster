@@ -47,7 +47,7 @@ JOB_NAMES = { INGEST_CODE: INGEST,
 
 """
 This class manages the long operations to be done with a mediapackage:
-    Ingest it into matterhorn server.
+    Ingest it into opencast server.
     Save it as a zip.
     Do side by side.
 This operations are threads concurrently done with the rest of galicaster tasks to avoid blocking them.
@@ -77,14 +77,14 @@ class Worker(object):
                 self.queue.task_done()
     
 
-    def __init__(self, dispatcher, repo, logger, mh_client=None, export_path=None, tmp_path=None, 
+    def __init__(self, dispatcher, repo, logger, oc_client=None, export_path=None, tmp_path=None, 
                  use_namespace=True, sbs_layout='sbs', hide_ops=[], hide_nightly=[]):
         """Initializes a worker that manages the mediapackages of the repository in order to do long operations concurrently by throwing Threads when necessay.
         Args:
             dispacher (Dispatcher): the galicaster event-dispatcher to emit signals. 
             repo (Repository): the galicaster mediapackage repository.
             logger (Logger): the object that prints all the information, warning and error messages.
-            mh_client (MHHTTPClient): the matterhorn HTTP client.
+            oc_client (OCHTTPClient): the opencast HTTP client.
             export_path (str): the absolute path where galicaster exports zip and sidebyside.
             tmp_path (str): temporal path (needed if /tmp partition is small).
             use_namespace (bool): if true the manifest attribute xmlns has 'http://mediapackage.opencastproject.org' value.
@@ -103,7 +103,7 @@ class Worker(object):
 
 
         self.repo = repo
-        self.mh_client = mh_client
+        self.oc_client = oc_client
         self.export_path = export_path or os.path.expanduser('~')
         self.tmp_path = tmp_path or tempfile.gettempdir()
         self.use_namespace = use_namespace
@@ -157,7 +157,7 @@ class Worker(object):
         jobs_night = []
 
         for key,value in JOBS.iteritems():
-            if key==INGEST and not self.mh_client:
+            if key==INGEST and not self.oc_client:
                 continue
             if mp.getOpStatus(value) not in [mediapackage.OP_PENDING, mediapackage.OP_PROCESSING]:
                 if value not in self.hide_ops:
@@ -183,7 +183,7 @@ class Worker(object):
         jobs_night = []
 
         for key,value in JOBS.iteritems():
-            if key==INGEST and not self.mh_client:
+            if key==INGEST and not self.oc_client:
                 continue
 
             if key not in [INGEST, ZIPPING, SBS]:
@@ -286,7 +286,7 @@ class Worker(object):
         return os.path.join(self.export_path, name + '.' + extension)
 
     def ingest_nightly(self, mp):
-        """Ingests nigthly a mediapackage into matterhorn.
+        """Ingests nigthly a mediapackage into opencast.
         Args:
             mp (Mediapackage): the mediapackage to be nightly ingested.
         """
@@ -304,12 +304,12 @@ class Worker(object):
         self.jobs.put((self._ingest, (mp, params)))
 
     def _ingest(self, mp, params={}):
-        """Tries to immediately ingest the mediapackage into matterhorn.
+        """Tries to immediately ingest the mediapackage into opencast.
         If the ingest cannot be done, logger prints it properly.
         Args:
             mp(Mediapackage): the mediapackage to be immediately ingested.
         """
-        if not self.mh_client:
+        if not self.oc_client:
             self.operation_error(mp, INGEST, 'MH client is not enabled')
             return
             
@@ -331,7 +331,7 @@ class Worker(object):
 
         if mp.manual:
             try:
-                self.mh_client.ingest(ifile.name, mp.getIdentifier(), workflow=workflow, workflow_instance=None, workflow_parameters=workflow_parameters)
+                self.oc_client.ingest(ifile.name, mp.getIdentifier(), workflow=workflow, workflow_instance=None, workflow_parameters=workflow_parameters)
                 self.operation_success(mp, INGEST)
             except Exception as exc:
                 self.operation_error(mp, INGEST, exc)
@@ -351,7 +351,7 @@ class Worker(object):
                         workflow_parameters[k[36:]] = v
 
             try:
-                self.mh_client.ingest(ifile.name, mp.getIdentifier(), workflow, mp.getIdentifier(), workflow_parameters)
+                self.oc_client.ingest(ifile.name, mp.getIdentifier(), workflow, mp.getIdentifier(), workflow_parameters)
                 self.operation_success(mp, INGEST)
             except Exception as exc:
                 self.operation_error(mp, INGEST, exc)

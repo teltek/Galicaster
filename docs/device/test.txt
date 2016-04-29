@@ -7,7 +7,7 @@ Videotest
 [] videotest: Mock video device.
        * name: Name assigned to the device.
        * device: Device type: videotest
-       * flavor: Matterhorn "flavor" associated to the track. (presenter|presentation|other)
+       * flavor: Opencast "flavor" associated to the track. (presenter|presentation|other)
        * location: Device's mount point in the system (e.g. /dev/video0).
        * file: The file name where the track will be recorded.
        * active: Whether the device will be played and recorded. (True|False)
@@ -46,7 +46,7 @@ Audiotest
  [] audiotest: Mock audio device.
        * name: Name assigned to the device.
        * device: Device type: pulse
-       * flavor: Matterhorn "flavor" associated to the track. (presenter|presentation|other)
+       * flavor: Opencast "flavor" associated to the track. (presenter|presentation|other)
        * location: PulseAudio source name. Use default to select the same Input as the Sound Control. To list PulseAudio devices run: `pactl list | grep "Source" -A 5` and use "Name:" as the location field.
        * file: The file name where the track will be recorded.
        * wave: Generated waveform sample. Run gst-inspect-0.10 audiotestsrc fore more information. (0-12)

@@ -16,7 +16,7 @@ Admitted values:
 
 name: Name assigned to the device.
 device: Device type: datapath
-flavor: Matterhorn "flavor" associated to the track. (presenter|presentation|other)
+flavor: Opencast "flavor" associated to the track. (presenter|presentation|other)
 location: Device's mount point in the system (e.g. /dev/video0).
 file: The file name where the track will be recorded. (The path is automatically assembled)
 videocrop: Margin in pixels to be cutted. Useful to set a 4:3 proportion on a HD webcam.videocrop-top, videocrop-bottom, videocrop-left, videocrop-right (optional).

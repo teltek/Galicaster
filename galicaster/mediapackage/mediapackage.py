@@ -14,7 +14,7 @@
 
 """
 This module contains:
-    the Mediapackage class: manage Matterhorn mediapackages.
+    the Mediapackage class: manage Opencast mediapackages.
     the mediapackage elements classes (Track, Catalog, Attachment, Other).
     the Element superclass.
 """
@@ -87,10 +87,10 @@ class IllegalStateError(Exception):
 class Element(object):
     def __init__(self, uri, flavor=None, mimetype=None, identifier=None, tags=[]):
         """Initializer of the abstract class Element.
-        Base class for classes that may be contained by a Mediapackage Matterhorn.
+        Base class for classes that may be contained by a Mediapackage Opencast.
         Mediapackage elements may be: Track, Catalog, Attachment, Other
         See: org.opencastproject.mediapackage.MediaPackageElement Java Interface in 
-            url: http://opencast.jira.com/svn/MH/trunk/modules/matterhorn-common/src/main/java/org/opencastproject/mediapackage/MediaPackageElement.java
+            url: http://opencast.jira.com/svn/MH/trunk/modules/opencast-common/src/main/java/org/opencastproject/mediapackage/MediaPackageElement.java
         Args:
             uri (str): the absolute path of the element.
             flavor (str): the classificatory tag of the element.
@@ -101,7 +101,7 @@ class Element(object):
             etype (str): the type of element. See module constants.
             mime (str): the given mime type of the element.
             flavor (str): the fiven cassificatory tag of the element.
-            tags (List[str]): list of the tags (matterhorn cassificatory tags) of the element.
+            tags (List[str]): list of the tags (opencast cassificatory tags) of the element.
             __id (str): the given identifier of the element.
             __mp (Mediapackage): the mediapackage which the element belongs.
         Raises:
@@ -274,9 +274,9 @@ class Element(object):
 
 class Track(Element):
     def __init__(self, uri, duration, flavor=None, mimetype=None, identifier=None, tags=[]):
-        """Initializes the representation of the audio and video tracks to be introduced into Matterhorn Mediapackage.
+        """Initializes the representation of the audio and video tracks to be introduced into Opencast Mediapackage.
         See: org.opencastproject.mediapackage.Track Java Interface in 
-            url: http://opencast.jira.com/svn/MH/trunk/modules/matterhorn-common/src/main/java/org/opencastproject/mediapackage/Track.java
+            url: http://opencast.jira.com/svn/MH/trunk/modules/opencast-common/src/main/java/org/opencastproject/mediapackage/Track.java
         Args:
             uri (str): the track's absolute path.
             duration (int): the duration of the track in seconds.
@@ -402,9 +402,9 @@ class Other(Element):
 
 class Mediapackage(object):
     def __init__(self, identifier=None, title=None, date=None, presenter=None, uri=None): #FIXME init with sets
-        """Initializes the class to manage Matterhorn mediapackages.
+        """Initializes the class to manage Opencast mediapackages.
         See: org.opencastproject.mediapackage.MediaPackage Java Interface in 
-            url: http://opencast.jira.com/svn/MH/trunk/modules/matterhorn-common/src/main/java/org/opencastproject/mediapackage/MediaPackage.java
+            url: http://opencast.jira.com/svn/MH/trunk/modules/opencast-common/src/main/java/org/opencastproject/mediapackage/MediaPackage.java
         Args:
             identifier (str): the unique identifier of the mediapackage.
             title (str): the title of the mediapackage.
@@ -821,7 +821,7 @@ class Mediapackage(object):
         Args:
             etype(str): the type of elements to be returned. See Module constants. 
             flavor (str): a classificatory name of the element.
-            tags (str or List): matterhorn's classificatory names.
+            tags (str or List): opencast's classificatory names.
         Returns:
             List[Element]: set of elements that satisfies the requested parameters.
         """
@@ -1397,7 +1397,7 @@ class Mediapackage(object):
 
     def getOCCaptureAgentProperty(self, name):
         # FIXME refactor
-        """Tries the value of a property in the matterhorn's configuration file.
+        """Tries the value of a property in the opencast's configuration file.
         If any error is catched, it returns none.
         Args:
             name (str): name of the property
@@ -1414,10 +1414,10 @@ class Mediapackage(object):
 
     def getOCCaptureAgentProperties(self):
         # FIXME refactor
-        """Tries to get the properties of the matterhorn's configuration file.
+        """Tries to get the properties of the opencast's configuration file.
         If any error is catched, it returns an empty dictionary.
         Returns:
-            Dict{Str,Str}: a dictionary with the name of all the properties of the matterhorn's config file and its values.
+            Dict{Str,Str}: a dictionary with the name of all the properties of the opencast's config file and its values.
         """
         try:
             attach = self.getAttachment('org.opencastproject.capture.agent.properties')

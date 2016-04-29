@@ -21,7 +21,7 @@ This module initializes:
     Dispatcher: contains all the signals that communicates different parts of Galicaster app. See core/dispatcher.py
     Repository: contains and manages all the mediapackages. See mediapackage/repository.py
     Worker: in charge of processing long mediapackage operations. See core/worker.py
-    MHClient (Matterhorn's client): communicates with Matterhorn. See utils/mhttpclient.py
+    OCClient (Opencast's client): communicates with Opencast. See opencast/client.py
     Mainwindow: the UI. See classui/mainwindow.py
     Heartbeat: in charge of emitting signals in long and short periods of time. See scheduler/heartbeat.py
     Scheduler: manages scheduled recordings. See scheduler/scheduler.py
@@ -94,20 +94,20 @@ def get_logger():
     return __galicaster_context['logger']
 
 
-def get_mhclient():
-    """Creates if necessary and retrieves the Mhclient class from the App Context.
+def get_occlient():
+    """Creates if necessary and retrieves the OCclient class from the App Context.
     Returns:
-        MHTTPClient: the matterhorn client of galicaster context.
+        OCHTTPClient: the opencast client of galicaster context.
     """
-    from galicaster.utils.mhhttpclient import MHHTTPClient
+    from galicaster.opencast.client import OCHTTPClient
 
-    if 'mhclient' not in __galicaster_context:
+    if 'occlient' not in __galicaster_context:
         conf = get_conf()
         multiple_ingest  = conf.get_boolean('ingest','multiple-ingest') or False
         connect_timeout = conf.get_int('ingest', 'connect_timeout') or 2
         timeout = conf.get_int('ingest', 'timeout') or 2
         if get_conf().get_boolean("ingest", "active"):
-            mhclient = MHHTTPClient(conf.get('ingest', 'host'), 
+            occlient = OCHTTPClient(conf.get('ingest', 'host'), 
                                     conf.get('ingest', 'username'), 
                                     conf.get('ingest', 'password'), 
                                     conf.get_hostname(), 
@@ -123,10 +123,10 @@ def get_mhclient():
                                     get_repository(),
                                     get_logger())
         else:
-            mhclient = None
-        __galicaster_context['mhclient'] = mhclient
+            occlient = None
+        __galicaster_context['occlient'] = occlient
 
-    return __galicaster_context['mhclient']
+    return __galicaster_context['occlient']
 
 
 def get_dispatcher():
@@ -173,7 +173,7 @@ def get_worker():
         __galicaster_context['worker'] = Worker(get_dispatcher(),
                                                 get_repository(),
                                                 get_logger(),
-                                                get_mhclient(),
+                                                get_occlient(),
                                                 get_conf().get('basic', 'export'),
                                                 get_conf().get('basic', 'tmp'),
                                                 not legacy,
@@ -228,7 +228,7 @@ def get_scheduler():
     if 'scheduler' not in __galicaster_context:
         if get_conf().get_boolean("ingest", "active"):
             sch = Scheduler(get_repository(), get_conf(), get_dispatcher(), 
-                            get_mhclient(), get_logger(), get_recorder())
+                            get_occlient(), get_logger(), get_recorder())
         else:
             sch = None
         __galicaster_context['scheduler'] = sch

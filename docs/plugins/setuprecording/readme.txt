@@ -13,7 +13,7 @@ The following (unquoted) configuration keys are available:
    - 'description': Sets up the recording's default "Description".
    - 'language': Sets up the recording's default language.
    - 'series', 'ispartof' or 'isPartOf': Sets up the recording's default series ID. 
-                                         Such ID must exist in the attached Matterhorn system,
+                                         Such ID must exist in the attached Opencast system,
 					 otherwise it will be ignored.
 
 All the previous parameters (except 'series' and its equivalents) can include "placeholders", i.e. tags that are automatically substituted by other values on runtime. Currently, only one placeholder is available:

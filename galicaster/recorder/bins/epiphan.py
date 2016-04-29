@@ -47,7 +47,7 @@ class GCepiphan(Gst.Bin, base.Base):
         "flavor": {
             "type": "flavor",
             "default": "presentation",
-            "description": "Matterhorn flavor associated to the track",
+            "description": "Opencast flavor associated to the track",
             },
         "location": {
             "type": "device",

@@ -20,9 +20,9 @@ substituting "${device}" for the device's mount point (e.g. /dev/video0)
 
 
 ------------------------------------------------
-[1] If this is a hybrid Galicaster-Matterhorn installation, the file 
+[1] If this is a hybrid Galicaster-Opencast installation, the file 
 
-       /etc/udev/rules.d/matterhorn.rules
+       /etc/udev/rules.d/opencast.rules
 
     may be used instead, if it exists, by modifying it according to our needs.
-    In this case, Matterhorn configuration may need to be also adjusted.
+    In this case, Opencast configuration may need to be also adjusted.

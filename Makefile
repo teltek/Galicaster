@@ -29,8 +29,8 @@ all:
 	@echo 'make pep8            - Run PEP8 compliance tests(using pep8)'
 test:
 	nosetests --all-modules -a '!nodefault'
-test-matterhorn:
-	nosetests --all-modules -a 'matterhorn'
+test-opencast:
+	nosetests --all-modules -a 'opencast'
 test-recorder:
 	nosetests --all-modules -a 'recorder'
 	#python -m unittest tests.recorder.recorder

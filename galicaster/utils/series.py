@@ -25,7 +25,7 @@ MAPPINGS = { 'user': getpass.getuser() }
 
 def get_series():
     repo = context.get_repository() 
-    mhclient = context.get_mhclient()
+    occlient = context.get_occlient()
 
     # Import the 'series' section as a dictionary
     series_conf = context.get_conf().get_section('series')
@@ -49,7 +49,7 @@ def get_series():
         series_list = []
         check_default = True
         while True:
-            series_json = json.loads(mhclient.getseries(**queries))
+            series_json = json.loads(occlient.getseries(**queries))
             for catalog in series_json['catalogs']:
                 try:
                     series_list.append(parse_json_series(catalog))
