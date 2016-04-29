@@ -16,6 +16,7 @@ import datetime
 import re
 import itertools
 import glob, json
+from shutil import rmtree
 import ConfigParser
 
 from galicaster import __version__
