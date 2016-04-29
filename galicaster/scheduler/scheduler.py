@@ -282,7 +282,7 @@ class Scheduler(object):
 
         
     def on_recorder_error(self, origin=None, error_message=None):
-        current_mp_id = self.state.mp
+        current_mp_id = self.recorder.current_mediapackage
         if not current_mp_id:
             return
         
