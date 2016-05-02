@@ -87,12 +87,17 @@ class RecorderService(object):
         if self.status not in (INIT_STATUS, ERROR_STATUS):
             return False
         
-        self.logger.info("Starting recording service in the preview status")
-        ok = self.__prepare()
-        if ok:
+        try:
+            self.logger.info("Starting recording service in the preview status")
+            self.__prepare()
             self.recorder.preview()
             self.__set_status(PREVIEW_STATUS)
             return True
+
+        except Exception as exc:
+            self.__set_status(ERROR_STATUS)
+            self.dispatcher.emit("recorder-error", str(exc))
+
         return False
 
 
@@ -103,24 +108,18 @@ class RecorderService(object):
         for objectbin in bins:
             objectbin['path'] = self.repo.get_rectemp_path()
 
-        try:
-            self.recorder = self.__recorderklass(bins)
-
-            self.mute_preview(self.mute)
-            if self.__create_drawing_areas_func:
-                info = self.recorder.get_display_areas_info()
-                areas = self.__create_drawing_areas_func(info)
-                self.recorder.set_drawing_areas(areas)
-
-        except Exception as exc:
-            self.__set_status(ERROR_STATUS)
-            self.dispatcher.emit("recorder-error", str(exc))
-            return False
         
-        return True
+        self.recorder = self.__recorderklass(bins)
+
+        self.mute_preview(self.mute)
+        if self.__create_drawing_areas_func:
+            info = self.recorder.get_display_areas_info()
+            areas = self.__create_drawing_areas_func(info)
+            self.recorder.set_drawing_areas(areas)
+            
 
     def record(self, mp=None):
-        self.logger.info("Recording")
+        self.logger.info("Recording (current status: {})".format(self.status))
         if self.status in (INIT_STATUS, ERROR_STATUS):
             self.logger.warning("Cancel recording: status error (in {})".format(self.status))
             return False
@@ -134,8 +133,13 @@ class RecorderService(object):
         if self.status == RECORDING_STATUS:
             self.recorder.stop()
             self.__close_mp()
-            self.__prepare()
-            self.recorder.preview_and_record()
+            try:
+                self.__prepare()
+                self.recorder.preview_and_record()
+            except Exception as exc:
+                self.__set_status(ERROR_STATUS)
+                self.dispatcher.emit("recorder-error", str(exc))
+                return False
         else:
             self.recorder and self.recorder.record()            
         self.current_mediapackage = mp or self.__new_mediapackage()
