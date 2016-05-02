@@ -47,15 +47,6 @@ OPERATION_NAMES = { 'Export to Zip': _('Export to Zip'),
             'Cancel': _('Cancel'),
              }
 
-BUTTON_RESPONSES = {
-            INFO        : [Gtk.ResponseType.OK],
-            ERROR       : [Gtk.ResponseType.CLOSE],
-            WARN_STOP   : [Gtk.ResponseType.OK, Gtk.ResponseType.REJECT],
-            WARN_QUIT   : [Gtk.ResponseType.OK, Gtk.ResponseType.REJECT],
-            WARN_DELETE : [Gtk.ResponseType.OK, Gtk.ResponseType.REJECT],
-            WARN_OK     : [Gtk.ResponseType.OK],
-            }
-
 class PopUp(Gtk.Widget):
     """Handle a pop up for warnings and questions"""
     __gtype_name__ = 'PopUp'
@@ -116,11 +107,6 @@ class PopUp(Gtk.Widget):
 
 
         dialog = gui.get_object("dialog")
-
-        for num,response in enumerate(BUTTON_RESPONSES[icon]):
-            # FIXME: Gives a warning for overwritting a widget
-            button = gui.get_object('button' + str(num))
-            dialog.add_action_widget(button,response)
 
         text_label = gui.get_object('text')
         if text_label:
