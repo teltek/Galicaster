@@ -427,6 +427,7 @@ class Worker(object):
         """
         location = self.gen_location('mp4') if not "location" in params else params["location"]
         audio_mode    = "auto" if not "audio" in params else params["audio"]
+        sbs_layout    = self.sbs_layout if not "layout" in params else params["layout"]
 
         if audio_mode not in ["embedded", "external", "auto"]:
             self.logger.warning("SideBySide for MP {}: unknown value {} for parameter 'audio', default to auto-mode".format(mp.getIdentifier(), audio))
@@ -481,7 +482,7 @@ class Worker(object):
                 if not audio:
                     self.logger.debug('SideBySide for MP {0}: external audio NOT detected, trying to use embedded audio...'.format(mp.getIdentifier()))
 
-            sidebyside.create_sbs(location, camera, screen, audio, self.sbs_layout, self.logger)
+            sidebyside.create_sbs(location, camera, screen, audio, sbs_layout, self.logger)
             self.operation_success(mp, SBS)
         except Exception as exc:
             self.operation_error(mp, SBS, exc)
