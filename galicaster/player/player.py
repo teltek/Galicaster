@@ -238,7 +238,7 @@ class Player(object):
     def _on_eos(self, bus, msg):
         logger.info('Player EOS')
         self.stop()
-        # self.dispatcher.emit("play-stopped")
+        self.dispatcher.emit("play-stopped")
 
     def _on_error(self, bus, msg):
         error = msg.parse_error()[1]
