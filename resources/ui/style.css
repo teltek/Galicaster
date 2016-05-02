@@ -20,15 +20,40 @@ GtkDialog{
 	font-size: 1em;
 }
 .dialog_body{
-	font-size: 1em;
-}
-.dialog_body{
 	font-size: 0.75em;
 }
 .dialog_button{
 	font-size: 1.5em;
+	color: shade(gray,0.5);
 }
 .error_label{
 	font-size: 0.75em;
 }
-
+.ok_button{
+	background-image: -gtk-gradient(
+		linear,
+		left top, left bottom,
+		from(shade(coral,1.2)),
+		to(coral));
+}
+.ok_button:active{
+	background-image: -gtk-gradient(
+		linear,
+		left top, left bottom,
+		from(coral),
+		to(shade(coral,1.2)));
+}
+.cancel_button{
+	background-image: -gtk-gradient(
+		linear,
+		left top, left bottom,
+		from(shade(gray,1.9)),
+		to(shade(gray,1.5)));
+}
+.cancel_button:active{
+	background-image: -gtk-gradient(
+		linear,
+		left top, left bottom,
+		from(shade(gray,1.5)),
+		to(shade(gray,1.9)));
+}
