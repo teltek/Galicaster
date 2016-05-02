@@ -440,8 +440,8 @@ class Worker(object):
         audio = None  #'camera'
         camera = screen = None
 
-        for track in mp.getTracksMaster():
-            if track.getFlavor()[0:9] == 'presenter' :
+        for track in mp.getTracksVideoMaster():
+            if track.getFlavor()[0:9] == 'presenter':
                 camera = track.getURI()
             if track.getFlavor()[0:12] == 'presentation':
                 screen = track.getURI()
