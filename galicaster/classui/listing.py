@@ -51,6 +51,8 @@ class ListingClassUI(ManagerUI):
     def __init__(self):
         ManagerUI.__init__(self, 3)
 
+        self.menu = Gtk.Menu()
+        self.fill_menu()
 	builder = Gtk.Builder()
 	builder.add_from_file(get_ui_path('listing.glade'))
 	self.gui = builder
@@ -210,7 +212,7 @@ class ListingClassUI(ManagerUI):
 	#self.lista.set_sort_func(12,self.sorting,12)
 
 	self.vista.connect('row-activated',self.on_double_click)
-	self.vista.connect('button-release-event',self.menu)
+	self.vista.connect('button-release-event',self.on_list_click)
 
 	self.lista.set_sort_column_id(6,Gtk.SortType.DESCENDING)
 
@@ -299,42 +301,34 @@ class ListingClassUI(ManagerUI):
             logger.debug('Invalid action')
 			   
 
-    def create_menu(self):
-        """Creates a menu to be shown on right-button-click over a MP"""
-	menu = Gtk.Menu()
+    def fill_menu(self):
+        """Fill the menu to be shown on right-button-click over a MP"""
+        operations = [ (_("Play"), "play_action"),
+                       (_("Edit"), "edit_action"),
+                       (_("Info"), "info_action"),
+                       (_("Delete"), "delete_action")]
 	if self.conf.get_boolean('ingest', 'active'):
-            operations = [ (_("Play"), "play_action"),
-                           (_("Edit"), "edit_action"),
-                           (_("Operations"), "operations_action"), 
-                           (_("Info"), "info_action"),
-                           (_("Delete"), "delete_action")]
-	else:
-            operations = [ (_("Play"), "play_action"),
-                           (_("Edit"), "edit_action"),
-                           (_("Info"), "info_action"),
-                           (_("Delete"), "delete_action")]
+            operations = operations.append((_("Operations"), "operations_action")) 
 
 	for op in operations:
-            item = Gtk.MenuItem(op[0])
+            item = Gtk.MenuItem.new_with_label(op[0])
             item.set_name(op[1])
-	    menu.append(item)
+	    self.menu.append(item)
 	    item.connect("activate", self.on_action)
 	    item.show()
-	return menu
 
 
-    def menu(self,widget,event):
+    def on_list_click(self,widget,event):
         """ 
 	If rigth-button is clicked: ensure proper selection, get row,  create menu and pop it
 	"""		
 	if event.button == 3:
-            reference,column,xcell,ycell = widget.get_path_at_pos(int(event.x),int(event.y))
+	    reference,column,xcell,ycell = widget.get_path_at_pos(int(event.x),int(event.y))
 	    c = self.lista.get_iter(reference)
 	    self.vista.get_selection().unselect_all()
 	    self.vista.get_selection().select_iter(c)	
-	    menu = self.create_menu()
-	    menu.popup(None,None,None,None,event.button,event.time)
-	    menu.show()
+	    self.menu.popup(None,None,None,None,event.button,event.time)
+	    self.menu.show()
 	    return True
 	return False
 
