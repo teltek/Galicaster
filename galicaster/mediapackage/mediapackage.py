@@ -975,16 +975,35 @@ class Mediapackage(object):
 
 
     def getTracksMaster(self):
-        """Gets the master tracks of the mediapackage.
-        If no master tracks are found, gets all mediapackage tracks.
+        """Gets the master video tracks of the mediapackage.
+        If no master tracks are found, returns None.
         Returns:
             List[Track]: a list of master tracks.	
         """
         result = filter(lambda elem: "presenter/source" in elem.getFlavor() or "presentation/source" in elem.getFlavor(),
                         self.getElements(etype=TYPE_TRACK))
 
-        if not result:
-            return self.getElements(etype=TYPE_TRACK)
+        return result
+
+
+    def getTracksVideoMaster(self):
+        """Gets the master tracks of the mediapackage.
+        If no master tracks are found, returns None.
+        Returns:
+            List[Track]: a list of master tracks.	
+        """
+        result = filter(lambda elem: "video" in elem.getMimeType(), self.getTracksMaster())
+
+        return result
+
+
+    def getTracksAudioMaster(self):
+        """Gets the master tracks of the mediapackage.
+        If no master tracks are found, returns None.
+        Returns:
+            List[Track]: a list of master tracks.	
+        """
+        result = filter(lambda elem: "audio" in elem.getMimeType(), self.getTracksMaster())
 
         return result
 

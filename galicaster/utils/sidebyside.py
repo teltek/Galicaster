@@ -20,17 +20,21 @@ from gi.repository import Gst
 Gst.init(None)
 
 layouts = {'sbs': 
-           {'screen_width': 640, 'screen_height': 480, 'screen_aspect': '4/3', 'screen_xpos': 640,'screen_ypos': 120, 'screen_zorder': 0, 
-            'camera_width': 640, 'camera_height': 480, 'camera_aspect': '4/3', 'camera_xpos': 0, 'camera_ypos': 120, 'camera_zorder': 0, 
+           {'screen_width': 640, 'screen_height': 480, 'screen_aspect': '4/3', 'screen_xpos': 640,'screen_ypos': 0, 'screen_zorder': 0, 
+            'camera_width': 640, 'camera_height': 480, 'camera_aspect': '4/3', 'camera_xpos': 0, 'camera_ypos':  0, 'camera_zorder': 0, 
+            'out_width': 1280, 'out_height': 720},
+           'sbsnocrop': 
+           {'screen_width': 640, 'screen_height': 480, 'screen_aspect': '0/1', 'screen_xpos': 640,'screen_ypos': 0, 'screen_zorder': 0, 
+            'camera_width': 640, 'camera_height': 480, 'camera_aspect': '0/1', 'camera_xpos': 0, 'camera_ypos':  0, 'camera_zorder': 0, 
             'out_width': 1280, 'out_height': 720},
            'pip_screen': 
-           {'screen_width': 160, 'screen_height': 120, 'screen_aspect': '4/3', 'screen_xpos': 640,'screen_ypos': 480, 'screen_zorder': 1, 
-            'camera_width': 800, 'camera_height': 600, 'camera_aspect': '4/3', 'camera_xpos': 0, 'camera_ypos': 0, 'camera_zorder': 0, 
-            'out_width': 800, 'out_height': 600},
+           {'screen_width': 320, 'screen_height': 180, 'screen_aspect': '16/9', 'screen_xpos': 960,'screen_ypos': 540, 'screen_zorder': 1, 
+            'camera_width': 960, 'camera_height': 720, 'camera_aspect': '4/3',  'camera_xpos': 0,  'camera_ypos': 0, 'camera_zorder': 0, 
+            'out_width': 1280, 'out_height': 720},
            'pip_camera': 
-           {'screen_width': 800, 'screen_height': 600, 'screen_aspect': '4/3', 'screen_xpos': 0,'screen_ypos': 0, 'screen_zorder': 0, 
-            'camera_width': 160, 'camera_height': 120, 'camera_aspect': '4/3', 'camera_xpos': 640, 'camera_ypos': 480, 'camera_zorder': 1, 
-            'out_width': 800, 'out_height': 600},}
+           {'screen_width': 960, 'screen_height': 720, 'screen_aspect': '4/3', 'screen_xpos': 0,'screen_ypos': 0, 'screen_zorder': 0, 
+            'camera_width': 320, 'camera_height': 180, 'camera_aspect': '16/9', 'camera_xpos': 960, 'camera_ypos': 540, 'camera_zorder': 1, 
+            'out_width': 1280, 'out_height': 720},}
 
 def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
     """
@@ -43,24 +47,22 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
     """
 
     pipestr = """
-    videomixer name=mix 
-        sink_0::xpos=0 sink_0::ypos=0 sink_0::zorder=0
-        sink_1::xpos=640 sink_1::ypos=120 sink_1::zorder=1 !
+    videomixer name=mix background=1
+        sink_0::xpos={screen_xpos} sink_0::ypos={screen_ypos} sink_0::zorder={screen_zorder}
+        sink_1::xpos={camera_xpos} sink_1::ypos={camera_ypos} sink_1::zorder={camera_zorder} !
     videoconvert name=colorsp_saida ! 
+    videoscale ! videorate ! video/x-raw,width={out_width},height={out_height},framerate=25/1,pixel-aspect-ratio=1/1,interlace-mode=progressive !
     x264enc quantizer=45 speed-preset=6 ! queue ! 
     mp4mux name=mux  ! queue ! filesink location="{OUT}"
 
-    filesrc location="{SCREEN}" ! decodebin name=dbscreen ! deinterlace ! 
+    filesrc location="{SCREEN}" ! decodebin name=dbscreen ! deinterlace ! videoconvert name=colorsp_screen !
     aspectratiocrop aspect-ratio={screen_aspect} ! videoscale ! videorate !
-    videoconvert name=colorsp_screen !
-    video/x-raw,width=640,height=480,framerate=25/1,pixel-aspect-ratio=1/1,interlace-mode=progressive !
-    videobox right=-640 top=-120 bottom=-120 ! queue !
+    video/x-raw,width={screen_width},height={screen_height},framerate=25/1,pixel-aspect-ratio=1/1,interlace-mode=progressive !
     mix.sink_0 
 
-    filesrc location="{CAMERA}" ! decodebin name=dbcamera ! deinterlace ! 
+    filesrc location="{CAMERA}" ! decodebin name=dbcamera ! deinterlace ! videoconvert name=colorsp_camera !
     aspectratiocrop aspect-ratio={camera_aspect} ! videoscale ! videorate !
-    videoconvert name=colorsp_camera !
-    video/x-raw,width=640,height=480,framerate=25/1,pixel-aspect-ratio=1/1,interlace-mode=progressive ! queue !
+    video/x-raw,width={camera_width},height={camera_height},framerate=25/1,pixel-aspect-ratio=1/1,interlace-mode=progressive ! queue !
     mix.sink_1 
     """
 
@@ -99,6 +101,7 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
             logger.debug('Audio embeded')
         embeded = True
 
+    logger and logger.debug("Output file {} and layout {}".format(out, layout))
     parameters = {'OUT': out, 'SCREEN': screen, 'CAMERA': camera}
     parameters.update(layouts[layout])
     pipeline = Gst.parse_launch(pipestr.format(**parameters))
