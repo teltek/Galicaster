@@ -95,7 +95,6 @@ class RecorderService(object):
             return True
 
         except Exception as exc:
-            self.__set_status(ERROR_STATUS)
             self.dispatcher.emit("recorder-error", str(exc))
 
         return False
@@ -137,7 +136,6 @@ class RecorderService(object):
                 self.__prepare()
                 self.recorder.preview_and_record()
             except Exception as exc:
-                self.__set_status(ERROR_STATUS)
                 self.dispatcher.emit("recorder-error", str(exc))
                 return False
         else:
