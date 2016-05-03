@@ -4,7 +4,6 @@
   <requires lib="gtk+" version="3.6"/>
   <object class="GtkDialog" id="dialog">
     <property name="can_focus">False</property>
-    <property name="border_width">5</property>
     <property name="title" translatable="yes">Stop Recording</property>
     <property name="window_position">center-on-parent</property>
     <property name="destroy_with_parent">True</property>
@@ -21,6 +20,8 @@
           <object class="GtkButtonBox" id="dialog-action_area1">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="margin_bottom">10</property>
+            <property name="vexpand">True</property>
             <property name="layout_style">spread</property>
             <child>
               <object class="GtkButton" id="button0">
@@ -28,11 +29,10 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="relief">half</property>
                 <property name="use_stock">True</property>
-                <property name="xalign">0.49000000953674316</property>
                 <style>
                   <class name="dialog_button"/>
+                  <class name="ok_button"/>
                 </style>
               </object>
               <packing>
@@ -50,6 +50,7 @@
                 <property name="use_stock">True</property>
                 <style>
                   <class name="dialog_button"/>
+                  <class name="cancel_button"/>
                 </style>
               </object>
               <packing>
@@ -71,6 +72,9 @@
           <object class="GtkBox" id="box">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="margin_top">20</property>
+            <property name="margin_bottom">10</property>
+            <property name="vexpand">True</property>
             <child>
               <object class="GtkImage" id="image">
                 <property name="visible">True</property>
@@ -112,5 +116,9 @@
         </child>
       </object>
     </child>
+    <action-widgets>
+      <action-widget response="-5">button0</action-widget>
+      <action-widget response="-2">button1</action-widget>
+    </action-widgets>
   </object>
 </interface>

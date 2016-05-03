@@ -124,5 +124,8 @@
         </child>
       </object>
     </child>
+    <action-widgets>
+      <action-widget response="-7">button0</action-widget>
+    </action-widgets>
   </object>
 </interface>

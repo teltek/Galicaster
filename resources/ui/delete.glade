@@ -103,5 +103,9 @@
         </child>
       </object>
     </child>
+    <action-widgets>
+      <action-widget response="-5">button0</action-widget>
+      <action-widget response="-2">button1</action-widget>
+    </action-widgets>
   </object>
 </interface>
