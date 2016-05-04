@@ -21,18 +21,16 @@ from os import path
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
-raise Exception("Not implemented. Using gst 0.10")
-
 pipe_config = {'mpeg4':
-                   {'depay': 'rtpmp4vdepay', 'parse': 'mpeg4videoparse', 'dec': 'ffdec_mpeg4'},
+                   {'depay': 'rtpmp4vdepay', 'parse': 'mpeg4videoparse', 'dec': 'avdec_mpeg4'},
                'h264':
-                   {'depay': 'rtph264depay', 'parse': 'h264parse', 'dec': 'ffdec_h264'}} 
+                   {'depay': 'rtph264depay', 'parse': 'h264parse', 'dec': 'avdec_h264'}} 
 
 
 pipestr = (' rtspsrc name=gc-rtpraw-src ! gc-rtpraw-depay ! gc-rtpraw-videoparse ! queue ! '
            ' gc-rtpraw-dec ! videoscale ! capsfilter name=gc-rtpraw-filter ! '
            ' tee name=gc-rtpraw-tee  ! queue ! xvimagesink async=false sync=false qos=false name=gc-rtpraw-preview'
-           ' gc-rtpraw-tee. ! queue ! valve drop=false name=gc-rtpraw-valve ! ffmpegcolorspace ! '
+           ' gc-rtpraw-tee. ! queue ! valve drop=false name=gc-rtpraw-valve ! videoconvert ! '
            ' queue ! gc-rtpraw-enc ! queue ! gc-rtpraw-muxer name=gc-rtpraw-mux ! queue ! filesink name=gc-rtpraw-sink async=false')
  
 
@@ -69,7 +67,7 @@ class GCrtpraw(Gst.Bin, base.Base):
             },
         "videoencoder": {
             "type": "text",
-            "default": "x264enc pass=5 quantizer=22 speed-preset=4 profile=1",
+            "default": "x264enc pass=5 quantizer=22 speed-preset=4",
             # "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000",
             # "xvidenc bitrate=5000000"
             "description": "Gstreamer encoder element used in the bin",
@@ -102,7 +100,7 @@ class GCrtpraw(Gst.Bin, base.Base):
 
     def __init__(self, options={}):
         base.Base.__init__(self, options)
-        Gst.Bin.__init__(self, self.options['name'])
+        Gst.Bin.__init__(self)
 
         aux = (pipestr.replace('gc-rtpraw-preview', 'sink-' + self.options['name'])
                .replace('gc-rtpraw-depay', pipe_config[self.options['cameratype']]['depay'])
@@ -111,7 +109,7 @@ class GCrtpraw(Gst.Bin, base.Base):
                .replace('gc-rtpraw-enc', self.options['videoencoder'])
                .replace('gc-rtpraw-muxer', self.options['muxer']))
 
-        bin = Gst.parse_bin_from_description(aux, False)
+        bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
         self.set_option_in_pipeline('caps', 'gc-rtpraw-filter', 'caps', Gst.Caps)
@@ -133,7 +131,3 @@ class GCrtpraw(Gst.Bin, base.Base):
         src1 = self.get_by_name('gc-rtpraw-src')
         src1.send_event(event)
 
-
-GObject.type_register(GCrtpraw)
-Gst.element_register(GCrtpraw, 'gc-rtpraw-bin')
-module_register(GCrtpraw, 'rtpraw')
