@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 """
 UI for the profile selector
@@ -75,16 +75,16 @@ class ProfileUI(Gtk.Window):
         box.pack_start(strip, False, False, int(0))
         strip.show()
         box.pack_start(self.notebook, True, True, 0)
-        self.add(box)        
+        self.add(box)
         self.list=ListProfileBox(self, size, tester)
         self.profile=None
-        self.track=None       
+        self.track=None
 
         tab1 = Gtk.Label(label=_("Profile Selector"))
         self.append_tab(self.list,tab1)
         self.show_all()
         self.present()
-        
+
 
     def append_tab(self, widget, label):
         """Add a tab with a new edition area"""
@@ -103,7 +103,7 @@ class ProfileUI(Gtk.Window):
         elif current == self.track:
             self.track = None
         new=self.notebook.get_nth_page(new_num)
-        self.notebook.remove_page(current_num)        
+        self.notebook.remove_page(current_num)
         text=self.notebook.get_tab_label(new).get_text()
         new.refresh()
         self.set_title(text)
@@ -115,7 +115,7 @@ class ProfileUI(Gtk.Window):
             self.profile.destroy()
         if self.track:
             self.track.destroy()
-        self.destroy()          
+        self.destroy()
 
 class ProfileDialog(Gtk.HBox):
     """
@@ -140,12 +140,12 @@ class ProfileDialog(Gtk.HBox):
 
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
-        
-        self.list,self.view = self.prepare_view()  
+
+        self.list,self.view = self.prepare_view()
         self.view.get_selection().connect("changed",self.append_info)
         scrolled.add(self.view)
 
-        sidebox = Gtk.VBox(False,0)  
+        sidebox = Gtk.VBox(False,0)
         frame = Gtk.Frame()
 
         label= Gtk.Label(label=_("Profile Tracks"))
@@ -169,7 +169,7 @@ class ProfileDialog(Gtk.HBox):
         sidebox.pack_start(self.buttons, False, False, int(hprop*10))
         sidebox.pack_start(frame, False, False, int(hprop*15))
         self.pack_start(sidebox,False,False,int(wprop*15))
-        
+
 
     def add_button(self, text, connection, end=False):
         """Adds an action button to the right side of the Box"""
@@ -187,12 +187,12 @@ class ProfileDialog(Gtk.HBox):
         button.connect("clicked",connection)
         return button
 
-    def append_profiles(self): 
+    def append_profiles(self):
         """Lists the available profiles"""
-        profile_list = context.get_conf().get_profiles()        
+        profile_list = context.get_conf().get_profiles()
         for name,profile in profile_list.iteritems():
             if not profile.to_delete:
-                self.list.append(self.prepare_data(profile))      
+                self.list.append(self.prepare_data(profile))
 
     def append_info(self, selection = None):
         """Completes the profile auxiliar data on the right side of the box"""
@@ -203,9 +203,9 @@ class ProfileDialog(Gtk.HBox):
         for child in table.get_children():
             table.remove(child)
 
-        profile = model.get_value(iterator,0)        
+        profile = model.get_value(iterator,0)
         row=0
-        for track in profile.tracks:           
+        for track in profile.tracks:
             label = Gtk.Label(label=track.flavor+":  ")
             label.set_alignment(1,0)
             label.set_width_chars(int(self.hprop*15))
@@ -221,13 +221,13 @@ class ProfileDialog(Gtk.HBox):
             label.show()
             widget.show()
             table.attach(label,0,1,row,row+1,Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL,False,0,0)
-            table.attach(widget,1,2,row,row+1,Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL,False,0,0)            
-            row+=1           
+            table.attach(widget,1,2,row,row+1,Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL,False,0,0)
+            row+=1
 
     def append_tracks(self,profile):
         """Lists the available tracks on a profile"""
         for track in profile.tracks:
-            self.list.append([track, track.name])       
+            self.list.append([track, track.name])
 
     def show_tracks(self, button):
         """Change the tab to the track editor"""
@@ -237,11 +237,11 @@ class ProfileDialog(Gtk.HBox):
             self.profile=ProfileBox(value,self.superior)
             tab2=Gtk.Label(label=self.superior.get_title()+" > "+value.name)
             self.superior.append_tab(self.profile,tab2)
-        
+
     def close(self,button=None):
         """Leaves and close the profile tab"""
-        self.superior.remove_tab()        
-        self.destroy()      
+        self.superior.remove_tab()
+        self.destroy()
 
 class ListProfileBox(ProfileDialog):
     def __init__(self, parent, size, tester = False):
@@ -249,8 +249,8 @@ class ListProfileBox(ProfileDialog):
 
         self.add_button(_("Select"),self.change_selected_profile)
         if tester:
-            self.add_button(_("Edit"),self.show_tracks)        
-            self.add_button(_("New"), self.new_profile)                                         
+            self.add_button(_("Edit"),self.show_tracks)
+            self.add_button(_("New"), self.new_profile)
             self.add_button(_("Duplicate"), self.duplicate_profile)
             self.add_button(_("Delete"), self.delete_profile)
         self.add_button(_("Close"),self.close, True)
@@ -258,21 +258,21 @@ class ListProfileBox(ProfileDialog):
         self.append_profiles()
         self.select_current_profile()
         self.append_info(self.view.get_selection())
-        self.show_all()    
+        self.show_all()
 
     def select_current_profile(self):
         iterator =self.list.get_iter_first()
         while iterator != None:
             if self.list[iterator][1] == context.get_conf().get_current_profile().name:
-                self.view.get_selection().select_iter(iterator)                
-                #text=self.list[iterator][1]               
+                self.view.get_selection().select_iter(iterator)
+                #text=self.list[iterator][1]
                 break
             iterator = self.list.iter_next(iterator)
 
         return self.list,iterator
 
     def prepare_data(self, profile):
-        
+
         profile_name = profile.name
         presenter = []
         presentation = []
@@ -284,17 +284,17 @@ class ListProfileBox(ProfileDialog):
                 presentation.append(track.name)
             elif track.flavor == "other":
                 other.append(track.name)
-        
+
         data = [
             profile, profile_name,
-            #, ", ".join(presenter), ", ".join(presentation), ", ".join(other)     
+            #, ", ".join(presenter), ", ".join(presentation), ", ".join(other)
             ]
 
         return data
 
-    def prepare_view(self):        
+    def prepare_view(self):
         lista = Gtk.ListStore(object, str)
-        view = Gtk.TreeView() 
+        view = Gtk.TreeView()
         view.set_model(lista)
         view.get_selection().set_mode(Gtk.SelectionMode.SINGLE)
         view.set_headers_visible(False)
@@ -317,11 +317,11 @@ class ListProfileBox(ProfileDialog):
         view.append_column(column0)
 
         column0.set_sort_column_id(1)
-        lista.set_sort_func(1,self.sorting)
-        lista.set_sort_column_id(1,Gtk.SortType.ASCENDING)          
-        return lista,view  
+        lista.set_sort_func(1,self.sorting,None)
+        lista.set_sort_column_id(1,Gtk.SortType.ASCENDING)
+        return lista,view
 
-    def sorting(self, treemodel, iter1, iter2):
+    def sorting(self, treemodel, iter1, iter2, args=None):
         first = treemodel[iter1][1]
         second = treemodel[iter2][1]
 
@@ -337,13 +337,13 @@ class ListProfileBox(ProfileDialog):
         else:
             cell.set_property("stock-id", "0")
         return None
-    
+
     def change_selected_profile(self, button):
 
         model,iterator=self.view.get_selection().get_selected()
         if type(iterator) is Gtk.TreeIter:
             profile=model.get_value(iterator,0)
-            
+
             context.get_conf().change_current_profile(profile.name)
         #self.refresh()
         context.get_conf().update()
@@ -360,8 +360,8 @@ class ListProfileBox(ProfileDialog):
             return
 
         if profile == context.get_conf().get_current_profile():
-            context.get_conf().set_default_profile_as_current()            
-            
+            context.get_conf().set_default_profile_as_current()
+
         profile.to_delete = True
         model.remove(iterator)
         self.refresh()
@@ -381,12 +381,12 @@ class ListProfileBox(ProfileDialog):
             return
 
         profile = model.get_value(iterator,0)
-        
-        new_profile = conf.Profile (                                    
+
+        new_profile = conf.Profile (
             profile.name+" copy",
             context.get_conf().get_free_profile()
             )
-        
+
         for track in profile.tracks:
             new_profile.add_track(track)
         context.get_conf().add_profile(new_profile)
@@ -399,7 +399,7 @@ class ListProfileBox(ProfileDialog):
 
     def close(self, button=None):
         self.superior.close()
-        
+
 
 class ProfileBox(ProfileDialog):
 
@@ -409,11 +409,11 @@ class ProfileBox(ProfileDialog):
         """
         ProfileDialog.__init__(self, parent)
         self.profile = profile
-        self.add_button(_("Save"), self.save_profile)        
-        self.add_button(_("Edit"), self.edit_track)        
-        self.add_button(_("New track"), self.new_track)  
-        self.add_button(_("Delete track"),self.delete_track) 
-        self.add_button(_("Cancel"), self.close, True)    
+        self.add_button(_("Save"), self.save_profile)
+        self.add_button(_("Edit"), self.edit_track)
+        self.add_button(_("New track"), self.new_track)
+        self.add_button(_("Delete track"),self.delete_track)
+        self.add_button(_("Cancel"), self.close, True)
 
         self.append_tracks(profile)
         self.profile_name = Gtk.Entry()
@@ -421,11 +421,11 @@ class ProfileBox(ProfileDialog):
         self.vbox.pack_start(self.profile_name,False,False,10)
 
         self.show_all()
-    
-    def prepare_view(self): 
+
+    def prepare_view(self):
         """Creates the list and the view of available tracks."""
         lista = Gtk.ListStore(GObject.TYPE_PYOBJECT, str)
-        view = Gtk.TreeView() 
+        view = Gtk.TreeView()
         view.set_model(lista)
         view.get_selection().set_mode(Gtk.SelectionMode.SINGLE)
         render = Gtk.CellRendererText()
@@ -442,15 +442,15 @@ class ProfileBox(ProfileDialog):
     def edit_track(self, origin):
         """Pops up the track editor for a given track"""
         model,iterator = self.view.get_selection().get_selected()
-        if type(iterator) is Gtk.TreeIter:            
+        if type(iterator) is Gtk.TreeIter:
             track = model.get_value(iterator,0)
             tab3=Gtk.Label(label=self.superior.get_title()+" > "+track.name)
             edit = TrackBox(self.profile, track, self.superior)
-            self.superior.track=edit 
+            self.superior.track=edit
             self.superior.append_tab(edit,tab3)
             return track
         return None
-        
+
     def new_track(self, origin):
         """Creates a new track on a given profile and pops up the editor"""
         new=conf.Track()
@@ -458,7 +458,7 @@ class ProfileBox(ProfileDialog):
         self.superior.track=TrackBox(self.profile,new, self.superior)
         self.superior.append_tab(self.superior.track,tab3)
         return new
-        
+
     def delete_track(self, origin):
         """Deletes a given track of the current profile in edition"""
         model,iterator = self.view.get_selection().get_selected()
@@ -471,15 +471,15 @@ class ProfileBox(ProfileDialog):
     def save_profile(self, origin):
         """Saves to memory the modification of a profile"""
         old_key=self.profile.name
-        self.profile.name = self.profile_name.get_text()        
-            
+        self.profile.name = self.profile_name.get_text()
+
         if not context.get_conf().get_profiles().has_key(self.profile.name):
             CONF= context.get_conf()
             CONF.add_profile(self.profile,old_key)
             if self.profile == CONF.get_current_profile():
                 CONF.force_set_current_profile(self.profile.name)
-            
-        self.close()   
+
+        self.close()
         return self.profile
 
     def refresh(self):
@@ -489,13 +489,12 @@ class ProfileBox(ProfileDialog):
 
     def close(self,button=None):
         """Leaves and close a track tab"""
-        self.superior.remove_tab() 
-        self.destroy() 
+        self.superior.remove_tab()
+        self.destroy()
 
 
 class TrackBox(Gtk.HBox):
-    """
-    Track editor and tester
+    """ Track editor and tester
     """
     def __init__(self, profile=None, device=None, parent=None):
         """Edit manager for track of device in a profile"""
@@ -510,9 +509,9 @@ class TrackBox(Gtk.HBox):
         self.buttons.set_layout(Gtk.ButtonBoxStyle.START)
         self.buttons.set_spacing(5)
 
-        self.add_button(_("Save"), self.retrieve_data)        
-        #self.add_button("Test", self.test_track, True)      
-        self.add_button(_("Cancel"), self.close, True)  
+        self.add_button(_("Save"), self.retrieve_data)
+        #self.add_button("Test", self.test_track, True)
+        self.add_button(_("Cancel"), self.close, True)
 
         self.table = None
         self.model = None
@@ -527,10 +526,10 @@ class TrackBox(Gtk.HBox):
         self.table.attach(self.combo,1,2,0,1,0,0)
         self.pack_start(self.table,True,True,0)
         self.pack_start(self.buttons,False,False,20)
-        self.show_all() 
+        self.show_all()
 
 
-    def add_button(self, text, connection, end=False): 
+    def add_button(self, text, connection, end=False):
         """Adds an action button to the right side of the Box"""
         k1 = 1
         button = Gtk.Button(text)
@@ -548,7 +547,7 @@ class TrackBox(Gtk.HBox):
 
     def prepare_empty_device(self):
         """Pops up an empty track"""
-        table = Gtk.Table(2, 2, True) 
+        table = Gtk.Table(2, 2, True)
         label=Gtk.Label(label="Type")
         label.set_width_chars(20)
         label.set_alignment(0.0,0.5)
@@ -570,9 +569,9 @@ class TrackBox(Gtk.HBox):
         """Pops up an existing track"""
         table,model,types = self.prepare_empty_device()
         iterator = model.get_iter_first()
-        while model.get(iterator,0)[0] != selected.device: 
+        while model.get(iterator,0)[0] != selected.device:
             # Check iterator index
-            iterator = model.iter_next(iterator)            
+            iterator = model.iter_next(iterator)
         types.set_active_iter(iterator)
         self.show_options(types,table)
 
@@ -581,10 +580,10 @@ class TrackBox(Gtk.HBox):
                 try:
                     self.set_random_data(child,selected[child.name])
                 except:
-                    print child.name + " had a data problem"    
+                    print child.name + " had a data problem"
 
         return table,model,types
-    
+
 
     def show_options(self, origin, table= None):
         """Creates the text and menu widget for every possible value on a given track"""
@@ -595,7 +594,7 @@ class TrackBox(Gtk.HBox):
         for child in table.get_children():
             if type(child) is Gtk.Label and child.get_text()=="Type":
                 pass
-            elif child == origin:        
+            elif child == origin:
                 pass
             else:
                 table.remove(child)
@@ -616,7 +615,7 @@ class TrackBox(Gtk.HBox):
                 widget = Gtk.Entry()
                 widget.set_text(values['default'])
                 widget.set_alignment(0.0)
-                
+
             elif kind == "flavor":
                 store = Gtk.ListStore(str)
                 widget = Gtk.ComboBox(store)
@@ -650,7 +649,7 @@ class TrackBox(Gtk.HBox):
                 widget.set_alignment(0.0,0.5)
 
             elif kind == "select":
-                store = Gtk.ListStore(str) 
+                store = Gtk.ListStore(str)
                 widget = Gtk.ComboBox(store)
                 for value in values['options']:
                     store.append([value])
@@ -669,14 +668,14 @@ class TrackBox(Gtk.HBox):
 
     def retrieve_data(self, button=None):
         """Reads random data for a track variable"""
-        for child in self.table.get_children():            
+        for child in self.table.get_children():
             if child.name:
                 self.device[child.name] = str(self.get_random_data(child))
         if self.device not in self.profile.tracks:
             self.profile.add_track(self.device)
 
         self.close()
-        return self.device    
+        return self.device
 
     def get_random_data(self, widget):
         """Depending on the widget type, retrieves the active value"""
@@ -685,7 +684,7 @@ class TrackBox(Gtk.HBox):
         elif type(widget) is Gtk.CheckButton:
             return widget.get_active()
         elif type(widget) is Gtk.ComboBox:
-            return widget.get_active_text()            
+            return widget.get_active_text()
         elif type(widget) is Gtk.SpinButton:
             return widget.get_text()
 
@@ -707,17 +706,17 @@ class TrackBox(Gtk.HBox):
                 iterator = model.iter_next(iterator)
             widget.set_active_iter(iterator)
 
-        elif type(widget) is Gtk.SpinButton: 
+        elif type(widget) is Gtk.SpinButton:
             data = float(data)
             widget.set_value(data)
 
     def test_track(self, button=None):
         """Pops up a Test window for the current track"""
         device = {}
-        for child in self.table.get_children():            
+        for child in self.table.get_children():
             if child.name:
                 device[child.name] = str(self.get_random_data(child))
-        #TestWindow(device)    
+        #TestWindow(device)
 
     def close(self,button=None):
         """Leaves and close a track tab"""
