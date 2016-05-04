@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 """
 Pop Up with exhaustive information of a Mediapackage
@@ -70,7 +70,7 @@ class MPinfo(Gtk.Window):
         self.hprop = size[1]/1080.0
         width = int(size[0]/3)
         height = int(size[1]/2.5)
-        
+
         Gtk.Window.__init__(self)
         self.set_title(_("Mediapackage Info "))
         self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
@@ -81,10 +81,8 @@ class MPinfo(Gtk.Window):
             self.set_transient_for(parent)
             self.set_destroy_with_parent(True)
 
-        # INFO       
-	mp = context.get_repository().get(key)
-
-        
+        # INFO
+        mp = context.get_repository().get(key)
 
         # Metadata info
         data = {}
@@ -96,12 +94,12 @@ class MPinfo(Gtk.Window):
         data['created'] = readable.date(mp.getStartDateAsString(),
                                    "%B %d, %Y - %H:%M").replace(' 0',' ')
 
-        basic, basic_table = self.add_framed_table(_("Basic"))    
+        basic, basic_table = self.add_framed_table(_("Basic"))
         for item in ORDER_EPISODES:
             if item in data:
                 self.add_data(basic_table,EPISODE_NAMES[item], data[item])
             elif item in mp.metadata_episode:
-                self.add_data(basic_table,EPISODE_NAMES[item], mp.metadata_episode[item])                
+                self.add_data(basic_table,EPISODE_NAMES[item], mp.metadata_episode[item])
 
         # Operations info
         ops, ops_table = self.add_framed_table(_("Operations"))
@@ -112,7 +110,7 @@ class MPinfo(Gtk.Window):
         self.add_data(ops_table,_("Side by Side:"),
                       _(mediapackage.op_status[mp.getOpStatus("sidebyside")]))
 
-        
+
         # Series info
         if mp.getSeries():
             series, series_table = self.add_framed_table(_("Series"))
@@ -167,7 +165,7 @@ class MPinfo(Gtk.Window):
         self.add_button(_("Open Folder"), self.openfolder, mp.getURI())
         box.pack_end(self.buttons, False, False, int(self.hprop*10))
         self.show_all()
-		    
+
     def add_framed_table(self,name, expanded = False):
         """Stablished a framed table for the information to be shown in"""
         frame =Gtk.Frame()
@@ -179,7 +177,7 @@ class MPinfo(Gtk.Window):
             #expander.set_label_fill(False)
         else:
             frame.set_label(name)
-            
+
         table = Gtk.Table()
         align= Gtk.Alignment.new(0.75,0,0.9,0.9)
         align.add(table)
@@ -197,12 +195,12 @@ class MPinfo(Gtk.Window):
         title = Gtk.Label(label=name)
         title.set_alignment(1,0)
 
-        modification = str(int(self.hprop*16))+"px"        
+        modification = str(int(self.hprop*16))+"px"
         title.modify_font(Pango.FontDescription(modification))
 
         title.set_width_chars(-1)
         title.set_max_width_chars(int(self.wprop*50))
-            
+
         data=Gtk.Label(label=value)
         data.set_selectable(True)
         data.set_alignment(0,0)
@@ -237,4 +235,4 @@ class MPinfo(Gtk.Window):
         open_folder(folder)
 
     def close(self,button=None):
-        self.destroy() 
+        self.destroy()
