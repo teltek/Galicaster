@@ -19,4 +19,4 @@ logger = context.get_logger()
 
 def open_folder(path):
     logger.info("Opening folder {0}".format(path))
-    os.system('xdg-open '+path)
+    os.system("nohup xdg-open {} >/dev/null 2>&1 &".format(path))
