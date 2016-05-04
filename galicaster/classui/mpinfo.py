@@ -14,7 +14,7 @@
 Pop Up with exhaustive information of a Mediapackage
 """
 
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk
 from os import path
 from gi.repository import Pango
 
