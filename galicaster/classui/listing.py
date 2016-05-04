@@ -306,10 +306,8 @@ class ListingClassUI(ManagerUI):
         operations = [ (_("Play"), "play_action"),
                 (_("Edit"), "edit_action"),
                 (_("Info"), "info_action"),
+                (_("Operations"), "operations_action"),
                 (_("Delete"), "delete_action")]
-
-        if self.conf.get_boolean('ingest', 'active'):
-            operations = operations.append((_("Operations"), "operations_action"))
 
         for op in operations:
             item = Gtk.MenuItem.new_with_label(op[0])
