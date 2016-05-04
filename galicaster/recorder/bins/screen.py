@@ -57,7 +57,7 @@ class GCscreen(Gst.Bin, base.Base):
              },
         "caps": {
             "type": "caps",
-            "default": "video/x-raw,format=I420,framerate=25/1", 
+            "default": "video/x-raw,format=I420,framerate=5/1", 
             "description": "Forced capabilities",
             },
         "videocrop-right": {
