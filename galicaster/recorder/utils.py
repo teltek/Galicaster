@@ -18,12 +18,13 @@ import thread
 from galicaster.core import context
 
 logger = context.get_logger()
+GST_TIMEOUT= Gst.SECOND*10
 
 class Switcher(Gst.Bin):
 
     def __init__(self, name, device, image=None, driver_type="v4lsrc", size=[1024,768], framerate="25/1"): 
 
-        Gst.Bin.__init__(self, name)
+        Gst.Bin.__init__(self)
         self.eph_error = False
         self.let_pass = False
         self.removing = False
@@ -84,34 +85,43 @@ class Switcher(Gst.Bin):
         caps_res.set_property('caps', filtre_resolution)
 
         # Add elements
-        self.add(self.image, caps_img, text, q0, 
-                 self.device, self.identity, caps_dev, q2, scale, caps_res, rate, caps_rate, q1,
-                 self.selector, qs)
-
+        for elem in [self.image, caps_img, text, q0, self.device, self.identity, caps_dev, q2, scale, caps_res, rate, caps_rate, q1, self.selector, qs]:
+            self.add(elem)
+        
         # Link elements and set ghostpad
-        Gst.element_link_many(self.image, caps_img, text, q0)
-        Gst.element_link_many(self.device, self.identity, caps_dev, q2, scale, caps_res, rate, caps_rate, q1)
+        self.image.link(caps_img)
+        caps_img.link(text)
+        text.link(q0)
+        
+        self.device.link(self.identity)
+        self.identity.link(caps_dev)
+        caps_dev.link(q2)
+        q2.link(scale)
+        scale.link(caps_res)
+        caps_res.link(rate)
+        rate.link(caps_rate)
+        caps_rate.link(q1)
 
         q0.link(self.selector)
         q1.link(self.selector)
         self.selector.link(qs)
-        self.add_pad(Gst.GhostPad.new('src', qs.get_pad('src')))
+        self.add_pad(Gst.GhostPad.new('src', qs.get_static_pad('src')))
 
         # Set active pad
         if self.checking():
             self.selector.set_property('active-pad', 
-                                       self.selector.get_pad('sink1'))
+                                       self.selector.get_static_pad('sink1'))
         else:
             self.selector.set_property('active-pad', 
-                                       self.selector.get_pad('sink0'))
+                                       self.selector.get_static_pad('sink0'))
             self.eph_error = True
             self.thread_id=thread.start_new_thread(self.polling_thread, ())
             self.device.set_state(Gst.State.NULL)
             self.remove(self.device)  #IDEA remove it when at NULL
 
-      # Set probe
+        # Set probe
         pad = self.identity.get_static_pad("src")
-        pad.add_event_probe(self.probe)
+        pad.add_probe(self.probe)
         
     def let_eos_pass(self):
         """
@@ -120,16 +130,17 @@ class Switcher(Gst.Bin):
         self.let_pass = True
 
     def checking(self):
-        pipe = Gst.Pipeline('check')
+        pipe = Gst.Pipeline()
         device = Gst.ElementFactory.make(self.driver_type, 'check-device')
         device.set_property('device', self.devicepath)
         sink = Gst.ElementFactory.make('fakesink', 'fake')
-        pipe.add(device, sink)
+        pipe.add(device)
+        pipe.add(sink)
         device.link(sink)
         # run pipeline
         pipe.set_state(Gst.State.PAUSED)
         pipe.set_state(Gst.State.PLAYING)
-        state = pipe.get_state()
+        state = pipe.get_state(GST_TIMEOUT)
         pipe.set_state(Gst.State.NULL)
         if state[0] != Gst.StateChangeReturn.FAILURE:
             return True
@@ -138,11 +149,12 @@ class Switcher(Gst.Bin):
     def polling_thread(self):
         logger.debug("Initializing polling")
         thread_id = self.thread_id
-        pipe = Gst.Pipeline('poll')
+        pipe = Gst.Pipeline()
         device = Gst.ElementFactory.make(self.driver_type, 'polling-device')
         device.set_property('device', self.devicepath)
         sink = Gst.ElementFactory.make('fakesink', 'fake')
-        pipe.add(device, sink)
+        pipe.add(device)
+        pipe.add(sink)
         device.link(sink)
         bucle = 0
         while thread_id == self.thread_id:
@@ -152,7 +164,7 @@ class Switcher(Gst.Bin):
                 self.remove(self.device)
             pipe.set_state(Gst.State.PAUSED) # FIXME assert if a Gtk.gdk is neccesary
             pipe.set_state(Gst.State.PLAYING)
-            state = pipe.get_state()
+            state = pipe.get_state(GST_TIMEOUT)
             if state[0] != Gst.StateChangeReturn.FAILURE:
                 logger.debug("VGA active again")
                 pipe.set_state(Gst.State.NULL)
@@ -214,7 +226,7 @@ class Switcher(Gst.Bin):
         self.add(self.device)
         self.device.link(self.identity)
         self.device.set_state(Gst.State.PLAYING)
-        self.identity.get_state() 
+        self.identity.get_state(GST_TIMEOUT) 
 
     def reset2(self):
         self.device = Gst.ElementFactory.make(self.driver_type, 'device')
@@ -222,7 +234,7 @@ class Switcher(Gst.Bin):
         self.add(self.device)
         self.device.link(self.identity)
         self.device.set_state(Gst.State.PLAYING)
-        self.identity.get_state()
+        self.identity.get_state(GST_TIMEOUT)
 
     def send_event_to_src(self, event): # IDEA made a common for all our bins
         self.let_eos_pass()

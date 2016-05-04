@@ -22,7 +22,7 @@ from galicaster.recorder.utils import Switcher
 from galicaster.recorder import base
 #from galicaster.recorder import module_register
 
-raise Exception("Not implemented. Using gst 0.10")
+# raise Exception("Not implemented. Using gst 0.10")
 
 logger = context.get_logger()
 
