@@ -97,13 +97,13 @@ class GCscreen(Gst.Bin, base.Base):
         "startx":{
             "type": "integer",
             "default": 0,
-            "range": (1,10000),
+            "range": (0,10000),
             "description": "top left. Must be odd (since we start at 0)",
         },
         "starty":{
             "type": "integer",
             "default": 0,
-            "range": (1,10000),
+            "range": (0,10000),
             "description": "top left.  Must be odd (since we start at 0)",
         },    
         "endx":{
