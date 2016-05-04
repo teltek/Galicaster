@@ -317,11 +317,11 @@ class ListProfileBox(ProfileDialog):
         view.append_column(column0)
 
         column0.set_sort_column_id(1)
-        lista.set_sort_func(1,self.sorting)
+        lista.set_sort_func(1,self.sorting,None)
         lista.set_sort_column_id(1,Gtk.SortType.ASCENDING)          
         return lista,view  
 
-    def sorting(self, treemodel, iter1, iter2):
+    def sorting(self, treemodel, iter1, iter2, args=None):
         first = treemodel[iter1][1]
         second = treemodel[iter2][1]
 
