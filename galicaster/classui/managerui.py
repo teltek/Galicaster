@@ -215,19 +215,22 @@ class ManagerUI(Gtk.Box):
                                 context.get_mainwindow(),
                                 operations)
 
-        if operations_dialog.response == -2:
+        if operations_dialog.response == Gtk.ResponseType.REJECT or \
+            operations_dialog.response == Gtk.ResponseType.DELETE_EVENT or \
+            operations_dialog.response == Gtk.ResponseType.OK:
             return True
-        elif operations_dialog.response == -4:
-            return True # Escape key used
-        elif operations_dialog.response == Gtk.ResponseType.OK: # Warning
-            return True
-        else:
+
+        elif 0 < operations_dialog.response < len(response_list):
             chosen_job = response_list[operations_dialog.response-1].lower().replace (" ", "_")
             if chosen_job.count('nightly'):
                 context.get_worker().do_job_nightly(chosen_job.replace("_",""), package)
             else:                
                 context.get_worker().do_job(chosen_job, package)
             return True
+
+        else:
+            logger.error("Incorrect operation response: {}".format(operations_dialog.response))
+            return False
 
 
 
