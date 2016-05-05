@@ -163,7 +163,6 @@ class ManagerUI(Gtk.Box):
 
     def ingest_question(self,package):            
         """Pops up a question dialog for available operations."""
-        buttons = None
         disabled = not self.conf.get_boolean("ingest", "active")
         day,night = context.get_worker().get_all_job_types_by_mp(package)
         jobs = day+night
@@ -195,44 +194,35 @@ class ManagerUI(Gtk.Box):
                 text['text']="\n" + text['text'] + _("{0} already performed").format(OPERATION_NAMES[job])
             elif op_state == mediapackage.OP_NIGHTLY:
                 text['text']="\n"+ text['text'] + _("{0} will be performed tonight").format(OPERATION_NAMES[job]) 
-            
 
-        index = 0
-        response_dict = {}
-        grouped1 = []
-        grouped2 = []
-        for job in day:
-            index+=1  
-            response_dict[index]=job
-            grouped1.append(job)
-            grouped1.append(index)
 
-        for job in night:
-            index+=1
-            response_dict[index]=job
-            grouped2.append(job)
-            grouped2.append(index)
+        response_list = ['Ingest', # Resp 1
+                         'Ingest Nightly', # Resp 2
+                         'Export to Zip', # Resp 3
+                         'Export to Zip Nightly', # Resp 4
+                         'Cancel Export to Zip Nightly', # Resp 5
+                         'Side by Side', # Resp 6
+                         'Side by Side Nightly', # Resp 7
+                         'Cancel Side by Side Nightly'] # Resp 8
 
-        grouped2.append("Cancel")
-        grouped2.append(0) 
+        operations = {}
+        for job in jobs:
+            if job in response_list:
+                operations[job] = response_list.index(job)+1
 
-        buttons = tuple(grouped1)
-        buttons2 = tuple(grouped2)
-        if icon == message.QUESTION:
-            icon = "INGEST"
 
-        warning = message.PopUp(icon,text,
+        operations_dialog = message.PopUp(message.OPERATIONS,text,
                                 context.get_mainwindow(),
-                                buttons2, buttons)
+                                operations)
 
-        if warning.response == 0:               
+        if operations_dialog.response == -2:
             return True
-        elif warning.response == -4:
+        elif operations_dialog.response == -4:
             return True # Escape key used
-        elif warning.response == Gtk.ResponseType.OK: # Warning
+        elif operations_dialog.response == Gtk.ResponseType.OK: # Warning
             return True
         else:
-            chosen_job = response_dict[warning.response].lower().replace (" ", "_")
+            chosen_job = response_list[operations_dialog.response-1].lower().replace (" ", "_")
             if chosen_job.count('nightly'):
                 context.get_worker().do_job_nightly(chosen_job.replace("_",""), package)
             else:                

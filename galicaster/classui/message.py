@@ -27,6 +27,7 @@ WARN_STOP = 'stop.glade'
 WARN_QUIT = 'quit.glade'
 WARN_DELETE = 'delete.glade'
 WARN_OK = 'okwarning.glade'
+OPERATIONS = 'operations.glade'
 
 # FIXME
 QUESTION = Gtk.STOCK_DIALOG_QUESTION
@@ -60,6 +61,7 @@ class PopUp(Gtk.Widget):
         buttons: buttons to be shown and values
         two_lines: second line of buttons
         """
+        #TODO: Remove unused params.
         # Parse Size proportions
         size = parent.get_size()
         self.size = size
@@ -67,12 +69,25 @@ class PopUp(Gtk.Widget):
         self.hprop = size[1]/1080.0
             
         # Create dialog
-        if message == "INGEST":
-            joined = two_lines+buttons
-            #TODO: Glade for ingest dialog message
-            dialog = self.create_framed_lines(joined, text, QUESTION, parent)
-        else:
-            dialog = self.create_ui(buttons,text, message, parent, message == ERROR)  
+        gui = Gtk.Builder()
+        gui.add_from_file(get_ui_path(message))
+        dialog = self.create_ui(buttons,text, message, gui, parent, message == ERROR)
+
+        if message == OPERATIONS:
+
+            frames = {'Cancel': {'Cancel' : -2}}
+
+            for operation,response in buttons.iteritems():
+                if operation.count('Ingest'):
+                    if not frames.has_key('Ingest'):
+                        frames['Ingest'] = {}
+                    frames['Ingest'][operation] = response
+                elif operation.count('Side') or operation.count('Export'):
+                    if not frames.has_key('Export'):
+                        frames['Export'] = {}
+                    frames['Export'][operation] = response
+
+            self.set_buttons(gui, frames)
 
         # Display dialog
         self.dialog = dialog
@@ -85,14 +100,8 @@ class PopUp(Gtk.Widget):
             dialog.destroy()
 
 
-    def create_ui(self, buttons, text, icon, parent, modifier = None, another = False):
+    def create_ui(self, buttons, text, icon, gui, parent, modifier = None, another = False):
         """Imports the dialog from the corresponding GLADE and adds some configuration"""
-
-        #dialog
-
-        # TODO: Overwrite info text if given
-        gui = Gtk.Builder()
-        gui.add_from_file(get_ui_path(icon))
 
         image = gui.get_object("image")
         image.set_pixel_size(int(self.wprop*80))
@@ -101,6 +110,7 @@ class PopUp(Gtk.Widget):
             main = gui.get_object("main")
             main.set_label(text.get('main',''))
         else:
+            # TODO: Overwrite info text if given
             help_message = "{}\n{}".format(text.get('main',''),text.get('text',''))
             textbuffer = gui.get_object('textbuffer')
             textbuffer.set_text(help_message)
@@ -111,6 +121,7 @@ class PopUp(Gtk.Widget):
         text_label = gui.get_object('text')
         if text_label:
             text_label.set_label(text.get('text',''))
+            text_label.show()
 
 
         dialog.set_type_hint(Gdk.WindowTypeHint.TOOLBAR)
@@ -141,9 +152,25 @@ class PopUp(Gtk.Widget):
         else:
             dialog.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
 
-        dialog.show_all()
+        strip.show()
 
         return dialog
+
+    def set_buttons(self, gui, frames):
+        """ Show the buttons on the different frames and configure its response.
+        Args:
+            frames (Dict{}): dictionary structure that represents the frames with
+                                the buttons to be shown and its response code.
+            gui (Gtk.Builder): the structure imported from glade
+        """
+        for frame,operations in frames.iteritems():
+            frame = gui.get_object('{} frame'.format(frame))
+            frame.show()
+            for operation,response in operations.iteritems():
+                button = gui.get_object("{} button".format(operation))
+                button.set_label(OPERATION_NAMES[operation])
+                button.connect("clicked",self.force_response,response)
+                button.show()
 
     def create_framed_lines(self, buttons, text, icon, parent): # TODO get commom code with create_ui
         """Creates frames arround groups of buttons"""
@@ -320,7 +347,7 @@ class PopUp(Gtk.Widget):
                                             other.set_width_chars(chars)
                                     
 
-    def force_response(self, origin, response):
+    def force_response(self, origin=None, response=None):
         self.dialog.response(response)
     
     def dialog_destroy(self, origin=None):
