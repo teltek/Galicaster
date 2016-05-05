@@ -20,9 +20,11 @@ from gi.repository import GObject, Gst
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
+from galicaster.recorder.utils import get_videosink
+
 pipestr = (' v4l2src name=gc-v4l2-src ! capsfilter name=gc-v4l2-filter ! queue ! gc-v4l2-dec '
            ' videorate ! videoconvert ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! gc-videofilter ! '
-           ' tee name=gc-v4l2-tee  ! queue !  xvimagesink async=false sync=false qos=false name=gc-v4l2-preview'
+           ' tee name=gc-v4l2-tee  ! queue ! gc-vsink '
            ' gc-v4l2-tee. ! queue ! valve drop=false name=gc-v4l2-valve ! videoconvert ! queue ! '
            ' gc-v4l2-enc ! queue ! gc-v4l2-mux ! '
            ' queue ! filesink name=gc-v4l2-sink async=false')
@@ -100,7 +102,13 @@ class GCv4l2(Gst.Bin, base.Base):
             "default": "",
             "description": "Videofilter elements (like: videoflip method=rotate-180)",
             },
-        }
+        "videosink" : {
+            "type": "select",
+            "default": "xvimagesink",
+            "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
+            "description": "Output framerate",
+        },
+    }
     
     is_pausable = True
     has_audio   = False
@@ -117,11 +125,11 @@ class GCv4l2(Gst.Bin, base.Base):
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
-        aux = (pipestr.replace('gc-v4l2-preview', 'sink-' + self.options['name'])
-                      .replace('gc-v4l2-enc', self.options['videoencoder'])
-                      .replace('gc-v4l2-mux', self.options['muxer']))
-
-
+        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+        aux = (pipestr.replace('gc-vsink', gcvideosink)
+               .replace('gc-v4l2-enc', self.options['videoencoder'])
+               .replace('gc-v4l2-mux', self.options['muxer']))
+    
         if self.options['videofilter']:
             aux = aux.replace('gc-videofilter', self.options['videofilter'])
         else:
