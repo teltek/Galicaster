@@ -19,12 +19,12 @@ from gi.repository import Gst
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
-
+from galicaster.recorder.utils import get_videosink
 
 videostr = ( ' decklinkvideosrc connection=hdmi mode=720p60 name=gc-blackmagic-src ! videoconvert ! queue ! '
              ' videorate ! gc-blackmagic-capsfilter !'
              ' queue ! videocrop name=gc-blackmagic-crop ! '
-             ' tee name=gc-blackmagic-tee  ! queue ! videoconvert ! xvimagesink async=false name=gc-blackmagic-preview'
+             ' tee name=gc-blackmagic-tee  ! queue ! videoconvert ! gc-vsink '
              #REC VIDEO
              ' gc-blackmagic-tee. ! queue ! valve drop=false name=gc-blackmagic-valve ! videoconvert ! '
              ' gc-blackmagic-enc ! queue ! gc-blackmagic-muxer ! '
@@ -176,7 +176,13 @@ class GCblackmagic(Gst.Bin, base.Base):
       "default": "avimux",
       "description": "Gstreamer muxer element used in the bin, NOT USE NAME ATTR",
       },
-    }
+    "videosink" : {
+      "type": "select",
+      "default": "xvimagesink",
+      "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
+      "description": "Output framerate",
+    },
+  }
     
     
   is_pausable  = False
@@ -198,8 +204,9 @@ class GCblackmagic(Gst.Bin, base.Base):
 
         if self.options['framerate'] == "auto":
           self.options['framerate'] = FRAMERATE[self.options["input-mode"]]
-          
-        aux = (pipestr.replace('gc-blackmagic-preview', 'sink-' + self.options['name'])
+
+        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+        aux = (pipestr.replace('gc-vsink', gcvideosink)
                .replace('gc-blackmagic-enc', self.options['videoencoder'])
                .replace('gc-blackmagic-muxer', self.options['muxer']+" name=gc-blackmagic-muxer")
                .replace('gc-blackmagic-capsfilter', "video/x-raw,framerate={0}".format(self.options['framerate']))
