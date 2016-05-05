@@ -20,6 +20,7 @@ from os import path
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
+from galicaster.recorder.utils import get_videosink
 
 pipe_config = {'mpeg4':
                    {'depay': 'rtpmp4vdepay', 'parse': 'mpeg4videoparse', 'dec': 'avdec_mpeg4'},
@@ -29,7 +30,7 @@ pipe_config = {'mpeg4':
 
 pipestr = (' rtspsrc name=gc-rtpraw-src ! gc-rtpraw-depay ! gc-rtpraw-videoparse ! queue ! '
            ' gc-rtpraw-dec ! videoscale ! capsfilter name=gc-rtpraw-filter ! '
-           ' tee name=gc-rtpraw-tee  ! queue ! xvimagesink async=false sync=false qos=false name=gc-rtpraw-preview'
+           ' tee name=gc-rtpraw-tee  ! queue ! gc-vsink '
            ' gc-rtpraw-tee. ! queue ! valve drop=false name=gc-rtpraw-valve ! videoconvert ! '
            ' queue ! gc-rtpraw-enc ! queue ! gc-rtpraw-muxer name=gc-rtpraw-mux ! queue ! filesink name=gc-rtpraw-sink async=false')
  
@@ -84,8 +85,14 @@ class GCrtpraw(Gst.Bin, base.Base):
                 "h264", "mpeg4"
                 ],
             "description": "RTP Camera encoding type",
-            }
-        }
+            },
+        "videosink" : {
+            "type": "select",
+            "default": "xvimagesink",
+            "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
+            "description": "Output framerate",
+        },    
+    }
     
     is_pausable = False
     has_audio   = False
@@ -102,7 +109,8 @@ class GCrtpraw(Gst.Bin, base.Base):
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
-        aux = (pipestr.replace('gc-rtpraw-preview', 'sink-' + self.options['name'])
+        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+        aux = (pipestr.replace('gc-vsink', gcvideosink)
                .replace('gc-rtpraw-depay', pipe_config[self.options['cameratype']]['depay'])
                .replace('gc-rtpraw-videoparse', pipe_config[self.options['cameratype']]['parse'])
                .replace('gc-rtpraw-dec', pipe_config[self.options['cameratype']]['dec'])
