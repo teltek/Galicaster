@@ -497,7 +497,7 @@ class Worker(object):
         self.repo.update(mp)
 
     def operation_success(self, mp, OP_NAME):
-        self.logger.error("Finalized {} for MP {}".format(OP_NAME, mp.getIdentifier()))
+        self.logger.info("Finalized {} for MP {}".format(OP_NAME, mp.getIdentifier()))
         mp.setOpStatus(JOBS[OP_NAME], mediapackage.OP_DONE)
         self.dispatcher.emit('stop-operation', JOBS[OP_NAME], mp, True, None)
         self.repo.update(mp)
