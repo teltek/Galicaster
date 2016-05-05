@@ -19,10 +19,11 @@ from os import path
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
+from galicaster.recorder.utils import get_videosink
 
 pipestr = (' ximagesrc startx=gc-startx starty=gc-starty endx=gc-endx endy=gc-endy xid=gc-xid xname=gc-xname name=gc-screen-src use-damage=0 ! queue ! '
            ' videorate ! videoconvert ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! '
-           ' tee name=gc-screen-tee  ! queue !  videoconvert  ! xvimagesink sync=false async=false qos=false name=gc-screen-preview'
+           ' tee name=gc-screen-tee  ! queue !  videoconvert  ! gc-vsink '
            ' gc-screen-tee. ! queue ! valve drop=false name=gc-screen-valve ! videoconvert ! capsfilter name=gc-v4l2-filter ! queue ! videoconvert ! '
            ' gc-screen-enc ! queue ! gc-screen-mux ! '
            ' queue ! filesink name=gc-screen-sink async=false')
@@ -128,6 +129,12 @@ class GCscreen(Gst.Bin, base.Base):
             "default": "null",
             "description": "Window name to capture from",
         },           
+        "videosink" : {
+            "type": "select",
+            "default": "xvimagesink",
+            "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
+            "description": "Output framerate",
+        },
     }
     
     is_pausable = True
@@ -146,7 +153,8 @@ class GCscreen(Gst.Bin, base.Base):
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
-        aux = (pipestr.replace('gc-screen-preview', 'sink-' + self.options['name'])
+        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+        aux = (pipestr.replace('gc-vsink', gcvideosink)
                       .replace('gc-screen-enc', self.options['videoencoder'])
                       .replace('gc-screen-mux', self.options['muxer'])
                       .replace('gc-startx', str(self.options['startx']))
