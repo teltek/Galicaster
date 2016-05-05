@@ -21,6 +21,7 @@ from galicaster.core import context
 from galicaster.recorder.utils import Switcher
 from galicaster.recorder import base
 #from galicaster.recorder import module_register
+from galicaster.recorder.utils import get_videosink
 
 raise Exception("Not implemented. Using gst 0.10")
 
@@ -31,7 +32,7 @@ pipestr = (" identity name=\"joint\" ! tee name=gc-epiphan-tee ! queue ! "
            " gc-epiphan-enc ! queue ! gc-epiphan-mux ! "
            " queue ! filesink name=gc-epiphan-sink async=false "
            " gc-epiphan-tee. ! queue ! videoconvert ! identity single-segment=true ! "
-           " xvimagesink qos=false async=false sync=false name=gc-epiphan-preview " )
+           " gc-vsink " )
 
 class GCepiphan(Gst.Bin, base.Base):
 
@@ -92,8 +93,13 @@ class GCepiphan(Gst.Bin, base.Base):
             "default": "25/1",
             "description": " Output framerate",
             },
-
-        }
+        "videosink" : {
+            "type": "select",
+            "default": "xvimagesink",
+            "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
+            "description": "Output framerate",
+        },    
+    }
     
     is_pausable = True
     has_audio   = False
@@ -121,7 +127,8 @@ class GCepiphan(Gst.Bin, base.Base):
         else:
             driver_type = "v4l2src"
 
-        aux = (pipestr.replace("gc-epiphan-preview", "sink-" + self.options['name'])
+        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+        aux = (pipestr.replace('gc-vsink', gcvideosink)
                       .replace('gc-epiphan-enc', self.options['videoencoder'])
                       .replace('gc-epiphan-mux', self.options['muxer']))
         size = self.options['resolution']
