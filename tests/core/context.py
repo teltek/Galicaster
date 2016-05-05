@@ -78,7 +78,8 @@ class TestFunctions(TestCase):
 
         context.delete('occlient') # Context init in other test
         hostname = 'foobar'
-        conf.hostname = hostname
+        conf.remove_option('ingest', 'hostname')
+        conf.set('basic' , 'hostname', hostname)
         client = context.get_occlient()
         self.assertEqual(hostname, client.hostname)
 

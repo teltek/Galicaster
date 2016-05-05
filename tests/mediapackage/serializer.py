@@ -62,7 +62,7 @@ class TestFunctions(TestCase):
         mp.add(self.track1)
         mp.add(self.track2)
         mp.add(self.catalog)
-        mp.status = mediapackage.PENDING
+        mp.status = mediapackage.SCHEDULED
         mp.notes = u"Nota de Prueba <?php Caracteres ñ I'm raros >"
 
         try:

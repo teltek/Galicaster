@@ -50,15 +50,13 @@ class Repository(object):
 
         if not root:
             self.root = os.path.expanduser('~/Repository')
-            self.logger.warning("Repository folder not specified, using {}".format(self.root))
+            self.logger and self.logger.warning("Repository folder not specified, using {}".format(self.root))
         else:
             self.root = root
 
 
         self.hostname = hostname
         self.folder_template = folder_template
-
-        self.logger = logger
 
         self.create_repo(hostname)        
 

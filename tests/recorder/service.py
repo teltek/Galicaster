@@ -328,6 +328,7 @@ class TestFunctions(TestCase):
         repo = Repository(self.tmppath)
         worker = self.WorkerMock()
         conf = Conf()
+        conf.reload()
         conf.set("allows", "overlap", "False")
         logger = Logger(None)
 

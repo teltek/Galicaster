@@ -44,7 +44,7 @@ class TestFunctions(TestCase):
         def __init__(self):
             self.calls = []
 
-        def ingest(self, mp_file, workflow=None, workflow_instance=None, workflow_parameters=None):
+        def ingest(self, mp_file, mp=None, workflow=None, workflow_instance=None, workflow_parameters=None):
             self.calls.append({'file': mp_file, 
                                'workflow': workflow, 
                                'workflow_instance': workflow_instance, 

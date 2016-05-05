@@ -33,6 +33,7 @@ class TestFunctions(TestCase):
         conf_file = get_resource('conf/conf.ini')
         dist_file = get_resource('conf/conf-dist.ini')
         self.conf = Conf(conf_file,dist_file)
+        self.conf.reload()
 
 
     def tearDown(self):
@@ -71,8 +72,11 @@ class TestFunctions(TestCase):
     def test_reload(self):
         self.conf.set('basic', 'temp', 'temporal')
         self.assertEqual('temporal', self.conf.get('basic', 'temp'))
+        self.conf.set('basic', 'temp', 'newtemporal')
+        self.conf.remove_option('basic', 'temp')
+        self.assertEqual(None, self.conf.get('basic', 'temp'))
         self.conf.reload()
-        self.assertEqual('/tmp/repo', self.conf.get('basic', 'temp'))
+        self.assertEqual('temporal', self.conf.get('basic', 'temp'))
         
 
     def test_get_tracks_in_oc_dict(self):
@@ -87,16 +91,16 @@ class TestFunctions(TestCase):
         conf_dist_file = get_resource('conf/conf_dist.ini')
         profiles_dir = get_resource('conf/profiles')
         conf = Conf(conf_file, conf_dist_file, profiles_dir)
-
+        conf.reload()
         self.assertEqual(len(conf.get_profiles()), 1)
 
     def test_init_track(self):
         track = Track()
-        self.assertEqual(track.name, None)
-        self.assertEqual(track.device, None)
-        self.assertEqual(track.flavor, None)
-        self.assertEqual(track.location, None)
-        self.assertEqual(track.file, None)
+        self.assertEqual(track.name, '')
+        self.assertEqual(track.device, '')
+        self.assertEqual(track.flavor, '')
+        self.assertEqual(track.location, '')
+        self.assertEqual(track.file, '')
         self.assertEqual(len(track), 5)
 
         track.name = 'v_name'
@@ -130,17 +134,17 @@ class TestFunctions(TestCase):
         self.assertEqual(len(track), 6)
         self.assertEqual(track['new_key'], 'new_value')
         self.assertEqual(track.keys(), ['name', 'device', 'flavor', 'location', 'file', 'new_key'])
-        self.assertEqual(track.values(), [None, None, None, None, None, 'new_value'])
-        self.assertEqual(track.basic(), {'name': None, 'device': None, 'flavor': None, 
-                                        'location': None, 'file': None})
+        self.assertEqual(track.values(), ['', '', '', '', '', 'new_value'])
+        self.assertEqual(track.basic(), {'name': '', 'device': '', 'flavor': '', 
+                                        'location': '', 'file': ''})
         self.assertEqual(track.options(), {'new_key': 'new_value'})
 
         del track['new_key']
         self.assertEqual(len(track), 5)
         self.assertEqual(track.keys(), ['name', 'device', 'flavor', 'location', 'file'])
-        self.assertEqual(track.values(), [None, None, None, None, None])
-        self.assertEqual(track.basic(), {'name': None, 'device': None, 'flavor': None, 
-                                         'location': None, 'file': None})
+        self.assertEqual(track.values(), ['', '', '', '', ''])
+        self.assertEqual(track.basic(), {'name': '', 'device': '', 'flavor': '', 
+                                         'location': '', 'file': ''})
         self.assertEqual(track.options(), {})
                 
 
@@ -183,7 +187,7 @@ class TestFunctions(TestCase):
             conf.set('s', 'k', lower)
             self.assertEqual(conf.get_lower('s', 'k'), 'rubenrua')
 
-        self.assertEqual(conf.get_lower('s', 'k_not_exists'), None)
+        self.assertEqual(conf.get_lower('s', 'k_not_exists', None), None)
 
 
     def test_get_int(self):
@@ -227,6 +231,7 @@ class TestFunctions(TestCase):
         self.assertEqual(1, len(conf.get_tracks_in_oc_dict()))
         self.assertEqual({'capture.device.names': 'defaults'}, conf.get_tracks_in_oc_dict())
         conf.set('basic', 'admin', 'False')
+        conf.set('ingest', 'hostname', None)
         self.assertEqual('GC-' + socket.gethostname(), conf.get_hostname())
         name = "123456_654321"
         conf.set('ingest', 'hostname', name)
@@ -237,7 +242,7 @@ class TestFunctions(TestCase):
         conf_file = get_resource('conf/conf_active.ini')
         dist_file = get_resource('conf/conf-dist.ini')
         conf = Conf(conf_file, dist_file)
-
+        conf.reload()
         profile = conf.get_current_profile()
-
+        
         self.assertEqual(1, len(profile.tracks))

@@ -235,7 +235,7 @@ class TestFunctions(TestCase):
         repo = repository.Repository(self.tmppath)
 
         mp = mediapackage.Mediapackage()
-        mp.status = mediapackage.INGESTED
+        mp.status = mediapackage.RECORDED
         mp.setOpStatus("pr0", mediapackage.OP_IDLE)
         mp.setOpStatus("pr1", mediapackage.OP_PENDING)
         mp.setOpStatus("pr2", mediapackage.OP_PROCESSING)
