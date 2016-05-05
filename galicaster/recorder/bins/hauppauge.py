@@ -18,12 +18,13 @@ from gi.repository import GObject, Gst
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
+from galicaster.recorder.utils import get_videosink
 
 raise Exception("Not implemented. Using gst 0.10")
 
 pipestr = ( " filesrc name=gc-hauppauge-file-src ! valve drop=false name=gc-hauppauge-valve !  filesink  name=gc-hauppauge-sink async=false "
             " v4l2src name=gc-hauppauge-device-src ! video/x-raw,format=YV12,framerate=25/1,width=720,height=576,pixel-aspect-ratio=1/1 ! "
-            " queue name=queue-hauprevideo ! videoconvert ! xvimagesink qos=false async=false sync=false name=gc-hauppauge-preview " 
+            " queue name=queue-hauprevideo ! videoconvert ! gc-vsink " 
             " filesrc name= gc-hauppauge-audio-src ! "
             " audio/x-raw, rate=48000, channels=2, endianness=1234, width=16, depth=16, signed=true ! queue ! "
             " level name=gc-hauppauge-level message=true interval=100000000 ! "
@@ -95,7 +96,13 @@ class GChauppauge(Gst.Bin, base.Base):
                 ],
             "description": "Select video standard",
             },
-        }
+        "videosink" : {
+            "type": "select",
+            "default": "xvimagesink",
+            "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
+            "description": "Output framerate",
+        },
+    }
     
     options = {
         "0": "NTSC", "1": "NTSC-M", "2": "NTSC-M-JP", "3": "NTSC-M-KR", 
@@ -126,7 +133,8 @@ class GChauppauge(Gst.Bin, base.Base):
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
-        aux = pipestr.replace("gc-hauppauge-preview", "sink-" + self.options['name'])
+        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+        aux = pipestr.replace('gc-vsink', gcvideosink)
 
         #bin = Gst.parse_bin_from_description(aux, True)
         bin = Gst.parse_launch("( {} )".format(aux))
