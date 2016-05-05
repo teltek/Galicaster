@@ -47,7 +47,7 @@ class GCv4l2(Gst.Bin, base.Base):
             },
         "location": {
             "type": "device",
-            "default": "/dev/webcam",
+            "default": None,
             "description": "Device's mount point of the output",
             },
         "file": {
@@ -137,7 +137,8 @@ class GCv4l2(Gst.Bin, base.Base):
         bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
-        self.set_option_in_pipeline('location', 'gc-v4l2-src', 'device')
+        if self.options['location']:
+            self.set_option_in_pipeline('location', 'gc-v4l2-src', 'device')
 
         self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-v4l2-sink', 'location')
 
