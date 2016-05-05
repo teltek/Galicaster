@@ -20,8 +20,8 @@ from os import path
 from galicaster.recorder import base
 from galicaster.recorder import module_register
 
-pipestr = (' ximagesrc startx=gc-startx starty=gc-starty endx=gc-endx endy=gc-endy name=gc-screen-src use-damage=0 ! queue ! '
-           ' videorate ! videoconvert ! videocrop name=gc-v4l2-crop ! '
+pipestr = (' ximagesrc startx=gc-startx starty=gc-starty endx=gc-endx endy=gc-endy xid=gc-xid xname=gc-xname name=gc-screen-src use-damage=0 ! queue ! '
+           ' videorate ! videoconvert ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! '
            ' tee name=gc-screen-tee  ! queue !  videoconvert  ! xvimagesink sync=false async=false qos=false name=gc-screen-preview'
            ' gc-screen-tee. ! queue ! valve drop=false name=gc-screen-valve ! videoconvert ! capsfilter name=gc-v4l2-filter ! queue ! videoconvert ! '
            ' gc-screen-enc ! queue ! gc-screen-mux ! '
@@ -57,7 +57,7 @@ class GCscreen(Gst.Bin, base.Base):
              },
         "caps": {
             "type": "caps",
-            "default": "video/x-raw,format=I420,framerate=5/1", 
+            "default": "video/x-raw,framerate=5/1", 
             "description": "Forced capabilities",
             },
         "videocrop-right": {
@@ -108,15 +108,25 @@ class GCscreen(Gst.Bin, base.Base):
         },    
         "endx":{
             "type": "integer",
-            "default": 1919,
-            "range": (1,10000),
+            "default": 0,
+            "range": (0,10000),
             "description": "bottom right. Must be odd (since we start at 0)",
         },
         "endy":{
             "type": "integer",
-            "default": 1079,
-            "range": (1,10000),
+            "default": 0,
+            "range": (0,10000),
             "description": "bottom right.  Must be odd (since we start at 0)",
+        },           
+        "xid":{
+            "type": "hexadecimal",
+            "default": 0,
+            "description": "Window XID to capture from (xwininfo -tree -root)",
+        },           
+        "xname":{
+            "type": "text",
+            "default": "null",
+            "description": "Window name to capture from",
         },           
     }
     
@@ -142,7 +152,9 @@ class GCscreen(Gst.Bin, base.Base):
                       .replace('gc-startx', str(self.options['startx']))
                       .replace('gc-starty', str(self.options['starty']))
                       .replace('gc-endx', str(self.options['endx']))
-                      .replace('gc-endy', str(self.options['endy'])))
+                      .replace('gc-endy', str(self.options['endy']))
+                      .replace('gc-xid', str(self.options['xid']))
+                      .replace('gc-xname', str(self.options['xname'])))
 
         bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)
