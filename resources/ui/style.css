@@ -20,11 +20,14 @@ GtkDialog{
 	font-size: 1em;
 }
 .dialog_body{
-	font-size: 0.75em;
+	font-size: 0.9em;
 }
 .dialog_button{
-	font-size: 1.5em;
+	font-size: 1.3em;
 	color: shade(gray,0.5);
+}
+.operation_dialog_buttons{
+	font-size: 0.75em;
 }
 .error_label{
 	font-size: 0.75em;
@@ -44,6 +47,7 @@ GtkDialog{
 		to(shade(coral,1.2)));
 }
 .cancel_button{
+	color: shade(gray,0.5);
 	background-image: -gtk-gradient(
 		linear,
 		left top, left bottom,
