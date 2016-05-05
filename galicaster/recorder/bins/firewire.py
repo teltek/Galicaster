@@ -16,12 +16,13 @@ from os import path
 from gi.repository import GObject, Gst
 
 from galicaster.recorder import base
+from galicaster.recorder.utils import get_videosink
 
 pipestr = ( ' dv1394src use-avc=false name=gc-firewire-src ! queue ! tee name=gc-firewire-maintee ! '
             ' queue ! dvdemux name=gc-firewire-demuxer ! '
             ' level name=gc-firewire-level message=true interval=100000000 ! '
             ' volume name=gc-firewire-volume ! alsasink sync=false name=gc-firewire-audio-sink '
-            ' gc-firewire-demuxer. ! queue ! avdec_dvvideo ! videoconvert ! xvimagesink qos=false async=false sync=false name=gc-firewire-preview '
+            ' gc-firewire-demuxer. ! queue ! avdec_dvvideo ! videoconvert ! gc-vsink '
             ' gc-firewire-maintee. ! queue ! valve drop=false name=gc-firewire-valve ! filesink name=gc-firewire-sink async=false '
             )
 
@@ -73,8 +74,14 @@ class GCfirewire(Gst.Bin, base.Base):
                 },
             "description": "Select video format",
             },
-        
-        }
+        "videosink" : {
+            "type": "select",
+            "default": "xvimagesink",
+            "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
+            "description": "Output framerate",
+        },    
+    }
+    
     is_pausable = False
     has_audio   = True
     has_video   = True
@@ -90,7 +97,8 @@ class GCfirewire(Gst.Bin, base.Base):
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
-        aux = pipestr.replace("gc-firewire-preview", "sink-" + self.options["name"])
+        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+        aux = pipestr.replace('gc-vsink', gcvideosink)
         #bin = Gst.parse_bin_from_description(aux, False)
         bin = Gst.parse_launch("( {} )".format(aux))
 
