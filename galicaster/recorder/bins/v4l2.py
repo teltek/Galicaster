@@ -157,7 +157,7 @@ class GCv4l2(Gst.Bin, base.Base):
         valve1.set_property('drop', value)
 
     def getVideoSink(self):
-        return self.get_by_name('gc-v4l2-preview')
+        return self.get_by_name('sink-' + self.options['name'])
     
     def getSource(self):
         return self.get_by_name('gc-v4l2-src') 

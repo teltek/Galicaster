@@ -149,7 +149,7 @@ class GCepiphan(Gst.Bin, base.Base):
         valve1.set_property('drop', value)
 
     def getVideoSink(self):
-        return self.get_by_name("gc-epiphan-preview")
+        return self.get_by_name('sink-' + self.options['name'])
 
     def getSource(self):
         return self.get_by_name("gc-epiphan-tee")

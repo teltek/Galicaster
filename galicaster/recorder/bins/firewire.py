@@ -131,7 +131,7 @@ class GCfirewire(Gst.Bin, base.Base):
         valve1.set_property('drop', value)
 
     def getVideoSink(self):
-        return self.get_by_name("gc-firewire-preview")
+        return self.get_by_name('sink-' + self.options['name'])
 
     def getAudioSink(self):
         return self.get_by_name('sink-audio-' + self.options['name'])

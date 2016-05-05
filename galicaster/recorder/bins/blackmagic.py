@@ -294,13 +294,13 @@ class GCblackmagic(Gst.Bin, base.Base):
     valve1.set_property('drop', value)
 
   def getVideoSink(self):
-    return self.get_by_name('gc-blackmagic-preview')
-
-  def getSource(self):
-    return self.get_by_name('gc-blackmagic-src')
+    return self.get_by_name('sink-' + self.options['name'])
 
   def getAudioSink(self):
     return self.get_by_name('sink-audio-' + self.options['name'])
+
+  def getSource(self):
+    return self.get_by_name('gc-blackmagic-src')
 
   def mute_preview(self, value):
     if not self.mute:
