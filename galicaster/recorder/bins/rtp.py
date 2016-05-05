@@ -24,7 +24,7 @@ from os import path
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
-from galicaster.recorder.utils import get_videosink
+from galicaster.recorder.utils import get_videosink, get_audiosink
 
 pipe_config = {'mpeg4':
                    {'depay': 'rtpmp4vdepay', 'parse': 'mpeg4videoparse', 'dec': 'avdec_mpeg4'},
@@ -46,7 +46,7 @@ audiostr = (' gc-rtp-src. ! gc-rtp-audio-depay ! gc-rtp-audioparse ! queue !'
            ' queue ! gc-rtp-mux. '
            ' gc-rtp-audio-tee. ! queue ! gc-rtp-audio-dec ! '
            ' level name=gc-rtp-level message=true interval=100000000 ! '
-           ' volume name=gc-rtp-volume ! alsasink sync=false name=gc-rtp-audio-preview ')
+           ' volume name=gc-rtp-volume ! gc-asink ')
  
 
 
@@ -118,6 +118,12 @@ class GCrtp(Gst.Bin, base.Base):
             "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
             "description": "Video sink",
         },    
+        "audiosink" : {
+            "type": "select",
+            "default": "autoaudiosink",
+            "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
+            "description": "Audio sink",
+        },
     }
     
     is_pausable = False
@@ -136,7 +142,9 @@ class GCrtp(Gst.Bin, base.Base):
         Gst.Bin.__init__(self)
 
         gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
-        aux = (pipestr..replace('gc-vsink', gcvideosink)
+        gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-audio-'+self.options['name'])
+        aux = (pipestr.replace('gc-vsink', gcvideosink)
+               .replace('gc-asink', gcaudiosink)
                .replace('gc-rtp-depay', pipe_config[self.options['cameratype']]['depay'])
                .replace('gc-rtp-videoparse', pipe_config[self.options['cameratype']]['parse'])
                .replace('gc-rtp-dec', pipe_config[self.options['cameratype']]['dec'])
@@ -178,7 +186,10 @@ class GCrtp(Gst.Bin, base.Base):
 
     def getVideoSink(self):
         return self.get_by_name('gc-rtp-preview')
-    
+
+    def getAudioSink(self):
+        return self.get_by_name('sink-audio-'+self.options['name'])
+
     def getSource(self):
         return self.get_by_name('gc-rtp-src') 
 
