@@ -22,12 +22,13 @@ from os import path
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
+from galicaster.recorder.utils import get_videosink
 
 raise Exception("Not implemented. Using gst 0.10")
 
 pipestr = ( ' decklinksrc input=sdi input-mode=12 name=gc-blackmagic-src ! capsfilter name=gc-blackmagic-filter ! '
             ' videorate ! capsfilter name=gc-blackmagic-vrate ! videocrop name=gc-blackmagic-crop ! '
-            ' tee name=tee-cam2  ! queue !  xvimagesink async=false sync=false qos=false name=gc-blackmagic-preview'
+            ' tee name=tee-cam2  ! queue ! gc-vsink '
             ' tee-cam2. ! queue ! valve drop=false name=gc-blackmagic-valve ! ffmpegcolorspace ! queue ! '
             #' xvidenc bitrate=50000000 ! queue ! avimux ! '
             ' x264enc quantizer=22 speed-preset=2 profile=1 ! queue ! avimux ! '
@@ -115,8 +116,14 @@ class GColdblackmagic(gst.Bin, base.Base):
 #                },
             "description": "Video input mode (resolution and frame rate)",
             },
-        }
-    
+    "videosink" : {
+      "type": "select",
+      "default": "xvimagesink",
+      "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
+      "description": "Output framerate",
+    },
+  }
+  
     
   is_pausable = True
   has_audio    = False
@@ -133,7 +140,8 @@ class GColdblackmagic(gst.Bin, base.Base):
         base.Base.__init__(self, options)
         gst.Bin.__init__(self, self.options['name'])
 
-        aux = pipestr.replace('gc-blackmagic-preview', 'sink-' + self.options['name'])
+        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+        aux = pipestr.replace('gc-vsink', gcvideosink)
         bin = gst.parse_bin_from_description(aux, True)
         # replace identity
         self.add(bin)
