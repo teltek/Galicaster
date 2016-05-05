@@ -23,7 +23,7 @@ from galicaster.recorder import module_register
 pipestr = (' ximagesrc startx=gc-startx starty=gc-starty endx=gc-endx endy=gc-endy name=gc-screen-src use-damage=0 ! queue ! '
            ' videorate ! videoconvert ! videocrop name=gc-v4l2-crop ! '
            ' tee name=gc-screen-tee  ! queue !  videoconvert  ! xvimagesink sync=false async=false qos=false name=gc-screen-preview'
-           ' gc-screen-tee. ! queue ! valve drop=false name=gc-screen-valve ! videoconvert ! videorate ! capsfilter name=gc-v4l2-filter ! queue ! videoconvert ! '
+           ' gc-screen-tee. ! queue ! valve drop=false name=gc-screen-valve ! videoconvert ! capsfilter name=gc-v4l2-filter ! queue ! videoconvert ! '
            ' gc-screen-enc ! queue ! gc-screen-mux ! '
            ' queue ! filesink name=gc-screen-sink async=false')
 
