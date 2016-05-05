@@ -90,7 +90,7 @@ class GCrtpraw(Gst.Bin, base.Base):
             "type": "select",
             "default": "xvimagesink",
             "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
-            "description": "Output framerate",
+            "description": "Video sink",
         },    
     }
     
