@@ -66,7 +66,7 @@ class GCpulse(Gst.Bin, base.Base):
         "amplification": {
             "type": "float",
             "default": 1.0,
-            "range": (0,10),
+            "range": (1.0,10),
             "description": "Audio amplification",
             },
         "delay": {
