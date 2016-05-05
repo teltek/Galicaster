@@ -19,6 +19,7 @@ from os import path
 from gi.repository import GObject, Gst
 
 from galicaster.recorder import base
+from galicaster.recorder.utils import get_videosink
 
 pipestr = (' dv1394src name=gc-firewireavi-src ! '
            ' queue ! dvdemux name=gc-firewireavi-demuxer ! '
@@ -26,7 +27,7 @@ pipestr = (' dv1394src name=gc-firewireavi-src ! '
            ' tee name=gc-firewireavi-audiotee ! '
            ' queue ! volume name=gc-firewireavi-volume ! autoaudiosink sync=false name=gc-firewireavi-audio-sink '
            ' gc-firewireavi-demuxer. ! queue ! tee name=gc-firewireavi-videotee ! '
-           ' queue ! avdec_dvvideo ! videoconvert ! xvimagesink qos=false async=false sync=false name=gc-firewireavi-preview '
+           ' queue ! avdec_dvvideo ! videoconvert ! gc-vsink '
            ' gc-firewireavi-audiotee. ! queue ! valve drop=false name=gc-firewireavi-audio-valve ! audio/x-raw ! avimux name=gc-firewireavi-mux ! '
            ' queue ! filesink name=gc-firewireavi-sink async=false '
            ' gc-firewireavi-videotee. ! queue ! valve drop=false name=gc-firewireavi-video-valve ! video/x-dv ! gc-firewireavi-mux.  '
@@ -76,8 +77,14 @@ class GCfirewireavi(Gst.Bin, base.Base):
                 },
             "description": "Select video format",
             },
-        
-        }
+        "videosink" : {
+            "type": "select",
+            "default": "xvimagesink",
+            "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
+            "description": "Output framerate",
+        },    
+    }
+    
     is_pausable = False
     has_audio   = True
     has_video   = True
@@ -93,7 +100,8 @@ class GCfirewireavi(Gst.Bin, base.Base):
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
-        aux = pipestr.replace("gc-firewireavi-preview", "sink-" + self.options["name"])
+        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+        aux = pipestr.replace('gc-vsink', gcvideosink)
         #bin = Gst.parse_bin_from_description(aux, False)
         bin = Gst.parse_launch("( {} )".format(aux))
 
