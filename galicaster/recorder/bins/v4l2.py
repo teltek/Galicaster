@@ -57,8 +57,8 @@ class GCv4l2(Gst.Bin, base.Base):
             },
         "caps": {
             "type": "caps",
-            "default": "image/jpeg,framerate=10/1,width=640,height=480", 
-            # video/x-raw,framerate=25/1,width=1024,height=768", 
+            "default": "video/x-raw,framerate=20/1,width=640,height=480", 
+            # image/jpeg,framerate=10/1,width=640,height=480", 
             "description": "Forced capabilities",
             },
         "videocrop-right": {
