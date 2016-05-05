@@ -53,13 +53,13 @@ class PopUp(Gtk.Widget):
     __gtype_name__ = 'PopUp'
 
     def __init__(self, message = None, text = TEXT, parent=None,
-                 buttons = None, two_lines = None): 
-        """
-        message: type of message (INFO,QUESTION,WARNING, ERROR, ACTION)
-        text: dictionary with three fields (title, main question, explanation text)
-        parent: program main window 
-        buttons: buttons to be shown and values
-        two_lines: second line of buttons
+                 buttons = None):
+        """ Initializes the Gtk.Dialog from its GLADE
+        Args:
+            message (str): type of message (See above constants)
+            text (Dict{str:str}): dictionary with three fields (title, main question, explanation text)
+            parent (Gtk.Window): program main window
+            buttons (Dict{str:str}): button labels to be shown and its responses
         """
         #TODO: Remove unused params.
         # Parse Size proportions
@@ -71,7 +71,7 @@ class PopUp(Gtk.Widget):
         # Create dialog
         gui = Gtk.Builder()
         gui.add_from_file(get_ui_path(message))
-        dialog = self.create_ui(buttons,text, message, gui, parent, message == ERROR)
+        dialog = self.configure_ui(text, message, gui, parent)
 
         if message == OPERATIONS:
 
@@ -100,13 +100,22 @@ class PopUp(Gtk.Widget):
             dialog.destroy()
 
 
-    def create_ui(self, buttons, text, icon, gui, parent, modifier = None, another = False):
-        """Imports the dialog from the corresponding GLADE and adds some configuration"""
+    def configure_ui(self, text, message_type, gui, parent, another=None):
+        """Imports the dialog from the corresponding GLADE and adds some configuration
+        Args:
+            text (Dict{Str:str}): a dictionary wit the text to be filled
+            message_type (str): one of the above constants that leads to the appropriate GLADE
+            gui (Gtk.Builder): the builder with the GLADE info
+            parent (Gtk.Window): the Main Window of the application
+            another (Bool): True if dialog_width is small. Otherwise false.
+        Returns:
+            Gtk.Dialog: the dialog with the main body configured
+        """
 
         image = gui.get_object("image")
         image.set_pixel_size(int(self.wprop*80))
 
-        if icon != INFO:
+        if message_type != INFO:
             main = gui.get_object("main")
             main.set_label(text.get('main',''))
         else:
