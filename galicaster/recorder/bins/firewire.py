@@ -16,12 +16,12 @@ from os import path
 from gi.repository import GObject, Gst
 
 from galicaster.recorder import base
-from galicaster.recorder.utils import get_videosink
+from galicaster.recorder.utils import get_videosink, get_audiosink
 
 pipestr = ( ' dv1394src use-avc=false name=gc-firewire-src ! queue ! tee name=gc-firewire-maintee ! '
             ' queue ! dvdemux name=gc-firewire-demuxer ! '
             ' level name=gc-firewire-level message=true interval=100000000 ! '
-            ' volume name=gc-firewire-volume ! alsasink sync=false name=gc-firewire-audio-sink '
+            ' volume name=gc-firewire-volume ! gc-asink '
             ' gc-firewire-demuxer. ! queue ! avdec_dvvideo ! videoconvert ! gc-vsink '
             ' gc-firewire-maintee. ! queue ! valve drop=false name=gc-firewire-valve ! filesink name=gc-firewire-sink async=false '
             )
@@ -79,7 +79,13 @@ class GCfirewire(Gst.Bin, base.Base):
             "default": "xvimagesink",
             "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
             "description": "Video sink",
-        },    
+        },
+        "audiosink" : {
+            "type": "select",
+            "default": "autoaudiosink",
+            "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
+            "description": "Audio sink",
+        },
     }
     
     is_pausable = False
@@ -98,7 +104,9 @@ class GCfirewire(Gst.Bin, base.Base):
         Gst.Bin.__init__(self)
 
         gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
-        aux = pipestr.replace('gc-vsink', gcvideosink)
+        gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-audio-'+self.options['name'])
+        aux = (pipestr.replace('gc-vsink', gcvideosink)
+               .replace('gc-asink', gcaudiosink))
         #bin = Gst.parse_bin_from_description(aux, False)
         bin = Gst.parse_launch("( {} )".format(aux))
 
@@ -124,6 +132,9 @@ class GCfirewire(Gst.Bin, base.Base):
 
     def getVideoSink(self):
         return self.get_by_name("gc-firewire-preview")
+
+    def getAudioSink(self):
+        return self.get_by_name('sink-audio-' + self.options['name'])
 
     def getSource(self):
         return self.get_by_name("gc-firewire-src")
