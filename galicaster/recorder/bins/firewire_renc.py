@@ -20,13 +20,13 @@ from os import path
 from gi.repository import GObject, Gst
 
 from galicaster.recorder import base
-from galicaster.recorder.utils import get_videosink
+from galicaster.recorder.utils import get_videosink, get_audiosink
 
 pipestr = (' dv1394src name=gc-firewire_renc-src ! '
            ' queue ! dvdemux name=gc-firewire_renc-demuxer ! '
            ' level name=gc-firewire_renc-level message=true interval=100000000 ! '
            ' tee name=gc-firewire_renc-audiotee ! '
-           ' queue ! volume name=gc-firewire_renc-volume ! alsasink sync=false name=gc-firewire_renc-audio-sink '
+           ' queue ! volume name=gc-firewire_renc-volume ! gc-asink '
            ' gc-firewire_renc-demuxer. ! queue ! avdec_dvvideo ! videoconvert ! queue ! tee name=gc-firewire_renc-videotee ! '
            ' gc-vsink '
            ' gc-firewire_renc-audiotee. ! queue ! valve drop=false name=gc-firewire_renc-audio-valve ! audio/x-raw ! ' 
@@ -106,6 +106,12 @@ class GCfirewire_renc(Gst.Bin, base.Base):
             "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
             "description": "Video sink",
         },        
+        "audiosink" : {
+            "type": "select",
+            "default": "autoaudiosink",
+            "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
+            "description": "Audio sink",
+        },
     }
     
     is_pausable = False
@@ -124,7 +130,9 @@ class GCfirewire_renc(Gst.Bin, base.Base):
         Gst.Bin.__init__(self)
 
         gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+        gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-audio-'+self.options['name'])
         aux = (pipestr.replace('gc-vsink', gcvideosink)
+               .replace('gc-asink', gcaudiosink)
                .replace('gc-firewire_renc-videoenc', self.options['videoencoder'])
                .replace('gc-firewire_renc-muxer', self.options['muxer']+' name=gc-firewire_renc-mux')
                .replace('gc-firewire_renc-audioenc', self.options['audioencoder'])
@@ -157,6 +165,9 @@ class GCfirewire_renc(Gst.Bin, base.Base):
 
     def getVideoSink(self):
         return self.get_by_name("gc-firewire_renc-preview")
+
+    def getAudioSink(self):
+        return self.get_by_name('sink-audio-' + self.options['name'])
 
     def getSource(self):
         return self.get_by_name("gc-firewire_renc-src")
