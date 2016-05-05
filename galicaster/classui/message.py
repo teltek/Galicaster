@@ -1,9 +1,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 """
 Basic Dialog Messag UI
@@ -44,7 +44,7 @@ OPERATION_NAMES = { 'Export to Zip': _('Export to Zip'),
             'Cancel Ingest Nightly': _('Cancel Ingest Nightly:'),
             'Side by Side': _('Side by Side'),
             'Side by Side Nightly': _('Side by Side Nightly'),
-            'Cancel Side by Side Nightly': _('Cancel SbS Nightly'),            
+            'Cancel Side by Side Nightly': _('Cancel SbS Nightly'),
             'Cancel': _('Cancel'),
              }
 
@@ -67,7 +67,7 @@ class PopUp(Gtk.Widget):
         self.size = size
         self.wprop = size[0]/1920.0
         self.hprop = size[1]/1080.0
-            
+
         # Create dialog
         gui = Gtk.Builder()
         gui.add_from_file(get_ui_path(message))
@@ -93,7 +93,7 @@ class PopUp(Gtk.Widget):
         self.dialog = dialog
         if message == ERROR:
             a = self.dialog.get_action_area().get_children()[0]
-            a.connect('clicked',self.dialog_destroy)            
+            a.connect('clicked',self.dialog_destroy)
             self.dialog.show_all()
         else:
             self.response = dialog.run()
@@ -143,19 +143,19 @@ class PopUp(Gtk.Widget):
         dialog.vbox.pack_start(strip, True, True, 0)
         dialog.vbox.reorder_child(strip,0)
 
-        dialog.set_property('width-request',int(self.size[0]/2.5)) 
-        # relative to screen size       
+        dialog.set_property('width-request',int(self.size[0]/2.5))
+        # relative to screen size
         if self.size[0]<1300:
             dialog.set_property('width-request',int(self.size[0]/2.2))
         if another:
-             dialog.set_property('width-request',int(self.size[0]/1.5)) 
+             dialog.set_property('width-request',int(self.size[0]/1.5))
 
         if parent != None:
             dialog_style_context = dialog.get_style_context()
             window_classes = parent.get_style_context().list_classes()
             for style_class in window_classes:
                 dialog_style_context.add_class(style_class)
-            dialog.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)    
+            dialog.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
             dialog.set_transient_for(parent)
             dialog.set_destroy_with_parent(True)
         else:
@@ -182,7 +182,7 @@ class PopUp(Gtk.Widget):
                 button.show()
 
 
-    def resize_buttons(self, area, fontsize, equal = False):    
+    def resize_buttons(self, area, fontsize, equal = False):
         """Adapts buttons to the dialog size"""
         wprop = self.wprop
         fsize=int(wprop*fontsize)
@@ -212,16 +212,16 @@ class PopUp(Gtk.Widget):
                                         if equal:
                                             other.set_padding(-1,int(wprop*fsize/2.6))
                                             other.set_width_chars(chars)
-                                    
+
 
     def force_response(self, origin=None, response=None):
         self.dialog.response(response)
-    
+
     def dialog_destroy(self, origin=None):
         if self.dialog:
             self.dialog.destroy()
-            self.dialog = None 
-    
+            self.dialog = None
+
 GObject.type_register(PopUp)
 
 def main(args):
@@ -232,5 +232,5 @@ def main(args):
     return 0
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv)) 
+    sys.exit(main(sys.argv))
 
