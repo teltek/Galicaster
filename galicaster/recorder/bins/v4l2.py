@@ -47,7 +47,7 @@ class GCv4l2(Gst.Bin, base.Base):
             },
         "location": {
             "type": "device",
-            "default": None,
+            "default": '/dev/video0',
             "description": "Device's mount point of the output",
             },
         "file": {
