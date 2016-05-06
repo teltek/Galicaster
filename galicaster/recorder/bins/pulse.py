@@ -19,6 +19,7 @@ from galicaster.recorder import base
 #from galicaster.recorder import module_register
 
 pipestr = (" pulsesrc name=gc-audio-src  ! queue ! audioamplify name=gc-audio-amplify amplification=1 ! "
+           " audioconvert ! audio/x-raw,channels=gc-audio-channels ! "
            " tee name=tee-aud  ! queue ! level name=gc-audio-level message=true interval=100000000 ! "
            " volume name=gc-audio-volume ! autoaudiosink sync=false name=gc-audio-preview  "
            " tee-aud. ! queue ! valve drop=false name=gc-audio-valve ! "
@@ -84,6 +85,12 @@ class GCpulse(Gst.Bin, base.Base):
             "default": "",
             "description": "Gstreamer audio encoder element used in the bin",
             },
+        "channels": {
+            "type": "integer",
+            "default": 2,
+            "range": (1,16),
+            "description": "Number of audio channels",
+            },
         }
 
     is_pausable = True
@@ -102,7 +109,8 @@ class GCpulse(Gst.Bin, base.Base):
         Gst.Bin.__init__(self)
 
         aux = (pipestr.replace("gc-audio-preview", "sink-" + self.options["name"])
-               .replace("gc-audio-enc", self.options["audioencoder"]))
+               .replace("gc-audio-enc", self.options["audioencoder"])
+               .replace("gc-audio-channels", str(self.options["channels"])))
         
         if self.options["audiomuxer"]:
             aux = aux.replace("gc-audio-mux", self.options["audiomuxer"])
