@@ -17,11 +17,11 @@ from gi.repository import GObject, Gst
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
-
+from galicaster.recorder.utils import get_audiosink
 
 pipestr = (" autoaudiosrc name=gc-autoaudio-src  ! queue ! audioamplify name=gc-autoaudio-amplify amplification=1 ! "
            " tee name=tee-aud  ! queue ! level name=gc-autoaudio-level message=true interval=100000000 ! "
-           " volume name=gc-autoaudio-volume ! autoaudiosink sync=false name=gc-autoaudio-preview  "
+           " volume name=gc-autoaudio-volume ! gc-sink "
            " tee-aud. ! queue ! valve drop=false name=gc-autoaudio-valve ! "
            " audioconvert ! gc-autoaudio-enc ! "
            " queue ! filesink name=gc-autoaudio-sink async=false " )
@@ -66,7 +66,7 @@ class GCautoaudio(Gst.Bin, base.Base):
         "amplification": {
             "type": "float",
             "default": 1.0,
-            "range": (0,10),
+            "range": (1.0,10),
             "description": "Audio amplification",
             },
         "audioencoder": {
@@ -74,7 +74,13 @@ class GCautoaudio(Gst.Bin, base.Base):
             "default": "lamemp3enc target=1 bitrate=192 cbr=true",
             "description": "Gstreamer audio encoder element used in the bin",
             },
-        }
+        "audiosink" : {
+            "type": "select",
+            "default": "autoaudiosink",
+            "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
+            "description": "Audio sink",
+        },    
+    }
 
     is_pausable = True
     has_audio   = True
@@ -91,8 +97,9 @@ class GCautoaudio(Gst.Bin, base.Base):
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
-        aux = (pipestr.replace("gc-autoaudio-preview", "sink-" + self.options["name"])
-                      .replace("gc-autoaudio-enc", self.options["audioencoder"]))
+        gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-'+self.options['name'])
+        aux = (pipestr.replace('gc-asink', gcaudiosink)
+               .replace("gc-autoaudio-enc", self.options["audioencoder"]))
 
         #bin = Gst.parse_bin_from_description(aux, True)
         bin = Gst.parse_launch("( {} )".format(aux))
@@ -127,10 +134,10 @@ class GCautoaudio(Gst.Bin, base.Base):
         valve1.set_property('drop', value)
 
     def getVideoSink(self):
-        return self.get_by_name("gc-autoaudio-preview")
+        return None
 
     def getAudioSink(self):
-        return self.get_by_name("gc-autoaudio-preview")
+        return self.get_by_name('sink-' + self.options['name'])
 
     def getSource(self):
         return self.get_by_name("gc-autoaudio-src")

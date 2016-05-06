@@ -18,16 +18,17 @@ from gi.repository import GObject, Gst
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
+from galicaster.recorder.utils import get_videosink, get_audiosink
 
 raise Exception("Not implemented. Using gst 0.10")
 
 pipestr = ( " filesrc name=gc-hauppauge-file-src ! valve drop=false name=gc-hauppauge-valve !  filesink  name=gc-hauppauge-sink async=false "
             " v4l2src name=gc-hauppauge-device-src ! video/x-raw,format=YV12,framerate=25/1,width=720,height=576,pixel-aspect-ratio=1/1 ! "
-            " queue name=queue-hauprevideo ! videoconvert ! xvimagesink qos=false async=false sync=false name=gc-hauppauge-preview " 
+            " queue name=queue-hauprevideo ! videoconvert ! gc-vsink " 
             " filesrc name= gc-hauppauge-audio-src ! "
             " audio/x-raw, rate=48000, channels=2, endianness=1234, width=16, depth=16, signed=true ! queue ! "
             " level name=gc-hauppauge-level message=true interval=100000000 ! "
-            " volume name=gc-hauppauge-volume ! alsasink name=gc-hauppauge-audio-sink" )
+            " volume name=gc-hauppauge-volume ! gc-asink" )
 
 class GChauppauge(Gst.Bin, base.Base):
 
@@ -95,7 +96,19 @@ class GChauppauge(Gst.Bin, base.Base):
                 ],
             "description": "Select video standard",
             },
-        }
+        "videosink" : {
+            "type": "select",
+            "default": "xvimagesink",
+            "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
+            "description": "Video sink",
+        },
+        "audiosink" : {
+            "type": "select",
+            "default": "autoaudiosink",
+            "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
+            "description": "Audio sink",
+        },
+    }
     
     options = {
         "0": "NTSC", "1": "NTSC-M", "2": "NTSC-M-JP", "3": "NTSC-M-KR", 
@@ -126,7 +139,10 @@ class GChauppauge(Gst.Bin, base.Base):
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
-        aux = pipestr.replace("gc-hauppauge-preview", "sink-" + self.options['name'])
+        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+        gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-audio-'+self.options['name'])
+        aux = (pipestr.replace('gc-vsink', gcvideosink)
+               .replace('gc-asink', gcaudiosink))
 
         #bin = Gst.parse_bin_from_description(aux, True)
         bin = Gst.parse_launch("( {} )".format(aux))
@@ -161,12 +177,13 @@ class GChauppauge(Gst.Bin, base.Base):
         valve1.set_property('drop', value)
 
     def getVideoSink(self):
-        return self.get_by_name("gc-hauppauge-preview")
+        return self.get_by_name('sink-' + self.options['name'])
+
+    def getAudioSink(self):
+        return self.get_by_name('sink-audio-' + self.options['name'])
 
     def getSource(self):
         return self.get_by_name("gc-hauppauge-file-src")
-
-
   
     def send_event_to_src(self,event): # IDEA made a common for all our bins
         src1 = self.get_by_name("gc-hauppauge-device-src")

@@ -17,10 +17,11 @@ from gi.repository import GObject, Gst
 
 from galicaster.recorder import base
 #from galicaster.recorder import module_register
+from galicaster.recorder.utils import get_audiosink
 
 pipestr = (" pulsesrc name=gc-audio-src  ! queue ! audioamplify name=gc-audio-amplify amplification=1 ! "
            " tee name=tee-aud  ! queue ! level name=gc-audio-level message=true interval=100000000 ! "
-           " volume name=gc-audio-volume ! autoaudiosink sync=false name=gc-audio-preview  "
+           " volume name=gc-audio-volume ! gc-asink "
            " tee-aud. ! queue ! valve drop=false name=gc-audio-valve ! "
            " audioconvert ! gc-audio-enc ! gc-audio-mux ! "
            " queue ! filesink name=gc-audio-sink async=false " )
@@ -65,7 +66,7 @@ class GCpulse(Gst.Bin, base.Base):
         "amplification": {
             "type": "float",
             "default": 1.0,
-            "range": (0,10),
+            "range": (1.0,10),
             "description": "Audio amplification",
             },
         "delay": {
@@ -84,7 +85,14 @@ class GCpulse(Gst.Bin, base.Base):
             "default": "",
             "description": "Gstreamer audio encoder element used in the bin",
             },
-        }
+        "audiosink" : {
+            "type": "select",
+            "default": "autoaudiosink",
+            "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
+            "description": "Audio sink",
+        },
+        
+    }
 
     is_pausable = True
     has_audio   = True
@@ -101,7 +109,8 @@ class GCpulse(Gst.Bin, base.Base):
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
-        aux = (pipestr.replace("gc-audio-preview", "sink-" + self.options["name"])
+        gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-'+self.options['name'])
+        aux = (pipestr.replace('gc-asink', gcaudiosink)
                .replace("gc-audio-enc", self.options["audioencoder"]))
         
         if self.options["audiomuxer"]:
@@ -115,7 +124,7 @@ class GCpulse(Gst.Bin, base.Base):
 
         if self.options['location'] != "default":
             sink = self.get_by_name("gc-audio-src")
-            sink.set_property("device", self.options['location'])
+            sink.set_porperty("device", self.options['location'])
 
 
         sink = self.get_by_name("gc-audio-sink")
@@ -142,10 +151,10 @@ class GCpulse(Gst.Bin, base.Base):
         valve1.set_property('drop', value)
 
     def getVideoSink(self):
-        return self.get_by_name("gc-audio-preview")
+        return None
 
     def getAudioSink(self):
-        return self.get_by_name("gc-audio-preview")
+        return self.get_by_name('sink-' + self.options['name'])
 
     def getSource(self):
         return self.get_by_name("gc-audio-src")

@@ -19,12 +19,12 @@ from gi.repository import Gst
 
 from galicaster.recorder import base
 from galicaster.recorder import module_register
-
+from galicaster.recorder.utils import get_videosink, get_audiosink
 
 videostr = ( ' decklinkvideosrc connection=hdmi mode=720p60 name=gc-blackmagic-src ! videoconvert ! queue ! '
              ' videorate ! gc-blackmagic-capsfilter !'
              ' queue ! videocrop name=gc-blackmagic-crop ! '
-             ' tee name=gc-blackmagic-tee  ! queue ! videoconvert ! xvimagesink async=false name=gc-blackmagic-preview'
+             ' tee name=gc-blackmagic-tee  ! queue ! videoconvert ! gc-vsink '
              #REC VIDEO
              ' gc-blackmagic-tee. ! queue ! valve drop=false name=gc-blackmagic-valve ! videoconvert ! '
              ' gc-blackmagic-enc ! queue ! gc-blackmagic-muxer ! '
@@ -36,7 +36,7 @@ audiostr= (
             ' audiorate ! audioamplify name=gc-blackmagic-amplify amplification=1 ! '
             ' tee name=gc-blackmagic-audiotee ! queue ! '
             ' level name=gc-blackmagic-level message=true interval=100000000 ! '
-            ' volume name=gc-blackmagic-volume ! queue ! alsasink async=false sync=false name=gc-blackmagic-audio-preview '
+            ' volume name=gc-blackmagic-volume ! queue ! gc-asink '
             # REC AUDIO
             ' gc-blackmagic-audiotee. ! queue ! valve drop=false name=gc-blackmagic-audio-valve ! '
             ' audioconvert ! gc-blackmagic-audioenc ! queue ! gc-blackmagic-muxer. '
@@ -157,7 +157,7 @@ class GCblackmagic(Gst.Bin, base.Base):
     "amplification": {
       "type": "float",
       "default": 1.0,
-      "range": (0,10),
+      "range": (1.0,10),
       "description": "Audio amplification",
       },
     "videoencoder": {
@@ -176,7 +176,19 @@ class GCblackmagic(Gst.Bin, base.Base):
       "default": "avimux",
       "description": "Gstreamer muxer element used in the bin, NOT USE NAME ATTR",
       },
-    }
+    "videosink" : {
+      "type": "select",
+      "default": "xvimagesink",
+      "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
+      "description": "Video sink",
+    },
+    "audiosink" : {
+      "type": "select",
+      "default": "autoaudiosink",
+      "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
+      "description": "Audio sink",
+    },
+  }
     
     
   is_pausable  = False
@@ -198,8 +210,11 @@ class GCblackmagic(Gst.Bin, base.Base):
 
         if self.options['framerate'] == "auto":
           self.options['framerate'] = FRAMERATE[self.options["input-mode"]]
-          
-        aux = (pipestr.replace('gc-blackmagic-preview', 'sink-' + self.options['name'])
+
+        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+        gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-audio-'+self.options['name'])
+        aux = (pipestr.replace('gc-vsink', gcvideosink)
+               .replace('gc-asink', gcaudiosink)
                .replace('gc-blackmagic-enc', self.options['videoencoder'])
                .replace('gc-blackmagic-muxer', self.options['muxer']+" name=gc-blackmagic-muxer")
                .replace('gc-blackmagic-capsfilter', "video/x-raw,framerate={0}".format(self.options['framerate']))
@@ -279,13 +294,13 @@ class GCblackmagic(Gst.Bin, base.Base):
     valve1.set_property('drop', value)
 
   def getVideoSink(self):
-    return self.get_by_name('gc-blackmagic-preview')
+    return self.get_by_name('sink-' + self.options['name'])
+
+  def getAudioSink(self):
+    return self.get_by_name('sink-audio-' + self.options['name'])
 
   def getSource(self):
     return self.get_by_name('gc-blackmagic-src')
-
-  def getAudioSink(self):
-    return self.get_by_name('gc-blackmagic-audio-preview')
 
   def mute_preview(self, value):
     if not self.mute:

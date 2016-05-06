@@ -240,6 +240,11 @@ class Recorder(object):
             name = message.src.get_property('name')
             logger.debug("on sync message 'prepare-window-handle' %r", name)
 
+            # Workaround for autovideosink (it name contains the sink that is being used)
+            sep_autovideosink = "-actual-sink"
+            if sep_autovideosink in name:
+                name = name.split(sep_autovideosink, 1)[0]
+            
             try:
                 gtk_player = self.players[name]
                 if not isinstance(gtk_player, Gtk.DrawingArea):
