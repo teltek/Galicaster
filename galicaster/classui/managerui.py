@@ -198,12 +198,13 @@ class ManagerUI(Gtk.Box):
 
         response_list = ['Ingest', # Resp 1
                          'Ingest Nightly', # Resp 2
-                         'Export to Zip', # Resp 3
-                         'Export to Zip Nightly', # Resp 4
-                         'Cancel Export to Zip Nightly', # Resp 5
-                         'Side by Side', # Resp 6
-                         'Side by Side Nightly', # Resp 7
-                         'Cancel Side by Side Nightly'] # Resp 8
+                         'Cancel Ingest Nightly', # Resp 3
+                         'Export to Zip', # Resp 4
+                         'Export to Zip Nightly', # Resp 5
+                         'Cancel Export to Zip Nightly', # Resp 6
+                         'Side by Side', # Resp 7
+                         'Side by Side Nightly', # Resp 8
+                         'Cancel Side by Side Nightly'] # Resp 9
 
         operations = {}
         for job in jobs:
