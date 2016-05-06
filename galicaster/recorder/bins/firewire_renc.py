@@ -20,15 +20,15 @@ from os import path
 from gi.repository import GObject, Gst
 
 from galicaster.recorder import base
-
+from galicaster.recorder.utils import get_videosink, get_audiosink
 
 pipestr = (' dv1394src name=gc-firewire_renc-src ! '
            ' queue ! dvdemux name=gc-firewire_renc-demuxer ! '
            ' level name=gc-firewire_renc-level message=true interval=100000000 ! '
            ' tee name=gc-firewire_renc-audiotee ! '
-           ' queue ! volume name=gc-firewire_renc-volume ! alsasink sync=false name=gc-firewire_renc-audio-sink '
+           ' queue ! volume name=gc-firewire_renc-volume ! gc-asink '
            ' gc-firewire_renc-demuxer. ! queue ! avdec_dvvideo ! videoconvert ! queue ! tee name=gc-firewire_renc-videotee ! '
-           ' xvimagesink qos=false async=false sync=false name=gc-firewire_renc-preview '
+           ' gc-vsink '
            ' gc-firewire_renc-audiotee. ! queue ! valve drop=false name=gc-firewire_renc-audio-valve ! audio/x-raw ! ' 
            ' gc-firewire_renc-audioenc ! gc-firewire_renc-muxer ! '
            ' queue ! filesink name=gc-firewire_renc-sink async=false '
@@ -100,8 +100,20 @@ class GCfirewire_renc(Gst.Bin, base.Base):
             "default": "avimux",
             "description": "Gstreamer muxer element used in the bin, NOT USE NAME ATTR",
             },
-        
-        }
+        "videosink" : {
+            "type": "select",
+            "default": "xvimagesink",
+            "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
+            "description": "Video sink",
+        },        
+        "audiosink" : {
+            "type": "select",
+            "default": "autoaudiosink",
+            "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
+            "description": "Audio sink",
+        },
+    }
+    
     is_pausable = False
     has_audio   = True
     has_video   = True
@@ -117,7 +129,10 @@ class GCfirewire_renc(Gst.Bin, base.Base):
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
-        aux = (pipestr.replace("gc-firewire_renc-preview", "sink-" + self.options["name"])
+        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+        gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-audio-'+self.options['name'])
+        aux = (pipestr.replace('gc-vsink', gcvideosink)
+               .replace('gc-asink', gcaudiosink)
                .replace('gc-firewire_renc-videoenc', self.options['videoencoder'])
                .replace('gc-firewire_renc-muxer', self.options['muxer']+' name=gc-firewire_renc-mux')
                .replace('gc-firewire_renc-audioenc', self.options['audioencoder'])
@@ -149,7 +164,10 @@ class GCfirewire_renc(Gst.Bin, base.Base):
         valve2.set_property('drop', value)
 
     def getVideoSink(self):
-        return self.get_by_name("gc-firewire_renc-preview")
+        return self.get_by_name('sink-' + self.options['name'])
+
+    def getAudioSink(self):
+        return self.get_by_name('sink-audio-' + self.options['name'])
 
     def getSource(self):
         return self.get_by_name("gc-firewire_renc-src")

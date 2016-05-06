@@ -19,10 +19,11 @@ from gi.repository import GObject, Gst
 
 from galicaster.recorder import base
 #from galicaster.recorder import module_register
+from galicaster.recorder.utils import get_videosink
 
 pipestr = (' videotestsrc name=gc-videotest-src pattern=0 is-live=true ! capsfilter name=gc-videotest-filter ! '
            ' queue ! videoconvert ! video/x-raw,format=YUY2 ! tee name=tee-vt  ! '
-           ' queue ! xvimagesink sync=false async=false qos=false name=gc-videotest-preview'
+           ' queue ! gc-vsink '
            ' tee-vt. ! queue ! valve drop=false name=gc-videotest-valve ! videoconvert ! queue ! '
            ' gc-videotest-enc ! queue ! gc-videotest-mux ! '
            ' queue ! filesink name=gc-videotest-sink async=false')
@@ -88,7 +89,13 @@ class GCvideotest(Gst.Bin, base.Base):
             "default": "avimux",
             "description": "Gstreamer encoder muxer used in the bin",
             },
-        }
+        "videosink" : {
+            "type": "select",
+            "default": "xvimagesink",
+            "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
+            "description": "Video sink",
+        },
+    }
     
     is_pausable = True
     has_audio   = False
@@ -106,7 +113,8 @@ class GCvideotest(Gst.Bin, base.Base):
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
-        aux = (pipestr.replace('gc-videotest-preview', 'sink-' + self.options['name'])
+        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+        aux = (pipestr.replace('gc-vsink', gcvideosink)
                       .replace('gc-videotest-enc', self.options['videoencoder'])
                       .replace('gc-videotest-mux', self.options['muxer']))
 
@@ -139,7 +147,7 @@ class GCvideotest(Gst.Bin, base.Base):
         valve1.set_property('drop', value)
 
     def getVideoSink(self):
-        return self.get_by_name('gc-videotest-preview')
+        return self.get_by_name('sink-' + self.options['name'])
 
     def getSource(self):
         return self.get_by_name('gc-videotest-src')
