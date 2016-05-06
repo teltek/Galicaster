@@ -276,11 +276,24 @@ class Recorder(object):
 
     def __set_vumeter(self, message):
         struct = message.get_structure()
-        if float(struct.get_value('rms')[0]) == float("-inf"):
+        rms_values = struct.get_value('rms')
+        stereo = True
+
+        if float(rms_values[0]) == float("-inf"):
             valor = "Inf"
         else:            
-            valor = float(struct.get_value('rms')[0])
-        self.dispatcher.emit("recorder-vumeter", valor)
+            valor = float(rms_values[0])
+
+        if len(rms_values) > 1:
+            if float(rms_values[1]) == float("-inf"):
+                valor2 = "Inf"
+            else:            
+                valor2 = float(rms_values[1])
+        else:
+            stereo = False
+            valor2 = valor
+
+        self.dispatcher.emit("recorder-vumeter", valor, valor2, stereo)
 
 
     def is_pausable(self):

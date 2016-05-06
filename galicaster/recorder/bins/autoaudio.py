@@ -20,6 +20,7 @@ from galicaster.recorder import module_register
 from galicaster.recorder.utils import get_audiosink
 
 pipestr = (" autoaudiosrc name=gc-autoaudio-src  ! queue ! audioamplify name=gc-autoaudio-amplify amplification=1 ! "
+           " audioconvert ! audio/x-raw,channels=gc-audio-channels ! "
            " tee name=tee-aud  ! queue ! level name=gc-autoaudio-level message=true interval=100000000 ! "
            " volume name=gc-autoaudio-volume ! gc-sink "
            " tee-aud. ! queue ! valve drop=false name=gc-autoaudio-valve ! "
@@ -74,6 +75,12 @@ class GCautoaudio(Gst.Bin, base.Base):
             "default": "lamemp3enc target=1 bitrate=192 cbr=true",
             "description": "Gstreamer audio encoder element used in the bin",
             },
+        "channels": {
+            "type": "integer",
+            "default": 2,
+            "range": (1,16),
+            "description": "Number of audio channels",
+        },        
         "audiosink" : {
             "type": "select",
             "default": "autoaudiosink",
@@ -99,7 +106,8 @@ class GCautoaudio(Gst.Bin, base.Base):
 
         gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-'+self.options['name'])
         aux = (pipestr.replace('gc-asink', gcaudiosink)
-               .replace("gc-autoaudio-enc", self.options["audioencoder"]))
+               .replace("gc-autoaudio-enc", self.options["audioencoder"])
+               .replace("gc-audio-channels", str(self.options["channels"])))
 
         #bin = Gst.parse_bin_from_description(aux, True)
         bin = Gst.parse_launch("( {} )".format(aux))

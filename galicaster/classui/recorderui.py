@@ -35,7 +35,6 @@ import datetime
 from galicaster.core import context
 
 from galicaster.classui.metadata import MetadataClass as Metadata
-from galicaster.classui.audiobar import Vumeter
 from galicaster.classui.events import EventManager
 from galicaster.classui.about import GCAboutDialog
 from galicaster.classui import message
@@ -112,6 +111,15 @@ class RecorderClassUI(Gtk.Box):
         self.vubox = builder.get_object("vubox")
         self.gui = builder
 
+        # VUMETER
+        self.rangeVum = 50
+        self.minimum = 50
+        self.mute = False
+        self.stereo = True
+        self.vumeterL = builder.get_object("progressbarL")
+        self.vumeterR = builder.get_object("progressbarR")
+        self.label_channels= builder.get_object("label_channels")
+
         # SWAP
         if not self.conf.get_boolean('basic', 'swapvideos'):
             self.gui.get_object("swapbutton").hide()
@@ -126,15 +134,11 @@ class RecorderClassUI(Gtk.Box):
         self.dispatcher.connect("net-up", self.check_net, True)        
         self.dispatcher.connect("net-down", self.check_net, False)        
 
-        # VUMETER
-        self.audiobar=Vumeter()
-
         # UI
-        self.vubox.add(self.audiobar)
         self.pack_start(self.recorderui,True,True,0)
 
         # Event Manager       
-        self.dispatcher.connect("recorder-vumeter", self.audiobar.SetVumeter)
+        self.dispatcher.connect("recorder-vumeter", self.set_vumeter)
         self.dispatcher.connect("galicaster-status", self.event_change_mode)
         self.dispatcher.connect("recorder-status", self.handle_status)
 
@@ -166,13 +170,52 @@ class RecorderClassUI(Gtk.Box):
         self.update_clock_timeout(self.gui.get_object("local_clock"))
         GObject.timeout_add(10000, self.update_clock_timeout, self.gui.get_object("local_clock"))
         
+
+    # VUMETER
+    def set_vumeter(self,element, data, data2, stereo):
+        value = self.scale_data(data, priority=True)
+        value2 = self.scale_data(data2, priority=False)
+        self.vumeterL.set_fraction(value)
+        self.vumeterR.set_fraction(value2)
+        if not stereo and self.stereo:
+            self.stereo = False
+            self.label_channels.set_text("Mono")
+        elif stereo and not self.stereo:
+            self.stereo = True
+            self.label_channels.set_text("Stereo")
+            
+
+    def clear_vumeter(self):
+        self.vumeterL.set_fraction(0)
+        self.vumeterR.set_fraction(0)
+
+    def scale_data(self,data, priority=False):        
+        if data == "Inf":
+            valor = 0
+        else:
+            valor=(data+self.rangeVum)/float(self.rangeVum)
+
+        if not priority:
+            return valor
+        
+        if self.mute and valor > self.minimum + 5.0:
+            self.dispatcher.emit("audio-recovered")
+            self.mute = False
+        elif not self.mute:
+            if valor == 0 or valor < self.minimum:
+                self.dispatcher.emit("audio-mute")
+                self.mute = True
+        
+        return valor
+
+    
     def swap_videos(self, button=None):
         """GUI callback"""
         self.swap = not self.swap
         self.dispatcher.emit("reload-profile")
-        self.audiobar.mute = False        
+        self.mute = False        
 
-
+        
     def on_rec(self,button=None): 
         """GUI callback for manual recording"""
         logger.info("Recording")

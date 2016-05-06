@@ -20,6 +20,7 @@ from galicaster.recorder import base
 from galicaster.recorder.utils import get_audiosink
 
 pipestr = (" pulsesrc name=gc-audio-src  ! queue ! audioamplify name=gc-audio-amplify amplification=1 ! "
+           " audioconvert ! audio/x-raw,channels=gc-audio-channels ! "
            " tee name=tee-aud  ! queue ! level name=gc-audio-level message=true interval=100000000 ! "
            " volume name=gc-audio-volume ! gc-asink "
            " tee-aud. ! queue ! valve drop=false name=gc-audio-valve ! "
@@ -85,6 +86,12 @@ class GCpulse(Gst.Bin, base.Base):
             "default": "",
             "description": "Gstreamer audio encoder element used in the bin",
             },
+        "channels": {
+            "type": "integer",
+            "default": 2,
+            "range": (1,16),
+            "description": "Number of audio channels",
+            },
         "audiosink" : {
             "type": "select",
             "default": "autoaudiosink",
@@ -111,7 +118,8 @@ class GCpulse(Gst.Bin, base.Base):
 
         gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-'+self.options['name'])
         aux = (pipestr.replace('gc-asink', gcaudiosink)
-               .replace("gc-audio-enc", self.options["audioencoder"]))
+               .replace("gc-audio-enc", self.options["audioencoder"])
+               .replace("gc-audio-channels", str(self.options["channels"])))
         
         if self.options["audiomuxer"]:
             aux = aux.replace("gc-audio-mux", self.options["audiomuxer"])
