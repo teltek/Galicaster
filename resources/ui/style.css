@@ -61,3 +61,17 @@ GtkDialog{
 		from(shade(gray,1.5)),
 		to(shade(gray,1.9)));
 }
+
+.vumeter_high{
+    color: red;
+}
+.vumeter_medium{
+    color: orange;
+}
+.vumeter_low{
+    color: green;
+}
+
+.label_small{
+    font-size: 0.75em;
+}

@@ -51,7 +51,7 @@ GObject.signal_new('pr', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObjec
 #REC
 GObject.signal_new('upcoming-recording', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('starting-record', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
-GObject.signal_new('recorder-vumeter', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
+GObject.signal_new('recorder-vumeter', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('recorder-error', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('recorder-status', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('reload-profile', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
