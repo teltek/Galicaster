@@ -673,7 +673,7 @@ class Conf(object): # TODO list get and other ops arround profile
         for ind,track in enumerate(tracks):
             tracks.pop(count)
             for k,v in track.iteritems():
-                if k in ['name', 'file', 'location']:
+                if k in ['name', 'file']:
                     for aux in tracks:
                         if k in aux.keys() and v == aux[k]:
 
