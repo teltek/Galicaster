@@ -181,6 +181,7 @@
               <object class="GtkNotebook" id="data_panel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="vexpand">False</property>
                 <property name="tab_pos">left</property>
                 <child>
                   <object class="GtkBox" id="eventpanel">
@@ -270,6 +271,7 @@
                   <object class="GtkLabel" id="tab1">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="vexpand">True</property>
                     <property name="xpad">10</property>
                     <property name="ypad">10</property>
                     <property name="label" translatable="yes">Events</property>
@@ -328,6 +330,7 @@
                   <object class="GtkLabel" id="tab2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="vexpand">True</property>
                     <property name="xpad">10</property>
                     <property name="ypad">10</property>
                     <property name="label" translatable="yes">Recording</property>
@@ -474,6 +477,7 @@
                   <object class="GtkLabel" id="tab3">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="vexpand">True</property>
                     <property name="xpad">10</property>
                     <property name="ypad">10</property>
                     <property name="label" translatable="yes">Status</property>
@@ -515,7 +519,6 @@
                           <object class="GtkGrid" id="grid1">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="row_homogeneous">True</property>
                             <property name="column_homogeneous">True</property>
                             <child>
                               <object class="GtkProgressBar" id="progressbarL">
@@ -553,6 +556,7 @@
                               <packing>
                                 <property name="left_attach">1</property>
                                 <property name="top_attach">1</property>
+                                <property name="height">3</property>
                               </packing>
                             </child>
                             <child>
@@ -565,6 +569,7 @@
                               <packing>
                                 <property name="left_attach">3</property>
                                 <property name="top_attach">1</property>
+                                <property name="height">3</property>
                               </packing>
                             </child>
                             <child>
@@ -577,6 +582,7 @@
                               <packing>
                                 <property name="left_attach">5</property>
                                 <property name="top_attach">1</property>
+                                <property name="height">3</property>
                               </packing>
                             </child>
                             <child>
@@ -589,6 +595,7 @@
                               <packing>
                                 <property name="left_attach">7</property>
                                 <property name="top_attach">1</property>
+                                <property name="height">3</property>
                               </packing>
                             </child>
                             <child>
@@ -601,6 +608,7 @@
                               <packing>
                                 <property name="left_attach">9</property>
                                 <property name="top_attach">1</property>
+                                <property name="height">3</property>
                               </packing>
                             </child>
                             <child>
@@ -613,6 +621,7 @@
                               <packing>
                                 <property name="left_attach">11</property>
                                 <property name="top_attach">1</property>
+                                <property name="height">3</property>
                               </packing>
                             </child>
                             <child>
