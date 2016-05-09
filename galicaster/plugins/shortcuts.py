@@ -35,7 +35,7 @@ def check_key(source, event):
         and event.get_state() & Gdk.ModifierType.MOD2_MASK and
         (event.keyval in [Gdk.keyval_from_name('q'), Gdk.keyval_from_name('Q')])):
         
-        if not context.get_recorder.is_recording():
+        if not context.get_recorder().is_recording():
             dispatcher.emit('galicaster-quit')
 
     if ((event.get_state() & Gdk.ModifierType.CONTROL_MASK)  and
