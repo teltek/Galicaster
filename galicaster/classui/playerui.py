@@ -79,8 +79,6 @@ class PlayerClassUI(ManagerUI):
       
         # VUMETER
         self.audiobar=AudioBarClass()
-        self.volume_bar = self.audiobar.volume
-        self.volume_bar.connect("value-changed", self.on_volume2) 
 
         self.vubox = builder.get_object("vubox")
         self.vubox.add(self.audiobar.bar)
@@ -102,7 +100,7 @@ class PlayerClassUI(ManagerUI):
         self.thread_id=None
         builder.connect_signals(self)
 
-        self.dispatcher.connect("update-play-vumeter", self.audiobar.SetVumeter)
+        self.dispatcher.connect("update-play-vumeter", self.audiobar.set_vumeter)
         self.dispatcher.connect("play-stopped", self.change_state_bypass, GC_READY)
         self.dispatcher.connect('play-list', self.play_from_list)
         self.dispatcher.connect("galicaster-status", self.event_change_mode)
@@ -234,13 +232,6 @@ class PlayerClassUI(ManagerUI):
                 self.correct=True # correction rutine activated
                 self.seeking= False
 
-    def on_volume(self, button, scroll_type, new_value):
-        """Changes the player value"""
-        value = 120 if new_value > 120 else 0 if new_value < 0 else new_value
-        self.player.set_volume(value/100.0)
-
-    def on_volume2(self, button, new_value):
-        self.player.set_volume(new_value*2.0)
 
     def create_drawing_areas(self, source): # TODO refactorize, REC
         """Creates the preview areas depending on the video tracks of a mediapackage"""
@@ -307,8 +298,6 @@ class PlayerClassUI(ManagerUI):
         self.statusbar.SetTimer2(0,self.duration)
         Gdk.threads_leave()        
               
-        self.volume_bar.set_value(0.5)
-
         while thread_id == self.thread_id:
             if not self.seeking :
                 if not self.duration:

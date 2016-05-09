@@ -32,26 +32,33 @@ class AudioBarClass(Gtk.Box):
         guifile=get_ui_path('audiobarv.glade')
         builder.add_from_file(guifile)
         self.bar = builder.get_object("audiobar")
-        box = builder.get_object("vbox")
-        self.volume = Gtk.VolumeButton()
-        self.volume.set_value(0.5)
-        box.pack_end(self.volume,False,True,0)
-        builder.connect_signals(self)
-        self.vumeter=builder.get_object("vumeter")
-        self.rangeVum = 40
+        self.label_channel_players = builder.get_object("label_channels_player")
+        self.vumeterL = builder.get_object("progressbarL")
+        self.vumeterR = builder.get_object("progressbarR")
+        self.rangeVum = 50
+        self.stereo = True
 
-    def GetVumeter(self):
-        return self.vumeter.get_fraction()
+    def get_vumeter(self):
+        return self.vumeterL.get_fraction()
 
-    def SetVumeter(self,element,data):
-        value = self.scale_vumeter(data)
-        self.vumeter.set_fraction(value)
+    def set_vumeter(self,element,data, data2, stereo):
+        value = self.scale_data(data)
+        value2 = self.scale_data(data2)
+        self.vumeterL.set_fraction(value)
+        self.vumeterR.set_fraction(value2)
 
-    def ClearVumeter(self):
-        self.vumeter.set_fraction(0)
+        if not stereo and self.stereo:
+            self.stereo = False
+            self.label_channels_player.set_text("Mono")
+        elif stereo and not self.stereo:
+            self.stereo = True
+            self.label_channels_player.set_text("Stereo")        
 
-    def scale_vumeter(self,data):
+    def clear_vumeter(self):
+        self.vumeterL.set_fraction(0)
+        self.vumeterR.set_fraction(0)
 
+    def scale_data(self,data):
         if data == "Inf":
             data = -100
         elif data < -self.rangeVum:
@@ -62,9 +69,6 @@ class AudioBarClass(Gtk.Box):
         return valor
 
     def resize(self,size):
-        k = size[0] / 1920.0
-        self.proportion = k
-        self.vumeter.set_property("width-request",int(k*50))
         return True
 
 
