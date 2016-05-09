@@ -17,8 +17,8 @@ import json
 import math
 import threading
 import tempfile
-from bottle import route, run, response, abort
-from gi.repository import Gtk, Gdk
+from bottle import route, run, response, abort, request
+from gi.repository import Gtk, Gdk, GObject
 
 from galicaster.core import context
 from galicaster.mediapackage.serializer import set_manifest
@@ -54,6 +54,7 @@ def index():
             "/operation/exporttozip/:id" : "Export MP to zip",
             "/screen" : "get a screenshoot of the active",
             "/logstale" : "check if log is stale (threads crashed)",
+            "/quit" : "Quit Galicaster",
         }    
     return json.dumps(endpoints)
 
@@ -150,7 +151,6 @@ def screen():
 def logstale():
     
     conf = context.get_conf()
-    
     filename = conf.get('logger', 'path')
     stale = conf.get('logger', 'stale') or 300 # 5 minutes
     if filename:
@@ -159,11 +159,27 @@ def logstale():
     else:
         return "Error: no filepath provided" 
 
-@route('/quit')
-def quit():
-    if not context.get_state().is_recording:
+@route('/quit', method='POST')
+def quit():    
+    logger = context.get_logger()
+    recorder = context.get_recorder()
+
+    force = request.forms.get('force')
+    
+    if not recorder.is_recording() or readable.str2bool(force):
+        logger.info("Quit Galicaster through API rest")
         # Emit quit signal and exit
-        gtk.gdk.threads_enter()
-        context.get_dispatcher().emit('galicaster-notify-quit')
-        gtk.main_quit()
-        gtk.gdk.threads_leave()
+        emit('galicaster-notify-quit')
+        
+        Gdk.threads_enter()
+        Gtk.main_quit()
+        Gdk.threads_leave()
+    else:
+        abort(401, "Sorry, there is a current recording")
+
+def emit(*args, **kwargs):
+    dispatcher = context.get_dispatcher()    
+    # self.dispatcher.emit(*args, **kwargs)
+    # Allow only the main thread to touch the GUI
+    GObject.idle_add(dispatcher.emit, *args, **kwargs)
+
