@@ -165,15 +165,27 @@ def screen():
 
 @route('/logstale')
 def logstale():
-    
     conf = context.get_conf()
-    filename = conf.get('logger', 'path')
+    logger = context.get_logger()
+    
+    filename = logger.get_path()
     stale = conf.get('logger', 'stale') or 300 # 5 minutes
-    if filename:
-        age = int (math.ceil( (time.time() - os.path.getmtime(filename)) ))
-        return "STALE LOG: age: {0} s".format(age)  if age > stale else "OK LOG: age: {0} s".format(age)
-    else:
-        return "Error: no filepath provided" 
+
+    info = {}
+    
+    if not logger:
+        abort(503, "The logger service is not available")
+
+    age = int (math.ceil( (time.time() - os.path.getmtime(filename)) ))
+    info['filename'] = filename
+    info['stale'] = False
+    info['age'] = age
+
+    if age > stale:
+        info['stale'] = True        
+
+    return json.dumps(info)
+
 
 @route('/quit', method='POST')
 def quit():    
