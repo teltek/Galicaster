@@ -67,7 +67,7 @@ GtkDialog{
 		from(shade(gray,1.5)),
 		to(shade(gray,1.9)));
 }
-
+/* Recorder - Vumeter */
 .vumeter_high{
     color: red;
 }
@@ -81,3 +81,15 @@ GtkDialog{
 .label_small{
     font-size: 0.75em;
 }
+/* Recorder - Tabs */
+GtkNotebook tab:active{
+	background-image: inherit;
+}
+GtkNotebook tab{
+	background-image: -gtk-gradient(
+		linear,
+		left top, right top,
+		from(shade(gray,1.9)),
+		to(shade(gray,1.5)));
+}
+
