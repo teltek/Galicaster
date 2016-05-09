@@ -17,7 +17,7 @@ import json
 import math
 import threading
 import tempfile
-from bottle import route, run, response, abort, request
+from bottle import route, run, response, abort, request, install
 from gi.repository import Gtk, Gdk, GObject
 
 from galicaster.core import context
@@ -29,10 +29,26 @@ Description: Galicaster REST endpoint using bottle micro web-framework.
 Status: Experimental
 """
 
+def error_handler(func):
+    def wrapper(*args,**kwargs):
+        try:
+            return func(*args,**kwargs)
+        except Exception as e:
+            logger = context.get_logger()
+            error_txt = str(e)
+            logger.error("Error in function '{}': {}".format(func.func_name, error_txt))
+
+            abort(503, error_txt)
+    return wrapper
+
+
 def init():
     conf = context.get_conf()
     host = conf.get('rest', 'host')
     port = conf.get_int('rest', 'port')
+
+    install(error_handler)
+    
     restp = threading.Thread(target=run,kwargs={'host': host, 'port': port, 'quiet': True})
     restp.setDaemon(True)
     restp.start()
