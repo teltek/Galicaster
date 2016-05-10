@@ -51,7 +51,6 @@ def init():
     dispatcher.connect('audio-recovered', warning_audio_hide)
     dispatcher.connect('galicaster-status', event_change_mode)
     dispatcher.connect('reload-profile', clear_data_and_check)
-    dispatcher.connect('restart_preview', deactivate_hidden_and_check)
     dispatcher.connect('starting-record', deactivate_hidden_and_check)
     dispatcher.connect('upcoming-recording', deactivate_hidden_and_check)
     dispatcher.connect('disable-no-audio', force_hide)
@@ -245,26 +244,18 @@ def create_ui():
     #ui.vbox.pack_start(box, True, False, 0)
     #ui.vbox.pack_start(label2, True, False, 0)
     resize_buttons(ui.action_area,int(wprop*25),True)
-    ui.vbox.set_child_packing(ui.action_area, True, True, int(hprop*25), Gtk.PACK_END)
+    ui.vbox.set_child_packing(ui.action_area, True, True, int(hprop*25), Gtk.PackType.END)
     
     label1.show()
     label2.show()
     return ui
 
-def set_font(description):
-        """Asign a font description to a text"""
-        alist = Pango.AttrList()
-        font=Pango.FontDescription(description)
-        attr=Pango.AttrFontDesc(font,0,-1)
-        alist.insert(attr)
-        return alist
-
 def resize_buttons(area, fsize, equal = False):    
         """Adapts buttons to the dialog size"""
-        font = set_font("bold "+str(fsize)+"px")
+        font = Pango.FontDescription("bold "+str(fsize)+"px")
         for button in area.get_children():
             for element in button.get_children():
                 if type(element) == Gtk.Label:
-                    element.set_attributes(font)
+                    element.modify_font(font)
                     if equal:
                         element.set_padding(-1,int(fsize/2.6))
