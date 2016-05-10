@@ -113,7 +113,6 @@ class RecorderClassUI(Gtk.Box):
 
         # VUMETER
         self.rangeVum = 50
-        self.minimum = 50
         self.mute = False
         self.stereo = True
         self.vumeterL = builder.get_object("progressbarL")
@@ -173,8 +172,7 @@ class RecorderClassUI(Gtk.Box):
 
     # VUMETER
     def set_vumeter(self,element, data, data2, stereo):
-        value = self.scale_data(data, priority=True)
-        value2 = self.scale_data(data2, priority=False)
+        value, value2 = self.scale_data(data, data2)
         self.vumeterL.set_fraction(value)
         self.vumeterR.set_fraction(value2)
         if not stereo and self.stereo:
@@ -189,24 +187,33 @@ class RecorderClassUI(Gtk.Box):
         self.vumeterL.set_fraction(0)
         self.vumeterR.set_fraction(0)
 
-    def scale_data(self,data, priority=False):        
+    def scale_data(self,data, data2):
         if data == "Inf":
-            valor = 0
-        else:
-            valor=(data+self.rangeVum)/float(self.rangeVum)
-
-        if not priority:
-            return valor
+            data = -200
+        if data2 == "Inf":
+            data2 = -200
+            
+        average = (data + data2)/2.0
         
-        if self.mute and valor > self.minimum + 5.0:
-            self.dispatcher.emit("audio-recovered")
-            self.mute = False
-        elif not self.mute:
-            if valor == 0 or valor < self.minimum:
+        if not self.mute:
+	    if average < (-self.rangeVum):
                 self.dispatcher.emit("audio-mute")
                 self.mute = True
-        
-        return valor
+	if self.mute and average > (-self.rangeVum + 5.0):
+            self.dispatcher.emit("audio-recovered")
+            self.mute = False 
+
+        if data < -100:
+            valor = 0
+        else:
+            valor=(data + self.rangeVum)/float(self.rangeVum)
+
+        if data2 < -100:
+            valor2 = 0
+        else:
+            valor2=(data2 + self.rangeVum)/float(self.rangeVum)
+
+        return valor, valor2
 
     
     def swap_videos(self, button=None):
