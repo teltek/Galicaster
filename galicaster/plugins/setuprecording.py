@@ -29,15 +29,14 @@ MAPPINGS = { 'user': getpass.getuser() }
 
 
 def init():
+    global recorder, dispatcher
     dispatcher = context.get_dispatcher()
+    recorder = context.get_recorder()
     dispatcher.connect("galicaster-init", post_init)
 
 
 def post_init(source=None):
-
-    global recorder_ui
-    global rec_button
-    global metadata
+    global recorder_ui, rec_button, metadata
 
     metadata = {}
     
@@ -58,19 +57,21 @@ def post_init(source=None):
         metadata['isPartOf'] = config['series']
 
     recorder_ui = context.get_mainwindow().nbox.get_nth_page(0)
-
     rec_button = recorder_ui.gui.get_object('recbutton')
-
     rec_button.connect('clicked', on_rec)
     rec_button.handler_block_by_func(recorder_ui.on_rec)
     
-def on_rec(button):
-    dispatcher = context.get_dispatcher()    
-    dispatcher.emit("disable-no-audio")
-    global recorder_ui
-    global metadata
 
-    mp = recorder_ui.mediapackage
+def on_rec(button):
+    global dispatcher, recorder, recorder_ui, metadata
+    dispatcher.emit("disable-no-audio")
+    mp = None
+
+    if not recorder.current_mediapackage:
+        mp = recorder.create_mp()
+
+    if not mp:
+        mp = recorder.current_mediapackage
     
     # Add default metadata to the MP
     mp.metadata_episode.update(metadata)
@@ -98,6 +99,6 @@ def on_rec(button):
     popup = MetadataClass(**arguments)
     
     if popup.return_value == -8:
-        recorder_ui.on_rec(button=None, pre_filled=True)
+        recorder_ui.on_rec(button=None)
     dispatcher.emit("enable-no-audio")
     
