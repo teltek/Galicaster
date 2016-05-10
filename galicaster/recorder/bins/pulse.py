@@ -132,7 +132,7 @@ class GCpulse(Gst.Bin, base.Base):
 
         if self.options['location'] != "default":
             sink = self.get_by_name("gc-audio-src")
-            sink.set_porperty("device", self.options['location'])
+            sink.set_property("device", self.options['location'])
 
 
         sink = self.get_by_name("gc-audio-sink")
