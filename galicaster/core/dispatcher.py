@@ -71,7 +71,6 @@ GObject.signal_new('play-list', Dispatcher, GObject.SignalFlags.RUN_LAST, None, 
 #MEDIAMANAGER
 GObject.signal_new('action-mm-refresh-row', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 #STATUS
-GObject.signal_new('update-play-status', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('update-video', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 #DISTRIBUTION
 GObject.signal_new('change-mode', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
