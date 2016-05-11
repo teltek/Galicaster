@@ -145,6 +145,8 @@ class RecorderService(object):
         now = datetime.utcnow().replace(microsecond=0)
         self.current_mediapackage.setDate(now)
         self.__set_status(RECORDING_STATUS)
+        self.dispatcher.emit("recorder-started", self.current_mediapackage.getIdentifier())
+
         return True
 
 
