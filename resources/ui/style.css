@@ -92,4 +92,18 @@ GtkNotebook tab{
 		from(shade(gray,1.9)),
 		to(shade(gray,1.5)));
 }
-
+/* Progress bar (Vumeter)*/
+.trough{
+	background-image: -gtk-gradient(
+                linear,
+                left bottom, right bottom,
+                from(green),
+		color-stop(0.7,yellow),
+                to(red));
+}
+GtkProgressBar.progressbar{
+	background-color: shade(gray,1.5);
+	margin: 0;
+	border: 0px;
+	border-radius: 0px;
+}
