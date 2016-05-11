@@ -39,7 +39,7 @@ class StripUI(Gtk.Box):
         self.builder = builder
         self.strip = builder.get_object("stripbox")
         button = builder.get_object("previousbutton")
-        button.connect("clicked", self.emit_signal, "change-mode", back_page)
+        button.connect("clicked", self.emit_signal, "action-view-change", back_page)
         about = builder.get_object("aboutevent")
         about.connect("button-press-event", self.show_about_dialog)
 

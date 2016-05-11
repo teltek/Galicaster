@@ -62,7 +62,7 @@ class Main():
             self.scheduler = context.get_scheduler()
 
         if 'media_manager' in self.modules:
-            self.dispatcher.connect('change-mode', self.change_mode)
+            self.dispatcher.connect('action-view-change', self.change_mode)
 
             # Distribution
             self.distribution = DistribUI()

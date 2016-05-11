@@ -507,7 +507,7 @@ class RecorderClassUI(Gtk.Box):
 
     def change_mode(self, button):
         """GUI callback Launch the signal to change to another area"""
-        self.dispatcher.emit("change-mode", 3) # FIXME use constant
+        self.dispatcher.emit("action-view-change", 3) # FIXME use constant
 
 
     def set_status_view(self):
