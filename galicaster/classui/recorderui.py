@@ -54,6 +54,8 @@ from galicaster.recorder.service import ERROR_STATUS
 Gdk.threads_init()
 
 logger = context.get_logger()
+status_label_changed = False
+status_label_blink = True
 
 # No-op function for i18n
 def N_(string): return string
@@ -340,43 +342,13 @@ class RecorderClassUI(Gtk.Box):
         title = self.gui.get_object("titlelabel")
         status = self.gui.get_object("eventlabel")
 
-        # Status panel
-        # status_disk = self.gui.get_object("status1")
-        # status_hours = self.gui.get_object("status2")
-        # status_mh = self.gui.get_object("status3")
-        parpadeo = True
-        changed = False
-        
-        if self.font == None:
-            anchura = self.get_toplevel().get_screen().get_width()
-            if anchura not in [1024,1280,1920]:
-                anchura = 1920            
-            k1 = anchura / 1920.0
-            self.font = Pango.FontDescription("bold "+str(k1*42))
-        
-        #bold = Pango.AttrWeight(700, 0, -1)
-        #red = Pango.AttrForeground(65535, 0, 0, 0, -1)        
-        #black = Pango.AttrForeground(17753, 17753, 17753, 0, -1)
-        #font = Pango.FontDescription(self.font)
-
-        attr_red = Pango.AttrList()
-        attr_black = Pango.AttrList()
-
-        #attr_red.insert(red)
-        #attr_red.insert(font)
-        #attr_red.insert(bold)
-
-        #attr_black.insert(black)
-        #attr_black.insert(font)
-        #attr_black.insert(bold)
-
-        status.set_attributes(attr_black)
-        
-        return status, event_type, title, attr_red, attr_black, changed, parpadeo
+        return status, event_type, title
 
 
-    def update_scheduler_timeout(self, status, event_type, title, attr_red, attr_black, changed, parpadeo):
+    def update_scheduler_timeout(self, status, event_type, title):
         """GObject.timeout callback with 500 ms intervals"""
+        global status_label_changed, status_label_blink
+
         if self.recorder.current_mediapackage and not self.recorder.current_mediapackage.manual:
             start = self.recorder.current_mediapackage.getLocalDate()
             duration = self.recorder.current_mediapackage.getDuration() / 1000
@@ -387,14 +359,12 @@ class RecorderClassUI(Gtk.Box):
             title.set_text(self.recorder.current_mediapackage.title)             
                 
             if dif < datetime.timedelta(0, TIME_RED_STOP):
-                if not changed:
-                    status.set_attributes(attr_red)
-                    changed = True
-            elif changed:
-                status.set_attributes(attr_black)
-                changed = False
+                if not status_label_changed:
+                    status_label_changed = True
+            elif status_label_changed:
+                status_label_changed = False
             if dif < datetime.timedelta(0,TIME_BLINK_STOP):
-                parpadeo = not parpadeo
+                status_label_blink = not status_label_blink
 
         else:
             next_mediapackage = self.repo.get_next_mediapackage()
@@ -408,19 +378,17 @@ class RecorderClassUI(Gtk.Box):
                 status.set_text(_("Starting in {0}").format(readable.long_time(dif)))
 
                 if dif < datetime.timedelta(0,TIME_RED_START):
-                    if not changed:
-                        status.set_attributes(attr_red)
-                        changed = True
-                elif changed:
-                    status.set_attributes(attr_black)
-                    changed = False
+                    if not status_label_changed:
+                        status_label_changed = True
+                elif status_label_changed:
+                    status_label_changed = False
 
                 if dif < datetime.timedelta(0,TIME_BLINK_START):
-                    if parpadeo:
+                    if status_label_blink:
                         status.set_text("")
-                        parpadeo =  False
+                        status_label_blink =  False
                     else:
-                        parpadeo = True
+                        status_label_blink = True
 
             else: # Not current or pending recordings
                 if event_type.get_text():                
