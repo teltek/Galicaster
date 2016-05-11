@@ -29,7 +29,7 @@ class Dispatcher(GObject.GObject):
 #    __gsignals__ = {
 #        'galicaster-init': (GObject.SIGNAL_RUN_FIRST, None,()),
 #        'pr': (GObject.SIGNAL_RUN_FIRST, None,(GObject.TYPE_PYOBJECT,)),
-#        'upcoming-recording': (GObject.SignalFlags.RUN_LAST, None, () ),
+#        'recorder-upcoming-event': (GObject.SignalFlags.RUN_LAST, None, () ),
 #        'recorder-vumeter': (GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,)),
 #        'recorder-error': (GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) ),
 #        'recorder-status', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
@@ -49,7 +49,7 @@ class Dispatcher(GObject.GObject):
 GObject.signal_new('galicaster-init', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('pr', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 #REC
-GObject.signal_new('upcoming-recording', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
+GObject.signal_new('recorder-upcoming-event', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('recorder-vumeter', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('recorder-error', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('recorder-status', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )

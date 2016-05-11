@@ -221,7 +221,7 @@ class Scheduler(object):
         """
         diff = (mp.getDate() - datetime.datetime.utcnow())
         if diff < datetime.timedelta(minutes=30) and mp.getIdentifier() != self.mp_rec and not self.start_timers.has_key(mp.getIdentifier()):
-            self.emit('upcoming-recording')
+            self.emit('recorder-upcoming-event')
             ti = Timer(diff.seconds, self.start_record, [mp.getIdentifier()]) 
             self.start_timers[mp.getIdentifier()] = ti
             ti.start()
