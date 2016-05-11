@@ -66,7 +66,7 @@ class ListingClassUI(ManagerUI):
         self.color = context.get_conf().get_palette(old_style)
 
         builder.connect_signals(self)
-        self.dispatcher.connect("refresh-row", self.refresh_row_from_mp)
+        self.dispatcher.connect("action-mm-refresh-row", self.refresh_row_from_mp)
         self.dispatcher.connect("start-operation", self.refresh_operation)
         self.dispatcher.connect("stop-operation", self.refresh_operation)
         self.dispatcher.connect("galicaster-status", self.event_change_mode)

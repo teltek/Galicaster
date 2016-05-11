@@ -321,7 +321,7 @@ class Worker(object):
         self.repo.update(mp)
 
         self.dispatcher.emit('start-operation', 'ingest', mp)
-        self.dispatcher.emit('refresh-row', mp.identifier)
+        self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
 
         if workflow or workflow_parameters:
             self.logger.info("Ingest for MP {}: workflow:{}   workflow_parameters:{} (None means default values)".format(mp.getIdentifier(), workflow, workflow_parameters))
@@ -359,7 +359,7 @@ class Worker(object):
         ifile.close()
         self.repo.update(mp)
             
-        self.dispatcher.emit('refresh-row', mp.identifier)
+        self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
 
 
     def export_to_zip(self, mp, params={}):
