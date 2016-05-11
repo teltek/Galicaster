@@ -196,22 +196,22 @@ class RecorderClassUI(Gtk.Box):
         average = (data + data2)/2.0
         
         if not self.mute:
-	    if average < (-self.rangeVum):
+            if average < (-self.rangeVum):
                 self.dispatcher.emit("audio-mute")
                 self.mute = True
-	if self.mute and average > (-self.rangeVum + 5.0):
+        if self.mute and average > (-self.rangeVum + 5.0):
             self.dispatcher.emit("audio-recovered")
             self.mute = False 
 
         if data < -100:
-            valor = 0
+            valor = 1
         else:
-            valor=(data + self.rangeVum)/float(self.rangeVum)
+            valor=1 - ((data + self.rangeVum)/float(self.rangeVum))
 
         if data2 < -100:
-            valor2 = 0
+            valor2 = 1
         else:
-            valor2=(data2 + self.rangeVum)/float(self.rangeVum)
+            valor2=1 - ((data2 + self.rangeVum)/float(self.rangeVum))
 
         return valor, valor2
 
