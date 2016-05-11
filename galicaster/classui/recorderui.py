@@ -219,7 +219,7 @@ class RecorderClassUI(Gtk.Box):
     def swap_videos(self, button=None):
         """GUI callback"""
         self.swap = not self.swap
-        self.dispatcher.emit("reload-profile")
+        self.dispatcher.emit("action-reload-profile")
         self.mute = False        
 
         
