@@ -92,4 +92,20 @@ GtkNotebook tab{
 		from(shade(gray,1.9)),
 		to(shade(gray,1.5)));
 }
+/* Event status */
+.status_text{
+	font-weight: bold;
+}
+#red_coloured{
+	color: red;
+}
+#black_coloured{
+	color: shade(gray,0.5);
+}
+#blinking_coloured_from{
+	color: shade(red,1.5);
+}
+#blinking_coloured_to{
+	color: red;
+}
 

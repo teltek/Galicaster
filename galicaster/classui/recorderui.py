@@ -54,7 +54,7 @@ from galicaster.recorder.service import ERROR_STATUS
 Gdk.threads_init()
 
 logger = context.get_logger()
-status_label_changed = False
+status_label_changed = True
 status_label_blink = True
 
 # No-op function for i18n
@@ -360,10 +360,16 @@ class RecorderClassUI(Gtk.Box):
                 
             if dif < datetime.timedelta(0, TIME_RED_STOP):
                 if not status_label_changed:
+                    status.set_name('red_coloured')
                     status_label_changed = True
             elif status_label_changed:
+                status.set_name('black_coloured')
                 status_label_changed = False
             if dif < datetime.timedelta(0,TIME_BLINK_STOP):
+                if status_label_blink:
+                    status.set_name('blinking_coloured_from')
+                else:
+                    status.set_name('blinking_coloured_to')
                 status_label_blink = not status_label_blink
 
         else:
@@ -379,16 +385,18 @@ class RecorderClassUI(Gtk.Box):
 
                 if dif < datetime.timedelta(0,TIME_RED_START):
                     if not status_label_changed:
+                        status.set_name('red_coloured')
                         status_label_changed = True
                 elif status_label_changed:
+                    status.set_name('black_coloured')
                     status_label_changed = False
 
                 if dif < datetime.timedelta(0,TIME_BLINK_START):
                     if status_label_blink:
-                        status.set_text("")
-                        status_label_blink =  False
+                        status.set_name('blinking_coloured_from')
                     else:
-                        status_label_blink = True
+                        status.set_name('blinking_coloured_to')
+                    status_label_blink = not status_label_blink
 
             else: # Not current or pending recordings
                 if event_type.get_text():                
