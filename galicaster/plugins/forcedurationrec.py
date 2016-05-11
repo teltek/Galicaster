@@ -28,33 +28,33 @@ logger = context.get_logger()
 recorder = context.get_recorder()
 
 t_stop = None
-max_duration = conf.get_int('forcedurationrec', 'duration') or 240
+max_duration = conf.get_int('forcedurationrec', 'duration', 240)
 
 
 def init():
     dispatcher.connect("galicaster-notify-quit", do_stop_timers)
-    dispatcher.connect('starting-record', create_timer)
-    dispatcher.connect('restart-preview', do_stop_timers)
+    dispatcher.connect('recorder-started', create_timer)
+    dispatcher.connect('reload-profile', do_stop_timers)
 
 
-def create_timer(sender=None):
+def create_timer(sender=None, mp_id=None):
     global t_stop
     do_stop_timers()
     t_stop = Timer(60 * max_duration, stop_recording) 
-    t_stop.start()
     logger.debug("Init Timer to stop a record in {} minutes".format(max_duration))
+    t_stop.start()
 
 
 def stop_recording(sender=None):
     global t_stop
     t_stop = None
-    recorder.stop()
     logger.info("Forceduration plugin stops the recording".format(max_duration))
+    recorder.stop()
 
 
 def do_stop_timers(sender=None):
     global t_stop
     if isinstance(t_stop, _Timer):
-        t_stop.cancel()
         logger.debug("Reset Timer")
+        t_stop.cancel()
 
