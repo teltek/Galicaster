@@ -398,7 +398,7 @@ class RecorderClassUI(Gtk.Box):
 
         else:
             next_mediapackage = self.repo.get_next_mediapackage()
-            if next_mediapackage:
+            if next_mediapackage and next_mediapackage.isScheduled():
                 start = next_mediapackage.getLocalDate()
                 dif = start - datetime.datetime.now()
                 if event_type.get_text != NEXT_TEXT:
