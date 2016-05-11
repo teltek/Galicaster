@@ -62,8 +62,8 @@ GObject.signal_new('recorder-closed', Dispatcher, GObject.SIGNAL_RUN_LAST, GObje
 #AUDIO
 GObject.signal_new('audio-mute', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('audio-recovered', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
-GObject.signal_new('enable-no-audio', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
-GObject.signal_new('disable-no-audio', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
+GObject.signal_new('action-audio-enable-msg', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
+GObject.signal_new('action-audio-disable-msg', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 #PLAYER
 GObject.signal_new('player-update-vumeter', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('play-stopped', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
