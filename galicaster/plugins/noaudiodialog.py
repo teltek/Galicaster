@@ -51,7 +51,7 @@ def init():
     dispatcher.connect('audio-recovered', warning_audio_hide)
     dispatcher.connect('galicaster-status', event_change_mode)
     dispatcher.connect('reload-profile', clear_data_and_check)
-    dispatcher.connect('starting-record', deactivate_hidden_and_check)
+    dispatcher.connect('recorder-starting', deactivate_hidden_and_check)
     dispatcher.connect('upcoming-recording', deactivate_hidden_and_check)
     dispatcher.connect('disable-no-audio', force_hide)
     dispatcher.connect('enable-no-audio', disable_force_hide)

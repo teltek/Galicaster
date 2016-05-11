@@ -45,7 +45,7 @@ def init():
         audio_track = context.get_conf().get('failovermic', 'audio_track')
         dispatcher.connect('update-rec-vumeter', check_pipeline_amp)
         dispatcher.connect('recorder-closed', failover_audio)
-        dispatcher.connect('starting-record', record)
+        dispatcher.connect('recorder-starting', record)
         dispatcher.connect('restart-preview', stop)
         set_pipeline()
     except ValueError:

@@ -33,7 +33,7 @@ def init():
     dispatcher = context.get_dispatcher()
     inactivity = context.get_conf().get('screensaver', 'inactivity')
     dispatcher.connect('upcoming-recording', deactivate_and_poke)
-    dispatcher.connect('starting-record', deactivate_and_poke)
+    dispatcher.connect('recorder-starting', deactivate_and_poke)
     dispatcher.connect('restart-preview', configure)
     dispatcher.connect('galicaster-notify-quit', configure_quit)
     configure()
