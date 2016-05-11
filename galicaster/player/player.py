@@ -281,7 +281,7 @@ class Player(object):
             valor = "Inf"
         else:
             valor = float(struct.get_value('rms')[0])
-        self.dispatcher.emit("player-update-vumeter", valor)
+        self.dispatcher.emit("player-vumeter", valor)
 
     def __discover(self, filepath):
         self.duration = get_duration(filepath)
