@@ -102,7 +102,7 @@ class PlayerClassUI(ManagerUI):
         self.thread_id=None
         builder.connect_signals(self)
 
-        self.dispatcher.connect("update-play-vumeter", self.audiobar.SetVumeter)
+        self.dispatcher.connect("player-update-vumeter", self.audiobar.SetVumeter)
         self.dispatcher.connect("play-stopped", self.change_state_bypass, GC_READY)
         self.dispatcher.connect('play-list', self.play_from_list)
         self.dispatcher.connect("galicaster-status", self.event_change_mode)

@@ -65,7 +65,7 @@ GObject.signal_new('audio-recovered', Dispatcher, GObject.SignalFlags.RUN_LAST, 
 GObject.signal_new('enable-no-audio', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('disable-no-audio', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 #PLAYER
-GObject.signal_new('update-play-vumeter', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
+GObject.signal_new('player-update-vumeter', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('play-stopped', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('play-list', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 
