@@ -44,7 +44,7 @@ logger.debug('check_nightly set to {}'.format(check_nightly))
 def init():        
     try:
         dispatcher = context.get_dispatcher()
-        dispatcher.connect('galicaster-notify-timer-short', reingest)        
+        dispatcher.connect('galicaster-timer-short', reingest)        
     except ValueError:
         pass
 

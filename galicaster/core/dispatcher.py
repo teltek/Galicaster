@@ -80,7 +80,7 @@ GObject.signal_new('galicaster-notify-shutdown', Dispatcher, GObject.SignalFlags
 
 #TIMER
 GObject.signal_new('galicaster-timer-nightly', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
-GObject.signal_new('galicaster-notify-timer-short', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
+GObject.signal_new('galicaster-timer-short', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('galicaster-notify-timer-long', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('after-process-ical', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 #NET
