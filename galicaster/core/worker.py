@@ -493,13 +493,13 @@ class Worker(object):
     def operation_error(self, mp, OP_NAME, exc):
         self.logger.error("Failed {} for MP {}. Exception: {}".format(OP_NAME, mp.getIdentifier(), exc))
         mp.setOpStatus(JOBS[OP_NAME], mediapackage.OP_FAILED)
-        self.dispatcher.emit('stop-operation', JOBS[OP_NAME], mp, False, None)
+        self.dispatcher.emit('operation-stopped', JOBS[OP_NAME], mp, False, None)
         self.repo.update(mp)
 
     def operation_success(self, mp, OP_NAME):
         self.logger.info("Finalized {} for MP {}".format(OP_NAME, mp.getIdentifier()))
         mp.setOpStatus(JOBS[OP_NAME], mediapackage.OP_DONE)
-        self.dispatcher.emit('stop-operation', JOBS[OP_NAME], mp, True, None)
+        self.dispatcher.emit('operation-stopped', JOBS[OP_NAME], mp, True, None)
         self.repo.update(mp)
 
 

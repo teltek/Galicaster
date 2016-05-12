@@ -68,7 +68,7 @@ class ListingClassUI(ManagerUI):
         builder.connect_signals(self)
         self.dispatcher.connect("action-mm-refresh-row", self.refresh_row_from_mp)
         self.dispatcher.connect("operation-started", self.refresh_operation)
-        self.dispatcher.connect("stop-operation", self.refresh_operation)
+        self.dispatcher.connect("operation-stopped", self.refresh_operation)
         self.dispatcher.connect("galicaster-status", self.event_change_mode)
 
         self.populate_treeview(self.repository.list().values())
