@@ -35,7 +35,7 @@ def init():
     dispatcher.connect('recorder-upcoming-event', deactivate_and_poke)
     dispatcher.connect('recorder-starting', deactivate_and_poke)
     dispatcher.connect('restart-preview', configure)
-    dispatcher.connect('galicaster-notify-quit', configure_quit)
+    dispatcher.connect('quit', configure_quit)
     configure()
 
 def get_screensaver_method(method):

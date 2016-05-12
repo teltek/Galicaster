@@ -193,7 +193,7 @@ class GCWindow(Gtk.Window):
             if self.logger:
                 self.logger.info("Quit Galicaster")
             if self.dispatcher:
-                self.dispatcher.emit('galicaster-notify-quit')
+                self.dispatcher.emit('quit')
             Gtk.main_quit()
         else:
             if self.logger:
@@ -213,7 +213,7 @@ class GCWindow(Gtk.Window):
             if self.logger:
                 self.logger.info("Shutdown Galicaster")
             if self.dispatcher:
-                self.dispatcher.emit('galicaster-notify-quit')
+                self.dispatcher.emit('quit')
             UtilsShutdown()
         else:
             if self.logger:

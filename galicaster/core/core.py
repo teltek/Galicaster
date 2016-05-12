@@ -89,7 +89,7 @@ class Main():
 
 
     def emit_quit(self):
-        self.dispatcher.emit('galicaster-notify-quit')
+        self.dispatcher.emit('quit')
 
     def change_mode(self, origin, page):
         old_page = self.window.get_current_page()

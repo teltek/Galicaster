@@ -29,7 +29,7 @@ class Heartbeat(object):
         self.dispatcher     = dispatcher 
         self.logger         = logger
 
-        self.dispatcher.connect('galicaster-notify-quit', self.do_stop_timers)
+        self.dispatcher.connect('quit', self.do_stop_timers)
 
 
     def init_timer(self):
