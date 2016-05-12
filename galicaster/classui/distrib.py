@@ -84,16 +84,18 @@ class DistribUI(Gtk.Box):
             dispatcher.emit(signal)
 
     def show_about_dialog(self,origin, button):
-        about_dialog = GCAboutDialog()
-        about_dialog.set_transient_for(context.get_mainwindow())
-        about_dialog.set_modal(True)
-        about_dialog.set_keep_above(False)
-        about_dialog.show()
-        about_dialog.connect('response', self.on_about_dialog_response)
-                
+        builder = Gtk.Builder()
+        builder.add_from_file(get_ui_path('about.glade'))
+        dialog = builder.get_object("aboutdialog")
+        dialog.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
+        dialog.set_transient_for(self.get_toplevel())
+        dialog.set_destroy_with_parent(True)
+        dialog.show()
+        dialog.connect('response', self.on_about_dialog_response)
+
     def on_about_dialog_response(self, origin, response_id):
-        if response_id == Gtk.ResponseType.CLOSE or response_id == Gtk.ResponseType.CANCEL:
-            origin.hide()  
+        if response_id == Gtk.ResponseType.CLOSE or response_id == Gtk.ResponseType.CANCEL or response_id == Gtk.ResponseType.DELETE_EVENT:
+            origin.hide()
 
     def resize(self): 
         size = context.get_mainwindow().get_size()

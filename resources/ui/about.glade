@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.18.3 -->
+<interface>
+  <requires lib="gtk+" version="3.12"/>
+  <object class="GtkAboutDialog" id="aboutdialog">
+    <property name="can_focus">False</property>
+    <property name="modal">True</property>
+    <property name="type_hint">toolbar</property>
+    <property name="program_name">Galicaster</property>
+    <property name="version">2.0.x</property>
+    <property name="copyright" translatable="yes">Copyright © 2015 Teltek Video Research</property>
+    <property name="website">http://galicaster.teltek.es</property>
+    <property name="website_label" translatable="yes">Galicaster Website</property>
+    <property name="license" translatable="yes">Galicaster, Multistream Recorder and Player
+Copyright (c) 2015, Teltek Video Research &lt;galicaster@teltek.es&gt;
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License. 
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
+or send a letter to Creative Commons, 171 Second Street, Suite 300, San Francisco, California, 94105, USA.</property>
+    <property name="authors">Héctor Canto
+Hugo Caloto
+Rubén González
+Rubén Pérez</property>
+    <property name="documenters">Héctor Canto
+Hugo Caloto
+Rubén González
+Rubén Pérez</property>
+    <property name="artists">Héctor Canto
+Natalia García</property>
+    <property name="logo">../images/logo.svg</property>
+    <property name="wrap_license">True</property>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="aboutdialog-vbox1">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="aboutdialog-action_area1">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage" id="teltek">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixbuf">../images/teltek.svg</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

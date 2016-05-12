@@ -452,19 +452,23 @@ class RecorderClassUI(Gtk.Box):
 
 
     def show_about(self,button=None,tipe = None):
-        """GUI callback Pops up de About Dialgo"""
-        about_dialog = GCAboutDialog()
+        """GUI callback Pops up de About Dialog"""
         self.dispatcher.emit("disable-no-audio")
-        about_dialog.set_transient_for(context.get_mainwindow())
-        about_dialog.set_modal(True)
-        about_dialog.set_keep_above(False)
-        about_dialog.show()
-        about_dialog.connect('response', self.on_about_dialog_response)
+        size=context.get_mainwindow().get_size()
+        k = size[0]/1920.0
+        builder = Gtk.Builder()
+        builder.add_from_file(get_ui_path('about.glade'))
+        dialog = builder.get_object("aboutdialog")
+        dialog.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
+        dialog.set_transient_for(self.get_toplevel())
+        dialog.set_destroy_with_parent(True)
+        dialog.show()
+        dialog.connect('response', self.on_about_dialog_response)
 
-    
+
     def on_about_dialog_response(self, origin, response_id):
-        if response_id == Gtk.ResponseType.CLOSE or response_id == Gtk.ResponseType.CANCEL:
-            self.dispatcher.emit("enable-no-audio") 
+        if response_id == Gtk.ResponseType.CLOSE or response_id == Gtk.ResponseType.CANCEL or response_id == Gtk.ResponseType.DELETE_EVENT:
+            self.dispatcher.emit("enable-no-audio")
             origin.hide()
 
 
