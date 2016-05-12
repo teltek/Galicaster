@@ -86,8 +86,6 @@ GObject.signal_new('after-process-ical', Dispatcher, GObject.SignalFlags.RUN_LAS
 #NET
 GObject.signal_new('net-up', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('net-down', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
-#ABOUT
-GObject.signal_new('show-about', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 #PROVISIONAL
 GObject.signal_new('create-mock-mp', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 #WORKER
