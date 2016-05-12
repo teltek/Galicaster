@@ -94,7 +94,7 @@ class Main():
     def change_mode(self, origin, page):
         old_page = self.window.get_current_page()
         self.window.set_current_page(page)  
-        self.dispatcher.emit('galicaster-status', old_page, page)
+        self.dispatcher.emit('view-changed', old_page, page)
 
     def check_net(self, origin, data):
         self.state.net = data

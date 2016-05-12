@@ -105,7 +105,7 @@ class PlayerClassUI(ManagerUI):
         self.dispatcher.connect("player-vumeter", self.audiobar.SetVumeter)
         self.dispatcher.connect("play-stopped", self.change_state_bypass, GC_READY)
         self.dispatcher.connect('play-list', self.play_from_list)
-        self.dispatcher.connect("galicaster-status", self.event_change_mode)
+        self.dispatcher.connect("view-changed", self.event_change_mode)
         self.dispatcher.connect("galicaster-notify-quit", self.close)
 
 

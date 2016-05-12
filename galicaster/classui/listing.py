@@ -69,7 +69,7 @@ class ListingClassUI(ManagerUI):
         self.dispatcher.connect("action-mm-refresh-row", self.refresh_row_from_mp)
         self.dispatcher.connect("operation-started", self.refresh_operation)
         self.dispatcher.connect("operation-stopped", self.refresh_operation)
-        self.dispatcher.connect("galicaster-status", self.event_change_mode)
+        self.dispatcher.connect("view-changed", self.event_change_mode)
 
         self.populate_treeview(self.repository.list().values())
         self.box.pack_start(self.strip,False,False,0)

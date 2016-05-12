@@ -138,7 +138,7 @@ class RecorderClassUI(Gtk.Box):
 
         # Event Manager       
         self.dispatcher.connect("recorder-vumeter", self.set_vumeter)
-        self.dispatcher.connect("galicaster-status", self.event_change_mode)
+        self.dispatcher.connect("view-changed", self.event_change_mode)
         self.dispatcher.connect("recorder-status", self.handle_status)
 
         nb=builder.get_object("data_panel")

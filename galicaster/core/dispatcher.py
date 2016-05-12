@@ -72,7 +72,7 @@ GObject.signal_new('play-list', Dispatcher, GObject.SignalFlags.RUN_LAST, None, 
 GObject.signal_new('action-mm-refresh-row', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 #DISTRIBUTION
 GObject.signal_new('action-view-change', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
-GObject.signal_new('galicaster-status', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT, GObject.TYPE_PYOBJECT) )
+GObject.signal_new('view-changed', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT, GObject.TYPE_PYOBJECT) )
 GObject.signal_new('galicaster-quit', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('galicaster-notify-quit', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('galicaster-shutdown', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
