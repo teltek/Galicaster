@@ -22,7 +22,7 @@ def init():
 
     conf = context.get_conf()
     dispatcher = context.get_dispatcher()
-    dispatcher.connect('galicaster-timer-nightly', clear_job)
+    dispatcher.connect('timer-nightly', clear_job)
 
     logger = context.get_logger()
 

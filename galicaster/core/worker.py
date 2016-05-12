@@ -123,7 +123,7 @@ class Worker(object):
         self.t.setDaemon(True)
         self.t.start()
 
-        self.dispatcher.connect('galicaster-timer-nightly', self.exec_nightly)
+        self.dispatcher.connect('timer-nightly', self.exec_nightly)
 
     def get_all_job_types(self):
         """Gets all the possible mediapackage operations.

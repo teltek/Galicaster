@@ -56,9 +56,9 @@ class Heartbeat(object):
 
     def __notify_timer_daily(self):
         seg = self.get_seg_until_next()
-        self.dispatcher.emit('galicaster-timer-nightly')
+        self.dispatcher.emit('timer-nightly')
         if self.logger:
-            self.logger.debug('galicaster-timer-nightly in %s', seg)
+            self.logger.debug('timer-nightly in %s', seg)
         Timer(seg, self.__notify_timer_daily).start()
 
 
