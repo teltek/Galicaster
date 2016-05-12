@@ -354,6 +354,10 @@ class RecorderClassUI(Gtk.Box):
             duration = self.recorder.current_mediapackage.getDuration() / 1000
             end = start + datetime.timedelta(seconds=duration)
             dif = end - datetime.datetime.now()
+
+            if dif < datetime.timedelta(0):
+                return True
+
             status.set_text(_("Stopping in {0}").format(readable.long_time(dif)))
             event_type.set_text(CURRENT_TEXT) 
             title.set_text(self.recorder.current_mediapackage.title)             
