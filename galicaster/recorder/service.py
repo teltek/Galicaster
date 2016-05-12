@@ -245,7 +245,7 @@ class RecorderService(object):
         if self.autorecover and not self.__handle_recover_id:
             self.repo.save_crash_recordings()
             self.logger.debug("Connecting recover recorder callback")
-            self.__handle_recover_id = self.dispatcher.connect("galicaster-notify-timer-long", 
+            self.__handle_recover_id = self.dispatcher.connect("timer-long", 
                                                              WeakMethod(self, '_handle_recover'))
 
 

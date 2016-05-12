@@ -67,7 +67,7 @@ class Scheduler(object):
         self.recorder   = recorder
 
         self.dispatcher.connect('timer-short', self.do_timers_short)
-        self.dispatcher.connect('galicaster-notify-timer-long',  self.do_timers_long)
+        self.dispatcher.connect('timer-long',  self.do_timers_long)
         self.dispatcher.connect("recorder-error", self.on_recorder_error)
         
         self.t_stop = None

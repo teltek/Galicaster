@@ -70,7 +70,7 @@ class Heartbeat(object):
 
 
     def __notify_timer_long(self):
-        self.dispatcher.emit('galicaster-notify-timer-long')
+        self.dispatcher.emit('timer-long')
         if self.logger:
             self.logger.debug('galicaster-notify-long in %s', self.interval_long)
         Timer(self.interval_long, self.__notify_timer_long).start()
