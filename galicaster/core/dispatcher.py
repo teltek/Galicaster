@@ -84,7 +84,7 @@ GObject.signal_new('timer-short', Dispatcher, GObject.SignalFlags.RUN_LAST, None
 GObject.signal_new('timer-long', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('ical-processed', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 #NET
-GObject.signal_new('net-up', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
+GObject.signal_new('opencast-connected', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('net-down', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 #PROVISIONAL
 GObject.signal_new('action-create-mock-mp', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )

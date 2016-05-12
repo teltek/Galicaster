@@ -130,7 +130,7 @@ class RecorderClassUI(Gtk.Box):
         big_status.add(self.view)
         self.dispatcher.connect("init", self.check_status_area)
         self.dispatcher.connect("init", self.check_net)
-        self.dispatcher.connect("net-up", self.check_net, True)        
+        self.dispatcher.connect("opencast-connected", self.check_net, True)        
         self.dispatcher.connect("net-down", self.check_net, False)        
 
         # UI

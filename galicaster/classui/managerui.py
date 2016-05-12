@@ -57,7 +57,7 @@ class ManagerUI(Gtk.Box):
 	self.repository = context.get_repository()
 	self.network = False
 
-	self.dispatcher.connect("net-up", self.network_status, True)
+	self.dispatcher.connect("opencast-connected", self.network_status, True)
 	self.dispatcher.connect("net-down", self.network_status, False)
 
 

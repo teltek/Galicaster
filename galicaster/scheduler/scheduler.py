@@ -134,7 +134,7 @@ class Scheduler(object):
             self.emit('net-down')
         else:
             self.net = True
-            self.emit('net-up')
+            self.emit('opencast-connected')
 
 
 
@@ -156,7 +156,7 @@ class Scheduler(object):
             self.client.setstate(self.ca_status)
             self.client.setconfiguration(self.conf.get_tracks_in_oc_dict()) 
             self.net = True
-            self.emit('net-up')
+            self.emit('opencast-connected')
         except Exception as exc:
             self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
             self.net = False
