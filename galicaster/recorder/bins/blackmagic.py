@@ -214,7 +214,6 @@ class GCblackmagic(Gst.Bin, base.Base):
         gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
         gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-audio-'+self.options['name'])
         aux = (pipestr.replace('gc-vsink', gcvideosink)
-               .replace('gc-asink', gcaudiosink)
                .replace('gc-blackmagic-enc', self.options['videoencoder'])
                .replace('gc-blackmagic-muxer', self.options['muxer']+" name=gc-blackmagic-muxer")
                .replace('gc-blackmagic-capsfilter', "video/x-raw,framerate={0}".format(self.options['framerate']))
@@ -225,6 +224,7 @@ class GCblackmagic(Gst.Bin, base.Base):
         else:
           self.has_audio = True  
           aux += audiostr
+          aux = aux.replace('gc-asink', gcaudiosink)
           aux = aux.replace('gc-blackmagic-audioenc', self.options['audioencoder'])
 
         #bin = Gst.parse_bin_from_description(aux, False)
