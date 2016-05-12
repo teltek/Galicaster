@@ -142,8 +142,9 @@ class OCHTTPClient(object):
         #c.setopt(pycurl.VERBOSE, True) ##TO DEBUG
         try:
             c.perform()
-        except:
-            raise RuntimeError, 'connect timed out!'
+        except Exception as exc:
+            raise RuntimeError, exc
+        
         status_code = c.getinfo(pycurl.HTTP_CODE)
         self.response['Status-Code'] = status_code
         self.response['Content-Type'] = c.getinfo(pycurl.CONTENT_TYPE)
@@ -152,8 +153,9 @@ class OCHTTPClient(object):
             if (status_code > 200) and (status_code < 300):
                 self.logger and self.logger.debug("Opencast client ({}) sent a response with status code {}".format(urlparse.urlunparse(url), status_code))
             else:
+                title = self.find_between(b.getvalue(), "<title>", "</title>")
                 self.logger and self.logger.error('call error in %s, status code {%r}: %s', 
-                                                  urlparse.urlunparse(url), status_code, b.getvalue())
+                                                  urlparse.urlunparse(url), status_code, title)
                 raise IOError, 'Error in Opencast client'
 
         return b.getvalue()
@@ -368,3 +370,12 @@ class OCHTTPClient(object):
                                               "title" : d["title"]})
                     
         return workflows
+
+
+    def find_between(self, s, first, last):
+        try:
+            start = s.index(first) + len(first)
+            end = s.index(last, start)
+            return s[start:end]
+        except:
+            return ""
