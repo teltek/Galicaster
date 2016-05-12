@@ -85,7 +85,7 @@ class Main():
             self.recorder.block()  
 
         context.get_heartbeat().init_timer()
-        self.dispatcher.emit("galicaster-init")
+        self.dispatcher.emit("init")
 
 
     def emit_quit(self):

@@ -128,8 +128,8 @@ class RecorderClassUI(Gtk.Box):
         big_status = builder.get_object("bg_status")
         self.view = self.set_status_view()
         big_status.add(self.view)
-        self.dispatcher.connect("galicaster-init", self.check_status_area)
-        self.dispatcher.connect("galicaster-init", self.check_net)
+        self.dispatcher.connect("init", self.check_status_area)
+        self.dispatcher.connect("init", self.check_net)
         self.dispatcher.connect("net-up", self.check_net, True)        
         self.dispatcher.connect("net-down", self.check_net, False)        
 

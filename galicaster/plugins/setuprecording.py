@@ -32,7 +32,7 @@ def init():
     global recorder, dispatcher
     dispatcher = context.get_dispatcher()
     recorder = context.get_recorder()
-    dispatcher.connect("galicaster-init", post_init)
+    dispatcher.connect("init", post_init)
 
 
 def post_init(source=None):
