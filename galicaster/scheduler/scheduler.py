@@ -131,7 +131,7 @@ class Scheduler(object):
         except Exception as exc:
             self.logger.warning('Unable to connect to opencast server: {0}'.format(exc))
             self.net = False
-            self.emit('net-down')
+            self.emit('opencast-unreachable')
         else:
             self.net = True
             self.emit('opencast-connected')
@@ -160,7 +160,7 @@ class Scheduler(object):
         except Exception as exc:
             self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
             self.net = False
-            self.emit('net-down')
+            self.emit('opencast-unreachable')
             return
 
 
@@ -173,7 +173,7 @@ class Scheduler(object):
         except Exception as exc:
             self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
             self.net = False
-            self.emit('net-down')
+            self.emit('opencast-unreachable')
             return
 
         # No data but no error implies that the calendar has not been modified (ETAG)
@@ -276,7 +276,7 @@ class Scheduler(object):
             except Exception as exc:
                 self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
                 self.net = False
-                self.emit('net-down')
+                self.emit('opencast-unreachable')
             
         self.t_stop = None
 
@@ -297,7 +297,7 @@ class Scheduler(object):
                 except:
                     self.logger.warning("Problems to connect to opencast server trying to send the state 'capture_error' ")
                     self.net = False
-                    self.emit('net-down')
+                    self.emit('opencast-unreachable')
 
         
     def emit(self, *args, **kwargs):

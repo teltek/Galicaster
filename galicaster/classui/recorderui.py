@@ -131,7 +131,7 @@ class RecorderClassUI(Gtk.Box):
         self.dispatcher.connect("init", self.check_status_area)
         self.dispatcher.connect("init", self.check_net)
         self.dispatcher.connect("opencast-connected", self.check_net, True)        
-        self.dispatcher.connect("net-down", self.check_net, False)        
+        self.dispatcher.connect("opencast-unreachable", self.check_net, False)        
 
         # UI
         self.pack_start(self.recorderui,True,True,0)

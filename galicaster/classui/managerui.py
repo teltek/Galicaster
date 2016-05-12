@@ -58,7 +58,7 @@ class ManagerUI(Gtk.Box):
 	self.network = False
 
 	self.dispatcher.connect("opencast-connected", self.network_status, True)
-	self.dispatcher.connect("net-down", self.network_status, False)
+	self.dispatcher.connect("opencast-unreachable", self.network_status, False)
 
 
     def sorting(self, treemodel, iter1, iter2, data, regular=True, ascending=1):
