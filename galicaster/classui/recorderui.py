@@ -226,7 +226,7 @@ class RecorderClassUI(Gtk.Box):
     def on_rec(self,button=None): 
         """GUI callback for manual recording"""
         logger.info("Recording")
-        self.dispatcher.emit("record-starting")
+        self.dispatcher.emit("recorder-starting")
         self.recorder.record()
 
 
