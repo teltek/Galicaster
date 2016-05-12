@@ -320,7 +320,7 @@ class Worker(object):
         mp.setOpStatus('ingest',mediapackage.OP_PROCESSING)
         self.repo.update(mp)
 
-        self.dispatcher.emit('start-operation', 'ingest', mp)
+        self.dispatcher.emit('operation-started', 'ingest', mp)
         self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
 
         if workflow or workflow_parameters:
@@ -389,7 +389,7 @@ class Worker(object):
         if is_action:
             self.logger.info("Executing ExportToZIP for MP {} to {}".format(mp.getIdentifier(), location if type(location) in [str,unicode] else location.name))
             mp.setOpStatus('exporttozip',mediapackage.OP_PROCESSING)
-            self.dispatcher.emit('start-operation', 'exporttozip', mp)
+            self.dispatcher.emit('operation-started', 'exporttozip', mp)
             self.repo.update(mp)
         else:
             self.logger.info("Zipping MP {} to {}".format(mp.getIdentifier(), location if type(location) in [str,unicode] else location.name))
@@ -436,7 +436,7 @@ class Worker(object):
         self.logger.info('Executing SideBySide for MP {0}'.format(mp.getIdentifier()))
         mp.setOpStatus('sidebyside',mediapackage.OP_PROCESSING)
         self.repo.update(mp)
-        self.dispatcher.emit('start-operation', 'sidebyside', mp)
+        self.dispatcher.emit('operation-started', 'sidebyside', mp)
 
         audio = None  #'camera'
         camera = screen = None
