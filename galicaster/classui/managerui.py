@@ -279,7 +279,7 @@ class ManagerUI(Gtk.Box):
 	    button2.set_property("width-request", int(k2*85) )
 	    button2.set_property("height-request", int(k2*85) )
 
-	    image = button2.get_children()
+	    image = button2.get_children()[0].get_children()
 	    if type(image[0]) == Gtk.Image:
 		image[0].set_pixel_size(int(k1*56))
                 image[0].show()
