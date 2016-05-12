@@ -32,7 +32,6 @@ from galicaster.player import Player
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 from galicaster.classui.managerui import ManagerUI
-from galicaster.classui.statusbar import StatusBarClass
 from galicaster.classui import get_ui_path
 
 
@@ -85,9 +84,11 @@ class PlayerClassUI(ManagerUI):
         self.stereo = True
 
         # STATUSBAR
-        self.statusbar= StatusBarClass()
-        sbox = builder.get_object("statusbox")
-        sbox.add(self.statusbar.bar)
+        self.statusbar = builder.get_object("statusbar")
+        self.status=builder.get_object("status")
+        self.timer=builder.get_object("timer")
+        self.video=builder.get_object("video")
+        self.presenter=builder.get_object("presenter")
       
         self.playerui.pack_start(self.strip,False,False,0)
         self.playerui.reorder_child(self.strip,0)
@@ -114,7 +115,7 @@ class PlayerClassUI(ManagerUI):
         if (self.mediapackage != mp):
             if self.status == GC_PAUSE:
                 self.on_stop_clicked()
-                self.statusbar.ClearTimer()            
+                self.clearTimer()
 
             self.mediapackage = mp
 
@@ -140,8 +141,8 @@ class PlayerClassUI(ManagerUI):
             self.player = Player(tracks, areas)
             self.change_state(GC_READY)
 
-            self.statusbar.SetVideo(None, self.mediapackage.title)
-            self.statusbar.SetPresenter(None, self.mediapackage.getCreator())
+            self.setVideo(None, self.mediapackage.title)
+            self.setPresenter(None, self.mediapackage.getCreator())
 
         self.on_play_clicked(None)
 
@@ -178,7 +179,7 @@ class PlayerClassUI(ManagerUI):
         self.thread_id = None
         self.player.stop()
         self.seek_bar.set_value(0)
-        self.statusbar.SetTimer2(0,self.duration)
+        self.setTimer2(0,self.duration)
         self.change_state(GC_STOP)
         return True
 
@@ -214,7 +215,7 @@ class PlayerClassUI(ManagerUI):
             if self.player.is_playing():
                 self.player.pause()
             value=new_value * self.duration // 100 
-            self.statusbar.SetTimer2(value,self.duration)
+            self.setTimer2(value,self.duration)
             self.jump=temp
             if not self.jump_id:
                 log.warning("Handling Seek Jump")
@@ -258,8 +259,8 @@ class PlayerClassUI(ManagerUI):
         """Pop ups the Medatada Editor for the current Mediapackage"""
         key = self.mediapackage.identifier
         self.edit(key)
-        self.statusbar.SetVideo(None, self.mediapackage.title)
-        self.statusbar.SetPresenter(None, self.mediapackage.getCreator())
+        self.setVideo(None, self.mediapackage.title)
+        self.setPresenter(None, self.mediapackage.getCreator())
         return True
 
     def on_question(self,button):
@@ -275,9 +276,9 @@ class PlayerClassUI(ManagerUI):
         if response:
             self.thread_id = None
             self.player.stop()
-            self.statusbar.SetVideo(None, "")
-            self.statusbar.SetPresenter(None, "")
-            self.statusbar.ClearTimer()
+            self.setVideo(None, "")
+            self.setPresenter(None, "")
+            self.clearTimer()
             self.change_state(GC_INIT)
             self.mediapackage = None
             self.dispatcher.emit("change-mode", 1)
@@ -292,7 +293,7 @@ class PlayerClassUI(ManagerUI):
         self.initial_time=self.player.get_time()
         self.duration = self.player.get_duration()
         Gdk.threads_enter()
-        self.statusbar.SetTimer2(0,self.duration)
+        self.setTimer2(0,self.duration)
         Gdk.threads_leave()        
               
         while thread_id == self.thread_id:
@@ -311,7 +312,7 @@ class PlayerClassUI(ManagerUI):
                     self.seek_bar.set_value(timer*100/self.duration)
                 if thread_id==self.thread_id:
                     Gdk.threads_enter()
-                    self.statusbar.SetTimer2(timer,self.duration)
+                    self.setTimer2(timer,self.duration)
                     Gdk.threads_leave()
                     
             time.sleep(0.2)          
@@ -329,7 +330,7 @@ class PlayerClassUI(ManagerUI):
         k = self.proportion
         calign.set_padding(int(k*20),int(k*10),0,0)
   
-        self.statusbar.resize(size)
+        #self.statusbar.resize(size)
         return True
 
     def event_change_mode(self, orig, old_state, new_state):
@@ -393,7 +394,8 @@ class PlayerClassUI(ManagerUI):
             self.player.quit()
         return True        
 
-    # ********* audio bar *********
+#-------------------------- AUDIOBAR -----------------------------
+
     def set_vumeter(self,element,data, data2, stereo):
         value,value2 = self.scale_data(data,data2)
         self.vumeterL.set_fraction(value)
@@ -424,5 +426,36 @@ class PlayerClassUI(ManagerUI):
             valor2=1 - ((data2 + self.rangeVum)/float(self.rangeVum))
 
         return valor, valor2
+
+#-------------------------- STATUSBAR -----------------------------
+
+    def clearTimer(self):
+        """Empties the timer"""
+        self.timer.set_text("")
+
+    def setVideo(self, element, value = None):
+        if value != None:
+            self.video.set_text(value)
+            self.video.set_property("tooltip-text",value)
+
+    def setPresenter(self,element, value):
+        self.presenter.set_text(value or '')
+        self.presenter.set_property("tooltip-text",value or '')
+
+    def setTimer2(self,value,duration):
+        """Sets the timer on reproduction environments"""
+        self.timer.set_text(self.time_readable2(value,duration))
+
+    def time_readable(self,seconds):
+        """ Generates date hour:minute:seconds from seconds"""
+        iso = int(seconds)
+        return "{}:{:02d}:{:02d}".format(iso/3600, (iso%3600)/60, iso%60)
+
+    def time_readable2(self,s1,s2):
+        """ Generates date hour:minute:seconds from seconds """
+        t1=self.time_readable(s1)
+        t2=self.time_readable(s2)
+        timing = t1+" / "+t2
+        return timing
 
 GObject.type_register(PlayerClassUI)
