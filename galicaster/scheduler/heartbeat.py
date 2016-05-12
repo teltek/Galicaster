@@ -63,7 +63,7 @@ class Heartbeat(object):
 
 
     def __notify_timer_short(self):
-        self.dispatcher.emit('galicaster-timer-short')
+        self.dispatcher.emit('timer-short')
         if self.logger:
             self.logger.debug('galicaster-notify-short in %s', self.interval_short)
         Timer(self.interval_short, self.__notify_timer_short).start()
