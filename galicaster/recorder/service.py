@@ -178,7 +178,7 @@ class RecorderService(object):
 
         # FIXME
         mp_mod_Uri = self.current_mediapackage.getURI()
-        self.dispatcher.emit("recorder-closed", mp_mod_Uri)
+        self.dispatcher.emit("recorder-stopped", mp_mod_Uri)
         
         code = 'manual' if self.current_mediapackage.manual else 'scheduled'
         if self.conf.get_lower('ingest', code) == 'immediately':

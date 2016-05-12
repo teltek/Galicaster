@@ -44,7 +44,7 @@ def init():
         MAX_AMPLITUDE = context.get_conf().get('failovermic', 'failover_threshold')
         audio_track = context.get_conf().get('failovermic', 'audio_track')
         dispatcher.connect('recorder-vumeter', check_pipeline_amp)
-        dispatcher.connect('recorder-closed', failover_audio)
+        dispatcher.connect('recorder-stopped', failover_audio)
         dispatcher.connect('recorder-starting', record)
         dispatcher.connect('restart-preview', stop)
         set_pipeline()
