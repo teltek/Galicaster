@@ -68,8 +68,8 @@ class TestFunctions(TestCase):
         
         self.assertEqual(len(repo), 5)
         conf.set('cleanstale','maxarchivaldays', '50')
-        dispatcher.emit('galicaster-notify-nightly')
+        dispatcher.emit('galicaster-timer-nightly')
         self.assertEqual(len(repo), 4)
         conf.set('cleanstale','maxarchivaldays', '20')
-        dispatcher.emit('galicaster-notify-nightly')
+        dispatcher.emit('galicaster-timer-nightly')
         self.assertEqual(len(repo), 3)
