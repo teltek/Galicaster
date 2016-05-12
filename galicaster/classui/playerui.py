@@ -33,7 +33,6 @@ from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 from galicaster.classui.managerui import ManagerUI
 from galicaster.classui.statusbar import StatusBarClass
-from galicaster.classui.audiobar import AudioBarClass
 from galicaster.classui import get_ui_path
 
 
@@ -78,10 +77,12 @@ class PlayerClassUI(ManagerUI):
         self.seek_bar.connect("change-value", self.on_seek) 
       
         # VUMETER
-        self.audiobar=AudioBarClass()
 
-        self.vubox = builder.get_object("vubox")
-        self.vubox.add(self.audiobar.bar)
+        self.vumeterL = builder.get_object("progressbarL")
+        self.vumeterR = builder.get_object("progressbarR")
+        self.label_channels_player = builder.get_object("label_channels_player")
+        self.rangeVum = 50
+        self.stereo = True
 
         # STATUSBAR
         self.statusbar= StatusBarClass()
@@ -100,7 +101,7 @@ class PlayerClassUI(ManagerUI):
         self.thread_id=None
         builder.connect_signals(self)
 
-        self.dispatcher.connect("update-play-vumeter", self.audiobar.set_vumeter)
+        self.dispatcher.connect("update-play-vumeter", self.set_vumeter)
         self.dispatcher.connect("play-stopped", self.change_state_bypass, GC_READY)
         self.dispatcher.connect('play-list', self.play_from_list)
         self.dispatcher.connect("galicaster-status", self.event_change_mode)
@@ -237,10 +238,6 @@ class PlayerClassUI(ManagerUI):
         """Creates the preview areas depending on the video tracks of a mediapackage"""
         main = self.main_area
 
-        for child in main.get_children():
-            main.remove(child)
-            child.destroy()        
-        areas = None
         areas = dict()
         for key in source.keys():
             new_area = Gtk.DrawingArea()
@@ -327,15 +324,12 @@ class PlayerClassUI(ManagerUI):
         buttonlist = ["playbutton", "pausebutton", "stopbutton"]
         secondarylist = ["editbutton", "ingestbutton", "deletebutton"]
         self.do_resize(buttonlist, secondarylist)
-        vubox = self.gui.get_object("vubox")
         calign = self.gui.get_object("c_align")
 
         k = self.proportion
-        vubox.set_padding(0,int(k*10),int(k*20),int(k*40))
         calign.set_padding(int(k*20),int(k*10),0,0)
   
         self.statusbar.resize(size)
-        self.audiobar.resize(size)
         return True
 
     def event_change_mode(self, orig, old_state, new_state):
@@ -398,5 +392,37 @@ class PlayerClassUI(ManagerUI):
         if self.status in [GC_PLAY, GC_PAUSE]:
             self.player.quit()
         return True        
+
+    # ********* audio bar *********
+    def set_vumeter(self,element,data, data2, stereo):
+        value,value2 = self.scale_data(data,data2)
+        self.vumeterL.set_fraction(value)
+        self.vumeterR.set_fraction(value2)
+
+        if not stereo and self.stereo:
+            self.stereo = False
+            self.label_channels_player.set_text("Mono")
+        elif stereo and not self.stereo:
+            self.stereo = True
+            self.label_channels_player.set_text("Stereo")
+
+    def scale_data(self,data,data2):
+
+        if data == "Inf":
+            data = -200
+        if data2 == "Inf":
+            data2 = -200
+
+        if data < -100:
+            valor = 1
+        else:
+            valor=1 - ((data + self.rangeVum)/float(self.rangeVum))
+
+        if data2 < -100:
+            valor2 = 1
+        else:
+            valor2=1 - ((data2 + self.rangeVum)/float(self.rangeVum))
+
+        return valor, valor2
 
 GObject.type_register(PlayerClassUI)
