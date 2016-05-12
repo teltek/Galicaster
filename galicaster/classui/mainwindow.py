@@ -73,7 +73,7 @@ class GCWindow(Gtk.Window):
         self.dispatcher = dispatcher
         if self.dispatcher:
             self.dispatcher.connect('action-quit', self.close)
-            self.dispatcher.connect('galicaster-shutdown', self.shutdown)
+            self.dispatcher.connect('action-shutdown', self.shutdown)
 
         self.nbox = Gtk.Notebook()
         self.nbox.set_show_tabs(False)

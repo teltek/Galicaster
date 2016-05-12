@@ -75,7 +75,7 @@ GObject.signal_new('action-view-change', Dispatcher, GObject.SignalFlags.RUN_LAS
 GObject.signal_new('view-changed', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT, GObject.TYPE_PYOBJECT) )
 GObject.signal_new('action-quit', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('quit', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
-GObject.signal_new('galicaster-shutdown', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
+GObject.signal_new('action-shutdown', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('galicaster-notify-shutdown', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 
 #TIMER
