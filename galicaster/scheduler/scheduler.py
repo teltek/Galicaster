@@ -114,7 +114,7 @@ class Scheduler(object):
         """
         if self.net:
             self.proccess_ical()
-            self.emit('after-process-ical')
+            self.emit('ical-processed')
         for mp in self.repo.get_next_mediapackages():
             self.create_new_timer(mp)
 

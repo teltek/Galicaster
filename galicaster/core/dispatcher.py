@@ -82,7 +82,7 @@ GObject.signal_new('shutdown', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (
 GObject.signal_new('timer-nightly', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('timer-short', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('timer-long', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
-GObject.signal_new('after-process-ical', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
+GObject.signal_new('ical-processed', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 #NET
 GObject.signal_new('net-up', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('net-down', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
