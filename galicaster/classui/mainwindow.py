@@ -72,7 +72,7 @@ class GCWindow(Gtk.Window):
         self.connect('delete_event', lambda *x: self.__on_delete_event())
         self.dispatcher = dispatcher
         if self.dispatcher:
-            self.dispatcher.connect('galicaster-quit', self.close)
+            self.dispatcher.connect('action-quit', self.close)
             self.dispatcher.connect('galicaster-shutdown', self.shutdown)
 
         self.nbox = Gtk.Notebook()
@@ -174,7 +174,7 @@ class GCWindow(Gtk.Window):
         if self.logger:
             self.logger.debug("Delete Event Received")
         if self.dispatcher:
-            self.dispatcher.emit('galicaster-quit')
+            self.dispatcher.emit('action-quit')
         return True
 
     def close(self, signal):
