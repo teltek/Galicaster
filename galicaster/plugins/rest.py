@@ -17,8 +17,8 @@ import json
 import math
 import threading
 import tempfile
-from bottle import route, run, response, abort
-from gi.repository import Gtk, Gdk
+from bottle import route, run, response, abort, request, install
+from gi.repository import Gtk, Gdk, GObject
 
 from galicaster.core import context
 from galicaster.mediapackage.serializer import set_manifest
@@ -29,10 +29,26 @@ Description: Galicaster REST endpoint using bottle micro web-framework.
 Status: Experimental
 """
 
+def error_handler(func):
+    def wrapper(*args,**kwargs):
+        try:
+            return func(*args,**kwargs)
+        except Exception as e:
+            logger = context.get_logger()
+            error_txt = str(e)
+            logger.error("Error in function '{}': {}".format(func.func_name, error_txt))
+
+            abort(503, error_txt)
+    return wrapper
+
+
 def init():
     conf = context.get_conf()
     host = conf.get('rest', 'host')
     port = conf.get_int('rest', 'port')
+
+    install(error_handler)
+    
     restp = threading.Thread(target=run,kwargs={'host': host, 'port': port, 'quiet': True})
     restp.setDaemon(True)
     restp.start()
@@ -54,6 +70,7 @@ def index():
             "/operation/exporttozip/:id" : "Export MP to zip",
             "/screen" : "get a screenshoot of the active",
             "/logstale" : "check if log is stale (threads crashed)",
+            "/quit" : "Quit Galicaster",
         }    
     return json.dumps(endpoints)
 
@@ -148,22 +165,49 @@ def screen():
 
 @route('/logstale')
 def logstale():
-    
     conf = context.get_conf()
+    logger = context.get_logger()
     
-    filename = conf.get('logger', 'path')
+    filename = logger.get_path()
     stale = conf.get('logger', 'stale') or 300 # 5 minutes
-    if filename:
-        age = int (math.ceil( (time.time() - os.path.getmtime(filename)) ))
-        return "STALE LOG: age: {0} s".format(age)  if age > stale else "OK LOG: age: {0} s".format(age)
-    else:
-        return "Error: no filepath provided" 
 
-@route('/quit')
-def quit():
-    if not context.get_state().is_recording:
+    info = {}
+    
+    if not logger:
+        abort(503, "The logger service is not available")
+
+    age = int (math.ceil( (time.time() - os.path.getmtime(filename)) ))
+    info['filename'] = filename
+    info['stale'] = False
+    info['age'] = age
+
+    if age > stale:
+        info['stale'] = True        
+
+    return json.dumps(info)
+
+
+@route('/quit', method='POST')
+def quit():    
+    logger = context.get_logger()
+    recorder = context.get_recorder()
+
+    force = request.forms.get('force')
+    
+    if not recorder.is_recording() or readable.str2bool(force):
+        logger.info("Quit Galicaster through API rest")
         # Emit quit signal and exit
-        gtk.gdk.threads_enter()
-        context.get_dispatcher().emit('galicaster-notify-quit')
-        gtk.main_quit()
-        gtk.gdk.threads_leave()
+        emit('galicaster-notify-quit')
+        
+        Gdk.threads_enter()
+        Gtk.main_quit()
+        Gdk.threads_leave()
+    else:
+        abort(401, "Sorry, there is a current recording")
+
+def emit(*args, **kwargs):
+    dispatcher = context.get_dispatcher()    
+    # self.dispatcher.emit(*args, **kwargs)
+    # Allow only the main thread to touch the GUI
+    GObject.idle_add(dispatcher.emit, *args, **kwargs)
+
