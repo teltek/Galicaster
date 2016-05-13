@@ -20,8 +20,8 @@ from galicaster.core import context
 from galicaster.classui import get_ui_path, get_image_path
 from galicaster import __version__
 from galicaster.classui.profile import ProfileUI as ListProfile
-from galicaster.classui.about import GCAboutDialog
 from galicaster.utils.resize import relabel
+from galicaster.classui import message
 
 from galicaster.utils.i18n import _
 
@@ -84,16 +84,11 @@ class DistribUI(Gtk.Box):
             dispatcher.emit(signal)
 
     def show_about_dialog(self,origin, button):
-        about_dialog = GCAboutDialog()
-        about_dialog.set_transient_for(context.get_mainwindow())
-        about_dialog.set_modal(True)
-        about_dialog.set_keep_above(False)
-        about_dialog.show()
-        about_dialog.connect('response', self.on_about_dialog_response)
-                
-    def on_about_dialog_response(self, origin, response_id):
-        if response_id == Gtk.ResponseType.CLOSE or response_id == Gtk.ResponseType.CANCEL:
-            origin.hide()  
+        """GUI callback Pops up de About Dialog"""
+
+        text = {"title" : _("About"),
+                    "main" : ''}
+        message.PopUp(message.ABOUT, text, context.get_mainwindow())
 
     def resize(self): 
         size = context.get_mainwindow().get_size()
