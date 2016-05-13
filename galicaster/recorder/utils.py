@@ -232,16 +232,16 @@ class Switcher(Gst.Bin):
         
 def get_videosink(videosink='xvimagesink', name='gc-preview'):
     logger.debug("Video sink: {} -> {}".format(name, videosink))
-    gcvsink = "xvimagesink sync=false async=false qos=true name={}".format(name)
+    gcvsink = "xvimagesink async=false qos=true name={}".format(name)
     
     if videosink == "ximagesink":
-        gcvsink = "ximagesink sync=false async=false qos=false name={}".format(name)
+        gcvsink = "ximagesink async=false qos=false name={}".format(name)
         
     elif videosink == "fpsdisplaysink":
         gcvsink = 'fpsdisplaysink name={}-fps async-handling=false qos=false video-sink="xvimagesink name={}"'.format(name, name)
         
     elif videosink == "autovideosink":
-        gcvsink = "autovideosink name={} sync=false async=false".format(name)
+        gcvsink = "autovideosink name={} async=false".format(name)
         
     elif videosink == "fakesink":
         gcvsink = "fakesink async=false name={}".format(name)
@@ -263,3 +263,4 @@ def get_audiosink(audiosink='autoaudiosink', name='gc-apreview'):
         gcasink = "fakesink silent=true name={}".format(name)
 
     return gcasink
+
