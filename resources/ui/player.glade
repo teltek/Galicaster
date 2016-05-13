@@ -392,6 +392,7 @@
                             <property name="can_focus">False</property>
                             <property name="halign">center</property>
                             <property name="orientation">vertical</property>
+                            <property name="fraction">1</property>
                             <style>
                               <class name="vertical_vumeter"/>
                             </style>
@@ -408,6 +409,7 @@
                             <property name="can_focus">False</property>
                             <property name="halign">center</property>
                             <property name="orientation">vertical</property>
+                            <property name="fraction">1</property>
                             <style>
                               <class name="vertical_vumeter"/>
                             </style>
