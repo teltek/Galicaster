@@ -249,18 +249,17 @@ def get_videosink(videosink='xvimagesink', name='gc-preview'):
     return gcvsink
 
 
-def get_audiosink(audiosink='autoaudiosink', name='gc-apreview'):
+def get_audiosink(audiosink='autoaudiosink', name='gc-apreview'):    
     logger.debug("Audio sink: {} -> {}".format(name, audiosink))
     gcasink = "autoaudiosink sync=false name={}".format(name)
     
     if audiosink == "alsasink":
-        gcasink = "alsasink sync=false async=false name={}".format(name)
+        gcasink = "alsasink sync=false name={}".format(name)
         
     elif audiosink == "pulsesink":
-        gcasink = "pulsesink sync=false async=false name={}".format(name, name)
+        gcasink = "pulsesink sync=false name={}".format(name, name)
         
     elif audiosink == "fakesink":
-        gcasink = "fakesink async=false silent=true name={}".format(name)
+        gcasink = "fakesink silent=true name={}".format(name)
 
     return gcasink
-
