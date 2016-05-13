@@ -184,7 +184,7 @@ class GCblackmagic(Gst.Bin, base.Base):
     },
     "audiosink" : {
       "type": "select",
-      "default": "autoaudiosink",
+      "default": "alsasink",
       "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
       "description": "Audio sink",
     },
@@ -310,8 +310,9 @@ class GCblackmagic(Gst.Bin, base.Base):
   def send_event_to_src(self, event):
     src = self.get_by_name('gc-blackmagic-src')
     src.send_event(event)
-    src = self.get_by_name('gc-blackmagic-audiosrc')
-    src.send_event(event)
+    src2 = self.get_by_name('gc-blackmagic-audiosrc')
+    if src2:
+      src2.send_event(event)
     
 
 
