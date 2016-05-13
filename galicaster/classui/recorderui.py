@@ -36,7 +36,6 @@ from galicaster.core import context
 
 from galicaster.classui.metadata import MetadataClass as Metadata
 from galicaster.classui.events import EventManager
-from galicaster.classui.about import GCAboutDialog
 from galicaster.classui import message
 from galicaster.classui import get_ui_path, get_image_path
 from galicaster.utils import series
@@ -453,24 +452,10 @@ class RecorderClassUI(Gtk.Box):
 
     def show_about(self,button=None,tipe = None):
         """GUI callback Pops up de About Dialog"""
-        self.dispatcher.emit("disable-no-audio")
-        size=context.get_mainwindow().get_size()
-        k = size[0]/1920.0
-        builder = Gtk.Builder()
-        builder.add_from_file(get_ui_path('about.glade'))
-        dialog = builder.get_object("aboutdialog")
-        dialog.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
-        dialog.set_transient_for(self.get_toplevel())
-        dialog.set_destroy_with_parent(True)
-        dialog.show()
-        dialog.connect('response', self.on_about_dialog_response)
 
-
-    def on_about_dialog_response(self, origin, response_id):
-        if response_id == Gtk.ResponseType.CLOSE or response_id == Gtk.ResponseType.CANCEL or response_id == Gtk.ResponseType.DELETE_EVENT:
-            self.dispatcher.emit("enable-no-audio")
-            origin.hide()
-
+        text = {"title" : _("About"),
+                    "main" : ''}
+        message.PopUp(message.ABOUT, text, context.get_mainwindow())
 
     def create_drawing_areas(self, sources):
         """Create as preview areas as video sources exits"""

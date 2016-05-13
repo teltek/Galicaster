@@ -52,7 +52,8 @@ GtkDialog{
 		from(coral),
 		to(shade(coral,1.2)));
 }
-.cancel_button{
+.cancel_button,
+.about_buttons GtkButton{
 	color: shade(gray,0.5);
 	background-image: -gtk-gradient(
 		linear,
@@ -60,7 +61,8 @@ GtkDialog{
 		from(shade(gray,1.9)),
 		to(shade(gray,1.5)));
 }
-.cancel_button:active{
+.cancel_button:active,
+.about_buttons GtkButton:active{
 	background-image: -gtk-gradient(
 		linear,
 		left top, left bottom,

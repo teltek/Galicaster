@@ -28,6 +28,7 @@ WARN_QUIT = 'quit.glade'
 WARN_DELETE = 'delete.glade'
 WARN_OK = 'okwarning.glade'
 OPERATIONS = 'operations.glade'
+ABOUT = 'about.glade'
 
 # FIXME
 QUESTION = Gtk.STOCK_DIALOG_QUESTION
@@ -71,7 +72,7 @@ class PopUp(Gtk.Widget):
         # Create dialog
         gui = Gtk.Builder()
         gui.add_from_file(get_ui_path(message))
-        dialog = self.configure_ui(text, message, gui, parent)
+        self.dialog = self.configure_ui(text, message, gui, parent)
 
         if message == OPERATIONS:
 
@@ -89,15 +90,21 @@ class PopUp(Gtk.Widget):
 
             self.set_buttons(gui, frames)
 
+        elif message == ABOUT:
+            self.set_logos(gui)
+
         # Display dialog
-        self.dialog = dialog
         if message == ERROR:
             a = self.dialog.get_action_area().get_children()[0]
             a.connect('clicked',self.dialog_destroy)
             self.dialog.show_all()
+        elif message == ABOUT:
+            self.dialog.show_all()
+            self.dialog.connect('response', self.on_about_dialog_response)
+            pass
         else:
-            self.response = dialog.run()
-            dialog.destroy()
+            self.response = self.dialog.run()
+            self.dialog.destroy()
 
 
     def configure_ui(self, text, message_type, gui, parent, another=None):
@@ -113,17 +120,18 @@ class PopUp(Gtk.Widget):
         """
 
         image = gui.get_object("image")
-        image.set_pixel_size(int(self.wprop*80))
+        if image:
+            image.set_pixel_size(int(self.wprop*80))
 
         if message_type != INFO:
             main = gui.get_object("main")
-            main.set_label(text.get('main',''))
-        else:
+            if main:
+                main.set_label(text.get('main',''))
+        elif message_type == INFO:
             # TODO: Overwrite info text if given
             help_message = "{}\n{}".format(text.get('main',''),text.get('text',''))
             textbuffer = gui.get_object('textbuffer')
             textbuffer.set_text(help_message)
-
 
         dialog = gui.get_object("dialog")
 
@@ -135,7 +143,6 @@ class PopUp(Gtk.Widget):
 
         dialog.set_type_hint(Gdk.WindowTypeHint.TOOLBAR)
         dialog.set_skip_taskbar_hint(True)
-
         dialog.set_keep_above(False)
 
         #HEADER
@@ -181,6 +188,25 @@ class PopUp(Gtk.Widget):
                 button.connect("clicked",self.force_response,response)
                 button.show()
 
+    def set_logos(self,gui):
+        """ Set the logos of the product and the company
+        """
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file(get_image_path('logo.svg'))    
+        pixbuf = pixbuf.scale_simple(
+            int(pixbuf.get_width()*self.wprop),
+            int(pixbuf.get_height()*self.wprop),
+            GdkPixbuf.InterpType.BILINEAR)
+        self.dialog.set_logo(pixbuf)
+
+        teltek_logo = gui.get_object("teltek")
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file(get_image_path('teltek.svg'))    
+        pixbuf = pixbuf.scale_simple(
+            int(pixbuf.get_width()*self.wprop),
+            int(pixbuf.get_height()*self.wprop),
+            GdkPixbuf.InterpType.BILINEAR)
+        teltek_logo.set_from_pixbuf(pixbuf)
+
 
     def resize_buttons(self, area, fontsize, equal = False):
         """Adapts buttons to the dialog size"""
@@ -217,10 +243,15 @@ class PopUp(Gtk.Widget):
     def force_response(self, origin=None, response=None):
         self.dialog.response(response)
 
+    def on_about_dialog_response(self, origin, response_id):
+        if response_id in NEGATIVE:
+            self.dialog_destroy()
+
     def dialog_destroy(self, origin=None):
         if self.dialog:
             self.dialog.destroy()
             self.dialog = None
+
 
 GObject.type_register(PopUp)
 
