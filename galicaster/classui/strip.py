@@ -19,7 +19,8 @@ from gi.repository import Gtk, GObject, GdkPixbuf
 
 from galicaster.core import context
 from galicaster.classui import get_ui_path, get_image_path
-from galicaster.classui.about import GCAboutDialog
+from galicaster.classui import message
+from galicaster.utils.i18n import _
 
 class StripUI(Gtk.Box):
     """
@@ -51,8 +52,11 @@ class StripUI(Gtk.Box):
         dispatcher.emit(signal, value)
         
     def show_about_dialog(self, origin, button):
-        """Pop up the About Dialog"""
-        GCAboutDialog()
+        """GUI callback Pops up de About Dialog"""
+
+        text = {"title" : _("About"),
+                    "main" : ''}
+        message.PopUp(message.ABOUT, text, context.get_mainwindow())
 
     def resize(self): 
         """Adapts GUI elements to the screen size"""

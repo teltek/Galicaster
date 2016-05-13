@@ -36,7 +36,6 @@ from galicaster.core import context
 
 from galicaster.classui.metadata import MetadataClass as Metadata
 from galicaster.classui.events import EventManager
-from galicaster.classui.about import GCAboutDialog
 from galicaster.classui import message
 from galicaster.classui import get_ui_path, get_image_path
 from galicaster.utils import series
@@ -54,6 +53,8 @@ from galicaster.recorder.service import ERROR_STATUS
 Gdk.threads_init()
 
 logger = context.get_logger()
+status_label_changed = True
+status_label_blink = True
 
 # No-op function for i18n
 def N_(string): return string
@@ -306,13 +307,16 @@ class RecorderClassUI(Gtk.Box):
             "main" : _(" Please review your configuration \nor load another profile"),                
             "text" : msg
 			}
+
+        if self.error_dialog:
+            self.destroy_error_dialog()
         self.error_dialog = message.PopUp(message.ERROR, text, 
                                 context.get_mainwindow(), None)
 
 
     def destroy_error_dialog(self):
         if self.error_dialog:
-            self.error_dialog.dialog_destroy()
+            self.error_dialog.error_dialog_destroy()
             self.error_dialog = None
         
 
@@ -340,65 +344,43 @@ class RecorderClassUI(Gtk.Box):
         title = self.gui.get_object("titlelabel")
         status = self.gui.get_object("eventlabel")
 
-        # Status panel
-        # status_disk = self.gui.get_object("status1")
-        # status_hours = self.gui.get_object("status2")
-        # status_mh = self.gui.get_object("status3")
-        parpadeo = True
-        changed = False
-        
-        if self.font == None:
-            anchura = self.get_toplevel().get_screen().get_width()
-            if anchura not in [1024,1280,1920]:
-                anchura = 1920            
-            k1 = anchura / 1920.0
-            self.font = Pango.FontDescription("bold "+str(k1*42))
-        
-        #bold = Pango.AttrWeight(700, 0, -1)
-        #red = Pango.AttrForeground(65535, 0, 0, 0, -1)        
-        #black = Pango.AttrForeground(17753, 17753, 17753, 0, -1)
-        #font = Pango.FontDescription(self.font)
-
-        attr_red = Pango.AttrList()
-        attr_black = Pango.AttrList()
-
-        #attr_red.insert(red)
-        #attr_red.insert(font)
-        #attr_red.insert(bold)
-
-        #attr_black.insert(black)
-        #attr_black.insert(font)
-        #attr_black.insert(bold)
-
-        status.set_attributes(attr_black)
-        
-        return status, event_type, title, attr_red, attr_black, changed, parpadeo
+        return status, event_type, title
 
 
-    def update_scheduler_timeout(self, status, event_type, title, attr_red, attr_black, changed, parpadeo):
+    def update_scheduler_timeout(self, status, event_type, title):
         """GObject.timeout callback with 500 ms intervals"""
+        global status_label_changed, status_label_blink
+
         if self.recorder.current_mediapackage and not self.recorder.current_mediapackage.manual:
             start = self.recorder.current_mediapackage.getLocalDate()
             duration = self.recorder.current_mediapackage.getDuration() / 1000
             end = start + datetime.timedelta(seconds=duration)
             dif = end - datetime.datetime.now()
+
+            if dif < datetime.timedelta(0):
+                return True
+
             status.set_text(_("Stopping in {0}").format(readable.long_time(dif)))
             event_type.set_text(CURRENT_TEXT) 
             title.set_text(self.recorder.current_mediapackage.title)             
                 
             if dif < datetime.timedelta(0, TIME_RED_STOP):
-                if not changed:
-                    status.set_attributes(attr_red)
-                    changed = True
-            elif changed:
-                status.set_attributes(attr_black)
-                changed = False
+                if not status_label_changed:
+                    status.set_name('red_coloured')
+                    status_label_changed = True
+            elif status_label_changed:
+                status.set_name('black_coloured')
+                status_label_changed = False
             if dif < datetime.timedelta(0,TIME_BLINK_STOP):
-                parpadeo = not parpadeo
+                if status_label_blink:
+                    status.set_name('blinking_coloured_from')
+                else:
+                    status.set_name('blinking_coloured_to')
+                status_label_blink = not status_label_blink
 
         else:
             next_mediapackage = self.repo.get_next_mediapackage()
-            if next_mediapackage:
+            if next_mediapackage and next_mediapackage.isScheduled():
                 start = next_mediapackage.getLocalDate()
                 dif = start - datetime.datetime.now()
                 if event_type.get_text != NEXT_TEXT:
@@ -408,19 +390,19 @@ class RecorderClassUI(Gtk.Box):
                 status.set_text(_("Starting in {0}").format(readable.long_time(dif)))
 
                 if dif < datetime.timedelta(0,TIME_RED_START):
-                    if not changed:
-                        status.set_attributes(attr_red)
-                        changed = True
-                elif changed:
-                    status.set_attributes(attr_black)
-                    changed = False
+                    if not status_label_changed:
+                        status.set_name('red_coloured')
+                        status_label_changed = True
+                elif status_label_changed:
+                    status.set_name('black_coloured')
+                    status_label_changed = False
 
                 if dif < datetime.timedelta(0,TIME_BLINK_START):
-                    if parpadeo:
-                        status.set_text("")
-                        parpadeo =  False
+                    if status_label_blink:
+                        status.set_name('blinking_coloured_from')
                     else:
-                        parpadeo = True
+                        status.set_name('blinking_coloured_to')
+                    status_label_blink = not status_label_blink
 
             else: # Not current or pending recordings
                 if event_type.get_text():                
@@ -452,21 +434,9 @@ class RecorderClassUI(Gtk.Box):
 
 
     def show_about(self,button=None,tipe = None):
-        """GUI callback Pops up de About Dialgo"""
-        about_dialog = GCAboutDialog()
-        self.dispatcher.emit("action-audio-disable-msg")
-        about_dialog.set_transient_for(context.get_mainwindow())
-        about_dialog.set_modal(True)
-        about_dialog.set_keep_above(False)
-        about_dialog.show()
-        about_dialog.connect('response', self.on_about_dialog_response)
-
-    
-    def on_about_dialog_response(self, origin, response_id):
-        if response_id == Gtk.ResponseType.CLOSE or response_id == Gtk.ResponseType.CANCEL:
-            self.dispatcher.emit("action-audio-enable-msg") 
-            origin.hide()
-
+        text = {"title" : _("About"),
+                    "main" : ''}
+        message.PopUp(message.ABOUT, text, context.get_mainwindow())
 
     def create_drawing_areas(self, sources):
         """Create as preview areas as video sources exits"""
@@ -577,36 +547,29 @@ class RecorderClassUI(Gtk.Box):
 
     def check_net(self, origin, status=None):
         """Update the value of the network status"""
-        attr1= Pango.AttrList()
-        attr2= Pango.AttrList()
-        attr3= Pango.AttrList()
-        attr4= Pango.AttrList()
 
-#        gray= Pango.AttrForeground(20000, 20000, 20000, 0, -1)
-#        red = Pango.AttrForeground(65535, 0, 0, 0, -1)
-#        green = Pango.AttrForeground(0, 65535, 0, 0, -1)
-#        black= Pango.AttrForeground(5000, 5000, 5000, 0, -1)
-
-#        attr1.insert(gray)
-#        attr2.insert(green)
-#        attr3.insert(red)
-#        attr4.insert(black)
+        network_css_ids = {
+            'Disabled'  : 'gray_coloured',
+            'Up'        : 'green_coloured',
+            'Down'      : 'red_coloured',
+            'Connecting': 'black_coloured',
+        }
 
         s3 = self.gui.get_object("status3")
         if not self.net_activity:
             s3.set_text("Disabled")
-            s3.set_attributes(attr1)
+            s3.set_name(network_css_ids['Disabled'])
         else:
             try:
                 if status:
                     s3.set_text("Up")
-                    s3.set_attributes(attr2)
+                    s3.set_name(network_css_ids['Up'])
                 else:
                     s3.set_text("Down")  
-                    s3.set_attributes(attr3)
+                    s3.set_name(network_css_ids['Down'])
             except KeyError:
                 s3.set_text("Connecting")
-                s3.set_attributes(attr4)
+                s3.set_name(network_css_ids['Connecting'])
 
 
     def resize(self):
@@ -729,7 +692,6 @@ class RecorderClassUI(Gtk.Box):
             prevb.set_sensitive(True)
             editb.set_sensitive(False)
             swapb.set_sensitive(False)
-#            self.view.set_displayed_row(0)
             self.view.set_displayed_row(Gtk.TreePath(0))
 
         elif status == PREVIEW_STATUS:
@@ -741,7 +703,6 @@ class RecorderClassUI(Gtk.Box):
             prevb.set_sensitive(True)
             editb.set_sensitive(False)
             swapb.set_sensitive(True)
-#            self.view.set_displayed_row(1)
             self.view.set_displayed_row(Gtk.TreePath(1))
 
         elif status == RECORDING_STATUS:
@@ -756,7 +717,6 @@ class RecorderClassUI(Gtk.Box):
             prevb.set_sensitive(False)
             swapb.set_sensitive(False)
             editb.set_sensitive(self.recorder.current_mediapackage and self.recorder.current_mediapackage.manual)
-#            self.view.set_displayed_row(2)
             self.view.set_displayed_row(Gtk.TreePath(2))
 
         elif status == PAUSED_STATUS:
@@ -766,7 +726,6 @@ class RecorderClassUI(Gtk.Box):
             prevb.set_sensitive(False)
             helpb.set_sensitive(False)
             editb.set_sensitive(False)
-#            self.view.set_displayed_row(3)
             self.view.set_displayed_row(Gtk.TreePath(3))
 
         elif status == ERROR_STATUS:
@@ -776,11 +735,13 @@ class RecorderClassUI(Gtk.Box):
             helpb.set_sensitive(True) 
             prevb.set_sensitive(True)
             editb.set_sensitive(False)
-#            self.view.set_displayed_row(4)
             self.view.set_displayed_row(Gtk.TreePath(4))
             if self.focus_is_active:
                 self.launch_error_message()
 
+        # Close error dialog
+        if status not in [ERROR_STATUS] and self.error_dialog:
+            self.destroy_error_dialog()
 
     def block(self):
         prev = self.gui.get_object("prebox")

@@ -24,6 +24,7 @@ class Logger(logging.Logger):
     def __init__(self, log_path, level="DEBUG", rotate=False, use_syslog=False):
         logging.Logger.__init__(self, "galicaster", level)
 
+        self.log_path = log_path
         formatting = [
             "%(user)s",
             "%(asctime)s",
@@ -37,21 +38,21 @@ class Logger(logging.Logger):
             formatting.insert(0, "Galicaster") 
             del(formatting[2]) 
             loghandler.setFormatter(logging.Formatter(" ".join(formatting)))
-        elif log_path == None or len(log_path) == 0:
+        elif self.log_path == None or len(self.log_path) == 0:
             loghandler = logging.NullHandler()
         else:
-            if log_path[0] != "/":
-                log_path = path.abspath(path.join(path.dirname(__file__), "..", "..", log_path))
+            if self.log_path[0] != "/":
+                self.log_path = path.abspath(path.join(path.dirname(__file__), "..", "..", self.log_path))
             if rotate:
                 from logging.handlers import TimedRotatingFileHandler
-                loghandler = TimedRotatingFileHandler(log_path, "midnight")
+                loghandler = TimedRotatingFileHandler(self.log_path, "midnight")
             else:
                 try:
-                    loghandler = logging.FileHandler(log_path, "a")
+                    loghandler = logging.FileHandler(self.log_path, "a")
                 except IOError:
-                    fallback_log_path = path.expanduser('~/.galicaster.log')
-                    sys.stderr.write("Error writing in the log in '{0}', using '{1}'\n".format(log_path, fallback_log_path))
-                    loghandler = logging.FileHandler(fallback_log_path, "a")
+                    self.log_path = path.expanduser('~/.galicaster.log')
+                    sys.stderr.write("Error writing in the log in '{0}', using '{1}'\n".format(self.log_path, self.log_path))
+                    loghandler = logging.FileHandler(self.log_path, "a")
 
             loghandler.setFormatter(logging.Formatter("\t".join(formatting)))
 
@@ -59,6 +60,8 @@ class Logger(logging.Logger):
         self.addHandler(loghandler)
 
 
+    def get_path(self):
+        return self.log_path
 
 
 class GalicasterFilter(logging.Filter):

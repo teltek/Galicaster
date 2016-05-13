@@ -184,7 +184,7 @@ class GCblackmagic(Gst.Bin, base.Base):
     },
     "audiosink" : {
       "type": "select",
-      "default": "autoaudiosink",
+      "default": "alsasink",
       "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
       "description": "Audio sink",
     },
@@ -214,7 +214,6 @@ class GCblackmagic(Gst.Bin, base.Base):
         gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
         gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-audio-'+self.options['name'])
         aux = (pipestr.replace('gc-vsink', gcvideosink)
-               .replace('gc-asink', gcaudiosink)
                .replace('gc-blackmagic-enc', self.options['videoencoder'])
                .replace('gc-blackmagic-muxer', self.options['muxer']+" name=gc-blackmagic-muxer")
                .replace('gc-blackmagic-capsfilter', "video/x-raw,framerate={0}".format(self.options['framerate']))
@@ -225,6 +224,7 @@ class GCblackmagic(Gst.Bin, base.Base):
         else:
           self.has_audio = True  
           aux += audiostr
+          aux = aux.replace('gc-asink', gcaudiosink)
           aux = aux.replace('gc-blackmagic-audioenc', self.options['audioencoder'])
 
         #bin = Gst.parse_bin_from_description(aux, False)
@@ -310,8 +310,9 @@ class GCblackmagic(Gst.Bin, base.Base):
   def send_event_to_src(self, event):
     src = self.get_by_name('gc-blackmagic-src')
     src.send_event(event)
-    src = self.get_by_name('gc-blackmagic-audiosrc')
-    src.send_event(event)
+    src2 = self.get_by_name('gc-blackmagic-audiosrc')
+    if src2:
+      src2.send_event(event)
     
 
 

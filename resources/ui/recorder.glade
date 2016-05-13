@@ -255,6 +255,7 @@
                     <child>
                       <object class="GtkLabel" id="eventlabel">
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">scheduled</property>
                         <property name="justify">center</property>
@@ -529,9 +530,13 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="valign">center</property>
+                                <property name="fraction">1</property>
                                 <property name="pulse_step">0.11</property>
                                 <property name="inverted">True</property>
                                 <property name="ellipsize">middle</property>
+                                <style>
+                                  <class name="horizontal_vumeter"/>
+                                </style>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -544,7 +549,11 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="valign">center</property>
+                                <property name="fraction">1</property>
                                 <property name="inverted">True</property>
+                                <style>
+                                  <class name="horizontal_vumeter"/>
+                                </style>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -901,7 +910,6 @@
                         </child>
                         <child>
                           <object class="GtkButton" id="helpbutton">
-                            <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="no_show_all">True</property>

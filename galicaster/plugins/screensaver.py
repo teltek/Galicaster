@@ -21,23 +21,34 @@ In order for this to work correctly, any other screensaver tool must be disabled
 The screensaver will darken the screen after a given period of inactivity. This period can be configured using the 'screensaver' parameter in the conf.ini file, indicating the seconds of inactivity. By default 60 seconds.
 """
 
-import os
+import subprocess
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 from galicaster.core import context
 
-inactivity = '60' # seconds
 
 def init():
-    global inactivity
+    global inactivity, logger, power_settings, default_power_settings
     dispatcher = context.get_dispatcher()
-    inactivity = context.get_conf().get('screensaver', 'inactivity')
+    logger = context.get_logger()
+    conf = context.get_conf()
+    
+    inactivity_val = conf.get('screensaver', 'inactivity')
+    try:
+        inactivity = int(inactivity_val)
+    except Exception as exc:
+        raise Exception("Error trying to convert inactivity value to integer: {}".format(exc))
+        
     dispatcher.connect('recorder-upcoming-event', deactivate_and_poke)
     dispatcher.connect('recorder-starting', deactivate_and_poke)
-    dispatcher.connect('restart-preview', configure)
+    dispatcher.connect('reload-profile', configure)
     dispatcher.connect('quit', configure_quit)
+
+    power_settings = conf.get_json('screensaver', 'powersettings')
+    default_power_settings = conf.get_json('screensaver', 'defaultpowersettings')
     configure()
 
+    
 def get_screensaver_method(method):
     dbus_loop = DBusGMainLoop()
     session = dbus.SessionBus(mainloop=dbus_loop)
@@ -46,29 +57,64 @@ def get_screensaver_method(method):
     screen_saver = session.get_object(bus_name, object_path)
     return screen_saver.get_dbus_method(method)
 
+
 def activate_screensaver(signal=None):
     configure()
 
 def deactivate_screensaver(signal=None):
-    os.system('xset dpms 0 0 0')
+    execute(['xset', 'dpms', '0', '0', '0'])
 
 def deactivate_and_poke(signal=None):
     deactivate_screensaver()
     poke_screen()
 
 def configure(signal=None):
-    global inactivity
-    os.system('xset +dpms')
-    os.system('xset dpms 0 0'+inactivity)
+    global inactivity, logger, power_settings
+    logger.info("Configure: set power settings and activate power saving mode for {} s".format(inactivity))
 
+    standby_time = inactivity
+    suspend_time = inactivity + 5
+    off_time = inactivity + 10
+
+    set_power_settings(power_settings)
+    execute(["xset", "+dpms"])
+    execute(["xset", "dpms", str(standby_time), str(suspend_time), str(off_time)])
+
+    
 def configure_quit(signal=None):
-    os.system('xset -dpms')
+    global default_power_settings
+    logger.info("On exit: deactivate screensaver and set default power settings")
+    set_power_settings(default_power_settings)
+    execute(['xset', '-dpms'])
 
 def poke_screen(signal=None):
+    global logger
+    logger.info("Simulate user activity")
     poke = get_screensaver_method('SimulateUserActivity')
     a = poke(
         reply_handler=replying,
-        error_handler=replying) 
+        error_handler=replying)
+    execute(['xset','dpms','force','on'])
 
+    
 def replying(data=None):
     pass
+
+
+def set_power_settings(power_settings={}):
+    for schema, v_dict in power_settings.iteritems():
+        for key, value in v_dict.iteritems():
+            execute(["gsettings", "set", schema, key, value], logaserror=False)
+
+
+def execute(command=[], logaserror=True):
+    global logger
+
+    level = 40 if logaserror else 10
+    if command:
+        try:
+            proc = subprocess.check_output(command, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as exc:
+            logger.log(level, "CalledProcessError trying to execute {}: {}".format(command, exc))
+        except Exception as exc:
+            logger.log(level, "Error trying to execute {}: {}".format(command, exc))

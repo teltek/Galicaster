@@ -120,7 +120,7 @@ class GCrtp(Gst.Bin, base.Base):
         },    
         "audiosink" : {
             "type": "select",
-            "default": "autoaudiosink",
+            "default": "alsasink",
             "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
             "description": "Audio sink",
         },
@@ -144,7 +144,6 @@ class GCrtp(Gst.Bin, base.Base):
         gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
         gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-audio-'+self.options['name'])
         aux = (pipestr.replace('gc-vsink', gcvideosink)
-               .replace('gc-asink', gcaudiosink)
                .replace('gc-rtp-depay', pipe_config[self.options['cameratype']]['depay'])
                .replace('gc-rtp-videoparse', pipe_config[self.options['cameratype']]['parse'])
                .replace('gc-rtp-dec', pipe_config[self.options['cameratype']]['dec'])
@@ -153,6 +152,7 @@ class GCrtp(Gst.Bin, base.Base):
         if self.options["audio"]:
             self.has_audio = True
             aux += (audiostr.replace("gc-rtp-audio-depay", pipe_config_audio[self.options['audiotype']]['depay'])
+                    .replace('gc-asink', gcaudiosink)
                     .replace("gc-rtp-audioparse", pipe_config_audio[self.options['audiotype']]['parse'])
                     .replace("gc-rtp-audio-dec", pipe_config_audio[self.options['audiotype']]['dec']))
         else:
