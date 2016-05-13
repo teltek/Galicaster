@@ -10,7 +10,7 @@
     <property name="version">2.0.x</property>
     <property name="copyright" translatable="yes">Copyright © 2015 Teltek Video Research</property>
     <property name="website">http://galicaster.teltek.es</property>
-    <property name="website_label" translatable="yes">Galicaster Website</property>
+    <property name="website_label" translatable="yes">Galicaster Project Website</property>
     <property name="license" translatable="yes">Galicaster, Multistream Recorder and Player
 Copyright (c) 2015, Teltek Video Research &lt;galicaster@teltek.es&gt;
 
