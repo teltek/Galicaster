@@ -16,6 +16,7 @@ import os
 import shutil
 import ConfigParser
 import socket
+import json
 
 from collections import OrderedDict
 from datetime import datetime
@@ -297,6 +298,27 @@ class Conf(object): # TODO list get and other ops arround profile
                         dictionary[item_list[0]] = item_list[1]
             except Exception as exc:
                 self.logger and self.logger.warning('Error obtaining a dictionary from "{0}" in section "{1}", FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
+        return dictionary if dictionary else default
+
+    
+    def get_json(self, sect, opt, default={}):
+        """Tries to return a set of values of an option in a section as a dictionary.
+        If else returns the given default value.
+        Args:
+            sect (str): section of configuration file.
+            opt (str): option of configuration file.
+            default (str): default output if there is no value.
+        Returns:
+            Dict: the set of values of option opt in section sect if there are no error. Default otherwise.
+        Note:
+        key = {"foo":["bar", null, 1.0, 2]}
+        """
+        dictionary = {}
+        if self.get(sect, opt):
+            try:
+                dictionary = json.loads(self.get(sect, opt))
+            except Exception as exc:
+                self.logger and self.logger.warning('Error obtaining a json dictionary from "{0}" in section "{1}", FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
         return dictionary if dictionary else default
 
 
