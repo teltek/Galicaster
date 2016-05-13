@@ -129,17 +129,17 @@ class RecorderClassUI(Gtk.Box):
         big_status = builder.get_object("bg_status")
         self.view = self.set_status_view()
         big_status.add(self.view)
-        self.dispatcher.connect("galicaster-init", self.check_status_area)
-        self.dispatcher.connect("galicaster-init", self.check_net)
-        self.dispatcher.connect("net-up", self.check_net, True)        
-        self.dispatcher.connect("net-down", self.check_net, False)        
+        self.dispatcher.connect("init", self.check_status_area)
+        self.dispatcher.connect("init", self.check_net)
+        self.dispatcher.connect("opencast-connected", self.check_net, True)        
+        self.dispatcher.connect("opencast-unreachable", self.check_net, False)        
 
         # UI
         self.pack_start(self.recorderui,True,True,0)
 
         # Event Manager       
         self.dispatcher.connect("recorder-vumeter", self.set_vumeter)
-        self.dispatcher.connect("galicaster-status", self.event_change_mode)
+        self.dispatcher.connect("view-changed", self.event_change_mode)
         self.dispatcher.connect("recorder-status", self.handle_status)
 
         nb=builder.get_object("data_panel")
@@ -220,26 +220,26 @@ class RecorderClassUI(Gtk.Box):
     def swap_videos(self, button=None):
         """GUI callback"""
         self.swap = not self.swap
-        self.dispatcher.emit("reload-profile")
+        self.dispatcher.emit("action-reload-profile")
         self.mute = False        
 
         
     def on_rec(self,button=None): 
         """GUI callback for manual recording"""
         logger.info("Recording")
-        self.dispatcher.emit("starting-record")
+        self.dispatcher.emit("recorder-starting")
         self.recorder.record()
 
 
     def on_pause(self, button):
         """GUI callback for pause/resume the recording"""
         if self.recorder.status == PAUSED_STATUS:
-            self.dispatcher.emit("enable-no-audio")
+            self.dispatcher.emit("action-audio-enable-msg")
             logger.debug("Resuming Recording")
             self.recorder.resume()
 
         elif self.recorder.status == RECORDING_STATUS:
-            self.dispatcher.emit("disable-no-audio")
+            self.dispatcher.emit("action-audio-disable-msg")
             logger.debug("Pausing Recording")
             self.recorder.pause()
 
@@ -275,10 +275,10 @@ class RecorderClassUI(Gtk.Box):
             text = {"title" : _("Recorder"),
                     "main" : _("Are you sure you want to\nstop the recording?")}
             buttons = (Gtk.STOCK_STOP, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
-            self.dispatcher.emit("disable-no-audio")
+            self.dispatcher.emit("action-audio-disable-msg")
             warning = message.PopUp(message.WARN_STOP, text,
               context.get_mainwindow(), buttons)
-            self.dispatcher.emit("enable-no-audio")
+            self.dispatcher.emit("action-audio-enable-msg")
             if warning.response not in message.POSITIVE or self.recorder.status not in [RECORDING_STATUS]:
                 return False
         self.recorder.stop()
@@ -293,10 +293,10 @@ class RecorderClassUI(Gtk.Box):
                 "text" : _(" ...or contact us on our community list.")
 		}
         buttons = None
-        self.dispatcher.emit("disable-no-audio")
+        self.dispatcher.emit("action-audio-disable-msg")
         message.PopUp(message.INFO, text,
                       context.get_mainwindow(), buttons)
-        self.dispatcher.emit("enable-no-audio")
+        self.dispatcher.emit("action-audio-enable-msg")
 
 
     def launch_error_message(self, error_msg=None):
@@ -418,24 +418,22 @@ class RecorderClassUI(Gtk.Box):
 
     def on_edit_meta(self,button):
         """GUI callback Pops up the  Metadata editor of the active Mediapackage"""
-        self.dispatcher.emit("disable-no-audio")
+        self.dispatcher.emit("action-audio-disable-msg")
         if self.recorder.current_mediapackage and self.recorder.current_mediapackage.manual:
             Metadata(self.recorder.current_mediapackage, series.get_series(), parent=self)
-            self.dispatcher.emit("enable-no-audio")
+            self.dispatcher.emit("action-audio-enable-msg")
         return True 
 
 
     def show_next(self,button=None,tipe = None):   
         """GUI callback Pops up the Event Manager"""
-        self.dispatcher.emit("disable-no-audio")
+        self.dispatcher.emit("action-audio-disable-msg")
         EventManager()
-        self.dispatcher.emit("enable-no-audio")
+        self.dispatcher.emit("action-audio-enable-msg")
         return True
 
 
     def show_about(self,button=None,tipe = None):
-        """GUI callback Pops up de About Dialog"""
-
         text = {"title" : _("About"),
                     "main" : ''}
         message.PopUp(message.ABOUT, text, context.get_mainwindow())
@@ -479,7 +477,7 @@ class RecorderClassUI(Gtk.Box):
 
     def change_mode(self, button):
         """GUI callback Launch the signal to change to another area"""
-        self.dispatcher.emit("change-mode", 3) # FIXME use constant
+        self.dispatcher.emit("action-view-change", 3) # FIXME use constant
 
 
     def set_status_view(self):

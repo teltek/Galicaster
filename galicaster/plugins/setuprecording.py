@@ -32,7 +32,7 @@ def init():
     global recorder, dispatcher
     dispatcher = context.get_dispatcher()
     recorder = context.get_recorder()
-    dispatcher.connect("galicaster-init", post_init)
+    dispatcher.connect("init", post_init)
 
 
 def post_init(source=None):
@@ -64,7 +64,7 @@ def post_init(source=None):
 
 def on_rec(button):
     global dispatcher, recorder, recorder_ui, metadata
-    dispatcher.emit("disable-no-audio")
+    dispatcher.emit("action-audio-disable-msg")
     mp = None
 
     if not recorder.current_mediapackage:
@@ -100,5 +100,5 @@ def on_rec(button):
     
     if popup.return_value == -8:
         recorder_ui.on_rec(button=None)
-    dispatcher.emit("enable-no-audio")
+    dispatcher.emit("action-audio-enable-msg")
     

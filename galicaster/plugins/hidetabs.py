@@ -25,7 +25,7 @@ ALL_TABS = { "events": "eventpanel",
 
 def init():
     dispatcher = context.get_dispatcher()
-    dispatcher.connect("galicaster-init", post_init)
+    dispatcher.connect("init", post_init)
 
 
 def post_init(source=None):

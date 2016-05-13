@@ -66,10 +66,10 @@ class ListingClassUI(ManagerUI):
         self.color = context.get_conf().get_palette(old_style)
 
         builder.connect_signals(self)
-        self.dispatcher.connect("refresh-row", self.refresh_row_from_mp)
-        self.dispatcher.connect("start-operation", self.refresh_operation)
-        self.dispatcher.connect("stop-operation", self.refresh_operation)
-        self.dispatcher.connect("galicaster-status", self.event_change_mode)
+        self.dispatcher.connect("action-mm-refresh-row", self.refresh_row_from_mp)
+        self.dispatcher.connect("operation-started", self.refresh_operation)
+        self.dispatcher.connect("operation-stopped", self.refresh_operation)
+        self.dispatcher.connect("view-changed", self.event_change_mode)
 
         self.populate_treeview(self.repository.list().values())
         self.box.pack_start(self.strip,False,False,0)

@@ -62,7 +62,7 @@ class Main():
             self.scheduler = context.get_scheduler()
 
         if 'media_manager' in self.modules:
-            self.dispatcher.connect('change-mode', self.change_mode)
+            self.dispatcher.connect('action-view-change', self.change_mode)
 
             # Distribution
             self.distribution = DistribUI()
@@ -85,16 +85,16 @@ class Main():
             self.recorder.block()  
 
         context.get_heartbeat().init_timer()
-        self.dispatcher.emit("galicaster-init")
+        self.dispatcher.emit("init")
 
 
     def emit_quit(self):
-        self.dispatcher.emit('galicaster-notify-quit')
+        self.dispatcher.emit('quit')
 
     def change_mode(self, origin, page):
         old_page = self.window.get_current_page()
         self.window.set_current_page(page)  
-        self.dispatcher.emit('galicaster-status', old_page, page)
+        self.dispatcher.emit('view-changed', old_page, page)
 
     def check_net(self, origin, data):
         self.state.net = data

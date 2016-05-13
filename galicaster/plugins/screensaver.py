@@ -39,10 +39,10 @@ def init():
     except Exception as exc:
         raise Exception("Error trying to convert inactivity value to integer: {}".format(exc))
         
-    dispatcher.connect('upcoming-recording', deactivate_and_poke)
-    dispatcher.connect('recorder-started', deactivate_and_poke)
+    dispatcher.connect('recorder-upcoming-event', deactivate_and_poke)
+    dispatcher.connect('recorder-starting', deactivate_and_poke)
     dispatcher.connect('reload-profile', configure)
-    dispatcher.connect('galicaster-notify-quit', configure_quit)
+    dispatcher.connect('quit', configure_quit)
 
     power_settings = conf.get_json('screensaver', 'powersettings')
     default_power_settings = conf.get_json('screensaver', 'defaultpowersettings')

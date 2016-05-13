@@ -23,7 +23,7 @@ logger = context.get_logger()
 
 def init():	
     dispatcher = context.get_dispatcher()
-    dispatcher.connect('after-process-ical', check_repository)	
+    dispatcher.connect('ical-processed', check_repository)	
 
 def check_repository(self):
     global logger

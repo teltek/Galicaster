@@ -49,12 +49,12 @@ def init():
 
     dispatcher.connect('audio-mute', warning_audio_show)
     dispatcher.connect('audio-recovered', warning_audio_hide)
-    dispatcher.connect('galicaster-status', event_change_mode)
-    dispatcher.connect('reload-profile', clear_data_and_check)
-    dispatcher.connect('starting-record', deactivate_hidden_and_check)
-    dispatcher.connect('upcoming-recording', deactivate_hidden_and_check)
-    dispatcher.connect('disable-no-audio', force_hide)
-    dispatcher.connect('enable-no-audio', disable_force_hide)
+    dispatcher.connect('view-changed', event_change_mode)
+    dispatcher.connect('action-reload-profile', clear_data_and_check)
+    dispatcher.connect('recorder-starting', deactivate_hidden_and_check)
+    dispatcher.connect('recorder-upcoming-event', deactivate_hidden_and_check)
+    dispatcher.connect('action-audio-disable-msg', force_hide)
+    dispatcher.connect('action-audio-enable-msg', disable_force_hide)
 
 def force_hide(element=None):
     global no_audio_dialog    

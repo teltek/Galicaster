@@ -29,7 +29,7 @@ class Heartbeat(object):
         self.dispatcher     = dispatcher 
         self.logger         = logger
 
-        self.dispatcher.connect('galicaster-notify-quit', self.do_stop_timers)
+        self.dispatcher.connect('quit', self.do_stop_timers)
 
 
     def init_timer(self):
@@ -56,21 +56,21 @@ class Heartbeat(object):
 
     def __notify_timer_daily(self):
         seg = self.get_seg_until_next()
-        self.dispatcher.emit('galicaster-notify-nightly')
+        self.dispatcher.emit('timer-nightly')
         if self.logger:
-            self.logger.debug('galicaster-notify-nightly in %s', seg)
+            self.logger.debug('timer-nightly in %s', seg)
         Timer(seg, self.__notify_timer_daily).start()
 
 
     def __notify_timer_short(self):
-        self.dispatcher.emit('galicaster-notify-timer-short')
+        self.dispatcher.emit('timer-short')
         if self.logger:
             self.logger.debug('galicaster-notify-short in %s', self.interval_short)
         Timer(self.interval_short, self.__notify_timer_short).start()
 
 
     def __notify_timer_long(self):
-        self.dispatcher.emit('galicaster-notify-timer-long')
+        self.dispatcher.emit('timer-long')
         if self.logger:
             self.logger.debug('galicaster-notify-long in %s', self.interval_long)
         Timer(self.interval_long, self.__notify_timer_long).start()

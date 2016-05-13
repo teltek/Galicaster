@@ -347,7 +347,7 @@ class ListProfileBox(ProfileDialog):
             context.get_conf().change_current_profile(profile.name)
         #self.refresh()
         context.get_conf().update()
-        context.get_dispatcher().emit("reload-profile")
+        context.get_dispatcher().emit("action-reload-profile")
         self.close()
 
     def delete_profile(self, origin):

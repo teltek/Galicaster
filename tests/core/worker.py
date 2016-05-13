@@ -141,7 +141,7 @@ class TestFunctions(TestCase):
         mp.setOpStatus(worker.INGEST_CODE, mediapackage.OP_NIGHTLY)
         repo.add(mp)
 
-        dispatcher.emit('galicaster-notify-nightly')
+        dispatcher.emit('timer-nightly')
         time.sleep(1) # Need time to create zip
 
         self.assertEqual(len(client.calls), 1)

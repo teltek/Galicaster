@@ -123,7 +123,7 @@ class Worker(object):
         self.t.setDaemon(True)
         self.t.start()
 
-        self.dispatcher.connect('galicaster-notify-nightly', self.exec_nightly)
+        self.dispatcher.connect('timer-nightly', self.exec_nightly)
 
     def get_all_job_types(self):
         """Gets all the possible mediapackage operations.
@@ -320,8 +320,8 @@ class Worker(object):
         mp.setOpStatus('ingest',mediapackage.OP_PROCESSING)
         self.repo.update(mp)
 
-        self.dispatcher.emit('start-operation', 'ingest', mp)
-        self.dispatcher.emit('refresh-row', mp.identifier)
+        self.dispatcher.emit('operation-started', 'ingest', mp)
+        self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
 
         if workflow or workflow_parameters:
             self.logger.info("Ingest for MP {}: workflow:{}   workflow_parameters:{} (None means default values)".format(mp.getIdentifier(), workflow, workflow_parameters))
@@ -359,7 +359,7 @@ class Worker(object):
         ifile.close()
         self.repo.update(mp)
             
-        self.dispatcher.emit('refresh-row', mp.identifier)
+        self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
 
 
     def export_to_zip(self, mp, params={}):
@@ -389,7 +389,7 @@ class Worker(object):
         if is_action:
             self.logger.info("Executing ExportToZIP for MP {} to {}".format(mp.getIdentifier(), location if type(location) in [str,unicode] else location.name))
             mp.setOpStatus('exporttozip',mediapackage.OP_PROCESSING)
-            self.dispatcher.emit('start-operation', 'exporttozip', mp)
+            self.dispatcher.emit('operation-started', 'exporttozip', mp)
             self.repo.update(mp)
         else:
             self.logger.info("Zipping MP {} to {}".format(mp.getIdentifier(), location if type(location) in [str,unicode] else location.name))
@@ -436,7 +436,7 @@ class Worker(object):
         self.logger.info('Executing SideBySide for MP {0}'.format(mp.getIdentifier()))
         mp.setOpStatus('sidebyside',mediapackage.OP_PROCESSING)
         self.repo.update(mp)
-        self.dispatcher.emit('start-operation', 'sidebyside', mp)
+        self.dispatcher.emit('operation-started', 'sidebyside', mp)
 
         audio = None  #'camera'
         camera = screen = None
@@ -493,13 +493,13 @@ class Worker(object):
     def operation_error(self, mp, OP_NAME, exc):
         self.logger.error("Failed {} for MP {}. Exception: {}".format(OP_NAME, mp.getIdentifier(), exc))
         mp.setOpStatus(JOBS[OP_NAME], mediapackage.OP_FAILED)
-        self.dispatcher.emit('stop-operation', JOBS[OP_NAME], mp, False, None)
+        self.dispatcher.emit('operation-stopped', JOBS[OP_NAME], mp, False, None)
         self.repo.update(mp)
 
     def operation_success(self, mp, OP_NAME):
         self.logger.info("Finalized {} for MP {}".format(OP_NAME, mp.getIdentifier()))
         mp.setOpStatus(JOBS[OP_NAME], mediapackage.OP_DONE)
-        self.dispatcher.emit('stop-operation', JOBS[OP_NAME], mp, True, None)
+        self.dispatcher.emit('operation-stopped', JOBS[OP_NAME], mp, True, None)
         self.repo.update(mp)
 
 

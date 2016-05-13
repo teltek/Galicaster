@@ -197,7 +197,7 @@ def quit():
     if not recorder.is_recording() or readable.str2bool(force):
         logger.info("Quit Galicaster through API rest")
         # Emit quit signal and exit
-        emit('galicaster-notify-quit')
+        emit('quit')
         
         Gdk.threads_enter()
         Gtk.main_quit()

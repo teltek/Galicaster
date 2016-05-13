@@ -32,9 +32,9 @@ max_duration = conf.get_int('forcedurationrec', 'duration', 240)
 
 
 def init():
-    dispatcher.connect("galicaster-notify-quit", do_stop_timers)
+    dispatcher.connect("quit", do_stop_timers)
     dispatcher.connect('recorder-started', create_timer)
-    dispatcher.connect('reload-profile', do_stop_timers)
+    dispatcher.connect('action-reload-profile', do_stop_timers)
 
 
 def create_timer(sender=None, mp_id=None):

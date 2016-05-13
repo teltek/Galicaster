@@ -43,9 +43,9 @@ def init():
         device = context.get_conf().get('failovermic', 'device')
         MAX_AMPLITUDE = context.get_conf().get('failovermic', 'failover_threshold')
         audio_track = context.get_conf().get('failovermic', 'audio_track')
-        dispatcher.connect('update-rec-vumeter', check_pipeline_amp)
-        dispatcher.connect('recorder-closed', failover_audio)
-        dispatcher.connect('starting-record', record)
+        dispatcher.connect('recorder-vumeter', check_pipeline_amp)
+        dispatcher.connect('recorder-stopped', failover_audio)
+        dispatcher.connect('recorder-starting', record)
         dispatcher.connect('restart-preview', stop)
         set_pipeline()
     except ValueError:
@@ -162,7 +162,7 @@ def failover_audio(self, mpUri):
                 remove_temp(FAIL_DIR, temp_amp)
 
 
-def check_pipeline_amp(self, valor):
+def check_pipeline_amp(self, valor, valor2, stereo):
     if context.get_recorder().is_recording():
         rms = valor
         rms_list.append(rms)

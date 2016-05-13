@@ -19,7 +19,7 @@ from galicaster.core import context
 
 def init():
     dispatcher = context.get_dispatcher()
-    dispatcher.connect('galicaster-notify-quit', show_cursor)
+    dispatcher.connect('quit', show_cursor)
     hide_cursor()
             
 

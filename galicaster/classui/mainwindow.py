@@ -72,8 +72,8 @@ class GCWindow(Gtk.Window):
         self.connect('delete_event', lambda *x: self.__on_delete_event())
         self.dispatcher = dispatcher
         if self.dispatcher:
-            self.dispatcher.connect('galicaster-quit', self.close)
-            self.dispatcher.connect('galicaster-shutdown', self.shutdown)
+            self.dispatcher.connect('action-quit', self.close)
+            self.dispatcher.connect('action-shutdown', self.shutdown)
 
         self.nbox = Gtk.Notebook()
         self.nbox.set_show_tabs(False)
@@ -174,7 +174,7 @@ class GCWindow(Gtk.Window):
         if self.logger:
             self.logger.debug("Delete Event Received")
         if self.dispatcher:
-            self.dispatcher.emit('galicaster-quit')
+            self.dispatcher.emit('action-quit')
         return True
 
     def close(self, signal):
@@ -184,16 +184,16 @@ class GCWindow(Gtk.Window):
                 }
 
         buttons = (Gtk.STOCK_QUIT, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
-        self.dispatcher.emit("disable-no-audio")
+        self.dispatcher.emit("action-audio-disable-msg")
         warning = message.PopUp(message.WARN_QUIT, text,
                                 self, buttons)
-        self.dispatcher.emit("enable-no-audio")
+        self.dispatcher.emit("action-audio-enable-msg")
 
         if warning.response in message.POSITIVE:
             if self.logger:
                 self.logger.info("Quit Galicaster")
             if self.dispatcher:
-                self.dispatcher.emit('galicaster-notify-quit')
+                self.dispatcher.emit('quit')
             Gtk.main_quit()
         else:
             if self.logger:
@@ -213,7 +213,7 @@ class GCWindow(Gtk.Window):
             if self.logger:
                 self.logger.info("Shutdown Galicaster")
             if self.dispatcher:
-                self.dispatcher.emit('galicaster-notify-quit')
+                self.dispatcher.emit('quit')
             UtilsShutdown()
         else:
             if self.logger:

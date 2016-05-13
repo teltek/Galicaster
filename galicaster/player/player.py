@@ -293,7 +293,7 @@ class Player(object):
             stereo = False
             valor2 = valor
 
-        self.dispatcher.emit("update-play-vumeter", valor, valor2, stereo)
+        self.dispatcher.emit("player-vumeter", valor, valor2, stereo)
 
     def __discover(self, filepath):
         self.duration = get_duration(filepath)

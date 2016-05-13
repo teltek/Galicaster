@@ -66,8 +66,8 @@ class Scheduler(object):
         self.logger     = logger
         self.recorder   = recorder
 
-        self.dispatcher.connect('galicaster-notify-timer-short', self.do_timers_short)
-        self.dispatcher.connect('galicaster-notify-timer-long',  self.do_timers_long)
+        self.dispatcher.connect('timer-short', self.do_timers_short)
+        self.dispatcher.connect('timer-long',  self.do_timers_long)
         self.dispatcher.connect("recorder-error", self.on_recorder_error)
         
         self.t_stop = None
@@ -114,7 +114,7 @@ class Scheduler(object):
         """
         if self.net:
             self.proccess_ical()
-            self.emit('after-process-ical')
+            self.emit('ical-processed')
         for mp in self.repo.get_next_mediapackages():
             self.create_new_timer(mp)
 
@@ -131,10 +131,10 @@ class Scheduler(object):
         except Exception as exc:
             self.logger.warning('Unable to connect to opencast server: {0}'.format(exc))
             self.net = False
-            self.emit('net-down')
+            self.emit('opencast-unreachable')
         else:
             self.net = True
-            self.emit('net-up')
+            self.emit('opencast-connected')
 
 
 
@@ -156,11 +156,11 @@ class Scheduler(object):
             self.client.setstate(self.ca_status)
             self.client.setconfiguration(self.conf.get_tracks_in_oc_dict()) 
             self.net = True
-            self.emit('net-up')
+            self.emit('opencast-connected')
         except Exception as exc:
             self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
             self.net = False
-            self.emit('net-down')
+            self.emit('opencast-unreachable')
             return
 
 
@@ -173,7 +173,7 @@ class Scheduler(object):
         except Exception as exc:
             self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
             self.net = False
-            self.emit('net-down')
+            self.emit('opencast-unreachable')
             return
 
         # No data but no error implies that the calendar has not been modified (ETAG)
@@ -221,7 +221,7 @@ class Scheduler(object):
         """
         diff = (mp.getDate() - datetime.datetime.utcnow())
         if diff < datetime.timedelta(minutes=30) and mp.getIdentifier() != self.mp_rec and not self.start_timers.has_key(mp.getIdentifier()):
-            self.emit('upcoming-recording')
+            self.emit('recorder-upcoming-event')
             ti = Timer(diff.seconds, self.start_record, [mp.getIdentifier()]) 
             self.start_timers[mp.getIdentifier()] = ti
             ti.start()
@@ -276,7 +276,7 @@ class Scheduler(object):
             except Exception as exc:
                 self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
                 self.net = False
-                self.emit('net-down')
+                self.emit('opencast-unreachable')
             
         self.t_stop = None
 
@@ -297,7 +297,7 @@ class Scheduler(object):
                 except:
                     self.logger.warning("Problems to connect to opencast server trying to send the state 'capture_error' ")
                     self.net = False
-                    self.emit('net-down')
+                    self.emit('opencast-unreachable')
 
         
     def emit(self, *args, **kwargs):

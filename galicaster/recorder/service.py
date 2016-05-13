@@ -73,8 +73,8 @@ class RecorderService(object):
 
         self.logger.debug("Autorecover mode: {}".format(self.autorecover))
         
-        self.dispatcher.connect("galicaster-init", WeakMethod(self, '_handle_init'))
-        self.dispatcher.connect("reload-profile", WeakMethod(self, '_handle_reload_profile'))
+        self.dispatcher.connect("init", WeakMethod(self, '_handle_init'))
+        self.dispatcher.connect("action-reload-profile", WeakMethod(self, '_handle_reload_profile'))
         self.dispatcher.connect("recorder-error", WeakMethod(self, '_handle_error'))
         
 
@@ -178,7 +178,7 @@ class RecorderService(object):
 
         # FIXME
         mp_mod_Uri = self.current_mediapackage.getURI()
-        self.dispatcher.emit("recorder-closed", mp_mod_Uri)
+        self.dispatcher.emit("recorder-stopped", mp_mod_Uri)
         
         code = 'manual' if self.current_mediapackage.manual else 'scheduled'
         if self.conf.get_lower('ingest', code) == 'immediately':
@@ -245,7 +245,7 @@ class RecorderService(object):
         if self.autorecover and not self.__handle_recover_id:
             self.repo.save_crash_recordings()
             self.logger.debug("Connecting recover recorder callback")
-            self.__handle_recover_id = self.dispatcher.connect("galicaster-notify-timer-long", 
+            self.__handle_recover_id = self.dispatcher.connect("timer-long", 
                                                              WeakMethod(self, '_handle_recover'))
 
 

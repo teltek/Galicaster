@@ -25,7 +25,7 @@ Status: Experimental
 
 def init():
     dispatcher = context.get_dispatcher()
-    dispatcher.connect('galicaster-notify-timer-long', push_pic)
+    dispatcher.connect('timer-long', push_pic)
 
 
 def get_screenshot():

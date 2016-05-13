@@ -52,7 +52,7 @@ def main(args):
         logger and logger.error(msg)
 
         d = context.get_dispatcher()
-        d.emit("galicaster-notify-quit")
+        d.emit("quit")
         return -1
 
 
