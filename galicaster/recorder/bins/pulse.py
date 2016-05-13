@@ -94,7 +94,7 @@ class GCpulse(Gst.Bin, base.Base):
             },
         "audiosink" : {
             "type": "select",
-            "default": "autoaudiosink",
+            "default": "alsasink",
             "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
             "description": "Audio sink",
         },

@@ -18,6 +18,9 @@
 import sys
 import re
 import json
+
+from gi.repository import Gst
+
 #import gst
 
 FLAVOR = ['presenter', 'presentation', 'other']
@@ -153,14 +156,35 @@ def validate_track(options, gc_parameters=None, recursive=False):
         #            k, type(self).__name__ , v['type']))
 
 
-        # TODO validate caps using gst module
-        #if v['type'] == 'caps':
-        #    try:
-        #        caps = gst.caps_from_string(options[k])
-        #    except Exception as exc:
-        #         raise SystemError('Parameter {0} holds invalid caps. {1}'.format(k, exc))
-        # TODO Completar
-        
+        # TODO improve the caps validation
+        # https://gstreamer.freedesktop.org/data/doc/gstreamer/head/pwg/html/section-types-definitions.html#table-video-types
+        if v['type'] == 'caps':
+           try:
+               caps = Gst.Caps.from_string(options[k])
+               structure = caps.get_structure(0)
+               caps_name = structure.get_name()
+               
+               # Must be a tuple (True, value), it would be false if it is not defined
+               # Note that caps like 'video/x-raw,framerate=5/1' does not have height or width but it works anyway
+               # if not structure.get_int('height')[0]:
+               #     if not current_error:
+               #         current_error = 'INFO: Parameter "{}" with value {} must have a height defined.'.format(k, options[k])
+
+               # if not structure.get_int('width')[0]:
+               #     if not current_error:
+               #         current_error = 'INFO: Parameter "{}" with value {} must be a width defined.'.format(
+               #             k, options[k])                
+
+               if not "video" in caps_name and not "image" in caps_name:
+                   if not current_error:
+                       current_error = 'INFO: Parameter "{}" with value {} must be of type video or image.'.format(
+                           k, options[k])                
+                                        
+           except Exception as exc:
+               current_error = 'INFO: Parameter "{}" with value {} must be valid caps. {}'.format(
+                   k, options[k], exc)                
+
+            
         # If the value is not set, put the default value
         if options[k] is None and v.has_key("default") :
             options[k] = v['default']

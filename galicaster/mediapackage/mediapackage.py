@@ -272,6 +272,7 @@ class Element(object):
         else:
             raise TypeError("Argument 'mp' needs to be a Mediapackage")       
 
+
 class Track(Element):
     def __init__(self, uri, duration, flavor=None, mimetype=None, identifier=None, tags=[]):
         """Initializes the representation of the audio and video tracks to be introduced into Opencast Mediapackage.
@@ -798,6 +799,13 @@ class Mediapackage(object):
             value (int): the status to be set.
         """
         self.operation[name] = value
+
+    def isScheduled(self):
+        """ Checks if the status of the MP is scheduled
+        Returns:
+            Bool: True if the MP is scheduled. False otherwise.
+        """
+        return self.status == SCHEDULED
     
     def contains(self, element):
         """Checks if the mediapackage contains a particular element.

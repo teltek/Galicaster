@@ -94,18 +94,46 @@ GtkNotebook tab{
 		from(shade(gray,1.9)),
 		to(shade(gray,1.5)));
 }
-/* Progress bar (Vumeter)*/
-.trough{
-	background-image: -gtk-gradient(
-                linear,
-                left bottom, right bottom,
-                from(green),
-		color-stop(0.7,yellow),
-                to(red));
+
+/* Event status */
+.status_text{
+	font-weight: bold;
 }
-GtkProgressBar.progressbar{
-	background-color: shade(gray,1.5);
-	margin: 0;
-	border: 0px;
-	border-radius: 0px;
+#red_coloured{
+	color: red;
+}
+#black_coloured{
+	color: shade(gray,0.5);
+}
+#blinking_coloured_from{
+	color: shade(red,1.5);
+}
+#blinking_coloured_to{
+	color: red;
+}
+
+/* Progress bar (Vumeter)*/
+.horizontal_vumeter.trough{
+    background-image: -gtk-gradient(
+			      linear,
+			      left bottom, right bottom,
+			      from(green),
+			      color-stop(0.7,yellow),
+			      to(red));
+}
+.vertical_vumeter.trough{
+    background-image: -gtk-gradient(
+			      linear,
+			      left bottom, left top,
+			      from(green),
+			      color-stop(0.7,yellow),
+			      to(red));
+}
+
+.horizontal_vumeter.progressbar,
+.vertical_vumeter.progressbar{
+    background-color: shade(gray,1.7);
+    margin: 0;
+    border: 0px;
+    border-radius: 0px;
 }

@@ -17,6 +17,7 @@ from galicaster.classui import get_image_path, get_ui_path
 from galicaster.classui.elements.message_header import Header
 
 from galicaster.utils.i18n import _
+from galicaster.core import context
 
 TEXT = {'title': None, 'main': None, 'text': None}
 
@@ -95,8 +96,6 @@ class PopUp(Gtk.Widget):
 
         # Display dialog
         if message == ERROR:
-            a = self.dialog.get_action_area().get_children()[0]
-            a.connect('clicked',self.dialog_destroy)
             self.dialog.show_all()
         elif message == ABOUT:
             self.dialog.show_all()
@@ -251,6 +250,14 @@ class PopUp(Gtk.Widget):
         if self.dialog:
             self.dialog.destroy()
             self.dialog = None
+
+    def error_reload_profile(self, origin=None):        
+        if self.dialog:
+            self.dialog.destroy()
+            self.dialog = None
+
+        dispatcher = context.get_dispatcher()
+        dispatcher.emit('reload-profile')
 
 
 GObject.type_register(PopUp)
