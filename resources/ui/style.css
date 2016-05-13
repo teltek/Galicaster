@@ -109,6 +109,12 @@ GtkNotebook tab{
 #blinking_coloured_to{
 	color: red;
 }
+#gray_coloured{
+	color: gray;
+}
+#green_coloured{
+	color: green;
+}
 
 /* Progress bar (Vumeter)*/
 .horizontal_vumeter.trough{

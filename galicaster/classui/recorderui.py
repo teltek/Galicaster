@@ -560,36 +560,29 @@ class RecorderClassUI(Gtk.Box):
 
     def check_net(self, origin, status=None):
         """Update the value of the network status"""
-        attr1= Pango.AttrList()
-        attr2= Pango.AttrList()
-        attr3= Pango.AttrList()
-        attr4= Pango.AttrList()
 
-#        gray= Pango.AttrForeground(20000, 20000, 20000, 0, -1)
-#        red = Pango.AttrForeground(65535, 0, 0, 0, -1)
-#        green = Pango.AttrForeground(0, 65535, 0, 0, -1)
-#        black= Pango.AttrForeground(5000, 5000, 5000, 0, -1)
-
-#        attr1.insert(gray)
-#        attr2.insert(green)
-#        attr3.insert(red)
-#        attr4.insert(black)
+        network_css_ids = {
+            'Disabled'  : 'gray_coloured',
+            'Up'        : 'green_coloured',
+            'Down'      : 'red_coloured',
+            'Connecting': 'black_coloured',
+        }
 
         s3 = self.gui.get_object("status3")
         if not self.net_activity:
             s3.set_text("Disabled")
-            s3.set_attributes(attr1)
+            s3.set_name(network_css_ids['Disabled'])
         else:
             try:
                 if status:
                     s3.set_text("Up")
-                    s3.set_attributes(attr2)
+                    s3.set_name(network_css_ids['Up'])
                 else:
                     s3.set_text("Down")  
-                    s3.set_attributes(attr3)
+                    s3.set_name(network_css_ids['Down'])
             except KeyError:
                 s3.set_text("Connecting")
-                s3.set_attributes(attr4)
+                s3.set_name(network_css_ids['Connecting'])
 
 
     def resize(self):
