@@ -56,6 +56,7 @@ GObject.signal_new('recorder-error', Dispatcher, GObject.SignalFlags.RUN_LAST, N
 GObject.signal_new('recorder-status', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('reload-profile', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('start-preview', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
+GObject.signal_new('recorder-started', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('recorder-closed', Dispatcher, GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, (GObject.TYPE_PYOBJECT,) )
 
 #AUDIO

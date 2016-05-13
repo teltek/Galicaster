@@ -92,6 +92,7 @@ GtkNotebook tab{
 		from(shade(gray,1.9)),
 		to(shade(gray,1.5)));
 }
+
 /* Event status */
 .status_text{
 	font-weight: bold;
@@ -109,3 +110,28 @@ GtkNotebook tab{
 	color: red;
 }
 
+/* Progress bar (Vumeter)*/
+.horizontal_vumeter.trough{
+    background-image: -gtk-gradient(
+			      linear,
+			      left bottom, right bottom,
+			      from(green),
+			      color-stop(0.7,yellow),
+			      to(red));
+}
+.vertical_vumeter.trough{
+    background-image: -gtk-gradient(
+			      linear,
+			      left bottom, left top,
+			      from(green),
+			      color-stop(0.7,yellow),
+			      to(red));
+}
+
+.horizontal_vumeter.progressbar,
+.vertical_vumeter.progressbar{
+    background-color: shade(gray,1.7);
+    margin: 0;
+    border: 0px;
+    border-radius: 0px;
+}

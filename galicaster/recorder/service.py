@@ -139,12 +139,17 @@ class RecorderService(object):
                 self.dispatcher.emit("recorder-error", str(exc))
                 return False
         else:
-            self.recorder and self.recorder.record()            
-        self.current_mediapackage = mp or self.__new_mediapackage()
+            self.recorder and self.recorder.record()
+            
+        if not self.current_mediapackage:
+            self.current_mediapackage = mp or self.create_mp()
+            
         self.current_mediapackage.status = mediapackage.RECORDING
         now = datetime.utcnow().replace(microsecond=0)
         self.current_mediapackage.setDate(now)
         self.__set_status(RECORDING_STATUS)
+        self.dispatcher.emit("recorder-started", self.current_mediapackage.getIdentifier())
+
         return True
 
 
@@ -264,7 +269,10 @@ class RecorderService(object):
                 self.recorder.stop(True)
             self.__set_status(INIT_STATUS)
             self.preview()
-            
+
+    def create_mp(self):
+        self.current_mediapackage = self.__new_mediapackage()
+        return self.current_mediapackage
 
     def __new_mediapackage(self):
         now = datetime.now().replace(microsecond=0)
