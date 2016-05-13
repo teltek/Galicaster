@@ -306,13 +306,16 @@ class RecorderClassUI(Gtk.Box):
             "main" : _(" Please review your configuration \nor load another profile"),                
             "text" : msg
 			}
+
+        if self.error_dialog:
+            self.destroy_error_dialog()
         self.error_dialog = message.PopUp(message.ERROR, text, 
                                 context.get_mainwindow(), None)
 
 
     def destroy_error_dialog(self):
         if self.error_dialog:
-            self.error_dialog.dialog_destroy()
+            self.error_dialog.error_dialog_destroy()
             self.error_dialog = None
         
 
@@ -729,7 +732,6 @@ class RecorderClassUI(Gtk.Box):
             prevb.set_sensitive(True)
             editb.set_sensitive(False)
             swapb.set_sensitive(False)
-#            self.view.set_displayed_row(0)
             self.view.set_displayed_row(Gtk.TreePath(0))
 
         elif status == PREVIEW_STATUS:
@@ -741,7 +743,6 @@ class RecorderClassUI(Gtk.Box):
             prevb.set_sensitive(True)
             editb.set_sensitive(False)
             swapb.set_sensitive(True)
-#            self.view.set_displayed_row(1)
             self.view.set_displayed_row(Gtk.TreePath(1))
 
         elif status == RECORDING_STATUS:
@@ -756,7 +757,6 @@ class RecorderClassUI(Gtk.Box):
             prevb.set_sensitive(False)
             swapb.set_sensitive(False)
             editb.set_sensitive(self.recorder.current_mediapackage and self.recorder.current_mediapackage.manual)
-#            self.view.set_displayed_row(2)
             self.view.set_displayed_row(Gtk.TreePath(2))
 
         elif status == PAUSED_STATUS:
@@ -766,7 +766,6 @@ class RecorderClassUI(Gtk.Box):
             prevb.set_sensitive(False)
             helpb.set_sensitive(False)
             editb.set_sensitive(False)
-#            self.view.set_displayed_row(3)
             self.view.set_displayed_row(Gtk.TreePath(3))
 
         elif status == ERROR_STATUS:
@@ -776,11 +775,13 @@ class RecorderClassUI(Gtk.Box):
             helpb.set_sensitive(True) 
             prevb.set_sensitive(True)
             editb.set_sensitive(False)
-#            self.view.set_displayed_row(4)
             self.view.set_displayed_row(Gtk.TreePath(4))
             if self.focus_is_active:
                 self.launch_error_message()
 
+        # Close error dialog
+        if status not in [ERROR_STATUS] and self.error_dialog:
+            self.destroy_error_dialog()
 
     def block(self):
         prev = self.gui.get_object("prebox")
