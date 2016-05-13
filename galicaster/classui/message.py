@@ -22,7 +22,7 @@ from galicaster.core import context
 TEXT = {'title': None, 'main': None, 'text': None}
 
 
-INFO = 'help2.glade'
+INFO = 'help.glade'
 ERROR = 'error.glade'
 WARN_STOP = 'stop.glade'
 WARN_QUIT = 'quit.glade'
