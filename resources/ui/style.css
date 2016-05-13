@@ -93,7 +93,7 @@ GtkNotebook tab{
 		to(shade(gray,1.5)));
 }
 /* Progress bar (Vumeter)*/
-.trough{
+.horizontal_vumeter.trough{
 	background-image: -gtk-gradient(
                 linear,
                 left bottom, right bottom,
@@ -101,8 +101,18 @@ GtkNotebook tab{
 		color-stop(0.7,yellow),
                 to(red));
 }
-GtkProgressBar.progressbar{
-	background-color: shade(gray,1.5);
+.vertical_vumeter.trough{
+	background-image: -gtk-gradient(
+                linear,
+                left bottom, left top,
+                from(green),
+		color-stop(0.7,yellow),
+                to(red));
+}
+
+.horizontal_vumeter.progressbar,
+.vertical_vumeter.progressbar{
+	background-color: shade(gray,1.7);
 	margin: 0;
 	border: 0px;
 	border-radius: 0px;
