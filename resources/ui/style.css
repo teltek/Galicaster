@@ -115,7 +115,7 @@ GtkNotebook tab{
 	color: gray;
 }
 #green_coloured{
-	color: green;
+	color: shade(green,1.7);
 }
 
 /* Progress bar (Vumeter)*/
