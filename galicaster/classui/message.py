@@ -55,7 +55,7 @@ class PopUp(Gtk.Widget):
     __gtype_name__ = 'PopUp'
 
     def __init__(self, message = None, text = TEXT, parent=None,
-                 buttons = None):
+                 buttons = None, response_action = None):
         """ Initializes the Gtk.Dialog from its GLADE
         Args:
             message (str): type of message (See above constants)
@@ -65,7 +65,9 @@ class PopUp(Gtk.Widget):
         """
         #TODO: Remove unused params.
         # Parse Size proportions
+        #FIXME: Use always as parent context.get_mainwindow()??
         size = parent.get_size()
+        self.response_action = response_action
         self.size = size
         self.wprop = size[0]/1920.0
         self.hprop = size[1]/1080.0
@@ -95,12 +97,13 @@ class PopUp(Gtk.Widget):
             self.set_logos(gui)
 
         # Display dialog
-        if message == ERROR:
+        if message == ERROR or message == WARN_QUIT or message == WARN_STOP:
             self.dialog.show_all()
+            self.dialog.connect('response', self.on_dialog_response)
         elif message == ABOUT:
+            #TODO: use on_dialog_response instead of on_about_dialog_response
             self.dialog.show_all()
             self.dialog.connect('response', self.on_about_dialog_response)
-            pass
         else:
             self.response = self.dialog.run()
             self.dialog.destroy()
@@ -245,6 +248,11 @@ class PopUp(Gtk.Widget):
     def on_about_dialog_response(self, origin, response_id):
         if response_id in NEGATIVE:
             self.dialog_destroy()
+
+    def on_dialog_response(self, origin, response_id):
+        if response_id not in NEGATIVE and self.response_action:
+            self.response_action(response_id)
+        self.dialog_destroy()
 
     def dialog_destroy(self, origin=None):
         if self.dialog:
