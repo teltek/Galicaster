@@ -9,7 +9,27 @@
 .small{
 	font-size: 10px;
 }
-
+/* BUTTONS  */
+GtkButton{
+	border-radius: 2em;
+	border: 1px solid shade(gray,1.5);
+}
+GtkTreeView > GtkButton{
+	border-radius: 0;
+	border-right: 1px ridge shade(gray,1.6);
+	border-left: 1px ridge shade(gray,1.6);
+	border-top: 1px solid rgba(0,0,0,0);
+	border-bottom: 1px solid shade(gray,0.8);
+}
+.tools_button{
+	border: 1px solid rgba(0,0,0,0);
+	border-radius: 0;
+	border-bottom-left-radius: 1em;
+}
+.tools_button:hover,
+.tools_button:active{
+	border: 1px solid shade(gray,1.5);
+}
 /* DIALOG */
 GtkDialog{
 	border: 1px solid rgb(201,198,194);
