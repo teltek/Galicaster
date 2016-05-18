@@ -238,7 +238,9 @@ class PlayerClassUI(ManagerUI):
     def create_drawing_areas(self, source): # TODO refactorize, REC
         """Creates the preview areas depending on the video tracks of a mediapackage"""
         main = self.main_area
-
+        for child in main.get_children():
+            main.remove(child)
+            child.destroy()
         areas = dict()
         for key in source.keys():
             new_area = Gtk.DrawingArea()
