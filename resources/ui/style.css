@@ -9,7 +9,12 @@
 .small{
 	font-size: 10px;
 }
-/* BUTTONS  */
+
+/* BUTTONS */
+GtkButton:insensitive{
+	opacity: 0.5;
+}
+
 GtkButton{
 	border-radius: 2em;
 	border: 1px solid shade(gray,1.5);
@@ -30,6 +35,7 @@ GtkTreeView > GtkButton{
 .tools_button:active{
 	border: 1px solid shade(gray,1.5);
 }
+
 /* DIALOG */
 GtkDialog{
 	border: 1px solid rgb(201,198,194);
