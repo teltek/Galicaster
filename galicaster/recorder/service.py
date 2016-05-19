@@ -118,6 +118,8 @@ class RecorderService(object):
             
 
     def record(self, mp=None):
+        self.dispatcher.emit("recorder-starting")
+
         self.logger.info("Recording (current status: {})".format(self.status))
         if self.status in (INIT_STATUS, ERROR_STATUS):
             self.logger.warning("Cancel recording: status error (in {})".format(self.status))
