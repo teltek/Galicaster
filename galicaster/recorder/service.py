@@ -109,6 +109,7 @@ class RecorderService(object):
 
         
         self.recorder = self.__recorderklass(bins)
+        self.dispatcher.emit("recorder-ready")
 
         self.mute_preview(self.mute)
         if self.__create_drawing_areas_func:
