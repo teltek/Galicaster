@@ -272,6 +272,8 @@ class Recorder(object):
     def _on_message_element(self, bus, message):
         if message.get_structure().get_name() == 'level':
             self.__set_vumeter(message)
+        else:
+            self.dispatcher.emit("recorder-message-element", message.get_structure())
 
 
     def __set_vumeter(self, message):
