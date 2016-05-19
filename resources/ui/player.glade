@@ -202,8 +202,6 @@
                   <object class="GtkGrid" id="grid1">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="row_spacing">10</property>
-                    <property name="column_spacing">10</property>
                     <property name="row_homogeneous">True</property>
                     <property name="column_homogeneous">True</property>
                     <child>
@@ -211,6 +209,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="margin_left">3</property>
+                        <property name="margin_right">3</property>
                         <property name="always_show_image">True</property>
                         <signal name="clicked" handler="on_play_clicked" swapped="no"/>
                         <child>
@@ -225,6 +225,7 @@
                       <packing>
                         <property name="left_attach">0</property>
                         <property name="top_attach">0</property>
+                        <property name="height">5</property>
                       </packing>
                     </child>
                     <child>
@@ -232,6 +233,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="margin_left">3</property>
+                        <property name="margin_right">3</property>
                         <child>
                           <object class="GtkImage" id="image10">
                             <property name="visible">True</property>
@@ -244,6 +247,7 @@
                       <packing>
                         <property name="left_attach">2</property>
                         <property name="top_attach">0</property>
+                        <property name="height">5</property>
                       </packing>
                     </child>
                     <child>
@@ -251,6 +255,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="margin_left">3</property>
+                        <property name="margin_right">3</property>
                         <property name="image_position">top</property>
                         <property name="always_show_image">True</property>
                         <child>
@@ -289,7 +295,8 @@
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
-                        <property name="top_attach">1</property>
+                        <property name="top_attach">6</property>
+                        <property name="height">5</property>
                       </packing>
                     </child>
                     <child>
@@ -297,6 +304,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="margin_left">3</property>
+                        <property name="margin_right">3</property>
                         <child>
                           <object class="GtkBox" id="box2">
                             <property name="visible">True</property>
@@ -333,7 +342,8 @@
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
-                        <property name="top_attach">1</property>
+                        <property name="top_attach">6</property>
+                        <property name="height">5</property>
                       </packing>
                     </child>
                     <child>
@@ -341,6 +351,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="margin_left">3</property>
+                        <property name="margin_right">3</property>
                         <child>
                           <object class="GtkBox" id="box3">
                             <property name="visible">True</property>
@@ -377,7 +389,8 @@
                       </object>
                       <packing>
                         <property name="left_attach">2</property>
-                        <property name="top_attach">1</property>
+                        <property name="top_attach">6</property>
+                        <property name="height">5</property>
                       </packing>
                     </child>
                     <child>
@@ -468,7 +481,7 @@
                       <packing>
                         <property name="left_attach">3</property>
                         <property name="top_attach">0</property>
-                        <property name="height">2</property>
+                        <property name="height">11</property>
                       </packing>
                     </child>
                     <child>
@@ -476,6 +489,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="margin_left">3</property>
+                        <property name="margin_right">3</property>
                         <signal name="clicked" handler="on_pause_clicked" swapped="no"/>
                         <child>
                           <object class="GtkImage" id="image9">
@@ -489,6 +504,67 @@
                       <packing>
                         <property name="left_attach">1</property>
                         <property name="top_attach">0</property>
+                        <property name="height">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSeparator" id="separator2">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSeparator" id="separator3">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSeparator" id="separator4">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSeparator" id="separator5">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSeparator" id="separator6">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSeparator" id="separator7">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">5</property>
                       </packing>
                     </child>
                   </object>
