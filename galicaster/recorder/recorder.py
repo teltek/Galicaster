@@ -53,6 +53,7 @@ class Recorder(object):
         self.__start_record_time = -1
         self.__pause_timestamp = 0
         self.__paused_time = 0
+        self.__valves_status = False
         self.__duration = 0
 
         self.pipeline = Gst.Pipeline.new("galicaster_recorder")
@@ -132,7 +133,8 @@ class Recorder(object):
         logger.debug("recorder preview")
         self.__set_state(Gst.State.PAUSED)
         for bin in self.bins.values():
-            bin.changeValve(True) 
+            bin.changeValve(True)
+        self.__valves_status = True
         self.__set_state(Gst.State.PLAYING)
 
 
@@ -176,6 +178,8 @@ class Recorder(object):
         if self.get_status()[1] == Gst.State.PLAYING:
             for bin in self.bins.values():
                 bin.changeValve(False)
+            self.__valves_status = False
+        
         self.__start_record_time = self.__query_position()
         self.is_recording = True
 
@@ -193,6 +197,7 @@ class Recorder(object):
             self.__pause_timestamp = self.__query_position()
             for bin in self.bins.values():
                 bin.changeValve(True)                
+            self.__valves_status = True
 
 
     def resume(self):
@@ -205,6 +210,8 @@ class Recorder(object):
         logger.debug("recording resumed")
         for bin in self.bins.values():
             bin.changeValve(False)
+        self.__valves_status = False
+
         self.__paused_time = self.__paused_time + (self.__query_position() - self.__pause_timestamp)
         self.__set_state(Gst.State.PLAYING)
         return True
@@ -216,8 +223,11 @@ class Recorder(object):
             self.resume()
 
         if self.is_recording and not force:
+            if self.__valves_status == True:
+                self.resume_recording()
+                
             logger.debug("Stopping recorder, sending EOS event to sources")
-
+                
             self.is_recording = False
             self.__duration = self.__query_position() - self.__start_record_time - self.__paused_time
             a = Gst.Structure.new_from_string('letpass')
