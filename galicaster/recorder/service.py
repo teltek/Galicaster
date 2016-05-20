@@ -193,8 +193,14 @@ class RecorderService(object):
 
     def pause(self):
         self.logger.info("Pausing recorder")
+
         if self.status == RECORDING_STATUS:
-            self.recorder.pause()
+            # Recorder mode (pausetype: pipeline (default value) or recording)
+            if self.conf.get_choice('recorder', 'pausetype', ['pipeline', 'recording'] , 'pipeline') == 'pipeline':
+                self.recorder.pause()
+            else:
+                self.recorder.pause_recording()
+        
             self.__set_status(PAUSED_STATUS)
             return True
         self.logger.warning("Cancel pause: status error (in {})".format(self.status))
@@ -204,7 +210,12 @@ class RecorderService(object):
     def resume(self):
         self.logger.info("Resuming recorder")
         if self.status == PAUSED_STATUS:
-            self.recorder.resume()
+            # Recorder mode (pausetype: pipeline (default value) or recording)
+            if self.conf.get_choice('recorder', 'pausetype', ['pipeline', 'recording'] , 'pipeline') == 'pipeline':
+                self.recorder.resume()
+            else:
+                self.recorder.resume_recording()
+            
             self.__set_status(RECORDING_STATUS)
             return True
         self.logger.warning("Cancel resume: status error (in {})".format(self.status))

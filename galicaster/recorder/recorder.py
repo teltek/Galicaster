@@ -179,8 +179,24 @@ class Recorder(object):
         return True
 
 
+    # doesn't pause pipeline, just stops recording
+    def pause_recording(self):
+        if self.is_recording:
+            logger.debug("recording paused (warning: this doesn't pause pipeline, just stops recording)")
+            for bin in self.bins.values():
+                bin.changeValve(True)                
+
+
     def resume(self):
         logger.debug("recorder resumed")
+        self.__set_state(Gst.State.PLAYING)
+        return True
+
+
+    def resume_recording(self):
+        logger.debug("recording resumed")
+        for bin in self.bins.values():
+            bin.changeValve(False)
         self.__set_state(Gst.State.PLAYING)
         return True
 
