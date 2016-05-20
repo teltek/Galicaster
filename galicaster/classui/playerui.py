@@ -102,11 +102,11 @@ class PlayerClassUI(ManagerUI):
         self.thread_id=None
         builder.connect_signals(self)
 
-        self.dispatcher.connect("player-vumeter", self.set_vumeter)
-        self.dispatcher.connect("play-stopped", self.change_state_bypass, GC_READY)
-        self.dispatcher.connect('play-list', self.play_from_list)
-        self.dispatcher.connect("view-changed", self.event_change_mode)
-        self.dispatcher.connect("quit", self.close)
+        self.dispatcher.connect_ui("player-vumeter", self.set_vumeter)
+        self.dispatcher.connect_ui("play-stopped", self.change_state_bypass, GC_READY)
+        self.dispatcher.connect_ui('play-list', self.play_from_list)
+        self.dispatcher.connect_ui("view-changed", self.event_change_mode)
+        self.dispatcher.connect_ui("quit", self.close)
 
 
 #-------------------------- INIT PLAYER-----------------------
