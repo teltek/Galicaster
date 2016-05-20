@@ -51,6 +51,8 @@ class Recorder(object):
         self.error = False
         self.is_recording = False
         self.__start_record_time = -1
+        self.__pause_timestamp = 0
+        self.__paused_time = 0
         self.__duration = 0
 
         self.pipeline = Gst.Pipeline.new("galicaster_recorder")
@@ -108,9 +110,14 @@ class Recorder(object):
         if self.__start_record_time == -1:
             return 0
 
-        if self.get_status()[1] == Gst.State.NULL:
+        status = self.get_status()[1]
+        
+        if status == Gst.State.NULL:
             return self.__duration
-        return self.__query_position() - self.__start_record_time
+        elif status == Gst.State.PAUSED:
+            return self.__query_position() - self.__start_record_time - self.__paused_time - (self.__query_position() - self.__pause_timestamp)
+
+        return self.__query_position() - self.__start_record_time - self.__paused_time
 
 
     def __query_position(self):
@@ -183,6 +190,7 @@ class Recorder(object):
     def pause_recording(self):
         if self.is_recording:
             logger.debug("recording paused (warning: this doesn't pause pipeline, just stops recording)")
+            self.__pause_timestamp = self.__query_position()
             for bin in self.bins.values():
                 bin.changeValve(True)                
 
@@ -197,6 +205,7 @@ class Recorder(object):
         logger.debug("recording resumed")
         for bin in self.bins.values():
             bin.changeValve(False)
+        self.__paused_time = self.__paused_time + (self.__query_position() - self.__pause_timestamp)
         self.__set_state(Gst.State.PLAYING)
         return True
 
@@ -210,7 +219,7 @@ class Recorder(object):
             logger.debug("Stopping recorder, sending EOS event to sources")
 
             self.is_recording = False
-            self.__duration = self.__query_position() - self.__start_record_time
+            self.__duration = self.__query_position() - self.__start_record_time - self.__paused_time
             a = Gst.Structure.new_from_string('letpass')
             event = Gst.Event.new_custom(Gst.EventType.EOS, a)
             for bin_name, bin in self.bins.iteritems():
