@@ -95,15 +95,16 @@ class PopUp(Gtk.Widget):
             self.set_logos(gui)
 
         # Display dialog
+        parent.get_style_context().add_class('shaded')
         if message == ERROR:
             self.dialog.show_all()
         elif message == ABOUT:
             self.dialog.show_all()
             self.dialog.connect('response', self.on_about_dialog_response)
-            pass
         else:
             self.response = self.dialog.run()
             self.dialog.destroy()
+            parent.get_style_context().remove_class('shaded')
 
 
     def configure_ui(self, text, message_type, gui, parent, another=None):
@@ -244,6 +245,7 @@ class PopUp(Gtk.Widget):
 
     def on_about_dialog_response(self, origin, response_id):
         if response_id in NEGATIVE:
+            context.get_mainwindow().get_style_context().remove_class('shaded')
             self.dialog_destroy()
 
     def dialog_destroy(self, origin=None):

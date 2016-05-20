@@ -143,9 +143,11 @@ class MetadataClass(Gtk.Widget):
         dialog.vbox.set_child_packing(dialog.action_area, True, True, int(self.hprop*25), Gtk.PackType.END)
         dialog.show_all()
 
+        parent.get_style_context().add_class('shaded')
         self.return_value = dialog.run()
         if self.return_value == -8:
             self.update_metadata(table,package)
+        parent.get_style_context().remove_class('shaded')
         dialog.destroy()
 
 

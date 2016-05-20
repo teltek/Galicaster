@@ -51,7 +51,7 @@ class DistribUI(Gtk.Box):
         
         #Connect signals
         dispatcher = context.get_dispatcher()
-        dispatcher.connect("action-reload-profile", self.update_selected_profile)
+        dispatcher.connect_ui("action-reload-profile", self.update_selected_profile)
         recorder.connect("clicked", self.emit_signal, "action-view-change", 0)
         manager.connect("clicked", self.emit_signal, "action-view-change", 1)
         quit_button.connect("clicked", self.emit_signal, "action-quit")

@@ -4,6 +4,7 @@
   <requires lib="gtk+" version="3.6"/>
   <object class="GtkDialog" id="dialog">
     <property name="can_focus">False</property>
+    <property name="type">popup</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="type_hint">normal</property>
@@ -28,7 +29,7 @@
                 <property name="receives_default">True</property>
                 <property name="relief">half</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="error_dialog_destroy" swapped="no"/>
+                <signal name="clicked" handler="dialog_destroy" swapped="no"/>
                 <style>
                   <class name="dialog_button"/>
                 </style>

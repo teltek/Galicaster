@@ -129,18 +129,18 @@ class RecorderClassUI(Gtk.Box):
         big_status = builder.get_object("bg_status")
         self.view = self.set_status_view()
         big_status.add(self.view)
-        self.dispatcher.connect("init", self.check_status_area)
-        self.dispatcher.connect("init", self.check_net)
-        self.dispatcher.connect("opencast-connected", self.check_net, True)        
-        self.dispatcher.connect("opencast-unreachable", self.check_net, False)        
+        self.dispatcher.connect_ui("init", self.check_status_area)
+        self.dispatcher.connect_ui("init", self.check_net)
+        self.dispatcher.connect_ui("opencast-connected", self.check_net, True)        
+        self.dispatcher.connect_ui("opencast-unreachable", self.check_net, False)        
 
         # UI
         self.pack_start(self.recorderui,True,True,0)
 
         # Event Manager       
-        self.dispatcher.connect("recorder-vumeter", self.set_vumeter)
-        self.dispatcher.connect("view-changed", self.event_change_mode)
-        self.dispatcher.connect("recorder-status", self.handle_status)
+        self.dispatcher.connect_ui("recorder-vumeter", self.set_vumeter)
+        self.dispatcher.connect_ui("view-changed", self.event_change_mode)
+        self.dispatcher.connect_ui("recorder-status", self.handle_status)
 
         nb=builder.get_object("data_panel")
         pages = nb.get_n_pages()        
@@ -227,7 +227,6 @@ class RecorderClassUI(Gtk.Box):
     def on_rec(self,button=None): 
         """GUI callback for manual recording"""
         logger.info("Recording")
-        self.dispatcher.emit("recorder-starting")
         self.recorder.record()
 
 
@@ -316,7 +315,7 @@ class RecorderClassUI(Gtk.Box):
 
     def destroy_error_dialog(self):
         if self.error_dialog:
-            self.error_dialog.error_dialog_destroy()
+            self.error_dialog.dialog_destroy()
             self.error_dialog = None
         
 
