@@ -226,10 +226,8 @@ class Recorder(object):
             if not debug or (debug and not debug.count('canguro')):
                 if stop:
                     self.stop(True)
-                Gdk.threads_enter()
                 self.error = error_info
                 self.dispatcher.emit("recorder-error", error_info)
-                Gdk.threads_leave()
                 # return True
         
 
