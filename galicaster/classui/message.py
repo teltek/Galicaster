@@ -68,6 +68,7 @@ class PopUp(Gtk.Widget):
         #FIXME: Use always as parent context.get_mainwindow()??
         size = parent.get_size()
         self.response_action = response_action
+        self.message = message
         self.size = size
         self.wprop = size[0]/1920.0
         self.hprop = size[1]/1080.0
@@ -97,13 +98,13 @@ class PopUp(Gtk.Widget):
             self.set_logos(gui)
 
         # Display dialog
-        if message == ERROR or message == WARN_QUIT or message == WARN_STOP:
+        if message == ERROR or message == WARN_QUIT or message == WARN_STOP or message == ABOUT or message == INFO or message == WARN_DELETE:
             self.dialog.show_all()
             self.dialog.connect('response', self.on_dialog_response)
-        elif message == ABOUT:
-            #TODO: use on_dialog_response instead of on_about_dialog_response
-            self.dialog.show_all()
-            self.dialog.connect('response', self.on_about_dialog_response)
+        #elif message == ABOUT:
+        #    #TODO: use on_dialog_response instead of on_about_dialog_response
+        #    self.dialog.show_all()
+        #    self.dialog.connect('response', self.on_about_dialog_response)
         else:
             self.response = self.dialog.run()
             self.dialog.destroy()
@@ -260,10 +261,7 @@ class PopUp(Gtk.Widget):
             self.dialog = None
 
     def error_reload_profile(self, origin=None):        
-        if self.dialog:
-            self.dialog.destroy()
-            self.dialog = None
-
+        self.dialog_destroy()
         dispatcher = context.get_dispatcher()
         dispatcher.emit('reload-profile')
 

@@ -78,6 +78,7 @@ class ListingClassUI(ManagerUI):
         self.pack_start(self.box,True,True,0)
 
 
+
     def event_change_mode(self, orig, old_state, new_state):
         if new_state == 1:
             self.refresh()
@@ -287,7 +288,9 @@ class ListingClassUI(ManagerUI):
                 iterator=self.lista.get_iter(row)
             iters.append(iterator)
             for i in iters:
-                self.on_delete(self.lista,i)
+                #self.on_delete(self.lista,i)
+                key = self.lista[i][0]
+                self.delete(key,self.create_delete_dialog_response(self.lista, i))
             #TODO connect "row-deleted" to delete package
         elif action == "operations_action":
             self.vista.get_selection().selected_foreach(self.on_ingest_question)
@@ -342,14 +345,20 @@ class ListingClassUI(ManagerUI):
         self.refresh_row(reference,iterator)
         return True
 
-    def on_delete(self,store,iterator):
-        """Remove a mediapackage from the view list"""
-        key = store[iterator][0]
-        response = self.delete(key)
-        if response:
-            self.lista.remove(iterator)
-            self.vista.get_selection().select_path(0)
-        return True
+    #def on_delete(self,store,iterator):
+    #    """Remove a mediapackage from the view list"""
+    #    key = store[iterator][0]
+    #    response = self.delete(key,self.create_delete_dialog_response(store, iterator))
+
+    def create_delete_dialog_response(self, store, iterator):
+
+        def on_delete_dialog_response(response_id):
+            if response_id in message.POSITIVE:
+                self.repository.delete(self.repository.get(store[iterator][0]))
+                self.lista.remove(iterator)
+                self.vista.get_selection().select_path(0)
+
+        return on_delete_dialog_response
 
     def on_play(self,store,reference,iterator):
         """ Retrieve mediapackage and send videos to player"""
