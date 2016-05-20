@@ -233,6 +233,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <signal name="clicked" handler="on_stop_clicked" swapped="no"/>
                         <property name="margin_left">3</property>
                         <property name="margin_right">3</property>
                         <child>
@@ -259,6 +260,7 @@
                         <property name="margin_right">3</property>
                         <property name="image_position">top</property>
                         <property name="always_show_image">True</property>
+                        <signal name="clicked" handler="on_edit_meta" swapped="no"/>
                         <child>
                           <object class="GtkBox" id="box1">
                             <property name="visible">True</property>
@@ -304,6 +306,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <signal name="clicked" handler="on_question" swapped="no"/>
                         <property name="margin_left">3</property>
                         <property name="margin_right">3</property>
                         <child>
@@ -351,6 +354,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <signal name="clicked" handler="on_delete" swapped="no"/>
                         <property name="margin_left">3</property>
                         <property name="margin_right">3</property>
                         <child>

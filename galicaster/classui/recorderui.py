@@ -696,7 +696,6 @@ class RecorderClassUI(Gtk.Box):
         elif status == PREVIEW_STATUS:
             record.set_sensitive( (self.allow_start or self.allow_manual) )
             pause.set_sensitive(False)
-            pause.set_active(False)
             stop.set_sensitive(False)
             helpb.set_sensitive(True)
             prevb.set_sensitive(True)

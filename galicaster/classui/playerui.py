@@ -103,7 +103,7 @@ class PlayerClassUI(ManagerUI):
         builder.connect_signals(self)
 
         self.dispatcher.connect_ui("player-vumeter", self.set_vumeter)
-        self.dispatcher.connect_ui("play-stopped", self.change_state_bypass, GC_READY)
+        self.dispatcher.connect("play-stopped", self.change_state_bypass, GC_READY)
         self.dispatcher.connect_ui('play-list', self.play_from_list)
         self.dispatcher.connect_ui("view-changed", self.event_change_mode)
         self.dispatcher.connect_ui("quit", self.close)
@@ -154,7 +154,7 @@ class PlayerClassUI(ManagerUI):
 
 #------------------------- PLAYER ACTIONS ------------------------
 
-    def on_play_clicked(self, button):
+    def on_play_clicked(self, button=None):
         """Starts the reproduction"""
         self.change_state(GC_PLAY)
         self.player.play()
@@ -170,8 +170,11 @@ class PlayerClassUI(ManagerUI):
         
     def on_pause_clicked(self, button=None):
         """Pauses the reproduction"""
-        self.player.pause()
-        self.change_state(GC_PAUSE)
+        if button.get_active():
+            self.player.pause()
+            self.change_state(GC_PAUSE)
+        else:
+            self.on_play_clicked()
         return True
 
     def on_stop_clicked(self, button=None):
@@ -238,7 +241,9 @@ class PlayerClassUI(ManagerUI):
     def create_drawing_areas(self, source): # TODO refactorize, REC
         """Creates the preview areas depending on the video tracks of a mediapackage"""
         main = self.main_area
-
+        for child in main.get_children():
+            main.remove(child)
+            child.destroy()
         areas = dict()
         for key in source.keys():
             new_area = Gtk.DrawingArea()
@@ -370,11 +375,12 @@ class PlayerClassUI(ManagerUI):
         if state==GC_PLAY:
             play.set_sensitive(False)
             pause.set_sensitive(True)
+            pause.set_active(False)
             stop.set_sensitive(True)
 
         if state==GC_PAUSE:
             play.set_sensitive(True)
-            pause.set_sensitive(False)
+            pause.set_sensitive(True)
             stop.set_sensitive(True)
             
         if state==GC_STOP:
