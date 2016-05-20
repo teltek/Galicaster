@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.18.3 -->
 <interface>
-  <!-- interface-requires gtk+ 3.0 -->
+  <requires lib="gtk+" version="3.0"/>
   <object class="GtkVBox" id="listingbox">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -18,7 +19,6 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="hscrollbar_policy">never</property>
-            <property name="window_placement_set">True</property>
             <property name="shadow_type">etched-in</property>
             <child>
               <object class="GtkTreeView" id="vista">
@@ -53,13 +53,12 @@
             <property name="layout_style">spread</property>
             <child>
               <object class="GtkButton" id="playbutton">
-		<property name="name">play_action</property>
                 <property name="use_action_appearance">False</property>
+                <property name="name">play_action</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">Play</property>
-                <property name="use_action_appearance">False</property>
                 <signal name="clicked" handler="on_action" swapped="no"/>
                 <child>
                   <object class="GtkImage" id="image1">
@@ -67,7 +66,7 @@
                     <property name="can_focus">False</property>
                     <property name="pixel_size">0</property>
                     <property name="icon_name">media-playback-start</property>
-                    <property name="icon-size">6</property>
+                    <property name="icon_size">6</property>
                   </object>
                 </child>
               </object>
@@ -79,13 +78,12 @@
             </child>
             <child>
               <object class="GtkButton" id="editbutton">
-		<property name="name">edit_action</property>
                 <property name="use_action_appearance">False</property>
+                <property name="name">edit_action</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">Edit</property>
-                <property name="use_action_appearance">False</property>
                 <signal name="clicked" handler="on_action" swapped="no"/>
                 <child>
                   <object class="GtkVBox" id="vbox1">
@@ -97,7 +95,7 @@
                         <property name="can_focus">False</property>
                         <property name="pixel_size">0</property>
                         <property name="icon_name">edit-copy</property>
-                        <property name="icon-size">6</property>
+                        <property name="icon_size">6</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -128,13 +126,12 @@
             </child>
             <child>
               <object class="GtkButton" id="ingestbutton">
-		<property name="name">operations_action</property>
                 <property name="use_action_appearance">False</property>
+                <property name="name">operations_action</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">Ingest</property>
-                <property name="use_action_appearance">False</property>
                 <signal name="clicked" handler="on_action" swapped="no"/>
                 <child>
                   <object class="GtkVBox" id="vbox2">
@@ -146,7 +143,7 @@
                         <property name="can_focus">False</property>
                         <property name="pixel_size">0</property>
                         <property name="icon_name">go-up</property>
-                        <property name="icon-size">6</property>
+                        <property name="icon_size">6</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -177,13 +174,12 @@
             </child>
             <child>
               <object class="GtkButton" id="deletebutton">
-		<property name="name">delete_action</property>
                 <property name="use_action_appearance">False</property>
+                <property name="name">delete_action</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">Delete</property>
-                <property name="use_action_appearance">False</property>
                 <signal name="clicked" handler="on_action" swapped="no"/>
                 <child>
                   <object class="GtkVBox" id="vbox3">
@@ -195,7 +191,7 @@
                         <property name="can_focus">False</property>
                         <property name="pixel_size">0</property>
                         <property name="icon_name">dialog-close</property>
-                        <property name="icon-size">6</property>
+                        <property name="icon_size">6</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -238,6 +234,67 @@
         <property name="fill">False</property>
         <property name="padding">50</property>
         <property name="position">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkGrid" id="grid1">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="margin_right">5</property>
+        <property name="hexpand">True</property>
+        <property name="row_homogeneous">True</property>
+        <property name="column_homogeneous">True</property>
+        <child>
+          <object class="GtkLabel" id="release_label">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="ypad">5</property>
+            <property name="label" translatable="yes">Galicaster 2.0.x</property>
+            <property name="justify">center</property>
+            <property name="xalign">0.0099999997764825821</property>
+            <property name="yalign">1</property>
+            <style>
+              <class name="label_small"/>
+              <class name="release_label"/>
+            </style>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">False</property>
+        <property name="position">3</property>
       </packing>
     </child>
   </object>

@@ -83,6 +83,10 @@ GtkDialog{
 .label_small{
     font-size: 0.75em;
 }
+
+.label_extrasmall{
+    font-size: 0.25em;
+}
 /* Recorder - Tabs */
 GtkNotebook tab:active{
 	background-image: inherit;
@@ -142,4 +146,17 @@ GtkNotebook tab{
     margin: 0;
     border: 0px;
     border-radius: 0px;
+}
+
+.release_label{
+    border: 1px solid rgb(201,198,194);
+    border-radius: 8px 58px 8px 8px;
+    color:white;
+    background-image: -gtk-gradient(
+			      linear,
+			      left top, left bottom,
+			      from(shade(#607b2d,1.0)),
+			      to(shade(#607b2d, 1.0)));
+
+
 }
