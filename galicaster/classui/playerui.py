@@ -170,7 +170,7 @@ class PlayerClassUI(ManagerUI):
         
     def on_pause_clicked(self, button=None):
         """Pauses the reproduction"""
-        if button.get_active():
+        if not button or button.get_active():
             self.player.pause()
             self.change_state(GC_PAUSE)
         else:
