@@ -73,6 +73,7 @@ class PopUp(Gtk.Widget):
         # Create dialog
         gui = Gtk.Builder()
         gui.add_from_file(get_ui_path(message))
+        gui.connect_signals(self)
         self.dialog = self.configure_ui(text, message, gui, parent)
 
         if message == OPERATIONS:
@@ -98,6 +99,7 @@ class PopUp(Gtk.Widget):
         parent.get_style_context().add_class('shaded')
         if message == ERROR:
             self.dialog.show_all()
+            
         elif message == ABOUT:
             self.dialog.show_all()
             self.dialog.connect('response', self.on_about_dialog_response)
@@ -250,11 +252,13 @@ class PopUp(Gtk.Widget):
 
     def dialog_destroy(self, origin=None):
         if self.dialog:
+            context.get_mainwindow().get_style_context().remove_class('shaded')
             self.dialog.destroy()
             self.dialog = None
 
-    def error_reload_profile(self, origin=None):        
+    def error_reload_profile(self, origin=None):
         if self.dialog:
+            context.get_mainwindow().get_style_context().remove_class('shaded')
             self.dialog.destroy()
             self.dialog = None
 
