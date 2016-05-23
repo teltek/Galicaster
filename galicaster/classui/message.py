@@ -263,7 +263,7 @@ class PopUp(Gtk.Widget):
             self.dialog = None
 
         dispatcher = context.get_dispatcher()
-        dispatcher.emit('reload-profile')
+        dispatcher.emit('action-reload-profile')
 
 
 GObject.type_register(PopUp)
