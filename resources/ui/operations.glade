@@ -279,7 +279,6 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="use_stock">True</property>
-                            <signal name="clicked" handler="set_response" swapped="no"/>
                             <style>
                               <class name="cancel_button"/>
                               <class name="dialog_button"/>
