@@ -205,37 +205,13 @@
                     <property name="row_homogeneous">True</property>
                     <property name="column_homogeneous">True</property>
                     <child>
-                      <object class="GtkButton" id="playbutton">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="margin_left">3</property>
-                        <property name="margin_right">3</property>
-                        <property name="always_show_image">True</property>
-                        <signal name="clicked" handler="on_play_clicked" swapped="no"/>
-                        <child>
-                          <object class="GtkImage" id="image8">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="icon_name">media-playback-start</property>
-                            <property name="icon_size">6</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">0</property>
-                        <property name="height">5</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkButton" id="stopbutton">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <signal name="clicked" handler="on_stop_clicked" swapped="no"/>
                         <property name="margin_left">3</property>
                         <property name="margin_right">3</property>
+                        <signal name="clicked" handler="on_stop_clicked" swapped="no"/>
                         <child>
                           <object class="GtkImage" id="image10">
                             <property name="visible">True</property>
@@ -306,9 +282,9 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <signal name="clicked" handler="on_question" swapped="no"/>
                         <property name="margin_left">3</property>
                         <property name="margin_right">3</property>
+                        <signal name="clicked" handler="on_question" swapped="no"/>
                         <child>
                           <object class="GtkBox" id="box2">
                             <property name="visible">True</property>
@@ -354,9 +330,9 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <signal name="clicked" handler="on_delete" swapped="no"/>
                         <property name="margin_left">3</property>
                         <property name="margin_right">3</property>
+                        <signal name="clicked" handler="on_delete" swapped="no"/>
                         <child>
                           <object class="GtkBox" id="box3">
                             <property name="visible">True</property>
@@ -512,36 +488,6 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSeparator" id="separator2">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkSeparator" id="separator3">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkSeparator" id="separator4">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">2</property>
-                        <property name="top_attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkSeparator" id="separator5">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -569,6 +515,30 @@
                       <packing>
                         <property name="left_attach">2</property>
                         <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="playbutton">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="margin_left">3</property>
+                        <property name="margin_right">3</property>
+                        <property name="always_show_image">True</property>
+                        <signal name="clicked" handler="on_play_clicked" swapped="no"/>
+                        <child>
+                          <object class="GtkImage" id="image8">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="icon_name">media-playback-start</property>
+                            <property name="icon_size">6</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">0</property>
+                        <property name="height">5</property>
                       </packing>
                     </child>
                   </object>
