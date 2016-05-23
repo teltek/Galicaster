@@ -6,11 +6,12 @@
     <property name="can_focus">False</property>
     <property name="type">popup</property>
     <property name="title" translatable="yes">Stop Recording</property>
+    <property name="resizable">False</property>
+    <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">dialog</property>
-    <property name="skip_taskbar_hint">True</property>
-    <property name="urgency_hint">True</property>
+    <property name="deletable">False</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox1">
         <property name="visible">True</property>
