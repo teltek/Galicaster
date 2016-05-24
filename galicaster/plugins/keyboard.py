@@ -49,18 +49,19 @@ def configure_keyboard(dispatcher=None):
         'enabled',
         'true'])
 
+    execute(['gsettings',
+        'set',
+        'org.onboard.window.landscape',
+        'dock-expand',
+        'false'])
+
+
 def unconfigure_keyboard(dispatcher=None):
     execute(['gsettings',
         'set',
-        'org.onboard.auto-show',
-        'hide-on-key-press',
+        'org.onboard',
+        'use-system-defaults',
         'true'])
-
-    execute(['gsettings',
-        'set',
-        'org.onboard.auto-show',
-        'enabled',
-        'false'])
 
     execute(['kill',pid])
 
