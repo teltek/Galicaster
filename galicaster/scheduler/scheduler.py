@@ -114,7 +114,7 @@ class Scheduler(object):
         """
         if self.net:
             self.proccess_ical()
-            self.emit('ical-processed')
+            self.dispatcher.emit('ical-processed')
         for mp in self.repo.get_next_mediapackages():
             self.create_new_timer(mp)
 
@@ -131,10 +131,10 @@ class Scheduler(object):
         except Exception as exc:
             self.logger.warning('Unable to connect to opencast server: {0}'.format(exc))
             self.net = False
-            self.emit('opencast-unreachable')
+            self.dispatcher.emit('opencast-unreachable')
         else:
             self.net = True
-            self.emit('opencast-connected')
+            self.dispatcher.emit('opencast-connected')
 
 
 
@@ -156,11 +156,11 @@ class Scheduler(object):
             self.client.setstate(self.ca_status)
             self.client.setconfiguration(self.conf.get_tracks_in_oc_dict()) 
             self.net = True
-            self.emit('opencast-connected')
+            self.dispatcher.emit('opencast-connected')
         except Exception as exc:
             self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
             self.net = False
-            self.emit('opencast-unreachable')
+            self.dispatcher.emit('opencast-unreachable')
             return
 
 
@@ -173,7 +173,7 @@ class Scheduler(object):
         except Exception as exc:
             self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
             self.net = False
-            self.emit('opencast-unreachable')
+            self.dispatcher.emit('opencast-unreachable')
             return
 
         # No data but no error implies that the calendar has not been modified (ETAG)
@@ -221,7 +221,7 @@ class Scheduler(object):
         """
         diff = (mp.getDate() - datetime.datetime.utcnow())
         if diff < datetime.timedelta(minutes=30) and mp.getIdentifier() != self.mp_rec and not self.start_timers.has_key(mp.getIdentifier()):
-            self.emit('recorder-upcoming-event')
+            self.dispatcher.emit('recorder-upcoming-event')
             ti = Timer(diff.seconds, self.start_record, [mp.getIdentifier()]) 
             self.start_timers[mp.getIdentifier()] = ti
             ti.start()
@@ -276,7 +276,7 @@ class Scheduler(object):
             except Exception as exc:
                 self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
                 self.net = False
-                self.emit('opencast-unreachable')
+                self.dispatcher.emit('opencast-unreachable')
             
         self.t_stop = None
 
@@ -297,16 +297,4 @@ class Scheduler(object):
                 except:
                     self.logger.warning("Problems to connect to opencast server trying to send the state 'capture_error' ")
                     self.net = False
-                    self.emit('opencast-unreachable')
-
-        
-    def emit(self, *args, **kwargs):
-        """Emits messages in order to inform of different events, for example, that the connectivity with opencast was lost.
-        Args:
-            *args: strings with messages and useful information.
-            **kwargs: dictionary of strings with useful information about the message that is going to be emitted.
-        """
-        # self.dispatcher.emit(*args, **kwargs)
-        #Allow only the main thread to touch the GUI
-        GObject.idle_add(self.dispatcher.emit, *args, **kwargs)
-        
+                    self.dispatcher.emit('opencast-unreachable')

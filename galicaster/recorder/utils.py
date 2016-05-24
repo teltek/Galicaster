@@ -229,38 +229,50 @@ class Switcher(Gst.Bin):
         self.device.send_event(event)    
         self.src1.send_event(event)
 
-        
-def get_videosink(videosink='xvimagesink', name='gc-preview'):
-    logger.debug("Video sink: {} -> {}".format(name, videosink))
-    gcvsink = "xvimagesink async=false qos=true name={}".format(name)
-    
-    if videosink == "ximagesink":
-        gcvsink = "ximagesink async=false qos=false name={}".format(name)
-        
-    elif videosink == "fpsdisplaysink":
-        gcvsink = 'fpsdisplaysink name={}-fps async-handling=false qos=false video-sink="xvimagesink name={}"'.format(name, name)
-        
-    elif videosink == "autovideosink":
-        gcvsink = "autovideosink name={} async=false".format(name)
-        
-    elif videosink == "fakesink":
-        gcvsink = "fakesink async=false name={}".format(name)
 
+VIDEOSINK_PROPERTIES = {
+    'xvimagesink'     : {'async': 'false', 'qos': 'true'},
+    'ximagesink'      : {'async': 'false', 'qos': 'true'},
+    'fpsdisplaysink'  : {'async-handling' : 'false', 'qos': 'true'},
+    'autovideosink'   : {'async': 'false'},
+    'fakesink'        : {'async': 'false', 'silent': 'true'},
+}
+
+AUDIOSINK_PROPERTIES = {
+    'alsasink'        : {'sync': 'false', 'qos': 'true'},
+    'pulsesink'       : {'sync': 'false', 'qos': 'true'},
+    'fakesink'        : {'silent': 'true'},
+}
+
+
+def get_videosink(videosink='xvimagesink', name='gc-preview', properties = {}):
+    logger.debug("Video sink: {} -> {}".format(name, videosink))
+    
+    props_str = get_properties(videosink, properties, VIDEOSINK_PROPERTIES)        
+    if videosink == "fpsdisplaysink":
+        gcvsink = '{} name={}-fps {} video-sink="xvimagesink name={}"'.format(videosink, name, props_str, name)
+    else:
+        gcvsink = "{} name={} {}".format(videosink, name, props_str)
+            
     return gcvsink
 
 
-def get_audiosink(audiosink='autoaudiosink', name='gc-apreview'):    
+def get_audiosink(audiosink='autoaudiosink', name='gc-apreview', properties = {}):    
     logger.debug("Audio sink: {} -> {}".format(name, audiosink))
-    gcasink = "autoaudiosink sync=false name={}".format(name)
-    
-    if audiosink == "alsasink":
-        gcasink = "alsasink sync=false name={}".format(name)
-        
-    elif audiosink == "pulsesink":
-        gcasink = "pulsesink sync=false name={}".format(name, name)
-        
-    elif audiosink == "fakesink":
-        gcasink = "fakesink silent=true name={}".format(name)
+
+    props_str = get_properties(audiosink, properties, AUDIOSINK_PROPERTIES)
+    gcasink = '{} name={} {}'.format(audiosink, name, props_str)
 
     return gcasink
 
+
+def get_properties(videosink, properties, default_properties):
+    props_str = ''
+    if videosink in default_properties.keys():
+        props = default_properties[videosink]
+        props.update(properties)
+        
+        for k,v in props.iteritems():
+            props_str = props_str + k + "=" + v + ' '
+    
+    return props_str

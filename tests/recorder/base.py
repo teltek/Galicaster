@@ -201,3 +201,32 @@ class Base(object):
         time.sleep(2)
         recorder.stop(True)
         self.assertEqual(recorder.get_status()[1], Gst.State.NULL)
+
+
+    def test_pause_only_recording(self, bins):
+        recorder = Recorder(bins)
+        recorder.preview()
+        self.assertEqual(recorder.get_status()[1], Gst.State.PLAYING)
+        time.sleep(2)
+        self.assertEqual(recorder.get_recorded_time(), 0)
+        recorder.record()
+        time.sleep(2)
+        recorder.pause_recording()
+        time.sleep(2)
+        recorder.resume_recording()
+        time.sleep(1)
+        recorder.stop()
+        self.assertCorrectRecording(bins, 3)
+
+    def test_pause_only_recording_and_stop(self, bins):
+        recorder = Recorder(bins)
+        recorder.preview()
+        self.assertEqual(recorder.get_status()[1], Gst.State.PLAYING)
+        time.sleep(2)
+        self.assertEqual(recorder.get_recorded_time(), 0)
+        recorder.record()
+        time.sleep(2)
+        recorder.pause_recording()
+        time.sleep(2)
+        recorder.stop()
+        self.assertCorrectRecording(bins, 2)

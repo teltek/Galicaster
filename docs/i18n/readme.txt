@@ -52,7 +52,8 @@ official online manual here: http://www.gnu.org/software/gettext/manual/gettext.
 2- Create a translation template. In this step, an analyzing tool is used to extract the strings used as arguments for the '_' function from 
    the source code. The command line used in Galicaster (run from the root source directory) is:
    
-   $> xgettext -p i18n -kN_ $(find . -name '*.py' -o -name '*.glade') -o galicaster.pot
+   $> xgettext -p i18n -L Glade -kN_ $(find . -name '*.glade') -o galicaster.pot
+   $> xgettext -p i18n -j -kN_ $(find . -name '*.py') -o galicaster.pot
 
 3- Translations to the different languages are created from the template 'galicaster.pot' file, as described in the previous section. If a
    translated .po file already exists, it can be updated with a new .pot file by using the command 'msgmerge'. The updated .po file will 

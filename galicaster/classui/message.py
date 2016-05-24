@@ -22,7 +22,7 @@ from galicaster.core import context
 TEXT = {'title': None, 'main': None, 'text': None}
 
 
-INFO = 'help2.glade'
+INFO = 'help.glade'
 ERROR = 'error.glade'
 WARN_STOP = 'stop.glade'
 WARN_QUIT = 'quit.glade'
@@ -76,6 +76,7 @@ class PopUp(Gtk.Widget):
         # Create dialog
         gui = Gtk.Builder()
         gui.add_from_file(get_ui_path(message))
+        gui.connect_signals(self)
         self.dialog = self.configure_ui(text, message, gui, parent)
 
         if message == OPERATIONS:
@@ -98,6 +99,7 @@ class PopUp(Gtk.Widget):
             self.set_logos(gui)
 
         # Display dialog
+        parent.get_style_context().add_class('shaded')
         if message == ERROR or message == WARN_QUIT or message == WARN_STOP or message == ABOUT or message == INFO or message == WARN_DELETE:
             self.dialog.show_all()
             self.dialog.connect('response', self.on_dialog_response)
@@ -105,9 +107,11 @@ class PopUp(Gtk.Widget):
         #    #TODO: use on_dialog_response instead of on_about_dialog_response
         #    self.dialog.show_all()
         #    self.dialog.connect('response', self.on_about_dialog_response)
+
         else:
             self.response = self.dialog.run()
             self.dialog.destroy()
+            parent.get_style_context().remove_class('shaded')
 
 
     def configure_ui(self, text, message_type, gui, parent, another=None):
@@ -248,6 +252,7 @@ class PopUp(Gtk.Widget):
 
     def on_about_dialog_response(self, origin, response_id):
         if response_id in NEGATIVE:
+            context.get_mainwindow().get_style_context().remove_class('shaded')
             self.dialog_destroy()
 
     def on_dialog_response(self, origin, response_id):
@@ -257,13 +262,15 @@ class PopUp(Gtk.Widget):
 
     def dialog_destroy(self, origin=None):
         if self.dialog:
+            context.get_mainwindow().get_style_context().remove_class('shaded')
             self.dialog.destroy()
             self.dialog = None
 
     def error_reload_profile(self, origin=None):        
         self.dialog_destroy()
+
         dispatcher = context.get_dispatcher()
-        dispatcher.emit('reload-profile')
+        dispatcher.emit('action-reload-profile')
 
 
 GObject.type_register(PopUp)

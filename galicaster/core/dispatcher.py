@@ -42,6 +42,11 @@ class Dispatcher(GObject.GObject):
         parameters = (GObject.TYPE_PYOBJECT,) if param else ()
         GObject.signal_new(name, self, GObject.SignalFlags.RUN_LAST, None, parameters)
         
+    def connect_ui(self, detailed_signal, handler, *args):
+        def f(*args):
+            GObject.idle_add(handler, *args)
+
+        self.connect(detailed_signal, f, *args)
         
 
 
@@ -51,9 +56,11 @@ GObject.signal_new('pr', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObjec
 #REC
 GObject.signal_new('recorder-upcoming-event', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('recorder-vumeter', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,) )
+GObject.signal_new('recorder-message-element', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('recorder-error', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('recorder-status', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('action-reload-profile', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
+GObject.signal_new('recorder-ready', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('recorder-starting', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('recorder-started', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('recorder-stopped', Dispatcher, GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, (GObject.TYPE_PYOBJECT,) )

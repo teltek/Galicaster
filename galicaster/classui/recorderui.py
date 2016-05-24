@@ -32,6 +32,7 @@ from gi.repository import Gtk, Gdk, GdkPixbuf
 from gi.repository import Pango
 import datetime
 
+from galicaster import __version__
 from galicaster.core import context
 
 from galicaster.classui.metadata import MetadataClass as Metadata
@@ -90,6 +91,8 @@ class RecorderClassUI(Gtk.Box):
        
 	builder = Gtk.Builder()
         builder.add_from_file(get_ui_path('recorder.glade'))
+        release = builder.get_object("release_label")
+        release.set_label("Galicaster "+__version__)
         
         # TEST
         recorderui = builder.get_object("recorderbox")
@@ -129,18 +132,18 @@ class RecorderClassUI(Gtk.Box):
         big_status = builder.get_object("bg_status")
         self.view = self.set_status_view()
         big_status.add(self.view)
-        self.dispatcher.connect("init", self.check_status_area)
-        self.dispatcher.connect("init", self.check_net)
-        self.dispatcher.connect("opencast-connected", self.check_net, True)        
-        self.dispatcher.connect("opencast-unreachable", self.check_net, False)        
+        self.dispatcher.connect_ui("init", self.check_status_area)
+        self.dispatcher.connect_ui("init", self.check_net)
+        self.dispatcher.connect_ui("opencast-connected", self.check_net, True)        
+        self.dispatcher.connect_ui("opencast-unreachable", self.check_net, False)        
 
         # UI
         self.pack_start(self.recorderui,True,True,0)
 
         # Event Manager       
-        self.dispatcher.connect("recorder-vumeter", self.set_vumeter)
-        self.dispatcher.connect("view-changed", self.event_change_mode)
-        self.dispatcher.connect("recorder-status", self.handle_status)
+        self.dispatcher.connect_ui("recorder-vumeter", self.set_vumeter)
+        self.dispatcher.connect_ui("view-changed", self.event_change_mode)
+        self.dispatcher.connect_ui("recorder-status", self.handle_status)
 
         nb=builder.get_object("data_panel")
         pages = nb.get_n_pages()        
@@ -227,7 +230,6 @@ class RecorderClassUI(Gtk.Box):
     def on_rec(self,button=None): 
         """GUI callback for manual recording"""
         logger.info("Recording")
-        self.dispatcher.emit("recorder-starting")
         self.recorder.record()
 
 
@@ -321,7 +323,7 @@ class RecorderClassUI(Gtk.Box):
 
     def destroy_error_dialog(self):
         if self.error_dialog:
-            self.error_dialog.error_dialog_destroy()
+            self.error_dialog.dialog_destroy()
             self.error_dialog = None
         
 
@@ -667,11 +669,6 @@ class RecorderClassUI(Gtk.Box):
             if type(image[0]) == Gtk.Image:
                 image[0].set_pixel_size(int(k1*56))  
 
-
-        talign = self.gui.get_object("top_align")
-        talign.set_padding(int(k1*10),int(k1*25),0,0)
-        calign = self.gui.get_object("control_align")
-        calign.set_padding(int(k1*10),int(k1*30),0,0)
         vum = self.gui.get_object("vubox")
         vum.set_padding(int(k1*20),int(k1*10),0,0)         
         pbox.set_property("width-request", int(k1*225) )        
@@ -702,7 +699,6 @@ class RecorderClassUI(Gtk.Box):
         elif status == PREVIEW_STATUS:
             record.set_sensitive( (self.allow_start or self.allow_manual) )
             pause.set_sensitive(False)
-            pause.set_active(False)
             stop.set_sensitive(False)
             helpb.set_sensitive(True)
             prevb.set_sensitive(True)

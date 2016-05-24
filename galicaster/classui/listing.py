@@ -15,6 +15,7 @@ from gi.repository import Gtk
 from gi.repository import GObject
 from gi.repository import Pango
 
+from galicaster import __version__
 from galicaster.classui.managerui import ManagerUI
 from galicaster.classui import message
 from galicaster.core import context
@@ -55,6 +56,9 @@ class ListingClassUI(ManagerUI):
         self.fill_menu()
         builder = Gtk.Builder()
         builder.add_from_file(get_ui_path('listing.glade'))
+        release = builder.get_object("release_label")
+        release.set_label("Galicaster "+__version__)
+
         self.gui = builder
 
         self.box = builder.get_object("listingbox")
@@ -66,10 +70,10 @@ class ListingClassUI(ManagerUI):
         self.color = context.get_conf().get_palette(old_style)
 
         builder.connect_signals(self)
-        self.dispatcher.connect("action-mm-refresh-row", self.refresh_row_from_mp)
-        self.dispatcher.connect("operation-started", self.refresh_operation)
-        self.dispatcher.connect("operation-stopped", self.refresh_operation)
-        self.dispatcher.connect("view-changed", self.event_change_mode)
+        self.dispatcher.connect_ui("action-mm-refresh-row", self.refresh_row_from_mp)
+        self.dispatcher.connect_ui("operation-started", self.refresh_operation)
+        self.dispatcher.connect_ui("operation-stopped", self.refresh_operation)
+        self.dispatcher.connect_ui("view-changed", self.event_change_mode)
 
         self.populate_treeview(self.repository.list().values())
         self.box.pack_start(self.strip,False,False,0)

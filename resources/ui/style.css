@@ -10,11 +10,41 @@
 	font-size: 10px;
 }
 
+/* BUTTONS */
+GtkButton:insensitive{
+	opacity: 0.5;
+}
+
+GtkButton{
+	border-radius: 2em;
+	border: 1px solid shade(gray,1.5);
+}
+GtkTreeView > GtkButton{
+	border-radius: 0;
+	border-right: 1px ridge shade(gray,1.6);
+	border-left: 1px ridge shade(gray,1.6);
+	border-top: 1px solid rgba(0,0,0,0);
+	border-bottom: 1px solid shade(gray,0.8);
+}
+.tools_button{
+	border: 1px solid rgba(0,0,0,0);
+	border-radius: 0;
+	border-bottom-left-radius: 1em;
+}
+.tools_button:hover,
+.tools_button:active{
+	border: 1px solid shade(gray,1.5);
+}
+
 /* DIALOG */
 GtkDialog{
 	border: 1px solid rgb(201,198,194);
 	border-radius: 8px;
 }
+GtkWindow.shaded>*{
+	opacity: 0.5;
+}
+
 .dialog_title{
 	font-weight : bold;
 	font-size: 1em;
@@ -83,6 +113,10 @@ GtkDialog{
 .label_small{
     font-size: 0.75em;
 }
+
+.label_extrasmall{
+    font-size: 0.25em;
+}
 /* Recorder - Tabs */
 GtkNotebook tab:active{
 	background-image: inherit;
@@ -115,7 +149,7 @@ GtkNotebook tab{
 	color: gray;
 }
 #green_coloured{
-	color: green;
+	color: shade(green,1.7);
 }
 
 /* Progress bar (Vumeter)*/
@@ -142,4 +176,17 @@ GtkNotebook tab{
     margin: 0;
     border: 0px;
     border-radius: 0px;
+}
+
+.release_label{
+    border: 1px solid rgb(201,198,194);
+    border-radius: 8px 58px 8px 8px;
+    color:white;
+    background-image: -gtk-gradient(
+			      linear,
+			      left top, left bottom,
+			      from(shade(#6E9717,1.0)),
+			      to(shade(#6E9717, 1.0)));
+
+
 }
