@@ -51,6 +51,30 @@ def configure_keyboard(dispatcher=None):
 
     execute(['gsettings',
         'set',
+        'org.onboard',
+        'layout',
+        'Phone'])
+
+    execute(['gsettings',
+        'set',
+        'org.onboard',
+        'theme',
+        'Ambiance'])
+
+    execute(['gsettings',
+        'set',
+        'org.onboard.theme-settings',
+        'color-scheme',
+        '/usr/share/onboard/themes/Aubergine.colors'])
+
+    execute(['gsettings',
+        'set',
+        'org.onboard',
+        'start-minimized',
+        'true'])
+
+    execute(['gsettings',
+        'set',
         'org.onboard.window.landscape',
         'dock-expand',
         'false'])
@@ -63,7 +87,7 @@ def unconfigure_keyboard(dispatcher=None):
         'use-system-defaults',
         'true'])
 
-    execute(['kill',pid])
+    execute(['kill', str(pid)])
 
 def execute(command=[], logaserror=True):
     global logger
