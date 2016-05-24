@@ -155,8 +155,8 @@ GtkNotebook tab{
     background-image: -gtk-gradient(
 			      linear,
 			      left top, left bottom,
-			      from(shade(#607b2d,1.0)),
-			      to(shade(#607b2d, 1.0)));
+			      from(shade(#6E9717,1.0)),
+			      to(shade(#6E9717, 1.0)));
 
 
 }

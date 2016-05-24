@@ -32,6 +32,7 @@ from gi.repository import Gtk, Gdk, GdkPixbuf
 from gi.repository import Pango
 import datetime
 
+from galicaster import __version__
 from galicaster.core import context
 
 from galicaster.classui.metadata import MetadataClass as Metadata
@@ -90,6 +91,8 @@ class RecorderClassUI(Gtk.Box):
        
 	builder = Gtk.Builder()
         builder.add_from_file(get_ui_path('recorder.glade'))
+        release = builder.get_object("release_label")
+        release.set_label("Galicaster "+__version__)
         
         # TEST
         recorderui = builder.get_object("recorderbox")
@@ -662,11 +665,6 @@ class RecorderClassUI(Gtk.Box):
             if type(image[0]) == Gtk.Image:
                 image[0].set_pixel_size(int(k1*56))  
 
-
-        talign = self.gui.get_object("top_align")
-        talign.set_padding(int(k1*10),int(k1*25),0,0)
-        calign = self.gui.get_object("control_align")
-        calign.set_padding(int(k1*10),int(k1*30),0,0)
         vum = self.gui.get_object("vubox")
         vum.set_padding(int(k1*20),int(k1*10),0,0)         
         pbox.set_property("width-request", int(k1*225) )        
