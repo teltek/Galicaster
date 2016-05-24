@@ -15,6 +15,7 @@ from gi.repository import Gtk
 from gi.repository import GObject
 from gi.repository import Pango
 
+from galicaster import __version__
 from galicaster.classui.managerui import ManagerUI
 from galicaster.classui import message
 from galicaster.core import context
@@ -55,6 +56,9 @@ class ListingClassUI(ManagerUI):
         self.fill_menu()
         builder = Gtk.Builder()
         builder.add_from_file(get_ui_path('listing.glade'))
+        release = builder.get_object("release_label")
+        release.set_label("Galicaster "+__version__)
+
         self.gui = builder
 
         self.box = builder.get_object("listingbox")
