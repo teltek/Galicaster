@@ -5,6 +5,19 @@ Web version of the changelog in http://wiki.teltek.es/display/Galicaster/Release
 To get the diff for a specific change, go to https://github.com/teltek/galicaster/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/teltek/galicaster/compare/1.2.1...1.2.3
 
+* 2.0.0 (???)
+ * Upgrade to Gstreamer 1.x and GTK 3.x
+ * Move the recorder logic to a service (in order to obtain the recorder state, get the current mediapackage, work on the recorder, ...)
+ * Added the possibility to configure videosinks and audiosinks
+ * Improved the config parser and the tracks validator
+ * Added a button in order to reload the current profile (when showing an error message)
+ * Moved the Opencast client code to an external module (opencast/client.py) and added some enhancements like be able to select the workflow to ingest with.
+ * Use CSS to style Galicaster (rounded buttons, shadowed modals, ...)
+ * Move some code from classui to glade files
+ * Added a dual-channel coloured VU-Meter (Mono or Stereo)
+ * Added a virtual keyboard
+ * Unified the naming scheme for the signals and made them available in a page from Galicaster's github wiki (https://github.com/teltek/Galicaster/wiki/Galicaster-2.0-signals-schema)
+
 * 1.4.2 (2015-06-19)
  * Add compatibility to use Opencast 1.6 and 2.1.x
  * Change in the default videoencoder due to better multicore capabilities of x264enc

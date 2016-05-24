@@ -162,16 +162,14 @@ class PopUp(Gtk.Widget):
         if self.size[0]<1300:
             dialog.set_property('width-request',int(self.size[0]/2.2))
         if another:
-             dialog.set_property('width-request',int(self.size[0]/1.5))
+            dialog.set_property('width-request',int(self.size[0]/1.5))
 
         if parent != None:
             dialog_style_context = dialog.get_style_context()
             window_classes = parent.get_style_context().list_classes()
             for style_class in window_classes:
                 dialog_style_context.add_class(style_class)
-            dialog.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
-            dialog.set_transient_for(parent)
-            dialog.set_destroy_with_parent(True)
+            dialog.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
         else:
             dialog.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
 

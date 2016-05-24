@@ -231,11 +231,11 @@ class Switcher(Gst.Bin):
 
 
 VIDEOSINK_PROPERTIES = {
-    'xvimagesink'     : {'async': 'false', 'qos': 'true'},
-    'ximagesink'      : {'async': 'false', 'qos': 'true'},
-    'fpsdisplaysink'  : {'async-handling' : 'false', 'qos': 'true'},
-    'autovideosink'   : {'async': 'false'},
-    'fakesink'        : {'async': 'false', 'silent': 'true'},
+    'xvimagesink'     : {'async': 'false', 'sync': 'false', 'qos': 'true'},
+    'ximagesink'      : {'async': 'false', 'sync': 'false', 'qos': 'true'},
+    'autovideosink'   : {'async': 'false', 'sync': 'false'},
+    'fakesink'        : {'async': 'false', 'sync': 'false', 'silent': 'true'},
+    'fpsdisplaysink'  : {'async-handling' : 'false', 'sync': 'false', 'qos': 'true'},
 }
 
 AUDIOSINK_PROPERTIES = {
@@ -250,7 +250,8 @@ def get_videosink(videosink='xvimagesink', name='gc-preview', properties = {}):
     
     props_str = get_properties(videosink, properties, VIDEOSINK_PROPERTIES)        
     if videosink == "fpsdisplaysink":
-        gcvsink = '{} name={}-fps {} video-sink="xvimagesink name={}"'.format(videosink, name, props_str, name)
+        xvimagesink_props = get_properties('xvimagesink', {}, VIDEOSINK_PROPERTIES)
+        gcvsink = '{} name={}-fps {} video-sink="xvimagesink name={} {}"'.format(videosink, name, props_str, name, xvimagesink_props)
     else:
         gcvsink = "{} name={} {}".format(videosink, name, props_str)
             

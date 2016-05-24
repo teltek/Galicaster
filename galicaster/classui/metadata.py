@@ -84,9 +84,9 @@ class MetadataClass(Gtk.Widget):
         gui.get_object("clabel").set_label(ko_label)
 
         dialog.set_property("width-request",int(anchura/2.2))
-        dialog.set_type_hint(Gdk.WindowTypeHint.TOOLBAR)
-        dialog.set_modal(True)
-        dialog.set_keep_above(False)
+        #dialog.set_type_hint(Gdk.WindowTypeHint.TOOLBAR)
+        #dialog.set_modal(True)
+        #dialog.set_keep_above(False)
 
         #NEW HEADER
         strip = Header(size=size, title=title)
@@ -94,7 +94,8 @@ class MetadataClass(Gtk.Widget):
         dialog.vbox.reorder_child(strip,0)
 
         if parent != None:
-            dialog.set_transient_for(parent.get_toplevel())
+            #dialog.set_transient_for(parent.get_toplevel())
+            dialog.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
             dialog_style_context = dialog.get_style_context()
             window_classes = parent.get_style_context().list_classes()
             for style_class in window_classes:
