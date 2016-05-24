@@ -291,10 +291,11 @@ class ManagerUI(Gtk.Box):
 
 	return True
 
-    def delete(self,key):
+    def delete(self,key, response=None):
         """Pops up a dialog. If response is positive, deletes a MP."""
-	logger.info("Delete: {0}".format(str(key)))
+        self.selected = key
 	package = self.repository.get(key)
+	logger.info("Delete: {0}".format(str(key)))
 	t1 = _("This action will remove the recording from the hard disk.")
 	t2 = _('Recording: "{0}"').format(package.getTitle())
 	text = {"title" : _("Media Manager"),
@@ -304,13 +305,8 @@ class ManagerUI(Gtk.Box):
 	buttons = ( Gtk.STOCK_DELETE, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
 	warning = message.PopUp(message.WARN_DELETE, text,
                                 context.get_mainwindow(),
-                                buttons)
+                                buttons, response)
 
-	if warning.response in message.POSITIVE:
-	    self.repository.delete(package)
-	    return True
-	else:
-	    return False
 
 
     def network_status(self, signal, status):

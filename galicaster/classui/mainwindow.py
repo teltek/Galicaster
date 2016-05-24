@@ -186,10 +186,11 @@ class GCWindow(Gtk.Window):
         buttons = (Gtk.STOCK_QUIT, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
         self.dispatcher.emit("action-audio-disable-msg")
         warning = message.PopUp(message.WARN_QUIT, text,
-                                self, buttons)
+                                self, buttons, self.on_close_dialog_response)
         self.dispatcher.emit("action-audio-enable-msg")
 
-        if warning.response in message.POSITIVE:
+    def on_close_dialog_response(self, response_id):
+        if response_id in message.POSITIVE:
             if self.logger:
                 self.logger.info("Quit Galicaster")
             if self.dispatcher:
@@ -198,6 +199,7 @@ class GCWindow(Gtk.Window):
         else:
             if self.logger:
                 self.logger.info("Cancel Quit")
+
 
     def shutdown(self, signal):
         """Pops up a dialog asking to shutdown the computer"""

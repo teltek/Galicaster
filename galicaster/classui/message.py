@@ -55,7 +55,7 @@ class PopUp(Gtk.Widget):
     __gtype_name__ = 'PopUp'
 
     def __init__(self, message = None, text = TEXT, parent=None,
-                 buttons = None):
+                 buttons = None, response_action = None):
         """ Initializes the Gtk.Dialog from its GLADE
         Args:
             message (str): type of message (See above constants)
@@ -65,7 +65,10 @@ class PopUp(Gtk.Widget):
         """
         #TODO: Remove unused params.
         # Parse Size proportions
+        #FIXME: Use always as parent context.get_mainwindow()??
         size = parent.get_size()
+        self.response_action = response_action
+        self.message = message
         self.size = size
         self.wprop = size[0]/1920.0
         self.hprop = size[1]/1080.0
@@ -97,12 +100,14 @@ class PopUp(Gtk.Widget):
 
         # Display dialog
         parent.get_style_context().add_class('shaded')
-        if message == ERROR:
+        if message == ERROR or message == WARN_QUIT or message == WARN_STOP or message == ABOUT or message == INFO or message == WARN_DELETE:
             self.dialog.show_all()
-            
-        elif message == ABOUT:
-            self.dialog.show_all()
-            self.dialog.connect('response', self.on_about_dialog_response)
+            self.dialog.connect('response', self.on_dialog_response)
+        #elif message == ABOUT:
+        #    #TODO: use on_dialog_response instead of on_about_dialog_response
+        #    self.dialog.show_all()
+        #    self.dialog.connect('response', self.on_about_dialog_response)
+
         else:
             self.response = self.dialog.run()
             self.dialog.destroy()
@@ -250,17 +255,19 @@ class PopUp(Gtk.Widget):
             context.get_mainwindow().get_style_context().remove_class('shaded')
             self.dialog_destroy()
 
+    def on_dialog_response(self, origin, response_id):
+        if response_id not in NEGATIVE and self.response_action:
+            self.response_action(response_id)
+        self.dialog_destroy()
+
     def dialog_destroy(self, origin=None):
         if self.dialog:
             context.get_mainwindow().get_style_context().remove_class('shaded')
             self.dialog.destroy()
             self.dialog = None
 
-    def error_reload_profile(self, origin=None):
-        if self.dialog:
-            context.get_mainwindow().get_style_context().remove_class('shaded')
-            self.dialog.destroy()
-            self.dialog = None
+    def error_reload_profile(self, origin=None):        
+        self.dialog_destroy()
 
         dispatcher = context.get_dispatcher()
         dispatcher.emit('action-reload-profile')
