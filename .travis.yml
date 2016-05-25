@@ -14,7 +14,7 @@ before_script:
  - sudo apt-get install --yes gstreamer1.0-libav
  - sudo apt-get install --yes python-gi gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 gir1.2-gtk-3.0
  - sudo apt-get install --yes python-pycurl python-bottle python-icalendar python-glade2
- - sudo apt-get install --yes pep8 pyflakes pychecker python-nose
+ - sudo apt-get install --yes pep8 pyflakes pychecker python-nose python-coverage
 
 script:
-  - make test
+  - make test-with-coverage

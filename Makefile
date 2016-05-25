@@ -20,15 +20,18 @@ all:
 	@echo '  \_____|\__,_|_|_|\___\__,_|___/\__\___|_|   '
 	@echo ''                                              
 	@echo ''                                              
-	@echo 'make test            - Run all the unit test (using nosetest)'
-	@echo 'make test-matterhorn - Run the matterhorn test (network access needed)'
-	@echo 'make test-recorder   - Run the recorder test (gstreamer needed)'
-	@echo 'make test-all        - Run all the test (using nosetest)'
-	@echo 'make check           - Check the python source code (using pychecker)'
-	@echo 'make dobleckeck      - Check the python source code (using pyflakes)'
-	@echo 'make pep8            - Run PEP8 compliance tests(using pep8)'
+	@echo 'make test               - Run all the unit test (using nosetest)'
+	@echo 'make test-with-coverage - Run all the unit test (using nosetest) and gen coverage info'
+	@echo 'make test-matterhorn    - Run the matterhorn test (network access needed)'
+	@echo 'make test-recorder      - Run the recorder test (gstreamer needed)'
+	@echo 'make test-all           - Run all the test (using nosetest)'
+	@echo 'make check              - Check the python source code (using pychecker)'
+	@echo 'make dobleckeck         - Check the python source code (using pyflakes)'
+	@echo 'make pep8               - Run PEP8 compliance tests(using pep8)'
 test:
 	nosetests --all-modules -a '!nodefault'
+test-with-coverage:
+	nosetests --all-modules -a '!nodefault' --with-coverage --cover-inclusive --cover-package=galicaster
 test-opencast:
 	nosetests --all-modules -a 'opencast'
 test-recorder:
