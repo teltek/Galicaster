@@ -572,13 +572,13 @@ class Conf(object): # TODO list get and other ops arround profile
             except Exception as exc:
                 self.logger and self.logger.warning("Error trying to copy the original conf file {} to {}".format(src, dst))
 
-        try:
-            configfile = open(self.conf_file, 'wb')
-            self.__user_conf.write(configfile)
-            configfile.close()
-        except Exception as exc:
-            if self.logger:
-                self.logger.error(exc)
+            try:
+                configfile = open(self.conf_file, 'wb')
+                self.__user_conf.write(configfile)
+                configfile.close()
+            except Exception as exc:
+                if self.logger:
+                    self.logger.error(exc)
  
 
     def update_profiles(self):
