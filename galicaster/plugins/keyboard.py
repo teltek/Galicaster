@@ -18,9 +18,9 @@ Plugin that shows a keyboard when a dialog window with input entries is shown
 from gi.repository import Gtk, Gdk
 from galicaster.core import context
 import subprocess
-import re
 
 from galicaster.utils.i18n import _
+from galicaster.utils.systemcalls import write_dconf_settings, execute, is_running
 
 logger = context.get_logger()
 pid = None
@@ -37,75 +37,17 @@ def init():
     dispatcher.connect('quit', unconfigure_keyboard)
 
 def configure_keyboard(dispatcher=None):
-    execute(['gsettings',
-        'set',
-        'org.onboard.auto-show',
-        'hide-on-key-press',
-        'false'])
+    configuration = {
+            '/org/onboard/auto-show/enabled'            : 'true',
+            '/org/onboard/layout'                       : "'Phone'",
+            '/org/onboard/theme'                        : "'Ambiance'",
+            '/org/onboard/theme-settings/color-scheme'  : "'/usr/share/onboard/themes/Aubergine.colors'",
+            '/org/onboard/window/landscape/dock-expand' : 'false',
+            }
 
-    execute(['gsettings',
-        'set',
-        'org.onboard.auto-show',
-        'enabled',
-        'true'])
-
-    execute(['gsettings',
-        'set',
-        'org.onboard',
-        'layout',
-        'Phone'])
-
-    execute(['gsettings',
-        'set',
-        'org.onboard',
-        'theme',
-        'Ambiance'])
-
-    execute(['gsettings',
-        'set',
-        'org.onboard.theme-settings',
-        'color-scheme',
-        '/usr/share/onboard/themes/Aubergine.colors'])
-
-    execute(['gsettings',
-        'set',
-        'org.onboard',
-        'start-minimized',
-        'true'])
-
-    execute(['gsettings',
-        'set',
-        'org.onboard.window.landscape',
-        'dock-expand',
-        'false'])
-
+    write_dconf_settings(configuration, logger)
 
 def unconfigure_keyboard(dispatcher=None):
-    execute(['gsettings',
-        'set',
-        'org.onboard',
-        'use-system-defaults',
-        'true'])
-
+    write_dconf_settings({'/org/onboard/use-system-defaults':'true'},logger)
     execute(['kill', str(pid)])
 
-def execute(command=[], logaserror=True):
-    global logger
-
-    level = 40 if logaserror else 10
-    if command:
-        try:
-            proc = subprocess.check_output(command, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as exc:
-            logger.log(level, "CalledProcessError trying to execute {}: {}".format(command, exc))
-        except Exception as exc:
-            logger.log(level, "Error trying to execute {}: {}".format(command, exc))
-
-
-def is_running(process):
-
-    s = subprocess.Popen(['ps', 'axw'],stdout=subprocess.PIPE)
-    for x in s.stdout:
-        if re.search(process, x):
-            return x.split(' ')[0]
-    return None
