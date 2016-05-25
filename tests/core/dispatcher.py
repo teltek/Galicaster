@@ -34,6 +34,15 @@ class TestFunctions(TestCase):
 
         self.assertTrue(obj['called'])
 
+    def test_connect_ui_and_emit(self):
+        dispatcher = Dispatcher()
+
+        dispatcher.connect_ui('pr', self.callback)
+        obj = {'called': False}
+        dispatcher.emit('pr', obj)
+
+        self.assertTrue(obj['called'])
+
 
     def test_add_new_signal(self):
         dispatcher = Dispatcher()
