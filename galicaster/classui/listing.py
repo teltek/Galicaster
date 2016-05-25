@@ -356,7 +356,7 @@ class ListingClassUI(ManagerUI):
 
     def create_delete_dialog_response(self, store, iterator):
 
-        def on_delete_dialog_response(response_id):
+        def on_delete_dialog_response(response_id, **kwargs):
             if response_id in message.POSITIVE:
                 self.repository.delete(self.repository.get(store[iterator][0]))
                 self.lista.remove(iterator)

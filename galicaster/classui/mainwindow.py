@@ -189,7 +189,7 @@ class GCWindow(Gtk.Window):
                                 self, buttons, self.on_close_dialog_response)
         self.dispatcher.emit("action-audio-enable-msg")
 
-    def on_close_dialog_response(self, response_id):
+    def on_close_dialog_response(self, response_id, **kwargs):
         if response_id in message.POSITIVE:
             if self.logger:
                 self.logger.info("Quit Galicaster")

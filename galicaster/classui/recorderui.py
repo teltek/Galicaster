@@ -286,7 +286,7 @@ class RecorderClassUI(Gtk.Box):
             #if warning.response not in message.POSITIVE or self.recorder.status not in [RECORDING_STATUS]:
             #    return False
 
-    def on_stop_dialog_response(self, response_id):
+    def on_stop_dialog_response(self, response_id, **kwargs):
         """ Manage the response of the WARN_STOP dialog """
         self.recorder.stop()
 
