@@ -10,6 +10,7 @@ Basic Dialog Messag UI
 """
 
 import sys
+
 from gi.repository import Gtk, Gdk, GdkPixbuf
 from os import path
 from gi.repository import GObject
@@ -21,7 +22,6 @@ from galicaster.core import context
 
 TEXT = {'title': None, 'main': None, 'text': None}
 
-
 INFO = 'help.glade'
 ERROR = 'error.glade'
 WARN_STOP = 'stop.glade'
@@ -30,6 +30,7 @@ WARN_DELETE = 'delete.glade'
 WARN_OK = 'okwarning.glade'
 OPERATIONS = 'operations.glade'
 ABOUT = 'about.glade'
+LOCKSCREEN = 'lockscreen.glade'
 
 # FIXME
 QUESTION = Gtk.STOCK_DIALOG_QUESTION
@@ -50,12 +51,14 @@ OPERATION_NAMES = { 'Export to Zip': _('Export to Zip'),
             'Cancel': _('Cancel'),
              }
 
+instance = None
+
 class PopUp(Gtk.Widget):
     """Handle a pop up for warnings and questions"""
     __gtype_name__ = 'PopUp'
 
-    def __init__(self, message = None, text = TEXT, parent=None,
-                 buttons = None, response_action = None):
+    def __init__(self, message=None, text=TEXT, parent=None,
+                 buttons=None, response_action=None, close_on_response=True):
         """ Initializes the Gtk.Dialog from its GLADE
         Args:
             message (str): type of message (See above constants)
@@ -63,21 +66,26 @@ class PopUp(Gtk.Widget):
             parent (Gtk.Window): program main window
             buttons (Dict{str:str}): button labels to be shown and its responses
         """
+        # FIXME: Workaround in order to avoid the gurbage collector (GC)
+        global instance
+        instance = self
+
         #TODO: Remove unused params.
         # Parse Size proportions
         #FIXME: Use always as parent context.get_mainwindow()??
         size = parent.get_size()
         self.response_action = response_action
+        self.close_on_response = close_on_response
         self.message = message
         self.size = size
         self.wprop = size[0]/1920.0
         self.hprop = size[1]/1080.0
 
         # Create dialog
-        gui = Gtk.Builder()
-        gui.add_from_file(get_ui_path(message))
-        gui.connect_signals(self)
-        self.dialog = self.configure_ui(text, message, gui, parent)
+        self.gui = Gtk.Builder()
+        self.gui.add_from_file(get_ui_path(message))
+        self.gui.connect_signals(self)
+        self.dialog = self.configure_ui(text, message, self.gui, parent)
 
         if message == OPERATIONS:
 
@@ -93,14 +101,14 @@ class PopUp(Gtk.Widget):
                         frames['Export'] = {}
                     frames['Export'][operation] = response
 
-            self.set_buttons(gui, frames)
+            self.set_buttons(self.gui, frames)
 
         elif message == ABOUT:
-            self.set_logos(gui)
+            self.set_logos(self.gui)
 
         # Display dialog
         parent.get_style_context().add_class('shaded')
-        if message == ERROR or message == WARN_QUIT or message == WARN_STOP or message == ABOUT or message == INFO or message == WARN_DELETE:
+        if message == ERROR or message == WARN_QUIT or message == WARN_STOP or message == ABOUT or message == INFO or message == WARN_DELETE or message == LOCKSCREEN:
             self.dialog.show_all()
             self.dialog.connect('response', self.on_dialog_response)
         #elif message == ABOUT:
@@ -253,16 +261,20 @@ class PopUp(Gtk.Widget):
             context.get_mainwindow().get_style_context().remove_class('shaded')
             self.dialog_destroy()
 
-    def on_dialog_response(self, origin, response_id):
-        if response_id not in NEGATIVE and self.response_action:
-            self.response_action(response_id)
-        self.dialog_destroy()
+    def on_dialog_response(self, origin, response_id):        
+        if response_id not in NEGATIVE and self.response_action:            
+            self.response_action(response_id, builder=self.gui, popup=self)
+            
+        if self.close_on_response:
+            self.dialog_destroy()
 
     def dialog_destroy(self, origin=None):
+        global instance
         if self.dialog:
             context.get_mainwindow().get_style_context().remove_class('shaded')
             self.dialog.destroy()
             self.dialog = None
+        instance = None
 
     def error_reload_profile(self, origin=None):        
         self.dialog_destroy()
