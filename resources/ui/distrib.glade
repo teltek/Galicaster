@@ -261,21 +261,54 @@
           <object class="GtkAlignment" id="alignment1">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="valign">end</property>
             <property name="xalign">0</property>
+            <property name="yalign">1</property>
             <property name="xscale">0.20000000298023224</property>
+            <property name="yscale">0</property>
             <child>
-              <object class="GtkLabel" id="release_label">
+              <object class="GtkBox" id="box1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="valign">end</property>
-                <property name="ypad">5</property>
-                <property name="label" translatable="yes">Galicaster Release 1 .3</property>
-                <property name="justify">center</property>
-                <property name="xalign">0.0099999997764825821</property>
-                <property name="yalign">1</property>
+                <child>
+                  <object class="GtkLabel" id="release_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="valign">end</property>
+                    <property name="ypad">5</property>
+                    <property name="label" translatable="yes">Galicaster Release 1 .3</property>
+                    <property name="justify">center</property>
+                    <property name="xalign">0.0099999997764825821</property>
+                    <property name="yalign">1</property>
+                    <style>
+                      <class name="label_small"/>
+                      <class name="release_label"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="corner">
+                    <property name="width_request">30</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="valign">end</property>
+                    <style>
+                      <class name="corner"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
                 <style>
-                  <class name="label_small"/>
-                  <class name="release_label"/>
+                  <class name="release_box"/>
                 </style>
               </object>
             </child>
