@@ -39,7 +39,7 @@ class TestFunctions(TestCase):
     def tearDown(self):
         del self.conf
 
-
+        
     def test_init_no_file(self):
         primary_conf = path.join('/etc/galicaster','conf.ini')
         secondary_conf = path.abspath(path.join(path.dirname(__file__), '..', '..', 'conf.ini'))
@@ -58,6 +58,55 @@ class TestFunctions(TestCase):
         self.assertEqual(conf_file, conf.conf_file)
         self.assertEqual(conf_dist_file, conf.conf_dist_file)
 
+        
+    def test_invalid_ini(self):
+        conf_file = get_resource('conf/conf.ini')
+        conf_dist_file = get_resource('conf/conf_dist.ini')
+        profiles_dir = get_resource('conf/profiles')
+        conf = Conf(conf_file, conf_dist_file, profiles_dir)
+        conf.reload()
+        old_conf = self.conf.get_all()
+
+        content = ''
+        with open(get_resource('conf/conf.ini'), 'r') as content_file:
+                content = content_file.read()
+        
+        # Override conf file
+        f = open(get_resource('conf/conf.ini'),'w')
+        f.write('testing wrong config file') 
+        f.close() 
+        
+        conf_dist_file = get_resource('conf/conf_dist.ini')
+        profiles_dir = get_resource('conf/profiles')
+        conf = Conf(conf_file, conf_dist_file, profiles_dir)
+        conf.reload()
+        new_conf = self.conf.get_all()
+
+        self.assertEqual(old_conf, new_conf)
+
+        # Override conf file
+        f = open(get_resource('conf/conf.ini'),'w')
+        f.write(content) 
+        f.close()
+        
+    
+    def test_active_tag_default_profile(self):
+        conf_file = get_resource('conf/conf_active.ini')
+        dist_file = get_resource('conf/conf-dist.ini')
+        conf = Conf(conf_file, dist_file)
+        conf.reload()
+        profile = conf.get_current_profile()    
+        self.assertEqual(1, len(profile.tracks))
+
+        
+    def test_profile_with_no_profiles_in_files(self):
+        conf_file = get_resource('conf/conf.ini')
+        conf_dist_file = get_resource('conf/conf_dist.ini')
+        profiles_dir = get_resource('conf/profiles')
+        conf = Conf(conf_file, conf_dist_file, profiles_dir)
+        conf.reload()
+        self.assertEqual(len(conf.get_profiles()), 1)
+
 
     def test_get_and_set(self):
         # GET data in conf-dist
@@ -67,16 +116,23 @@ class TestFunctions(TestCase):
         # SET
         self.conf.set('section', 'key', 'value')
         self.assertEqual('value', self.conf.get('section', 'key'))
+
+
+    def test_get_all(self):
+        full = self.conf.get_all()
+        user_conf = self.conf.get_all(False)
+        self.assertTrue(len(full) > len(user_conf))
         
 
     def test_reload(self):
         self.conf.set('basic', 'temp', 'temporal')
         self.assertEqual('temporal', self.conf.get('basic', 'temp'))
         self.conf.set('basic', 'temp', 'newtemporal')
+        self.assertEqual('newtemporal', self.conf.get('basic', 'temp'))
         self.conf.remove_option('basic', 'temp')
         self.assertEqual(None, self.conf.get('basic', 'temp'))
         self.conf.reload()
-        self.assertEqual('temporal', self.conf.get('basic', 'temp'))
+        self.assertEqual('/tmp/repo', self.conf.get('basic', 'temp'))
         
 
     def test_get_tracks_in_oc_dict(self):
@@ -86,13 +142,6 @@ class TestFunctions(TestCase):
         self.assertEqual(conf['capture.device.track2.outputfile'], 'SCREEN.mpeg')
         self.assertEqual(conf['capture.device.track2.src'], '/dev/null')
 
-    def test_profile_with_no_profiles_in_files(self):
-        conf_file = get_resource('conf/conf.ini')
-        conf_dist_file = get_resource('conf/conf_dist.ini')
-        profiles_dir = get_resource('conf/profiles')
-        conf = Conf(conf_file, conf_dist_file, profiles_dir)
-        conf.reload()
-        self.assertEqual(len(conf.get_profiles()), 1)
 
     def test_init_track(self):
         track = Track()
@@ -172,47 +221,87 @@ class TestFunctions(TestCase):
                 
 
     def test_get_boolean(self):
-        conf = Conf()
         for yes in ['True', 'true', 'yes', 'si', 'y', 'OK', 'Y', 'TRUE']:
-            conf.set('s', 'k', yes)
-            self.assertTrue(conf.get_boolean('s', 'k'), 'Check if {0} is True'.format(yes))
+            self.conf.set('s', 'k', yes)
+            self.assertTrue(self.conf.get_boolean('s', 'k'), 'Check if {0} is True'.format(yes))
 
         for no in ['None', 'not', 'False', 'no', 'n']:
-            conf.set('s', 'k', no)
-            self.assertFalse(conf.get_boolean('s', 'k'), 'Check if {0} is False'.format(no))
+            self.conf.set('s', 'k', no)
+            self.assertFalse(self.conf.get_boolean('s', 'k'), 'Check if {0} is False'.format(no))
+            
         
     def test_get_lower(self):
-        conf = Conf()
         for lower in ['RUBENRUA', 'RubenRua', 'RubenruA', 'rubenrua']:
-            conf.set('s', 'k', lower)
-            self.assertEqual(conf.get_lower('s', 'k'), 'rubenrua')
+            self.conf.set('s', 'k', lower)
+            self.assertEqual(self.conf.get_lower('s', 'k'), 'rubenrua')
 
-        self.assertEqual(conf.get_lower('s', 'k_not_exists', None), None)
+        self.assertEqual(self.conf.get_lower('s', 'k_not_exists', None), None)
+
+        self.conf.set('s', 'k', 'TEST')
+        self.assertEqual(self.conf.get_lower('s', 'k'), 'test')
+
+        self.conf.set('s', 'k2', 1234)
+        self.assertEqual(self.conf.get_lower('s', 'k2', 'testing'), 'testing')
 
 
     def test_get_int(self):
-        conf = Conf()
-        conf.set('s', 'k', '10')
-        self.assertEqual(conf.get_int('s', 'k'), 10)
+        self.conf.set('s', 'k', '10')
+        self.assertEqual(self.conf.get_int('s', 'k'), 10)
 
+        self.conf.set('s', 'k2', 'test')
+        self.assertEqual(self.conf.get_int('s', 'k2', 20), 20)
 
+        
+    def test_get_hour(self):
+        self.conf.set('s', 'k', '12:34')
+        self.assertEqual(self.conf.get_hour('s', 'k'), '12:34')
+
+        self.conf.set('s', 'k2', 'test')
+        self.assertEqual(self.conf.get_hour('s', 'k2', '11:11'), '11:11')
+
+                
     def test_get_list(self):
-        conf = Conf()
-        self.assertEqual(conf.get_list('s', 'k'), [])
+        self.assertEqual(self.conf.get_list('s', 'k'), [])
 
-        conf.set('s', 'k', '1 2 3 4 5 6')
-        self.assertEqual(conf.get_list('s', 'k'), ['1', '2', '3', '4', '5', '6'])
+        self.conf.set('s', 'k', '1 2 3 4 5 6')
+        self.assertEqual(self.conf.get_list('s', 'k'), ['1', '2', '3', '4', '5', '6'])
+        
+        self.conf.set('s', 'k', 'one two three')
+        self.assertEqual(self.conf.get_list('s', 'k'), ['one', 'two', 'three'])
 
-        conf.set('s', 'k', 'one two three')
-        self.assertEqual(conf.get_list('s', 'k'), ['one', 'two', 'three'])
+
+    def test_get_choice(self):
+        self.assertEqual(self.conf.get_choice('s', 'k', ['1','2','3'], '2'), '2')
+
+        self.conf.set('s', 'k', '1')
+        self.assertEqual(self.conf.get_choice('s', 'k', ['1','2','3']), '1')
+
+        self.conf.set('s', 'k', 'TEST')
+        self.assertEqual(self.conf.get_choice('s', 'k', ['1','2','3', 'test']), 'test')
+
+        
+    def test_get_choice_uppercase(self):
+        self.assertEqual(self.conf.get_choice_uppercase('s', 'k', ['1','2','3'], '2'), '2')
+
+        self.conf.set('s', 'k', '1')
+        self.assertEqual(self.conf.get_choice_uppercase('s', 'k', ['1','2','3']), '1')
+
+        self.conf.set('s', 'k', 'test')
+        self.assertEqual(self.conf.get_choice_uppercase('s', 'k', ['1','2','3', 'TEST']), 'TEST')
 
 
     def test_get_dict(self):
-        conf = Conf()
-        self.assertEqual(conf.get_dict('s', 'k'), {})
+        self.assertEqual(self.conf.get_dict('s', 'k'), {})
 
-        conf.set('s', 'k', 'k1:v1;k2:v2;k3:v3')
-        self.assertEqual(conf.get_dict('s', 'k'), {'k1': 'v1', 'k2': 'v2', 'k3': 'v3'})
+        self.conf.set('s', 'k', 'k1:v1;k2:v2;k3:v3')
+        self.assertEqual(self.conf.get_dict('s', 'k'), {'k1': 'v1', 'k2': 'v2', 'k3': 'v3'})
+
+
+    def test_get_json(self):
+        self.assertEqual(self.conf.get_json('s', 'k'), {})
+
+        self.conf.set('s', 'k', '{"a":{"a1":"value1", "a2":"value2"},"b": "value3"}')
+        self.assertEqual(self.conf.get_json('s', 'k'), {"a": {"a1": "value1", "a2": "value2"}, "b": "value3"})
 
 
     def test_track_property(self):
@@ -236,13 +325,20 @@ class TestFunctions(TestCase):
         name = "123456_654321"
         conf.set('ingest', 'hostname', name)
         self.assertEqual(name, conf.get_hostname())
+        a = conf.remove_option('ingest', 'hostname')
 
-
-    def test_active_tag_default_profile(self):
-        conf_file = get_resource('conf/conf_active.ini')
-        dist_file = get_resource('conf/conf-dist.ini')
-        conf = Conf(conf_file, dist_file)
-        conf.reload()
-        profile = conf.get_current_profile()
         
-        self.assertEqual(1, len(profile.tracks))
+    def test_get_ip_address(self):
+        valid = True
+        try:
+            addr = self.conf.get_ip_address()
+            socket.inet_aton(addr)
+        except socket.error:
+            valid = False
+        self.assertTrue(valid)
+
+
+    def test_set_section(self):
+        self.assertEqual(self.conf.set_section(None, {}), False)
+        self.assertEqual(self.conf.set_section('k', {"a": "1", "b" :"2"}), True)
+        
