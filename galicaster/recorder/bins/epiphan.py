@@ -23,8 +23,6 @@ from galicaster.recorder import base
 #from galicaster.recorder import module_register
 from galicaster.recorder.utils import get_videosink
 
-raise Exception("Not implemented. Using gst 0.10")
-
 logger = context.get_logger()
 
 pipestr = (" identity name=\"joint\" ! tee name=gc-epiphan-tee ! queue ! "
@@ -113,6 +111,8 @@ class GCepiphan(Gst.Bin, base.Base):
         )
 
     def __init__(self, options={}): 
+        raise Exception("Not implemented. Using gst 0.10")
+
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
