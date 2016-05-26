@@ -73,6 +73,7 @@
                 <child>
                   <object class="GtkButton" id="button1">
                     <property name="use_action_appearance">False</property>
+                    <property name="name">recorder_tab_button</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">True</property>
@@ -109,6 +110,14 @@
                         </child>
                       </object>
                     </child>
+                    <child internal-child="accessible">
+                      <object class="AtkObject" id="button1-atkobject">
+                        <property name="AtkObject::accessible-name" translatable="yes">distrib_recorder_button</property>
+                      </object>
+                    </child>
+                    <style>
+                      <class name="distrib_button"/>
+                    </style>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -158,6 +167,9 @@
                         </child>
                       </object>
                     </child>
+                    <style>
+                      <class name="distrib_button"/>
+                    </style>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -217,6 +229,9 @@
                         </child>
                       </object>
                     </child>
+                    <style>
+                      <class name="distrib_button"/>
+                    </style>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -367,6 +382,11 @@
                         <property name="position">1</property>
                       </packing>
                     </child>
+                  </object>
+                </child>
+                <child internal-child="accessible">
+                  <object class="AtkObject" id="button3-atkobject">
+                    <property name="AtkObject::accessible-name" translatable="yes">distrib_quit_button</property>
                   </object>
                 </child>
               </object>
