@@ -153,6 +153,9 @@ class RecorderService(object):
         self.__set_status(RECORDING_STATUS)
         self.dispatcher.emit("recorder-started", self.current_mediapackage.getIdentifier())
 
+        # Save current tmp data
+        self.repo.save_current_mp_data(self.current_mediapackage, self.recorder.get_bins_info())
+
         return True
 
 
