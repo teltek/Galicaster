@@ -37,5 +37,5 @@ def is_running(process):
     s = subprocess.Popen(['ps', 'axw'],stdout=subprocess.PIPE)
     for x in s.stdout:
         if re.search(process, x):
-            return x.split(' ')[0]
+            return x.strip().split(' ')[0]
     return None
