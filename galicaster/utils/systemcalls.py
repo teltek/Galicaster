@@ -12,6 +12,7 @@
 # San Francisco, California, 94105, USA.
 
 import subprocess
+import re
 
 def execute(command=[], logger=None, logaserror=True):
     level = 40 if logaserror else 10
@@ -31,3 +32,10 @@ def execute(command=[], logger=None, logaserror=True):
 def write_dconf_settings(settings={}, logger=None, logaserror=False):
     for key, value in settings.iteritems():
         execute(["dconf", "write", key, value], logger, logaserror)
+
+def is_running(process):
+    s = subprocess.Popen(['ps', 'axw'],stdout=subprocess.PIPE)
+    for x in s.stdout:
+        if re.search(process, x):
+            return x.split(' ')[0]
+    return None
