@@ -32,6 +32,8 @@ test:
 	nosetests --all-modules -a '!nodefault'
 test-with-coverage:
 	nosetests --all-modules -a '!nodefault' --with-coverage --cover-inclusive --cover-package=galicaster
+test-with-coverage-html:
+	nosetests --all-modules -a '!nodefault' --with-coverage --cover-inclusive --cover-package=galicaster --cover-html
 test-opencast:
 	nosetests --all-modules -a 'opencast'
 test-recorder:
