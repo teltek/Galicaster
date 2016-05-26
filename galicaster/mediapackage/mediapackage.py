@@ -468,14 +468,10 @@ class Mediapackage(object):
         """
         if self.metadata_episode.has_key(name):
             return self.metadata_episode[name]
-        elif name == "identifier":
-            return self.identifier()
-        elif name == "created":
-            return self.startTime
         elif name.lower() == "ispartof":
-            return self.series 
+            return self.getSeries()
         elif name == "seriestitle":
-            return self.series_title
+            return self.getSeriesTitle()
         else:
             return None
 

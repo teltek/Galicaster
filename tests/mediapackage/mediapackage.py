@@ -14,6 +14,8 @@
 """
 Unit tests for `galicaster.mediapackage` module.
 """
+import datetime
+import time
 from os import path
 from unittest import TestCase
 
@@ -58,7 +60,7 @@ class TestFunctions(TestCase):
         self.assertEqual(self.attach.getElementType(), mediapackage.TYPE_ATTACHMENT)
         # Check Other
         self.assertEqual(self.other.getElementType(), mediapackage.TYPE_OTHER)
-        
+
     def test_element_equality(self):
         track = mediapackage.Track(self.path_track1, 532, "presentation/source")
         attach = mediapackage.Attachment(self.path_attach, "attachment/source")
@@ -202,6 +204,75 @@ class TestFunctions(TestCase):
 
     def test_properties(self):
         mp = mediapackage.Mediapackage()
-        mp.title = 'title'
+        mp.setTitle('title')
         self.assertEqual(mp.title, 'title')
         self.assertEqual(mp.metadata_episode['title'], 'title')
+        self.assertEqual(mp.getMetadataByName('title'), 'title')
+
+        now = datetime.datetime.now()
+        timeok = False
+        if (mp.getMetadataByName('created') < now + datetime.timedelta(10) and mp.getMetadataByName('created') > now - datetime.timedelta(10)):
+            timeok = True
+        self.assertTrue(timeok)
+
+        mp.setIdentifier('12345')
+        mp.setNewIdentifier()
+        self.assertTrue(mp.getIdentifier() != '12345')
+
+        self.assertEqual(mp.getMetadataByName('test'), None)
+        self.assertEqual(mp.getMetadataByName('seriestitle'), None)
+        self.assertEqual(mp.getMetadataByName('ispartof'), {'title':None, 'identifier': None })
+
+        mp.setMetadataByName('seriestitle', 'testseries')
+        self.assertEqual(mp.getMetadataByName('seriestitle'), 'testseries')
+
+        mp.setSeriesTitle('test2')
+        self.assertEqual(mp.getSeriesTitle(), 'test2')
+
+        mp.setCreator('someone')
+        self.assertEqual(mp.getCreator(), 'someone')
+
+        mp.setLicense('Creative Commons')
+        self.assertEqual(mp.getLicense(), 'Creative Commons')
+
+        mp.setContributor('contributor1')
+        self.assertEqual(mp.getContributor(), 'contributor1')
+
+        mp.setLanguage('language1')
+        self.assertEqual(mp.getLanguage(), 'language1')
+
+        mp.setDescription('description1')
+        self.assertEqual(mp.getDescription(), 'description1')
+
+        
+        now = datetime.datetime.now()
+        mp.setLocalDate(now)
+        self.assertEqual(mp.getLocalDate(), now)
+
+        self.assertEqual(mp.getStartDateAsString(), now.isoformat())
+        aux = time.time()
+        utcdiff = datetime.datetime.utcfromtimestamp(aux) - datetime.datetime.fromtimestamp(aux)
+        self.assertEqual(mp.getStartDateAsString(True, False), (now + utcdiff).isoformat())
+        self.assertEqual(mp.getStartDateAsString(False, True), unicode(mp.getDate() - utcdiff))
+        self.assertEqual(mp.getStartDateAsString(False, False), unicode(mp.getDate()))
+
+        mp.setSeries(None)
+        self.assertEqual(mp.metadata_series, {'title':None, 'identifier': None })
+        self.assertEqual(mp.metadata_episode["isPartOf"], None)
+
+
+    def test_getAsDict(self):
+        mp = mediapackage.Mediapackage()
+        mp.add(self.path_track1, mediapackage.TYPE_TRACK, "presentation/source", None, 532)
+        mp.add(self.path_track2, mediapackage.TYPE_TRACK, "presenter/source", None, 532)
+        mp.add(self.path_catalog, mediapackage.TYPE_CATALOG, "catalog/source")
+        mp.add(self.path_attach, mediapackage.TYPE_ATTACHMENT, "attachment/source")
+        mp.add(self.path_other, mediapackage.TYPE_OTHER, "other/source")
+
+        info = mp.getAsDict()
+        self.assertTrue(info.has_key('id'))
+        self.assertTrue(info.has_key('title'))
+        self.assertTrue(info.has_key('status'))
+        self.assertTrue(info.has_key('start'))
+        self.assertTrue(info.has_key('creator'))
+        self.assertTrue(info.has_key('tracks'))
