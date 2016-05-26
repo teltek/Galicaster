@@ -51,7 +51,10 @@ class Base(object):
         # Init gc_parameters add Base and Object class
         self.gc_parameters = self.get_gc_parameters()
 
-        current_profile_path = context.get_conf().get_current_profile().path
+        path = 'Unknown'
+        current_profile = context.get_conf().get_current_profile()
+        if current_profile:
+            path = current_profile.path
         # Check the profile parameters (*.ini)
         # for k in options:
         #     if k not in self.gc_parameters and k not in ['device', 'active', 'path']:
