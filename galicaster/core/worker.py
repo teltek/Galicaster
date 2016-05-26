@@ -228,6 +228,7 @@ class Worker(object):
         f(mp, params)
 	return True
 
+    
     def enqueue_job_by_name(self, name, mp_id, params={}):
         """Enqeues a particular mediapackage operation to be done.
         Args:
@@ -257,9 +258,15 @@ class Worker(object):
             name (str): the name of a worker method.
             mp (Mediapackage): the mediapackage.
         """
-        f = getattr(self, name)
-        f(mp, params)
+        try:
+            f = getattr(self, name)
+            f(mp, params)
+        except Exception as exc:
+            self.logger.error("Failure performing job {0} for MP {1}. Exception: {2}".format(name, mp, exc))
+            return False
+        return True
 
+    
     def do_job_nightly(self, name, mp, params={}):
         """Calls cancel_nightly or operation_nithly depending on the argument's value.
         Args:
@@ -267,10 +274,18 @@ class Worker(object):
             mp (Mediapackage): the mediapackage.
         """
         name=name.replace('nightly','')
-        if name.count('cancel'):
-            self.cancel_nightly(mp, name.replace('cancel',''))
-        else:
-            self.operation_nightly(mp, name, params)      
+        try:
+            if name.count('cancel'):
+                f = getattr(self, name.replace('cancel',''))
+                self.cancel_nightly(mp, name.replace('cancel',''))
+            else:
+                f = getattr(self, name)
+                self.operation_nightly(mp, name, params)
+        except Exception as exc:
+            self.logger.error("Failure performing nightly job {0} for MP {1}. Exception: {2}".format(name, mp, exc))
+            return False
+        return True
+    
 
     def gen_location(self, extension):
         """Gets the path of a non existing file in the exports' directory.
@@ -509,6 +524,7 @@ class Worker(object):
             mp (Mediapackage): the mediapackage with a operation to be processed.
             operation (str): name of the nighly operation to be done.
         """
+        self.logger.debug("Set nightly operation {} for MP {}".format(operation, mp.getIdentifier()))
         mp.setOpStatus(operation,mediapackage.OP_NIGHTLY)
         self.repo.update(mp)
         self.dispatcher.emit('refresh_row', mp.identifier)
@@ -520,6 +536,7 @@ class Worker(object):
             mp (Mediapackage): the mediapackage with a operation to be processed.
             operation (str): name of the nightly operation to be canceled.
         """
+        self.logger.debug("Cancel nightly operation {} for MP {}".format(operation, mp.getIdentifier()))
         mp.setOpStatus(operation,mediapackage.OP_IDLE)
         self.repo.update(mp)
         self.dispatcher.emit('refresh_row', mp.identifier)
