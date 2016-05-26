@@ -129,6 +129,7 @@ GtkNotebook tab{
 		to(shade(gray,1.5)));
 }
 
+
 /* Event status */
 .status_text{
 	font-weight: bold;
@@ -177,16 +178,22 @@ GtkNotebook tab{
     border: 0px;
     border-radius: 0px;
 }
-
+/* Footer*/
+.corner{
+	border-bottom: 21em solid transparent;
+	border-right: 30px solid rgb(242,241,240);
+	font-size: 0.1em;
+}
 .release_label{
-    border: 1px solid rgb(201,198,194);
-    border-radius: 8px 58px 8px 8px;
+    padding-left: 3px;
+    border-bottom: 3px solid #6E9717;
     color:white;
-    background-image: -gtk-gradient(
+}
+.release_box{
+	border-top:0.15em solid rgb(242,241,240);
+	background-image: -gtk-gradient(
 			      linear,
 			      left top, left bottom,
 			      from(shade(#6E9717,1.0)),
 			      to(shade(#6E9717, 1.0)));
-
-
 }
