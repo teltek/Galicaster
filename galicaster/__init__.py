@@ -12,3 +12,8 @@
 # San Francisco, California, 94105, USA.
 
 __version__ = '2.0.x'
+
+import gi
+gi.require_version('Gst', '1.0')
+gi.require_version('GstPbutils', '1.0')
+gi.require_version('Gtk', '3.0')
