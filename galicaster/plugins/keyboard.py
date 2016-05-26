@@ -23,15 +23,13 @@ from galicaster.utils.i18n import _
 from galicaster.utils.systemcalls import write_dconf_settings, execute, is_running
 
 logger = context.get_logger()
-pid = None
 
 def init():
-    global pid
     dispatcher = context.get_dispatcher()
 
     pid = is_running('onboard')
     if not pid:
-        pid = subprocess.Popen(["onboard"]).pid
+        subprocess.Popen(["onboard"]).pid
 
     dispatcher.connect('init', configure_keyboard)
     dispatcher.connect('quit', unconfigure_keyboard)
@@ -49,5 +47,7 @@ def configure_keyboard(dispatcher=None):
 
 def unconfigure_keyboard(dispatcher=None):
     write_dconf_settings({'/org/onboard/use-system-defaults':'true'},logger)
-    execute(['kill', str(pid)])
+    pid = is_running('onboard')
+    if pid:
+        execute(['kill', str(pid)])
 
