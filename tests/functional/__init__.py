@@ -19,7 +19,6 @@ from unittest import TestCase
 from nose.plugins.attrib import attr
 from galicaster.core.conf import Conf
 from dogtail.config import config
-from . import recording
 from tests import get_resource
 import shutil
 import os
@@ -48,8 +47,8 @@ class TestFunctional(TestCase):
         conf.set('logger','path','{}/logs/galicaster.log'.format(self.test_path))
         conf.update()
 
-        #FIXME
-        config.load({'logDir':'{}/logs/dogtail.log'.format(self.test_path)})
+        config.load({'logDir':'{}/logs/'.format(self.test_path)})
+        from . import recording
         recording.start_galicaster()
 
     def tearDown(self):
@@ -61,5 +60,4 @@ class TestFunctional(TestCase):
     def test_136(self):
         """ Do 15 recordings of 10 minutes of duration
         """
-        #recording.main(10*60, 15)
-        recording.rec(1, 1)
+        recording.rec(10*60, 15)
