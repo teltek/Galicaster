@@ -89,6 +89,7 @@ class Recorder(object):
             self.bins.clear()
             
             self.error = str(exc)
+            name = name if 'name' in locals() else 'Unknown'
             message = 'Invalid track type "{}" for "{}" track: {}'.format(bin.get('device'), name, exc)
             raise NameError(message)
 
