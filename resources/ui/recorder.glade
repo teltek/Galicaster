@@ -845,6 +845,11 @@
                                 <property name="icon_name">media-playback-pause</property>
                               </object>
                             </child>
+                            <child internal-child="accessible">
+                              <object class="AtkObject" id="pausebutton-atkobject">
+                                <property name="AtkObject::accessible-name" translatable="yes">recorder_pause_button</property>
+                              </object>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">False</property>
