@@ -14,8 +14,7 @@
 Top bar widget including back to previous page button and Galicaster logo
 """
 
-from os import path
-from gi.repository import Gtk, GObject, GdkPixbuf
+from gi.repository import Gtk, GdkPixbuf
 
 from galicaster.core import context
 from galicaster.classui import get_ui_path, get_image_path

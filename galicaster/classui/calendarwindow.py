@@ -36,7 +36,6 @@ LICENSE = """
     along with Bitacora.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from os import path
 import datetime
 import time
 from gi.repository import Gtk

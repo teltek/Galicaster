@@ -66,10 +66,6 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
     mix.sink_1 
     """
 
-    pipestr_audio = """
-    db{SRC}. ! audioconvert ! queue ! voaacenc bitrate=128000 ! queue ! mux. 
-    """
-
     pipestr_audio_file = """
     filesrc location="{AUDIO}" ! decodebin name=dbaudio ! 
     audioconvert ! queue ! voaacenc bitrate=128000 ! queue ! mux.

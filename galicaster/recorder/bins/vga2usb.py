@@ -15,14 +15,14 @@ from galicaster.core import context
 from galicaster.recorder.bins import epiphan
 #from galicaster.recorder import module_register
 
-raise Exception("Not implemented. Using gst 0.10")
-
 logger = context.get_logger()
 
 
 class GCvga2usb(epiphan.GCepiphan):
 
     def __init__(self, options={}): 
+        raise Exception("Not implemented. Using gst 0.10")
+
         logger.error("This bin has been renamed to 'epiphan' and is only provided for compatibility. Use epiphan instead")
         epiphan.GCepiphan.__init__(self, options)
 

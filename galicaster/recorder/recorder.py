@@ -14,7 +14,6 @@
 
 import sys
 
-import gi
 from gi.repository import Gtk, Gst, Gdk
 Gst.init(None)
 
@@ -89,6 +88,7 @@ class Recorder(object):
             self.bins.clear()
             
             self.error = str(exc)
+            name = name if 'name' in locals() else 'Unknown'
             message = 'Invalid track type "{}" for "{}" track: {}'.format(bin.get('device'), name, exc)
             raise NameError(message)
 
@@ -149,23 +149,23 @@ class Recorder(object):
         change = self.pipeline.set_state(new_state)
             
         if change == Gst.StateChangeReturn.FAILURE:
-            text = None
+            # text = None
             random_bin = None
             for key, value in self.bins.iteritems():
                 if not value.getSource():
                     random_bin = value
-                    text = "Error on track : "+ key
+                    # text = "Error on track : "+ key
                 if not random_bin:
                     random_bin = value
-                    text = "Error on unknow track"
+                    # text = "Error on unknow track"
 
             src = random_bin
-            error = Gst.StreamError(Gst.ResourceError.FAILED)
-#            error = Glib.GError(Gst.ResourceError, Gst.ResourceError.FAILED, text)
-            
+            # error = Gst.StreamError(Gst.ResourceError.FAILED)
+            # error = Glib.GError(Gst.ResourceError, Gst.ResourceError.FAILED, text)
+
             a = Gst.Structure.new_from_string('letpass')
             message = Gst.Message.new_custom(Gst.MessageType.ERROR,src, a)   
-#            message = Gst.Message.new_error(src, error, str(random_bin)+"\nunknown system_error")
+            # message = Gst.Message.new_error(src, error, str(random_bin)+"\nunknown system_error")
             self.bus.post(message)
             self.dispatcher.emit("recorder-error","Driver error")
             return False

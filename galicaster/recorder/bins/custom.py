@@ -12,12 +12,10 @@
 # San Francisco, California, 94105, USA.
 
 from os import path
-import re
 
-from gi.repository import GObject, Gst
+from gi.repository import Gst
 
 from galicaster.recorder import base
-#rom galicaster.recorder import module_register
 
 class GCcustom(Gst.Bin, base.Base):
 
@@ -89,9 +87,3 @@ class GCcustom(Gst.Bin, base.Base):
         src1.send_event(event)
 
 
-#GObject.type_register(GCcustom)
-#Gst.element_register(GCcustom, 'gc-custom-bin')
-#module_register(GCcustom, 'custom')
-
-#CcustomType = GObject.type_register(GCcustom)
-#Gst.Element.register(GCcustom, 'gc-custom-bin', 0, GCcustomType)

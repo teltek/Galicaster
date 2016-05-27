@@ -17,7 +17,7 @@ Experimental bin to re-encode the dv video and audio with Galicaster on the fly.
 
 from os import path
 
-from gi.repository import GObject, Gst
+from gi.repository import Gst
 
 from galicaster.recorder import base
 from galicaster.recorder.utils import get_videosink, get_audiosink
@@ -188,8 +188,3 @@ class GCfirewire_renc(Gst.Bin, base.Base):
         pass
      
 
-#GObject.type_register(GCfirewire_renc)
-#Gst.element_register(GCfirewire_renc, "gc-firewire_renc-bin")
-
-#GCfirewire_rencType = GObject.type_register(GCfirewire_renc)
-#Gst.Element.register(GCfirewire_renc, 'gc-firewire_renc-bin', 0, GCfirewire_rencType)

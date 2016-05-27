@@ -41,8 +41,8 @@ class TestFunctions(TestCase, Base):
         self.assertRaises(TypeError, Recorder)
         self.assertRaises(TypeError, Recorder, [])
         self.assertRaises(NameError, Recorder, [{'name': 'name'}])
-        self.assertRaises(KeyError, Recorder, [{'type': 'v4l2', 'caps': 'raw'}])
-        self.assertRaises(KeyError, Recorder, [{'device': 'v4l2', 'caps': 'raw'}])
+        self.assertRaises(NameError, Recorder, [{'type': 'v4l2', 'caps': 'raw'}])
+        self.assertRaises(NameError, Recorder, [{'device': 'v4l2', 'caps': 'raw'}])
 
         #valid
         Recorder(self.getVideoTestBin())

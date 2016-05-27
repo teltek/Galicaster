@@ -9,7 +9,7 @@
 A Custom taskbar or header for Galicaster messages, dialogs and other popups
 """
 
-from gi.repository import GObject, Gtk, GdkPixbuf
+from gi.repository import Gtk, GdkPixbuf
 from gi.repository import Pango
 from galicaster.classui import get_image_path
 

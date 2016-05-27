@@ -22,9 +22,8 @@ import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gst", "1.0")
 
-from gi.repository import Gtk, Gst, Gdk, GstPbutils
+from gi.repository import Gtk, Gst, Gdk
 # Needed for window.get_xid(), xvimagesink.set_window_handle(), respectively:
-from gi.repository import GdkX11, GstVideo
 
 import os
 
@@ -115,7 +114,7 @@ class Player(object):
             clock = self.pipeline.get_clock()
             if clock:
                 return clock.get_time()
-        except Exception as exc:
+        except Exception:
             # logger.debug("Exception trying to get current time: {}".format(exc))
             pass
         

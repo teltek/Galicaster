@@ -123,6 +123,28 @@ class Conf(object): # TODO list get and other ops arround profile
         return default
 
 
+    def get_all(self, full=True):
+        """
+        Tries to return all the configuration
+        Args:
+            full (boolean): whether to return the full configuration or only the conf.ini
+        Returns:
+            OrderedDict: conf.
+        """
+        conf = OrderedDict()
+        if full:
+            sections = self.get_sections()
+        else:
+            sections = self.get_user_sections()
+            
+        for section in sections:
+            if full:
+                conf[section]=self.get_section(section)
+            else:
+                conf[section]=self.get_user_section(section)
+        return conf
+
+    
     def get_int(self, sect, opt, default=None):
         """Tries to return the value of an option in a section as an int. 
         If else, returns the given default value.
@@ -155,7 +177,7 @@ class Conf(object): # TODO list get and other ops arround profile
         hour = self.get(sect, opt)
         if hour:
             try:
-                aux = datetime.strptime(hour, '%H:%M')
+                datetime.strptime(hour, '%H:%M')
                 return hour
 
             except Exception as exc:
@@ -410,9 +432,12 @@ class Conf(object): # TODO list get and other ops arround profile
             for opt,value in sect.iteritems():
                 self.__force_set(self.__user_conf, sect_name, opt, value)
                 self.__force_set(self.__conf, sect_name, opt, value)
+                
+            return True
         except Exception as exc:
             self.logger and self.logger.warning('Error trying to set section with name {}: Exception {}'.format(sect_name , exc))
             
+        return False
 
     def get_hostname(self):
         """Gets the hostname in configfile or de default one.
@@ -429,6 +454,16 @@ class Conf(object): # TODO list get and other ops arround profile
         return hostname
 
 
+    def get_ip_address(self):
+        address = '127.0.0.1'
+        
+        try:
+            address = socket.gethostbyname(socket.gethostname())
+        except Exception as exc:
+            self.logger and self.logger.error('Problem on obtaining the IP of "{}", forced to "127.0.0.1". Exception: {}'.format(socket.gethostname(),exc))
+            
+        return address
+    
     def get_size(self):
         """Gets the resolution in the configfile if exists.
         If not exists gets value 'auto'.
@@ -537,13 +572,13 @@ class Conf(object): # TODO list get and other ops arround profile
             except Exception as exc:
                 self.logger and self.logger.warning("Error trying to copy the original conf file {} to {}".format(src, dst))
 
-        try:
-            configfile = open(self.conf_file, 'wb')
-            self.__user_conf.write(configfile)
-            configfile.close()
-        except Exception as exc:
-            if self.logger:
-                self.logger.error(exc)
+            try:
+                configfile = open(self.conf_file, 'wb')
+                self.__user_conf.write(configfile)
+                configfile.close()
+            except Exception as exc:
+                if self.logger:
+                    self.logger.error(exc)
  
 
     def update_profiles(self):
@@ -671,7 +706,7 @@ class Conf(object): # TODO list get and other ops arround profile
             self.__current_profile = profile_list[current]
         except Exception as exc:
             if self.logger:
-                self.logger.error("Forcing default profile since current ({}) doesn't exist.".format(current))
+                self.logger.error("Forcing default profile since current ({}) doesn't exist. Exception: {}".format(current, exc))
             self.__current_profile = self.__default_profile
 
         return profile_list

@@ -65,6 +65,5 @@ def show_cursor(emiter=None):
     logger.info("Show cursor")
     arrow_cursor = Gdk.Cursor(Gdk.CursorType.ARROW)
     window = Gdk.get_default_root_window()
-    mainwindow = context.get_mainwindow()
     window.set_cursor(arrow_cursor) 
 

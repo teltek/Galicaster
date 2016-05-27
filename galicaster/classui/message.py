@@ -12,7 +12,6 @@ Basic Dialog Messag UI
 import sys
 
 from gi.repository import Gtk, Gdk, GdkPixbuf
-from os import path
 from gi.repository import GObject
 from galicaster.classui import get_image_path, get_ui_path
 from galicaster.classui.elements.message_header import Header

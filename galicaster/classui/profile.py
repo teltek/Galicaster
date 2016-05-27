@@ -54,7 +54,6 @@ class ProfileUI(Gtk.Window):
         size = context.get_mainwindow().get_size()
         width = int(size[0]/2.2)
         height = int(size[1]/2.0)
-        hprop = size[1]/1080.0
         Gtk.Window.__init__(self)
         self.set_transient_for(parent)
         self.set_destroy_with_parent(True)
@@ -177,8 +176,8 @@ class ProfileDialog(Gtk.HBox):
         button = Gtk.Button(text)
         button.set_property("width-request", int(k1*150))
         button.set_property("height-request", int(k1*50))
-        label = button.get_children()[0]
-        modification = str(int(self.hprop*20))
+        # label = button.get_children()[0]
+        # modification = str(int(self.hprop*20))
         #label.modify_font(Pango.FontDescription(modification))
         if not end:
             self.buttons.pack_start(button, True, True, 0)

@@ -170,7 +170,6 @@ class ManagerUI(Gtk.Box):
                 "main" : _("Which operation do you want to perform?")
                }
         text['text'] = ''
-        icon = message.QUESTION
 
         if disabled or not self.network:
             for job in day:
@@ -303,9 +302,9 @@ class ManagerUI(Gtk.Box):
 		"text" : t1+"\n\n"+t2
 		    }
 	buttons = ( Gtk.STOCK_DELETE, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
-	warning = message.PopUp(message.WARN_DELETE, text,
-                                context.get_mainwindow(),
-                                buttons, response)
+	message.PopUp(message.WARN_DELETE, text,
+                      context.get_mainwindow(),
+                      buttons, response)
 
 
 

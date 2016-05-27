@@ -68,11 +68,11 @@ def get_series():
 
         repo.save_attach('series.json', json.dumps(series_list))
 
-    except (ValueError, IOError, RuntimeError, AttributeError) as e:
+    except (ValueError, IOError, RuntimeError, AttributeError):
         #TODO Log the exception
         try:
             series_list = json.load(repo.get_attach('series.json'))
-        except (ValueError, IOError) as sub_e:
+        except (ValueError, IOError):
             #TODO Log the exception
             series_list = []
 
@@ -84,7 +84,7 @@ def parse_json_series(json_series):
     for term in json_series[NAMESP].iterkeys():
         try:
             series[term] = json_series[NAMESP][term][0]['value']
-        except (KeyError, IndexError) as error:
+        except (KeyError, IndexError):
             # Ignore non-existant items
             # TODO Log the exception
             pass
@@ -119,7 +119,7 @@ def getSeriesbyName(seriesname):
     match = None
     for key,series in list_series.iteritems():
         if series['title'] == seriesname:
-            match =  {"id": key, "name": seriesname, "list": list_series[seriesid]}
+            match =  {"id": key, "name": seriesname, "list": list_series[key]}
             break
     return match
 

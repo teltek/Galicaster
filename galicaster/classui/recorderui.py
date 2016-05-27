@@ -95,7 +95,6 @@ class RecorderClassUI(Gtk.Box):
         release.set_label("Galicaster "+__version__)
         
         # TEST
-        recorderui = builder.get_object("recorderbox")
         self.repo = context.get_repository()
         self.dispatcher = context.get_dispatcher()
         self.worker = context.get_worker()
@@ -146,10 +145,10 @@ class RecorderClassUI(Gtk.Box):
         self.dispatcher.connect_ui("recorder-status", self.handle_status)
 
         nb=builder.get_object("data_panel")
-        pages = nb.get_n_pages()        
-        for index in range(pages):
-            page=nb.get_nth_page(index)
-#            nb.set_tab_label_packing(page, True, True,Gtk.PackType.START)
+        # pages = nb.get_n_pages()        
+        # for index in range(pages):
+        #     page=nb.get_nth_page(index)
+        #     nb.set_tab_label_packing(page, True, True,Gtk.PackType.START)
 
         # STATES
         self.previous = None
@@ -280,8 +279,8 @@ class RecorderClassUI(Gtk.Box):
             self.dispatcher.emit("action-audio-disable-msg")
             #warning = message.PopUp(message.WARN_STOP, text,
             #  context.get_mainwindow(), buttons)
-            warning = message.PopUp(message.WARN_STOP, text,
-              context.get_mainwindow(), buttons, self.on_stop_dialog_response)
+            message.PopUp(message.WARN_STOP, text,
+                          context.get_mainwindow(), buttons, self.on_stop_dialog_response)
             self.dispatcher.emit("action-audio-enable-msg")
             #if warning.response not in message.POSITIVE or self.recorder.status not in [RECORDING_STATUS]:
             #    return False
@@ -499,10 +498,9 @@ class RecorderClassUI(Gtk.Box):
         main_window = context.get_mainwindow()
         main_window.realize()
         
-        style=main_window.get_style()
-
-#        bgcolor = style.bg[Gtk.StateType.PRELIGHT]  
-#        fgcolor = style.fg[Gtk.StateType.PRELIGHT]  
+        # style=main_window.get_style()
+        # bgcolor = style.bg[Gtk.StateType.PRELIGHT]  
+        # fgcolor = style.fg[Gtk.StateType.PRELIGHT]  
 
         for i in STATUS:
             if i[0] in ["Recording", "Error"]:
@@ -599,7 +597,6 @@ class RecorderClassUI(Gtk.Box):
         pbox = self.gui.get_object("prebox")
 
         rec_title = self.gui.get_object("recording1")
-        rec_elapsed = self.gui.get_object("recording3")
         status_panel = self.gui.get_object('status_panel')
 
         l1 = self.gui.get_object("tab1")
@@ -626,7 +623,6 @@ class RecorderClassUI(Gtk.Box):
         relabel(rec_title, k1*25, True)
         rec_title.set_line_wrap(True)
         rec_title.set_width_chars(40)
-        ###FIXME UI relabel(rec_elapsed, k1*28, True)
 
         for child in status_panel.get_children():
             if type(child) is Gtk.Label:

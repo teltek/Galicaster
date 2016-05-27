@@ -16,15 +16,13 @@ import datetime
 import re
 import itertools
 import glob, json
-from shutil import rmtree
+import shutil
 import ConfigParser
 
 from galicaster import __version__
 from galicaster.mediapackage import mediapackage
 from galicaster.mediapackage import serializer
 from galicaster.mediapackage import deserializer
-
-from galicaster.core import context
 
 """
 This class manages (add, list, remove...) all the mediapackages in the repository.
@@ -61,6 +59,7 @@ class Repository(object):
         self.create_repo(hostname)        
 
         self.__list = dict()
+        self.check_for_recover_recordings()
         
         if self.logger:
             self.logger.info("Creating repository from {}".format(self.root))
@@ -90,8 +89,81 @@ class Repository(object):
                 conf.set('repository', 'version', __version__)
                 conf.set('repository', 'hostname', hostname)
                 conf.write(configfile)
-        
 
+
+    def check_for_recover_recordings(self):
+        """If a manifest.xml file exists, calls the recover_recoding method.
+        If else, calls the save_crash_recordings method. 
+        """
+        if os.path.exists(os.path.join(self.get_rectemp_path(), "manifest.xml")):
+            self.logger and self.logger.info("Found a recording that has crashed")
+            self.crash_file_creator()
+            self.recover_recording()
+        else:
+            self.save_crash_recordings()
+
+
+
+    def recover_recording(self):
+        """Tries to recover a crashed mediapackage form the manifest.xml associated.
+        If any exception occurs while recovering recording, calls save_crash_recording method.
+        """
+        try:
+            self.logger and self.logger.info("Trying to recover the crashed recording")
+
+            ca_prop = None
+            info = {}
+            # Read info.json
+            with open(os.path.join(self.get_rectemp_path(), "info.json"), 'r') as handle:
+                info = json.load(handle)
+
+            # Copy the capture agent properties from the original mediapackage folder (for scheduled recordings)
+            if info['mp_path']:
+                ca_prop = os.path.join(info['mp_path'], "org.opencastproject.capture.agent.properties")
+                if os.path.exists(ca_prop):
+                    with open(ca_prop, 'rb') as fsrc:
+                        dst = os.path.join(self.get_rectemp_path(), "org.opencastproject.capture.agent.properties")
+                        with open(dst, 'wb') as fdst:
+                            self.logger.info("Copying file {} to {}".format(ca_prop, dst))
+                            shutil.copyfileobj(fsrc, fdst)
+                            os.fsync(fdst)
+
+            mp = deserializer.fromXML(os.path.join(self.get_rectemp_path(), "manifest.xml"), self.logger)
+
+            # Status to RECORDED
+            mp.status = 4
+            mp.setTitle("Recovered recording of date {}".format(mp.getStartDateAsString()))
+            mp.setNewIdentifier()
+            info['mp_id'] = mp.getIdentifier()
+
+            # Change the filenames 
+            folder = self.add_after_rec(mp, info['tracks'], mp.getDuration(), add_catalogs=True, remove_tmp_files=False)
+            serializer.save_in_dir(mp, self.logger, folder)
+            self.logger and self.logger.info("Crashed recording added to the repository")
+
+            # Copy the capture agent properties from the original mediapackage folder (for scheduled recordings)
+            if ca_prop and os.path.exists(ca_prop):
+                with open(ca_prop, 'rb') as fsrc:
+                    dst = os.path.join(mp.getURI(), "org.opencastproject.capture.agent.properties")
+                    with open(dst, 'wb') as fdst:
+                        self.logger.info("Copying file {} to {}".format(ca_prop, dst))
+                        shutil.copyfileobj(fsrc, fdst)
+                        os.fsync(fdst)
+
+            # Check if there is some extra files (slides) and move the the mediapackage folder
+            mp_dir = mp.getURI()
+            for temp_file in os.listdir(self.get_rectemp_path()):
+                full_path = os.path.join(self.get_rectemp_path(), temp_file)
+                if os.path.isfile(full_path) and os.path.getsize(full_path) and not "screenshot.jpg" in temp_file:
+                    os.rename(full_path, os.path.join(mp_dir, temp_file))
+
+        except Exception as exc:
+            self.logger and self.logger.error("There was an error trying to recover a recording: {}. Saving crashed recording to a rectemp folder...".format(exc))
+            self.save_crash_recordings()
+
+        return
+        
+            
     def save_crash_recordings(self):
         """Saves the files with the crashed recordings in a directory named with its timestamp. 
         """
@@ -133,6 +205,31 @@ class Repository(object):
         os.remove(filename)
         return
 
+
+    
+    def save_current_mp_data(self, mp, bins_info):
+        # Save the current mediapackage
+        serializer.save_in_dir(mp, self.logger, self.get_rectemp_path())
+
+        try:
+            info = {}
+            info['scheduled'] = True if mp.status == mediapackage.SCHEDULED else False
+            info['mp_id']     = mp.getIdentifier()
+            info['mp_path']   = mp.getURI()
+            info['start']     = mp.getDate().isoformat()
+            info['tracks']    = bins_info
+            
+            filename = os.path.join(self.get_rectemp_path(), 'info.json')
+            f = open(filename, 'w')
+            f.write(json.dumps(info, indent=4, sort_keys=True))
+            f.close()
+
+            self.logger and self.logger.debug("Temporal data saved to {}".format(filename))
+        except Exception as exc:
+            self.logger and self.logger.error("Problem on save temporal data: {}".format(exc))
+
+
+    
 
     def __refresh(self, check_inconsistencies=False, first_time=True):
         """Tries to check if it's been done a new recording. If true, it updates the repository with the new recordings.
@@ -354,7 +451,7 @@ class Repository(object):
             return True if mp.status == RECORDED else False
 
         next = filter(is_recorded, self.__list.values())
-        mps_sorted = sorted(self.__list.values(), key=lambda mp: (mp.getDate()), reverse=True)
+        mps_sorted = sorted(next, key=lambda mp: (mp.getDate()), reverse=True)
 
         if mps_sorted:
             return mps_sorted[0]
@@ -476,8 +573,37 @@ class Repository(object):
         # ADD MP to repo
         self.__add(mp) 
 
+        # Remove temporal files
+        self._manage_tmp_files(remove_tmp_files, mp.getURI())
+
         return mp.getURI()
 
+
+    def _manage_tmp_files(self, remove_tmp_files, folder):
+        """Manages the temporary files being removed or moved.
+        Args:
+            remove_tmp_files (bool): true if the temporary files are going to be removed. False if they're going to be moved.
+            folder (str): if remove_tmp_file is false, these are moved to this folder.
+    """
+        temporal_files = ['{}/*.json'.format(self.get_rectemp_path()),
+                          '{}/*.xml'.format(self.get_rectemp_path())]
+        
+        for expr in temporal_files:
+            files = glob.glob(expr)
+            if files:
+                for filename in files:
+                    if remove_tmp_files:
+                        os.remove(filename)
+                    else:
+                        os.rename(filename, os.path.join(folder, os.path.basename(filename)))
+
+        if self.crash_file_exists():
+            self.crash_file_remover()
+
+        if remove_tmp_files:
+            self.logger and self.logger.info("Repository temporal files removed")
+        else:
+            self.logger and self.logger.info("Repository temporal files moved to {}".format(folder))
 
     def delete(self, mp):
         """Deletes a mediapackage from de repository.
@@ -492,7 +618,7 @@ class Repository(object):
             raise KeyError('Key not Exists')
 
         del self.__list[mp.getIdentifier()]
-        rmtree(mp.getURI())
+        shutil.rmtree(mp.getURI())
         return mp
 
         

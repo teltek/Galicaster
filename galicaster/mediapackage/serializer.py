@@ -15,12 +15,10 @@
 # TODO:
 # * metadata dict in mediapackage *33
 import os
-import sys
-import traceback
 import zipfile
-import json
 from datetime import datetime
-from os import path,system
+from os import path
+# from os import system
 from xml.dom import minidom
 import subprocess
 
@@ -158,7 +156,8 @@ def save_system_zip(mp, loc, use_namespace=True, logger=None):
     #     os.rename(loc+".zip",loc)
         
     try:
-        output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+        # FIXME: Use execute from galicaster.utils.systemcalls
+        subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
         if os.path.isfile(loc+".zip"): # WORKARROUND to eliminate automatic extension .zip
             os.rename(loc+".zip",loc)
 

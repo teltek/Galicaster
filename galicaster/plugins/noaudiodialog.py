@@ -21,7 +21,6 @@ The dialog blockade is cancelled when the profile is reloaded or changed and whe
 from gi.repository import Gtk, Gdk
 from gi.repository import Pango
 from galicaster.core import context
-from galicaster.classui import get_ui_path, get_image_path
 from galicaster.classui.elements.message_header import Header
 from threading import Lock
 

@@ -17,7 +17,6 @@ from gi.repository import Pango
 
 from galicaster import __version__
 from galicaster.classui.managerui import ManagerUI
-from galicaster.classui import message
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
 from galicaster.classui import get_ui_path
@@ -134,8 +133,8 @@ class ListingClassUI(ManagerUI):
         self.renders[8].set_property('xalign',0.5)
 
 
-        vbar = self.scroll.get_vscrollbar()
-    #	vbar.set_update_policy(Gtk.UPDATE_DELAYED)
+        # vbar = self.scroll.get_vscrollbar()
+        # vbar.set_update_policy(Gtk.UPDATE_DELAYED)
 
         # Create each column
         #columna5 = Gtk.TreeViewColumn("Id",render5,text = 0, background= 8)

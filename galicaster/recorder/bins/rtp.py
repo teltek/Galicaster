@@ -16,14 +16,11 @@
 #  - In cameratype mpeg4 dont use decodebin2
 #
 
-from gi.repository import GObject
 from gi.repository import Gst
-import re
 
 from os import path
 
 from galicaster.recorder import base
-from galicaster.recorder import module_register
 from galicaster.recorder.utils import get_videosink, get_audiosink
 
 pipe_config = {'mpeg4':

@@ -18,7 +18,7 @@ import math
 import threading
 import tempfile
 from bottle import route, run, response, abort, request, install
-from gi.repository import Gtk, Gdk, GObject
+from gi.repository import Gtk, Gdk, GdkPixbuf
 
 from galicaster.core import context
 from galicaster.mediapackage.serializer import set_manifest
@@ -57,7 +57,7 @@ def init():
 @route('/')
 def index():
     response.content_type = 'application/json'
-    text="Galicaster REST endpoint plugin\n\n"
+    text = {"description" : "Galicaster REST endpoint plugin\n\n"}
     endpoints = {
             "/state" : "show some state values",
             "/repository" : "list mp keys" ,
@@ -71,7 +71,8 @@ def index():
             "/screen" : "get a screenshoot of the active",
             "/logstale" : "check if log is stale (threads crashed)",
             "/quit" : "Quit Galicaster",
-        }    
+        }
+    endpoints.update(text)
     return json.dumps(endpoints)
 
 
@@ -197,6 +198,7 @@ def quit():
     if not recorder.is_recording() or readable.str2bool(force):
         logger.info("Quit Galicaster through API rest")
         # Emit quit signal and exit
+        dispatcher = context.get_dispatcher()
         dispatcher.emit('quit')
         
         Gdk.threads_enter()

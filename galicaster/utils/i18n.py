@@ -13,10 +13,7 @@
 
 import os
 import gettext
-from gi.repository import Gtk
 from gettext import bindtextdomain, textdomain
-#import Gtk.glade
-
 
 i18n_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "i18n"))
 

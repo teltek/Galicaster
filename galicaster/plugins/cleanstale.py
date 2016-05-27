@@ -22,28 +22,30 @@ def init():
 
     conf = context.get_conf()
     dispatcher = context.get_dispatcher()
-    dispatcher.connect('timer-nightly', clear_job)
 
     logger = context.get_logger()
 
     days = None
     try:
         days = int(conf.get('cleanstale', 'maxarchivaldays'))
-        if days:
-            logger.info("Parameter 'maxarchivaldays' set to {} days".format(days))
-
+    except Exception as exc:
+        raise Exception("Wrong parameter maxarchivaldays: {}".format(exc))
+    
+    if days:
+        logger.info("Parameter 'maxarchivaldays' set to {} days".format(days))
+        dispatcher.connect('timer-nightly', clear_job)
+        
         oninit = conf.get('cleanstale', 'checkoninit')
         if oninit in ["True", "true"]:
-            clear_job(None)
-
-    except Exception as exc:
-        logger.error("Could not read the config parameters: {}".format(exc))
+            clear_job(None)        
+    else:
+        raise Exception("Parameter maxarchivaldays not configured")
 
 
 
 def clear_job(sender=None):
-    logger.info("Executing clear job ...")
-    conf = context.get_conf()
+    global days
+    logger.info("Executing clear job ... {} days".format(days))
     repo = context.get_repository()
 
     mps = repo.get_past_mediapackages(days)

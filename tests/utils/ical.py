@@ -44,14 +44,14 @@ class TestFunctions(TestCase):
             ical.create_mp(repo, event)
         
         next = repo.get_next_mediapackage()
-        self.assertEqual(next.getDate(), datetime.strptime('3012-08-25 17:00:00', '%Y-%m-%d %H:%M:%S'))
+        self.assertEqual(next.getDate(), datetime.strptime('2019-04-05 11:00:00', '%Y-%m-%d %H:%M:%S'))
         self.assertEqual(len(next.getElements()), 2)
         self.assertEqual(len(next.getAttachments()), 1)
         self.assertTrue(next.getAttachment('org.opencastproject.capture.agent.properties'))
         self.assertEqual(len(next.getCatalogs()), 1)
 
         nexts = repo.get_next_mediapackages()
-        self.assertEqual(nexts[0].getDate(), datetime.strptime('3012-08-25 17:00:00', '%Y-%m-%d %H:%M:%S'))
+        self.assertEqual(nexts[0].getDate(), datetime.strptime('2019-04-05 11:00:00', '%Y-%m-%d %H:%M:%S'))
             
 
     def test_ical_get_delete_events(self):
@@ -60,7 +60,7 @@ class TestFunctions(TestCase):
         
         delete_events = ical.get_delete_events(old_events, new_events)
 
-        self.assertEqual(len(delete_events), 2)
+        self.assertEqual(len(delete_events), 1)
         
         
     def test_ical_get_update_events(self):
@@ -69,6 +69,6 @@ class TestFunctions(TestCase):
         
         update_events = ical.get_update_events(old_events, new_events)
 
-        self.assertEqual(len(update_events), 1)
+        self.assertEqual(len(update_events), 0)
 
 

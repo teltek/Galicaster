@@ -15,7 +15,6 @@ Hides controls from the Galicaster UI
 """
 
 from galicaster.core import context
-from gi.repository import Gtk
 
 ALL_TABS = { "events": "eventpanel",
              "status": "status_panel",

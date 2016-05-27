@@ -14,13 +14,10 @@
 
 from os import path
 
-from gi.repository import GObject, Gst
+from gi.repository import Gst
 
 from galicaster.recorder import base
-from galicaster.recorder import module_register
 from galicaster.recorder.utils import get_videosink, get_audiosink
-
-raise Exception("Not implemented. Using gst 0.10")
 
 pipestr = ( " filesrc name=gc-hauppauge-file-src ! valve drop=false name=gc-hauppauge-valve !  filesink  name=gc-hauppauge-sink async=false "
             " v4l2src name=gc-hauppauge-device-src ! video/x-raw,format=YV12,framerate=25/1,width=720,height=576,pixel-aspect-ratio=1/1 ! "
@@ -136,6 +133,8 @@ class GChauppauge(Gst.Bin, base.Base):
         )
 
     def __init__(self, options={}): 
+        raise Exception("Not implemented. Using gst 0.10")
+
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
@@ -205,9 +204,3 @@ class GChauppauge(Gst.Bin, base.Base):
         pass
      
 
-#GObject.type_register(GChauppauge)
-#Gst.element_register(GChauppauge, "gc-hauppauge-bin")
-#module_register(GChauppauge, 'hauppauge')
-
-#GChauppaugeType = GObject.type_register(GChauppauge)
-#Gst.Element.register(GChauppauge, 'gc-hauppauge-bin', 0, GChauppaugeType)

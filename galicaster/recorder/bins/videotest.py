@@ -11,14 +11,12 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
-import re
+# import re
 from os import path
 
 from gi.repository import GObject, Gst
-#Gst.init(None)
 
 from galicaster.recorder import base
-#from galicaster.recorder import module_register
 from galicaster.recorder.utils import get_videosink
 
 pipestr = (' videotestsrc name=gc-videotest-src pattern=0 is-live=true ! capsfilter name=gc-videotest-filter ! '
@@ -157,9 +155,3 @@ class GCvideotest(Gst.Bin, base.Base):
         src1.send_event(event)
 
 
-#GObject.type_register(GCvideotest)
-#Gst.element_register(GCvideotest, 'gc-videotest-bin')
-#module_register(GCvideotest, 'videotest')
-
-#GCvideotestType = GObject.type_register(GCvideotest)
-#Gst.Element.register(GCvideotest, 'gc-videotest-bin', 0, GCvideotestType)
