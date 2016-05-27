@@ -170,6 +170,7 @@ class Scheduler(object):
         self.logger.info('Proccess ical')
         try:
             ical_data = self.client.ical()
+            print "SCheduler ical_data", ical_data
         except Exception as exc:
             self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
             self.net = False
