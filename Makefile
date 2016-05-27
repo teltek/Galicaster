@@ -25,6 +25,7 @@ all:
 	@echo 'make test-with-coverage-html - Run all the unit test (using nosetest) and gen coverage info as an html page'
 	@echo 'make test-opencast           - Run the opencast test (network access needed)'
 	@echo 'make test-recorder           - Run the recorder test (gstreamer needed)'
+	@echo 'make test-functional         - Run functional tests'
 	@echo 'make test-all                - Run all the test (using nosetest)'
 	@echo 'make check                   - Check the python source code (using pychecker)'
 	@echo 'make dobleckeck              - Check the python source code (using pyflakes)'
@@ -40,6 +41,8 @@ test-opencast:
 test-recorder:
 	nosetests --all-modules -a 'recorder'
 	#python -m unittest tests.recorder.recorder
+test-functional:
+	nosetests --all-modules -a 'functional'
 test-all:
 	nosetests --all-modules --no-skip
 check:
