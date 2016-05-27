@@ -16,8 +16,11 @@ GtkButton:insensitive{
 }
 
 GtkButton{
+	border-radius: 1em;
+	border: 2px solid shade(gray,1.5);
+}
+.distrib_button{
 	border-radius: 2em;
-	border: 1px solid shade(gray,1.5);
 }
 GtkTreeView > GtkButton{
 	border-radius: 0;
