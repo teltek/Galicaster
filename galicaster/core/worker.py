@@ -521,7 +521,7 @@ class Worker(object):
         self.logger.debug("Set nightly operation {} for MP {}".format(operation, mp.getIdentifier()))
         mp.setOpStatus(operation,mediapackage.OP_NIGHTLY)
         self.repo.update(mp)
-        self.dispatcher.emit('refresh_row', mp.identifier)
+        self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
 
 
     def cancel_nightly(self, mp, operation):
@@ -533,7 +533,7 @@ class Worker(object):
         self.logger.debug("Cancel nightly operation {} for MP {}".format(operation, mp.getIdentifier()))
         mp.setOpStatus(operation,mediapackage.OP_IDLE)
         self.repo.update(mp)
-        self.dispatcher.emit('refresh_row', mp.identifier)
+        self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
     
 
     def exec_nightly(self, sender=None): 
