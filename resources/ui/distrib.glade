@@ -109,6 +109,9 @@
                         </child>
                       </object>
                     </child>
+                    <style>
+                      <class name="distrib_button"/>
+                    </style>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -158,6 +161,9 @@
                         </child>
                       </object>
                     </child>
+                    <style>
+                      <class name="distrib_button"/>
+                    </style>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -217,6 +223,9 @@
                         </child>
                       </object>
                     </child>
+                    <style>
+                      <class name="distrib_button"/>
+                    </style>
                   </object>
                   <packing>
                     <property name="expand">False</property>
