@@ -22,7 +22,7 @@ from galicaster.recorder.utils import get_audiosink
 pipestr = (" autoaudiosrc name=gc-autoaudio-src  ! queue ! audioamplify name=gc-autoaudio-amplify amplification=1 ! "
            " audioconvert ! audio/x-raw,channels=gc-audio-channels ! "
            " tee name=tee-aud  ! queue ! level name=gc-autoaudio-level message=true interval=100000000 ! "
-           " volume name=gc-autoaudio-volume ! gc-sink "
+           " volume name=gc-autoaudio-volume ! gc-asink "
            " tee-aud. ! queue ! valve drop=false name=gc-autoaudio-valve ! "
            " audioconvert ! gc-autoaudio-enc ! "
            " queue ! filesink name=gc-autoaudio-sink async=false " )

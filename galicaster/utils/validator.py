@@ -97,7 +97,7 @@ def validate_track(options, gc_parameters=None, recursive=False):
         elif v['type'] == 'boolean':
             parse = options[k]
 
-            if type(options[k]) == "str":
+            if type(options[k]) == type(''):
                 parse = options[k].lower()
             if parse in [True, 'true', 'yes', 1, '1', "True"]:
                 options[k] = True

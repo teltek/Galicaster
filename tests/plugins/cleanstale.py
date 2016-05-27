@@ -64,12 +64,15 @@ class TestFunctions(TestCase):
         repo.add(mp)
 
         
-        cleanstale.init()
-        
+        conf.set('cleanstale','maxarchivaldays', '70')
+        cleanstale.init()        
         self.assertEqual(len(repo), 5)
+        
         conf.set('cleanstale','maxarchivaldays', '50')
+        cleanstale.init()
         dispatcher.emit('timer-nightly')
         self.assertEqual(len(repo), 4)
         conf.set('cleanstale','maxarchivaldays', '20')
+        cleanstale.init()
         dispatcher.emit('timer-nightly')
         self.assertEqual(len(repo), 3)
