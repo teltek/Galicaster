@@ -18,7 +18,7 @@ def execute(command=[], logger=None, logaserror=True):
     level = 40 if logaserror else 10
     if command:
         try:
-            proc = subprocess.check_output(command, stderr=subprocess.STDOUT)
+            subprocess.check_output(command, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as exc:
             logger and logger.log(level, "CalledProcessError trying to execute {}: {}".format(command, exc))
             return False

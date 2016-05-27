@@ -13,8 +13,7 @@
 
 import datetime
 from os import path
-from threading import Timer, _Timer
-from gi.repository import GObject
+from threading import Timer
 
 from galicaster.utils import ical
 from galicaster.mediapackage import mediapackage

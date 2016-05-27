@@ -13,7 +13,7 @@
 
 from os import path
 
-from gi.repository import GObject, Gst
+from gi.repository import Gst
 
 from galicaster.recorder import base
 #from galicaster.recorder import module_register
@@ -177,9 +177,3 @@ class GCpulse(Gst.Bin, base.Base):
             element.set_property("mute", value)
 
     
-#GObject.type_register(GCpulse)
-#Gst.element_register(GCpulse, "gc-pulse-bin")
-#module_register(GCpulse, 'pulse')
-
-#GCpulseType = GObject.type_register(GCpulse)
-#Gst.Element.register(GCpulse, 'gc-pulse-bin', 0, GCpulseType)

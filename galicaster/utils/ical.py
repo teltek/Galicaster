@@ -12,11 +12,9 @@
 # San Francisco, California, 94105, USA.
 
 
-from os import path
 import base64
 
 from datetime import datetime
-from xml.dom import minidom
 
 from icalendar import Calendar
 from galicaster.mediapackage import mediapackage
@@ -77,7 +75,7 @@ def create_mp(repo, event):
     mp.setTitle(event['SUMMARY'])
     mp.setDate(event['DTSTART'].dt.replace(tzinfo=None))
     
-    ca_properties_name = 'org.opencastproject.capture.agent.properties'
+    # ca_properties_name = 'org.opencastproject.capture.agent.properties'
     for attach_enc in event['ATTACH']:
         attach =  base64.b64decode(attach_enc)
         if attach_enc.params['X-APPLE-FILENAME'] == 'episode.xml':

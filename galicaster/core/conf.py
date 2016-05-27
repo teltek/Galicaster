@@ -177,7 +177,7 @@ class Conf(object): # TODO list get and other ops arround profile
         hour = self.get(sect, opt)
         if hour:
             try:
-                aux = datetime.strptime(hour, '%H:%M')
+                datetime.strptime(hour, '%H:%M')
                 return hour
 
             except Exception as exc:
@@ -706,7 +706,7 @@ class Conf(object): # TODO list get and other ops arround profile
             self.__current_profile = profile_list[current]
         except Exception as exc:
             if self.logger:
-                self.logger.error("Forcing default profile since current ({}) doesn't exist.".format(current))
+                self.logger.error("Forcing default profile since current ({}) doesn't exist. Exception: {}".format(current, exc))
             self.__current_profile = self.__default_profile
 
         return profile_list

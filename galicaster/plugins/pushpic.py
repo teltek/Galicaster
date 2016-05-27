@@ -11,11 +11,10 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-from gi.repository import Gtk
 from StringIO import StringIO
-import pycurl
 
 from galicaster.core import context
+from gi.repository import Gdk, GdkPixbuf
 
 """
 Description: Galicaster Dashboard PUSH mode. It fetchs a screenchoot of the window through gtk and sends it with Galicaster's Opencast HTTP client to the Dashboard endpoint.
@@ -48,10 +47,10 @@ def push_pic(sender=None):
     postfield = [ ("snapshot", get_screenshot() ) ]
     
     try:
-        aux = occlient._OCHTTPClient__call('POST', endpoint, {}, {}, postfield, False, None, False)
-    except IOError as e:
+        occlient._OCHTTPClient__call('POST', endpoint, {}, {}, postfield, False, None, False)
+    except IOError:
         # This endpoint return 204, not 200.
-        aux = None
+        pass
         
 
 

@@ -20,8 +20,6 @@ import getpass
 from galicaster.utils import series as list_series
 from galicaster.classui.metadata import MetadataClass, DCTERMS, EQUIV
 
-import os
-
 from galicaster.utils.i18n import _
 
 #DCTERMS = ["title", "creator", "description", "language", "isPartOf"]

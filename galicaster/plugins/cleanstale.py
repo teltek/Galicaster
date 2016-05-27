@@ -46,7 +46,6 @@ def init():
 def clear_job(sender=None):
     global days
     logger.info("Executing clear job ... {} days".format(days))
-    conf = context.get_conf()
     repo = context.get_repository()
 
     mps = repo.get_past_mediapackages(days)

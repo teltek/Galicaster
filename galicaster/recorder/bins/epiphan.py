@@ -14,13 +14,12 @@
 from os import path
 import re
 
-from gi.repository import GObject, Gst
+from gi.repository import Gst
 
 import galicaster
 from galicaster.core import context
 from galicaster.recorder.utils import Switcher
 from galicaster.recorder import base
-#from galicaster.recorder import module_register
 from galicaster.recorder.utils import get_videosink
 
 logger = context.get_logger()
@@ -161,10 +160,3 @@ class GCepiphan(Gst.Bin, base.Base):
         self.bin_start.switch2()
         
         
-
-#GObject.type_register(GCepiphan)
-#Gst.element_register(GCepiphan, "gc-epiphan-bin")
-#module_register(GCepiphan, 'epiphan')
-
-#GCepiphanType = GObject.type_register(GCepiphan)
-#Gst.Element.register(GCepiphan, 'gc-epiphan-bin', 0, GCepiphanType)

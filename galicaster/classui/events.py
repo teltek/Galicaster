@@ -14,11 +14,9 @@
 
 from gi.repository import Gtk
 from gi.repository import Pango
-from os import path
 from gi.repository import GObject, Gdk
 import datetime
 
-from galicaster.mediapackage import mediapackage
 from galicaster.core import context
 from galicaster.classui import get_ui_path
 from galicaster.classui.elements.message_header import Header

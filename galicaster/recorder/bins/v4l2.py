@@ -12,14 +12,10 @@
 # San Francisco, California, 94105, USA.
 
 from os import path
-import re
 
-from gi.repository import GObject, Gst
-#Gst.init(None)
+from gi.repository import Gst
 
 from galicaster.recorder import base
-from galicaster.recorder import module_register
-
 from galicaster.recorder.utils import get_videosink
 
 pipestr = (' v4l2src name=gc-v4l2-src ! capsfilter name=gc-v4l2-filter ! queue ! gc-v4l2-dec '
@@ -168,9 +164,3 @@ class GCv4l2(Gst.Bin, base.Base):
         src1.send_event(event)
 
 
-#GObject.type_register(GCv4l2)
-#Gst.element_register(GCv4l2, 'gc-v4l2-bin')
-#module_register(GCv4l2, 'v4l2')
-
-#GCv4l2Type = GObject.type_register(GCv4l2)
-#Gst.Element.register(GCv4l2, 'gc-v4l2-bin', 0, GCv4l2Type)

@@ -13,7 +13,7 @@
 
 
 from gi.repository import GLib
-from gi.repository import Gtk, Gdk, GObject
+from gi.repository import Gdk
 GLib.threads_init()
 Gdk.threads_init()
 

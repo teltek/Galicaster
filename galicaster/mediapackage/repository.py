@@ -24,8 +24,6 @@ from galicaster.mediapackage import mediapackage
 from galicaster.mediapackage import serializer
 from galicaster.mediapackage import deserializer
 
-from galicaster.core import context
-
 """
 This class manages (add, list, remove...) all the mediapackages in the repository.
 """
@@ -453,7 +451,7 @@ class Repository(object):
             return True if mp.status == RECORDED else False
 
         next = filter(is_recorded, self.__list.values())
-        mps_sorted = sorted(self.__list.values(), key=lambda mp: (mp.getDate()), reverse=True)
+        mps_sorted = sorted(next, key=lambda mp: (mp.getDate()), reverse=True)
 
         if mps_sorted:
             return mps_sorted[0]

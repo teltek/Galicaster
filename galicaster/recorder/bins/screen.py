@@ -10,15 +10,12 @@
 # this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
-from gi.repository import GObject
+
 from gi.repository import Gst
-import re
 
 from os import path
 
-
 from galicaster.recorder import base
-from galicaster.recorder import module_register
 from galicaster.recorder.utils import get_videosink
 
 pipestr = (' ximagesrc startx=gc-startx starty=gc-starty endx=gc-endx endy=gc-endy xid=gc-xid xname=gc-xname name=gc-screen-src use-damage=0 ! queue ! '

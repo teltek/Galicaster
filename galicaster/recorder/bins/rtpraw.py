@@ -12,14 +12,11 @@
 # San Francisco, California, 94105, USA.
 # 
 
-from gi.repository import GObject
 from gi.repository import Gst
-import re
 
 from os import path
 
 from galicaster.recorder import base
-from galicaster.recorder import module_register
 from galicaster.recorder.utils import get_videosink
 
 pipe_config = {'mpeg4':

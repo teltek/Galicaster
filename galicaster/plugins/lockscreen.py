@@ -14,8 +14,6 @@
 """
 """
 
-from gi.repository import Gtk, Gdk
-
 from galicaster.classui import message
 from galicaster.core import context
 
@@ -43,7 +41,7 @@ def show_msg(element=None):
             "main" : _("Please insert the password")}
 
     logger.info("Galicaster locked")
-    warning = message.PopUp(message.LOCKSCREEN, text,
+    message.PopUp(message.LOCKSCREEN, text,
                             context.get_mainwindow(),
                             None, response_action=on_unlock, close_on_response=False)
 

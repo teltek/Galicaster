@@ -13,10 +13,9 @@
 
 from os import path
 
-from gi.repository import GObject, Gst
+from gi.repository import Gst
 
 from galicaster.recorder import base
-from galicaster.recorder import module_register
 from galicaster.recorder.utils import get_audiosink
 
 pipestr = (" autoaudiosrc name=gc-autoaudio-src  ! queue ! audioamplify name=gc-autoaudio-amplify amplification=1 ! "
@@ -159,10 +158,3 @@ class GCautoaudio(Gst.Bin, base.Base):
             element = self.get_by_name("gc-autoaudio-volume")
             element.set_property("mute", value)
 
-#GObject.type_register(GCautoaudio)
-#Gst.element_register(GCautoaudio, "gc-alsa-bin")
-#module_register(GCautoaudio, 'alsa')
-
-#GCautoaudioType = GObject.type_register(GCautoaudio)
-#Gst.Element.register(GCautoaudio, 'gc-autoaudio-bin', 0, GCautoaudioType)
-    

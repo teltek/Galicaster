@@ -13,7 +13,7 @@
 
 from os import path
 
-from gi.repository import GObject, Gst
+from gi.repository import Gst
 
 from galicaster.recorder import base
 from galicaster.recorder.utils import get_videosink, get_audiosink
@@ -155,8 +155,3 @@ class GCfirewire(Gst.Bin, base.Base):
         pass
      
 
-#GObject.type_register(GCfirewire)
-#Gst.element_register(GCfirewire, "gc-firewire-bin")
-
-#GCfirewireType = GObject.type_register(GCfirewire)
-#Gst.Element.register(GCfirewire, 'gc-firewire-bin', 0, GCfirewireType)

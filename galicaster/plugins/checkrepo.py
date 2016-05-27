@@ -46,5 +46,5 @@ def check_repository(self):
                 scheduler.create_new_timer(mp)
                 logger.info("Mediapackage with UID:%s have been reprogrammed", uid)
 	    except Exception as exc:
-                logger.error("Error trying to create a new timer for MP {}".format(uid))
+                logger.error("Error trying to create a new timer for MP {}: {}".format(uid, exc))
         

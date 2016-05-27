@@ -12,13 +12,11 @@
 # San Francisco, California, 94105, USA.
 
 from os import path
-import re
 
 from gi.repository import Gst
 #Gst.init(None)
 
 from galicaster.recorder import base
-from galicaster.recorder import module_register
 from galicaster.recorder.utils import get_videosink, get_audiosink
 
 videostr = ( ' decklinkvideosrc connection=hdmi mode=720p60 name=gc-blackmagic-src ! videoconvert ! queue ! '
@@ -314,11 +312,3 @@ class GCblackmagic(Gst.Bin, base.Base):
     if src2:
       src2.send_event(event)
     
-
-
-#Gobject.type_register(GCblackmagic)
-#Gst.element_register(GCblackmagic, 'gc-blackmagic-bin')
-#module_register(GCblackmagic, 'blackmagic')
-
-#GCblackmagicType = GObject.type_register(GCblackmagic)
-#Gst.Element.register(GCblackmagic, 'gc-blackmagic-bin', 0, GCblackmagicType)

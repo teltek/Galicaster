@@ -15,9 +15,9 @@ UI for a Metadata Editor Pop UP
 """
 
 from gi.repository import Gtk, Gdk
-import datetime
-from os import path
 from gi.repository import GObject
+
+import datetime
 import os
 
 from galicaster.classui.calendarwindow import CalendarWindow
@@ -105,8 +105,6 @@ class MetadataClass(Gtk.Widget):
         table = gui.get_object('infobox')
         dialog.vbox.set_child_packing(table, True, True, int(self.hprop*25), Gtk.PackType.END)
         title = gui.get_object('title')
-        sl = gui.get_object('slabel')
-        cl = gui.get_object('clabel')
         talign = gui.get_object('table_align')
 
         title.hide()

@@ -14,20 +14,14 @@
 import os
 import threading
 import tempfile
-import shutil
 import Queue
-import time
-import json
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from galicaster.mediapackage import serializer
-from galicaster.mediapackage import deserializer
 from galicaster.mediapackage import mediapackage
 from galicaster.utils import sidebyside
-from galicaster.utils import series
 from galicaster.utils.mediainfo import get_info
-from galicaster.core import context
 
 INGEST = 'Ingest'
 ZIPPING = 'Export to Zip'
@@ -276,10 +270,10 @@ class Worker(object):
         name=name.replace('nightly','')
         try:
             if name.count('cancel'):
-                f = getattr(self, name.replace('cancel',''))
+                getattr(self, name.replace('cancel',''))
                 self.cancel_nightly(mp, name.replace('cancel',''))
             else:
-                f = getattr(self, name)
+                getattr(self, name)
                 self.operation_nightly(mp, name, params)
         except Exception as exc:
             self.logger.error("Failure performing nightly job {0} for MP {1}. Exception: {2}".format(name, mp, exc))

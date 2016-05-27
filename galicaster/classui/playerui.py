@@ -15,7 +15,6 @@ UI for the player area
 """
 
 
-from os import path
 from gi.repository import GObject
 from gi.repository import Gtk, Gdk
 from gi.repository import Gst
@@ -30,7 +29,6 @@ except ImportError:
 from galicaster import __version__
 from galicaster.player import Player
 from galicaster.core import context
-from galicaster.mediapackage import mediapackage
 from galicaster.classui.managerui import ManagerUI
 from galicaster.classui import get_ui_path
 
@@ -328,8 +326,6 @@ class PlayerClassUI(ManagerUI):
 
     def resize(self):
         """Adapts GUI elements to the screen size"""
-        size = context.get_mainwindow().get_size()
-        
         buttonlist = ["playbutton", "pausebutton", "stopbutton"]
         secondarylist = ["editbutton", "ingestbutton", "deletebutton"]
         self.do_resize(buttonlist, secondarylist)
@@ -338,7 +334,6 @@ class PlayerClassUI(ManagerUI):
         k = self.proportion
         calign.set_padding(int(k*20),int(k*10),0,0)
   
-        #self.statusbar.resize(size)
         return True
 
     def event_change_mode(self, orig, old_state, new_state):

@@ -13,7 +13,7 @@
 
 from os import path
 
-from gi.repository import GObject, Gst
+from gi.repository import Gst
 
 from galicaster.recorder import base
 #from galicaster.recorder import module_register
@@ -177,9 +177,3 @@ class GCaudiotest(Gst.Bin, base.Base):
             element = self.get_by_name("gc-audiotest-volume")
             element.set_property("mute", value)
 
-#GObject.type_register(GCaudiotest)
-#Gst.element_register(GCaudiotest, "gc-audiotest-bin")
-#module_register(GCaudiotest, 'audiotest')
-
-#GCaudiotestType = GObject.type_register(GCaudiotest)
-#Gst.Element.register(GCaudiotest, 'gc-audiotest-bin', 0, GCaudiotestType)

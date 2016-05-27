@@ -12,9 +12,8 @@
 # San Francisco, California, 94105, USA.
 
 
-import os, time, socket, datetime
+import os, time, socket
 from email.mime.text import MIMEText
-from email.utils import parseaddr
 from threading import Thread
 import smtplib
 

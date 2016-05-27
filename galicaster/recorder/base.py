@@ -11,7 +11,6 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
-from os import path
 import re
 
 from gi.repository import Gst
@@ -73,7 +72,7 @@ class Base(object):
             validator.validate_track(self.options)
         except Exception as exc:
             error_msg = 'Profile error in {0}, track {1}. {2}'.format(
-                current_profile_path, self.options['name'], exc)
+                path, self.options['name'], exc)
 
             logger.error(error_msg)
             raise SystemError(error_msg)        

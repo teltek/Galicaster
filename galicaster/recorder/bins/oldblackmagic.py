@@ -14,14 +14,11 @@
 """
 The 'oldblackmagic' bin is preserved to keep the support to Blackmagic capture cards with the Ubuntu version 10.10. For new versions, please use the 'blackmagic' bin.
 """
-from gi.repository import GObject
 from gi.repository import Gst
-import re
 
 from os import path
 
 from galicaster.recorder import base
-from galicaster.recorder import module_register
 from galicaster.recorder.utils import get_videosink
 
 pipestr = ( ' decklinksrc input=sdi input-mode=12 name=gc-blackmagic-src ! capsfilter name=gc-blackmagic-filter ! '
@@ -138,11 +135,11 @@ class GColdblackmagic(Gst.Bin, base.Base):
         raise Exception("Not implemented. Using gst 0.10")
 
         base.Base.__init__(self, options)
-        gst.Bin.__init__(self, self.options['name'])
+        Gst.Bin.__init__(self, self.options['name'])
 
         gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
         aux = pipestr.replace('gc-vsink', gcvideosink)
-        bin = gst.parse_bin_from_description(aux, True)
+        bin = Gst.parse_bin_from_description(aux, True)
         # replace identity
         self.add(bin)
 
@@ -181,7 +178,3 @@ class GColdblackmagic(Gst.Bin, base.Base):
     src1 = self.get_by_name('gc-blackmagic-src')
     src1.send_event(event)
 
-
-# gobject.type_register(GColdblackmagic)
-# gst.element_register(GColdblackmagic, 'gc-old-blackmagic-bin')
-# module_register(GColdblackmagic, 'oldblackmagic')

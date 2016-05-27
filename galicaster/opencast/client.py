@@ -13,7 +13,6 @@
 
 import re
 import json
-import urllib
 import socket
 #IDEA use cStringIO to improve performance
 from StringIO import StringIO
@@ -314,7 +313,7 @@ class OCHTTPClient(object):
                     self.logger and self.logger.debug("Shared IP address ({}) between {} and {}, it will be used {}".format(adminIP, adminHost, host, server['host']))
                     return True
         except Exception as exc:
-            self.logger and self.logger.error("Problem on verifying the ingest server {} (on getting the IP of adminHost={} and host={})".format(server['host'], adminHost, host))
+            self.logger and self.logger.error("Problem on verifying the ingest server {} (on getting the IP of adminHost={} and host={}), exception {}".format(server['host'], adminHost, host, exc))
         return False
 
 

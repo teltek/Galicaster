@@ -16,7 +16,7 @@ Experimental bin which re-multiplexes the DV video to an AVI container so that i
 """
 from os import path
 
-from gi.repository import GObject, Gst
+from gi.repository import Gst
 
 from galicaster.recorder import base
 from galicaster.recorder.utils import get_videosink, get_audiosink
@@ -159,9 +159,3 @@ class GCfirewireavi(Gst.Bin, base.Base):
         # v4l2-ctl -d self.options["location"] -i self.options["input"]
         pass
      
-
-#GObject.type_register(GCfirewireavi)
-#Gst.element_register(GCfirewireavi, "gc-firewireavi-bin")
-
-#GCfirewireaviType = GObject.type_register(GCfirewireavi)
-#Gst.Element.register(GCfirewireavi, 'gc-firewireavi-bin', 0, GCfirewireaviType)

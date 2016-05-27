@@ -15,11 +15,9 @@
 Plugin that shows a keyboard when a dialog window with input entries is shown
 """
 
-from gi.repository import Gtk, Gdk
 from galicaster.core import context
 import subprocess
 
-from galicaster.utils.i18n import _
 from galicaster.utils.systemcalls import write_dconf_settings, execute, is_running
 
 logger = context.get_logger()
