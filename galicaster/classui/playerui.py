@@ -26,7 +26,7 @@ try:
 except ImportError:
     OrderedDict = dict
 
-from galicaster import __version__
+from galicaster.utils.miscellaneous import get_footer
 from galicaster.player import Player
 from galicaster.core import context
 from galicaster.classui.managerui import ManagerUI
@@ -57,7 +57,7 @@ class PlayerClassUI(ManagerUI):
 	builder = Gtk.Builder()
         builder.add_from_file(get_ui_path('player.glade'))
         release = builder.get_object("release_label")
-        release.set_label("Galicaster "+__version__)
+        release.set_label(get_footer())
 
         self.gui=builder
 

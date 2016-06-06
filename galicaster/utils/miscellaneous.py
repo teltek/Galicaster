@@ -12,6 +12,10 @@
 # San Francisco, California, 94105, USA.
 
 from gi.repository import Gdk
+from galicaster import __version__
+from galicaster.core import context
+
+conf = context.get_conf()
 
 def get_screenshot_as_pixbuffer():
     """makes screenshot of the current root window, yields Gtk.Pixbuf"""
@@ -21,3 +25,5 @@ def get_screenshot_as_pixbuffer():
     return pb
 
 
+def get_footer():
+    return "Galicaster "+ __version__ + "  -  " + conf.get_hostname()
