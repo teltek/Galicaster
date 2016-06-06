@@ -20,6 +20,8 @@ from nose.plugins.attrib import attr
 from galicaster.core.conf import Conf
 from dogtail.config import config
 from tests import get_resource
+import datetime
+import time
 import shutil
 import os
 import re
@@ -36,28 +38,55 @@ class TestFunctional(TestCase):
         test_number = re.sub('\D','',identifier[0])
         self.test_path = '/tmp/test{}'.format(test_number)
 
-        if os.path.exists(self.conf_path):
+        if os.path.exists(self.conf_path) and not os.path.exists('{}.old'.format(self.conf_path)):
             os.rename(self.conf_path,'{}.old'.format(self.conf_path))
-        shutil.copyfile(get_resource('conf/one_device.ini'),'/etc/galicaster/conf.ini')
+        shutil.copyfile(get_resource('conf/functional_test.ini'),'/etc/galicaster/conf.ini')
         if not os.path.exists(self.test_path):
             os.makedirs('{}/logs/'.format(self.test_path))
-        conf = Conf()
+        self.conf = Conf()
 
-        conf.set('basic','repository','{}/Repository'.format(self.test_path)) 
-        conf.set('logger','path','{}/logs/galicaster.log'.format(self.test_path))
-        conf.update()
+        self.conf.set('basic','repository','{}/Repository'.format(self.test_path))
+        self.conf.set('logger','path','{}/logs/galicaster.log'.format(self.test_path))
+        self.conf.update()
 
         config.load({'logDir':'{}/logs/'.format(self.test_path)})
         from . import recording
-        recording.start_galicaster()
 
     def tearDown(self):
         os.rename(self.conf_path,'{}/conf.ini'.format(self.test_path))
         if os.path.exists('{}.old'.format(self.conf_path)):
             os.rename('{}.old'.format(self.conf_path),self.conf_path)
         recording.quit()
+        del self.conf
 
     def test_136(self):
         """ Do 15 recordings of 10 minutes of duration
+        with automatic ingest to Opencast
         """
+        self.conf.set('ingest','manual','immediately')
+        self.conf.set('ingest','active','true')
+        self.conf.update()
+
+        recording.start_galicaster()
         recording.rec(10*60, 15)
+
+    def test_137(self):
+        """ Check nightly ingest while recording is paused
+        """
+        self.conf.set('ingest','manual','nightly')
+        self.conf.set('ingest','active','true')
+        night = datetime.datetime.now() + datetime.timedelta(minutes=1)
+        self.conf.set('heartbeat','night',night.strftime('%H:%M'))
+        self.conf.update()
+
+        recording.start_galicaster()
+        recording.rec(5)
+        recording.go_to_recorder()
+        recording.start_recording()
+        recording.pause_recording()
+        remaining_sleep = night - datetime.datetime.now() 
+        time.sleep(remaining_sleep.seconds)
+        recording.rewind_recording()
+        recording.stop_recording()
+        recording.go_to_distrib()
+
