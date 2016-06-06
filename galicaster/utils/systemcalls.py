@@ -25,7 +25,9 @@ def execute(command=[], logger=None, logaserror=True):
         except Exception as exc:
             logger and logger.log(level, "Error trying to execute {}: {}".format(command, exc))
             return False
-        
+    else:
+        return False
+    
     return True
 
 
