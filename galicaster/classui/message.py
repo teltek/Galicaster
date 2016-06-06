@@ -253,7 +253,8 @@ class PopUp(Gtk.Widget):
 
 
     def force_response(self, origin=None, response=None):
-        self.dialog.response(response)
+        if response:
+            self.dialog.response(response)
 
     def on_about_dialog_response(self, origin, response_id):
         if response_id in NEGATIVE:

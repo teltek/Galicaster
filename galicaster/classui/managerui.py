@@ -214,13 +214,13 @@ class ManagerUI(Gtk.Box):
         operations_dialog = message.PopUp(message.OPERATIONS,text,
                                 context.get_mainwindow(),
                                 operations)
-
+        
         if operations_dialog.response == Gtk.ResponseType.REJECT or \
             operations_dialog.response == Gtk.ResponseType.DELETE_EVENT or \
             operations_dialog.response == Gtk.ResponseType.OK:
             return True
 
-        elif 0 < operations_dialog.response < len(response_list):
+        elif 0 < operations_dialog.response <= len(response_list):
             chosen_job = response_list[operations_dialog.response-1].lower().replace (" ", "_")
             if chosen_job.count('nightly'):
                 context.get_worker().do_job_nightly(chosen_job.replace("_",""), package)
