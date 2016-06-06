@@ -44,6 +44,7 @@ from galicaster.utils import readable
 from galicaster.utils.resize import relabel
 from galicaster.utils.i18n import _
 
+from galicaster.recorder.service import STATUSES
 from galicaster.recorder.service import INIT_STATUS
 from galicaster.recorder.service import PREVIEW_STATUS
 from galicaster.recorder.service import RECORDING_STATUS
@@ -59,14 +60,6 @@ status_label_blink = True
 
 # No-op function for i18n
 def N_(string): return string
-
-STATUS = [  [N_("Initialization"),"#484848"],
-            [N_("Waiting"),"#484848"],
-            [N_("Recording"),"#FF0000"],
-            [N_("Paused"),"#484848"],
-            [N_("Error"),"#FF0000"],
-            ]
-
 
 TIME_BLINK_START = 20
 TIME_BLINK_STOP = 20
@@ -498,16 +491,9 @@ class RecorderClassUI(Gtk.Box):
         main_window = context.get_mainwindow()
         main_window.realize()
         
-        # style=main_window.get_style()
-        # bgcolor = style.bg[Gtk.StateType.PRELIGHT]  
-        # fgcolor = style.fg[Gtk.StateType.PRELIGHT]  
-
-        for i in STATUS:
-            if i[0] in ["Recording", "Error"]:
-                l.append([_(i[0]), i[1], "#484848"])
-            else:
-                l.append([_(i[0]), "#F7F6F6", i[1]])
-                
+        for i in STATUSES:
+            l.append([_(i.description), i.bg_color, i.fg_color])
+            
         v = Gtk.CellView()
         v.set_model(l)
 
@@ -690,7 +676,6 @@ class RecorderClassUI(Gtk.Box):
             prevb.set_sensitive(True)
             editb.set_sensitive(False)
             swapb.set_sensitive(False)
-            self.view.set_displayed_row(Gtk.TreePath(0))
 
         elif status == PREVIEW_STATUS:
             record.set_sensitive( (self.allow_start or self.allow_manual) )
@@ -700,7 +685,6 @@ class RecorderClassUI(Gtk.Box):
             prevb.set_sensitive(True)
             editb.set_sensitive(False)
             swapb.set_sensitive(True)
-            self.view.set_displayed_row(Gtk.TreePath(1))
 
         elif status == RECORDING_STATUS:
             GObject.timeout_add(500, self.recording_info_timeout, 
@@ -714,7 +698,6 @@ class RecorderClassUI(Gtk.Box):
             prevb.set_sensitive(False)
             swapb.set_sensitive(False)
             editb.set_sensitive(self.recorder.current_mediapackage and self.recorder.current_mediapackage.manual)
-            self.view.set_displayed_row(Gtk.TreePath(2))
 
         elif status == PAUSED_STATUS:
             record.set_sensitive(False)
@@ -723,7 +706,6 @@ class RecorderClassUI(Gtk.Box):
             prevb.set_sensitive(False)
             helpb.set_sensitive(False)
             editb.set_sensitive(False)
-            self.view.set_displayed_row(Gtk.TreePath(3))
 
         elif status == ERROR_STATUS:
             record.set_sensitive(False)
@@ -732,10 +714,14 @@ class RecorderClassUI(Gtk.Box):
             helpb.set_sensitive(True) 
             prevb.set_sensitive(True)
             editb.set_sensitive(False)
-            self.view.set_displayed_row(Gtk.TreePath(4))
             if self.focus_is_active:
                 self.launch_error_message()
 
+        # Change status label
+        if status in STATUSES:
+            self.view.set_displayed_row(Gtk.TreePath(STATUSES.index(status)))
+        else:
+            logger.error("Unable to change status label, unknown status {}".format(status))
         # Close error dialog
         if status not in [ERROR_STATUS] and self.error_dialog:
             self.destroy_error_dialog()
