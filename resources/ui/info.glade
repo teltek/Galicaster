@@ -136,7 +136,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="identifier_label">
+                                  <object class="GtkLabel" id="id_label">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="halign">end</property>
@@ -148,7 +148,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="identifier">
+                                  <object class="GtkLabel" id="id">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="halign">start</property>
@@ -557,7 +557,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="ingest_done">
+                                  <object class="GtkLabel" id="ingest">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="halign">start</property>
@@ -569,7 +569,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="zip_done">
+                                  <object class="GtkLabel" id="exporttozip">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="halign">start</property>
@@ -581,7 +581,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="sbs_done">
+                                  <object class="GtkLabel" id="sidebyside">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="halign">start</property>
@@ -637,7 +637,7 @@
                                 <property name="margin_bottom">15</property>
                                 <property name="column_spacing">10</property>
                                 <child>
-                                  <object class="GtkLabel" id="series_title_label">
+                                  <object class="GtkLabel" id="seriestitle_label">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="halign">end</property>
@@ -661,7 +661,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="series_creator_label">
+                                  <object class="GtkLabel" id="seriescreator_label">
                                     <property name="can_focus">False</property>
                                     <property name="halign">end</property>
                                     <property name="label" translatable="yes">Creator:</property>
@@ -672,7 +672,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="series_contributor_label">
+                                  <object class="GtkLabel" id="seriescontributor_label">
                                     <property name="can_focus">False</property>
                                     <property name="halign">end</property>
                                     <property name="label" translatable="yes">Contributor:</property>
@@ -683,7 +683,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="series_subject_label">
+                                  <object class="GtkLabel" id="seriessubject_label">
                                     <property name="can_focus">False</property>
                                     <property name="halign">end</property>
                                     <property name="label" translatable="yes">Subject:</property>
@@ -694,7 +694,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="series_language_label">
+                                  <object class="GtkLabel" id="serieslanguage_label">
                                     <property name="can_focus">False</property>
                                     <property name="halign">end</property>
                                     <property name="label" translatable="yes">Language:</property>
@@ -705,7 +705,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="series_licence_label">
+                                  <object class="GtkLabel" id="serieslicence_label">
                                     <property name="can_focus">False</property>
                                     <property name="halign">end</property>
                                     <property name="label" translatable="yes">Licence:</property>
@@ -716,7 +716,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="series_description_label">
+                                  <object class="GtkLabel" id="seriesdescription_label">
                                     <property name="can_focus">False</property>
                                     <property name="halign">end</property>
                                     <property name="label" translatable="yes">Description:</property>
@@ -727,7 +727,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="series_title">
+                                  <object class="GtkLabel" id="seriestitle">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="halign">start</property>
@@ -739,7 +739,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="series_identifier">
+                                  <object class="GtkLabel" id="series">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="halign">start</property>
@@ -751,7 +751,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="series_creator">
+                                  <object class="GtkLabel" id="seriescreator">
                                     <property name="can_focus">False</property>
                                     <property name="halign">start</property>
                                     <property name="label" translatable="yes">&lt;Creator&gt;</property>
@@ -762,7 +762,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="series_contributor">
+                                  <object class="GtkLabel" id="seriescontributor">
                                     <property name="can_focus">False</property>
                                     <property name="halign">start</property>
                                     <property name="label" translatable="yes">&lt;Contributor&gt;</property>
@@ -773,7 +773,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="series_subject">
+                                  <object class="GtkLabel" id="seriessubject">
                                     <property name="can_focus">False</property>
                                     <property name="halign">start</property>
                                     <property name="label" translatable="yes">&lt;Subject&gt;</property>
@@ -784,7 +784,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="series_language">
+                                  <object class="GtkLabel" id="serieslanguage">
                                     <property name="can_focus">False</property>
                                     <property name="halign">start</property>
                                     <property name="label" translatable="yes">&lt;Language&gt;</property>
@@ -795,7 +795,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="series_licence">
+                                  <object class="GtkLabel" id="serieslicence">
                                     <property name="can_focus">False</property>
                                     <property name="halign">start</property>
                                     <property name="label" translatable="yes">&lt;Licence&gt;</property>
@@ -806,7 +806,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="series_description">
+                                  <object class="GtkLabel" id="seriesdescription">
                                     <property name="can_focus">False</property>
                                     <property name="halign">start</property>
                                     <property name="label" translatable="yes">&lt;Description&gt;</property>

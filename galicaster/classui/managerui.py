@@ -20,15 +20,16 @@ from galicaster.utils import series
 
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
+from galicaster.mediapackage.serializer import set_manifest_json
 from galicaster.classui import message
 from galicaster.classui.metadata import MetadataClass as Metadata
 from galicaster.classui.strip import StripUI
 
 from galicaster.utils.i18n import _
 from galicaster.utils import readable
+from galicaster.utils.nautilus import open_folder
 
 from os import path
-from galicaster.utils.nautilus import open_folder
 
 logger = context.get_logger()
 
@@ -276,48 +277,50 @@ class ManagerUI(Gtk.Box):
                     and the content of the label as values.
         """
         mp = self.repository.get(key)
+
+        data = set_manifest_json(mp)
+
         # General
-        data = {}
-        data['title_mp'] = mp.title
-        data['identifier'] = mp.identifier
-        data['folder'] = mp.getURI()
-        data['duration'] = readable.time(int(mp.getDuration())/1000)
-        data['size'] = readable.size(mp.getSize())
+        data['title_mp'] = data['title']
+        del data['title']
+
+        data['duration'] = readable.time((data['duration'])/1000)
+        data['size'] = readable.size(data['size'])
         data['created'] = readable.date(mp.getStartDateAsString(),
                                    "%B %d, %Y - %H:%M").replace(' 0',' ')
-        # Operations
-        data['ingest_done'] = _(mediapackage.op_status[mp.getOpStatus("ingest")])
-        data['zip_done'] = _(mediapackage.op_status[mp.getOpStatus("ingest")])
-        data['sbs_done'] = _(mediapackage.op_status[mp.getOpStatus("sidebyside")])
 
-        # Series
-        series_data = [ 'title', 'identifier','creator', 'contributor',
-                'subject', 'language', 'license', 'decription']
-        if mp.getSeries():
-            for item in series_data:
-                if item in mp.metadata_series:
-                    data['series_{}'.format(item)] = mp.metadata_series[item]
+        if data.has_key('seriestitle'):
+            data['isPartOf'] = data['seriestitle']
+ 
+        # Operations
+        for op,status in data['operations'].iteritems():
+            data[op] = _(status)
+        del data['operations']
 
         # Tracks
-        tracks = {}
-        for i,track in enumerate(mp.getTracks()):
-            tracks[i] = {}
-            tracks[i][_('Name:')] = track.getIdentifier()
-            tracks[i][_('Flavor:')] = track.getFlavor()
-            tracks[i][_('Type:')] = track.getMimeType()
-            tracks[i][_('File:')] = path.split(track.getURI())[1]
+        tracks = [] 
+        for track in data['media']['track']:
+            t = {}
+            t[_('Name:')] = track['id']
+            t[_('Type:')] = track['mimetype']
+            t[_('Flavor:')] = track['type']
+            t[_('File:')] = path.split(track['url'])[1]
+            tracks.append(t)
         if tracks:
             data['tracks'] = tracks
+            del data['media']
 
         # Catalogs
-        catalogs = {}
-        for i,cat in enumerate(mp.getCatalogs()):
-            catalogs[i] = {}
-            catalogs[i][_('Name:')] = cat.getIdentifier()
-            catalogs[i][_('Flavor:')] = cat.getFlavor()
-            catalogs[i][_('Type:')] = cat.getMimeType()
+        catalogs = []
+        for catalog in data['metadata']['catalog']:
+            c = {}
+            c[_('Name:')] = catalog['id']
+            c[_('Flavor:')] = catalog['type']
+            c[_('Type:')] = catalog['mimetype']
+            catalogs.append(c)
         if catalogs:
             data['catalogs'] = catalogs
+            del data['metadata']
 
         return data
 

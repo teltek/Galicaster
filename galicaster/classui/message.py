@@ -154,7 +154,10 @@ class PopUp(Gtk.Widget):
             image.set_pixel_size(int(self.wprop*80))
 
         title = 'Galicaster'
+
+        # For MP Info PopUP
         series_shown = False
+
         for label,content in text.iteritems():
 
             if label == 'title':
@@ -256,7 +259,7 @@ class PopUp(Gtk.Widget):
             info (Dict): the tracks of the MP and its information as value.
         """
         row = 0
-        for key,value in info.iteritems():
+        for e in info:
             void_label = Gtk.Label('')
             void_label.show()
             grid.attach(void_label,0,row,1,1)
@@ -264,7 +267,7 @@ class PopUp(Gtk.Widget):
             void_label.show()
             grid.attach(void_label,1,row,1,1)
             row += 1
-            for info_label, info_content in value.iteritems():
+            for info_label, info_content in e.iteritems():
                 label = Gtk.Label.new(info_label.title())
                 label.set_halign(Gtk.Align.END)
                 label.show()
