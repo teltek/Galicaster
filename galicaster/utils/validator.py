@@ -54,11 +54,7 @@ def validate_track(options, gc_parameters=None, recursive=False):
     current_error = None
     global_error_msg = None
 
-    for k,v in gc_parameters.iteritems():
-        if not k in options.keys():
-            set_default()
-            continue
-            
+    for k,v in gc_parameters.iteritems():            
         if not options[k] and options[k] is not False and options[k] is not 0:
             set_default()
             continue
@@ -145,9 +141,9 @@ def validate_track(options, gc_parameters=None, recursive=False):
                 if not current_error:
                     current_error = 'INFO: Parameter "{}" with value {} must be {}.'.format(
                         k, options[k], v['type'])                
-            else:
-                iteration_error, options[k] = validate_track(options[k], v['default'], recursive=True)
-                current_error = iteration_error
+            # else:
+            #     iteration_error, options[k] = validate_track(options[k], v['default'], recursive=True)
+            #     current_error = iteration_error
 
 
         #TODO add check location tests and check only in bins with location
@@ -158,7 +154,7 @@ def validate_track(options, gc_parameters=None, recursive=False):
 
         # TODO improve the caps validation
         # https://gstreamer.freedesktop.org/data/doc/gstreamer/head/pwg/html/section-types-definitions.html#table-video-types
-        if v['type'] == 'caps':
+        elif v['type'] == 'caps':
            try:
                caps = Gst.Caps.from_string(options[k])
                structure = caps.get_structure(0)

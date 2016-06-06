@@ -118,7 +118,7 @@ class GCscreen(Gst.Bin, base.Base):
         },           
         "xid":{
             "type": "hexadecimal",
-            "default": 0,
+            "default": '0',
             "description": "Window XID to capture from (xwininfo -tree -root)",
         },           
         "xname":{
