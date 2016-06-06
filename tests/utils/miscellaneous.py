@@ -21,14 +21,16 @@ import urllib, mimetypes
 
 from unittest import TestCase
 from galicaster.utils import miscellaneous
+from galicaster.core import context
+from galicaster import __version__
 
 class TestFunctions(TestCase):
     
     def setUp(self):
-        pass
+        self.conf = context.get_conf()
 
     def tearDown(self):
-        pass
+        del self.conf
 
     def test_screenshot(self):
         pb = miscellaneous.get_screenshot_as_pixbuffer()
@@ -44,3 +46,6 @@ class TestFunctions(TestCase):
         # Check 2
         mimeType = subprocess.check_output(['file', '-ib', imagefile.name]).strip()
         self.assertTrue('image/png' in mimeType)
+
+    def test_get_footer(self):
+        self.assertEqual(miscellaneous.get_footer(), "Galicaster "+ __version__ + "  -  " + self.conf.get_hostname())

@@ -32,7 +32,7 @@ from gi.repository import Gtk, Gdk, GdkPixbuf
 from gi.repository import Pango
 import datetime
 
-from galicaster import __version__
+from galicaster.utils.miscellaneous import get_footer
 from galicaster.core import context
 
 from galicaster.classui.metadata import MetadataClass as Metadata
@@ -92,7 +92,7 @@ class RecorderClassUI(Gtk.Box):
 	builder = Gtk.Builder()
         builder.add_from_file(get_ui_path('recorder.glade'))
         release = builder.get_object("release_label")
-        release.set_label("Galicaster "+__version__)
+        release.set_label(get_footer())
         
         # TEST
         self.repo = context.get_repository()
