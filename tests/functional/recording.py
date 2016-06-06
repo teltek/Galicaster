@@ -89,3 +89,6 @@ def __get_by_name(accessible_name):
     global galicaster
 
     return galicaster.findChild(predicate.IsNamed(accessible_name))
+
+
+

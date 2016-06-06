@@ -18,11 +18,12 @@ import math
 import threading
 import tempfile
 from bottle import route, run, response, abort, request, install
-from gi.repository import Gtk, Gdk, GdkPixbuf
+from gi.repository import Gtk, Gdk
 
 from galicaster.core import context
 from galicaster.mediapackage.serializer import set_manifest
 from galicaster.utils import readable
+from galicaster.utils.miscellaneous import get_screenshot_as_pixbuffer
 
 """
 Description: Galicaster REST endpoint using bottle micro web-framework.
@@ -145,19 +146,13 @@ def operationt(op, mpid):
     worker.enqueue_job_by_name(op, mpid)
     return "{0} over {1}".format(op,mpid)
  
-def get_screenshot():
-    """makes screenshot of the current root window, yields Gtk.Pixbuf"""
-    window = Gdk.get_default_root_window()
-    size = window.get_size()         
-    pixbuf = GdkPixbuf.Pixbuf(GdkPixbuf.Colorspace.RGB, False, 8, size[0], size[1])        
-    return pixbuf.get_from_drawable(window, window.get_colormap(), 
-                                    0, 0, 0, 0, size[0], size[1])
+
 @route('/screen')
 def screen():
     response.content_type = 'image/png'
-    pb = get_screenshot()    
+    pb = get_screenshot_as_pixbuffer()    
     ifile = tempfile.NamedTemporaryFile(suffix='.png')
-    pb.save(ifile.name, "png")
+    pb.savev(ifile.name, "png", [], ["100"])
     pb= open(ifile.name, 'r') 
     if pb:
         return pb
