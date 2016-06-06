@@ -23,7 +23,6 @@ from galicaster.mediapackage import mediapackage
 from galicaster.classui import message
 from galicaster.classui.metadata import MetadataClass as Metadata
 from galicaster.classui.strip import StripUI
-from galicaster.classui.mpinfo import MPinfo
 
 from galicaster.utils.i18n import _
 from galicaster.utils import readable
@@ -257,7 +256,6 @@ class ManagerUI(Gtk.Box):
                       response_action=self.create_mp_info_response(text['folder']),
                       close_on_response=False)
 
-        #MPinfo(key)
 
     def create_mp_info_response(self, folder):
         def on_mp_info_response(response_id, **kwargs):
