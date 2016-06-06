@@ -30,6 +30,7 @@ WARN_OK = 'okwarning.glade'
 OPERATIONS = 'operations.glade'
 ABOUT = 'about.glade'
 LOCKSCREEN = 'lockscreen.glade'
+MP_INFO = 'info.glade'
 
 # FIXME
 QUESTION = Gtk.STOCK_DIALOG_QUESTION
@@ -61,11 +62,15 @@ class PopUp(Gtk.Widget):
         """ Initializes the Gtk.Dialog from its GLADE
         Args:
             message (str): type of message (See above constants)
-            text (Dict{str:str}): dictionary with three fields (title, main question, explanation text)
+            text (Dict{str:str}): dictionary with the labels of the text that are going to be ser.
             parent (Gtk.Window): program main window
             buttons (Dict{str:str}): button labels to be shown and its responses
+
+        Notes: title key is asociated with the label of the GALICASTER strip.
+                Any other key must be the same as the label id in the Glade.
+
         """
-        # FIXME: Workaround in order to avoid the gurbage collector (GC)
+        # FIXME: Workaround in order to avoid the garbage collector (GC)
         global instance
         instance = self
 
@@ -84,8 +89,8 @@ class PopUp(Gtk.Widget):
         self.gui = Gtk.Builder()
         self.gui.add_from_file(get_ui_path(message))
         self.gui.connect_signals(self)
-        self.dialog = self.configure_ui(text, message, self.gui, parent)
 
+        self.dialog = self.configure_ui(text, message, self.gui, parent)
         if message == OPERATIONS:
 
             frames = {'Cancel': {'Cancel' : -2}}
@@ -102,13 +107,24 @@ class PopUp(Gtk.Widget):
 
             self.set_buttons(self.gui, frames)
 
+        elif message == MP_INFO:
+            if text.has_key('tracks'):
+                grid = self.gui.get_object('tracks_grid')
+                if grid:
+                    self.fill_info(grid, text['tracks'])
+            if text.has_key('catalogs'):
+                grid = self.gui.get_object('catalogs_grid')
+                if grid:
+                    self.fill_info(grid, text['catalogs'])
+
         elif message == ABOUT:
             self.set_logos(self.gui)
 
+
         # Display dialog
         parent.get_style_context().add_class('shaded')
-        if message == ERROR or message == WARN_QUIT or message == WARN_STOP or message == ABOUT or message == INFO or message == WARN_DELETE or message == LOCKSCREEN:
-            self.dialog.show_all()
+        if message in [ERROR, WARN_QUIT, WARN_STOP, ABOUT, INFO, WARN_DELETE, LOCKSCREEN, MP_INFO]:
+            self.dialog.show()
             self.dialog.connect('response', self.on_dialog_response)
         #elif message == ABOUT:
         #    #TODO: use on_dialog_response instead of on_about_dialog_response
@@ -124,7 +140,7 @@ class PopUp(Gtk.Widget):
     def configure_ui(self, text, message_type, gui, parent, another=None):
         """Imports the dialog from the corresponding GLADE and adds some configuration
         Args:
-            text (Dict{Str:str}): a dictionary wit the text to be filled
+            text (Dict{Str:str}): a dictionary with the text to be filled
             message_type (str): one of the above constants that leads to the appropriate GLADE
             gui (Gtk.Builder): the builder with the GLADE info
             parent (Gtk.Window): the Main Window of the application
@@ -137,30 +153,44 @@ class PopUp(Gtk.Widget):
         if image:
             image.set_pixel_size(int(self.wprop*80))
 
-        if message_type != INFO:
-            main = gui.get_object("main")
-            if main:
-                main.set_label(text.get('main',''))
-        elif message_type == INFO:
-            # TODO: Overwrite info text if given
-            help_message = "{}\n{}".format(text.get('main',''),text.get('text',''))
-            textbuffer = gui.get_object('textbuffer')
-            textbuffer.set_text(help_message)
+        title = 'Galicaster'
+        series_shown = False
+        for label,content in text.iteritems():
+
+            if label == 'title':
+                title = content
+
+            elif label == 'main':
+                if message_type != INFO:
+                    main = gui.get_object("main")
+                    if main:
+                        main.set_label(text.get('main',''))
+                else:
+                    help_message = "{}\n{}".format(text.get('main',''),text.get('text',''))
+                    textbuffer = gui.get_object('textbuffer')
+                    textbuffer.set_text(help_message)
+
+            elif isinstance(label,str) and content:
+                text_label = gui.get_object(label)
+                if text_label:
+                    text_label.set_label(content)
+                    text_label.show()
+                title_label = gui.get_object('{}_label'.format(label))
+                if title_label:
+                    title_label.show()
+                if label.find('series')>=0 and not series_shown:
+                    series_frame = gui.get_object('series_frame')
+                    series_frame.show()
+                    series_shown = True
 
         dialog = gui.get_object("dialog")
-
-        text_label = gui.get_object('text')
-        if text_label:
-            text_label.set_label(text.get('text',''))
-            text_label.show()
-
 
         dialog.set_type_hint(Gdk.WindowTypeHint.TOOLBAR)
         dialog.set_skip_taskbar_hint(True)
         dialog.set_keep_above(False)
 
         #HEADER
-        strip = Header(size=self.size, title=text.get("title","Galicaster"))
+        strip = Header(size=self.size, title=title)
         dialog.vbox.pack_start(strip, True, True, 0)
         dialog.vbox.reorder_child(strip,0)
 
@@ -219,6 +249,32 @@ class PopUp(Gtk.Widget):
             GdkPixbuf.InterpType.BILINEAR)
         teltek_logo.set_from_pixbuf(pixbuf)
 
+    def fill_info(self,grid,info):
+        """ Fill the Information PopUp with the tracks information
+        Args:
+            grid (Gtk.Grid): the grid element of 2 columns to be filled.
+            info (Dict): the tracks of the MP and its information as value.
+        """
+        row = 0
+        for key,value in info.iteritems():
+            void_label = Gtk.Label('')
+            void_label.show()
+            grid.attach(void_label,0,row,1,1)
+            void_label = Gtk.Label('')
+            void_label.show()
+            grid.attach(void_label,1,row,1,1)
+            row += 1
+            for info_label, info_content in value.iteritems():
+                label = Gtk.Label.new(info_label.title())
+                label.set_halign(Gtk.Align.END)
+                label.show()
+                content = Gtk.Label.new(info_content.title())
+                content.set_halign(Gtk.Align.START)
+                content.show()
+                grid.attach(label,0,row,1,1)
+                grid.attach(content,1,row,1,1)
+                row += 1
+        grid.show()
 
     def resize_buttons(self, area, fontsize, equal = False):
         """Adapts buttons to the dialog size"""
@@ -263,8 +319,9 @@ class PopUp(Gtk.Widget):
     def on_dialog_response(self, origin, response_id):        
         if response_id not in NEGATIVE and self.response_action:            
             self.response_action(response_id, builder=self.gui, popup=self)
-            
-        if self.close_on_response:
+            if self.close_on_response:
+                self.dialog_destroy()
+        else:
             self.dialog_destroy()
 
     def dialog_destroy(self, origin=None):

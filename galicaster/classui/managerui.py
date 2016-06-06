@@ -26,6 +26,10 @@ from galicaster.classui.strip import StripUI
 from galicaster.classui.mpinfo import MPinfo
 
 from galicaster.utils.i18n import _
+from galicaster.utils import readable
+
+from os import path
+from galicaster.utils.nautilus import open_folder
 
 logger = context.get_logger()
 
@@ -246,7 +250,78 @@ class ManagerUI(Gtk.Box):
     def info(self,key):
         """Pops up de MP info dialog"""
         logger.info("Info: {0}".format(str(key)))
-        MPinfo(key)
+        text = self.get_mp_info(key)
+        text['title'] = 'Mediapackage Info'
+        message.PopUp(message.MP_INFO, text,
+                      context.get_mainwindow(),
+                      response_action=self.create_mp_info_response(text['folder']),
+                      close_on_response=False)
+
+        #MPinfo(key)
+
+    def create_mp_info_response(self, folder):
+        def on_mp_info_response(response_id, **kwargs):
+            """ Opens the MP folder """
+            open_folder(folder)
+
+        return on_mp_info_response
+
+    def get_mp_info(self,key):
+        """ Retrieves a dictionary with the information of the MP
+        with the given key
+
+        Args:
+            key (str): the MP identifier
+
+        Returns:
+            Dict {}: with the label of the info.glade dialog as key
+                    and the content of the label as values.
+        """
+        mp = self.repository.get(key)
+        # General
+        data = {}
+        data['title_mp'] = mp.title
+        data['identifier'] = mp.identifier
+        data['folder'] = mp.getURI()
+        data['duration'] = readable.time(int(mp.getDuration())/1000)
+        data['size'] = readable.size(mp.getSize())
+        data['created'] = readable.date(mp.getStartDateAsString(),
+                                   "%B %d, %Y - %H:%M").replace(' 0',' ')
+        # Operations
+        data['ingest_done'] = _(mediapackage.op_status[mp.getOpStatus("ingest")])
+        data['zip_done'] = _(mediapackage.op_status[mp.getOpStatus("ingest")])
+        data['sbs_done'] = _(mediapackage.op_status[mp.getOpStatus("sidebyside")])
+
+        # Series
+        series_data = [ 'title', 'identifier','creator', 'contributor',
+                'subject', 'language', 'license', 'decription']
+        if mp.getSeries():
+            for item in series_data:
+                if item in mp.metadata_series:
+                    data['series_{}'.format(item)] = mp.metadata_series[item]
+
+        # Tracks
+        tracks = {}
+        for i,track in enumerate(mp.getTracks()):
+            tracks[i] = {}
+            tracks[i][_('Name:')] = track.getIdentifier()
+            tracks[i][_('Flavor:')] = track.getFlavor()
+            tracks[i][_('Type:')] = track.getMimeType()
+            tracks[i][_('File:')] = path.split(track.getURI())[1]
+        if tracks:
+            data['tracks'] = tracks
+
+        # Catalogs
+        catalogs = {}
+        for i,cat in enumerate(mp.getCatalogs()):
+            catalogs[i] = {}
+            catalogs[i][_('Name:')] = cat.getIdentifier()
+            catalogs[i][_('Flavor:')] = cat.getFlavor()
+            catalogs[i][_('Type:')] = cat.getMimeType()
+        if catalogs:
+            data['catalogs'] = catalogs
+
+        return data
 
     def do_resize(self, buttonlist, secondlist=[]):
         """Force a resize on the Media Manager"""
