@@ -351,9 +351,17 @@ def set_manifest_json(mp):
     if mp.metadata_episode.has_key("language"):
         mp_json["language"] = mp.getLanguage()
 
-    if mp.getSeriesIdentifier():                                                                                                      
-        mp_json["series"] = mp.getSeriesIdentifier()                                                                                    
+    if mp.getSeriesIdentifier():
+        mp_json["series"] = mp.getSeriesIdentifier()
         mp_json["seriestitle"] = mp.series_title
+
+        series_data = ['creator', 'contributor',
+                'subject', 'language', 'license', 'decription']
+
+        for data in series_data:
+            if data in mp.metadata_series:
+                mp_json['series{}'.format(data)] = mp.series_episode[data]
+
     if mp.getDuration() != None:
         mp_json["duration"] = int(mp.getDuration())
 
@@ -361,6 +369,14 @@ def set_manifest_json(mp):
     mp_json["sizeByFlavor"] = mp.getSizeByFlavors()
 
     mp_json["properties"] = mp.properties
+    mp_json["folder"] = mp.getURI()
+
+    episode_data = ['licence', 'temporal','spatial',
+                        'contributor', 'subject', 'rights']
+
+    for data in episode_data:
+        if data in mp.metadata_episode:
+            mp_json[data] = mp.metadata_episode[data]
 
     # OPERATIONS STATUS
     mp_json["operations"] = {}

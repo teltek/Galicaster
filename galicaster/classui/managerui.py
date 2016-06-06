@@ -20,12 +20,16 @@ from galicaster.utils import series
 
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
+from galicaster.mediapackage.serializer import set_manifest_json
 from galicaster.classui import message
 from galicaster.classui.metadata import MetadataClass as Metadata
 from galicaster.classui.strip import StripUI
-from galicaster.classui.mpinfo import MPinfo
 
 from galicaster.utils.i18n import _
+from galicaster.utils import readable
+from galicaster.utils.nautilus import open_folder
+
+from os import path
 
 logger = context.get_logger()
 
@@ -246,7 +250,79 @@ class ManagerUI(Gtk.Box):
     def info(self,key):
         """Pops up de MP info dialog"""
         logger.info("Info: {0}".format(str(key)))
-        MPinfo(key)
+        text = self.get_mp_info(key)
+        text['title'] = 'Mediapackage Info'
+        message.PopUp(message.MP_INFO, text,
+                      context.get_mainwindow(),
+                      response_action=self.create_mp_info_response(text['folder']),
+                      close_on_response=False)
+
+
+    def create_mp_info_response(self, folder):
+        def on_mp_info_response(response_id, **kwargs):
+            """ Opens the MP folder """
+            open_folder(folder)
+
+        return on_mp_info_response
+
+    def get_mp_info(self,key):
+        """ Retrieves a dictionary with the information of the MP
+        with the given key
+
+        Args:
+            key (str): the MP identifier
+
+        Returns:
+            Dict {}: with the label of the info.glade dialog as key
+                    and the content of the label as values.
+        """
+        mp = self.repository.get(key)
+
+        data = set_manifest_json(mp)
+
+        # General
+        data['title_mp'] = data['title']
+        del data['title']
+
+        data['duration'] = readable.time((data['duration'])/1000)
+        data['size'] = readable.size(data['size'])
+        data['created'] = readable.date(mp.getStartDateAsString(),
+                                   "%B %d, %Y - %H:%M").replace(' 0',' ')
+
+        if data.has_key('seriestitle'):
+            data['isPartOf'] = data['seriestitle']
+ 
+        # Operations
+        for op,status in data['operations'].iteritems():
+            data[op] = _(status)
+        del data['operations']
+
+        # Tracks
+        tracks = [] 
+        for track in data['media']['track']:
+            t = {}
+            t[_('Name:')] = track['id']
+            t[_('Type:')] = track['mimetype']
+            t[_('Flavor:')] = track['type']
+            t[_('File:')] = path.split(track['url'])[1]
+            tracks.append(t)
+        if tracks:
+            data['tracks'] = tracks
+            del data['media']
+
+        # Catalogs
+        catalogs = []
+        for catalog in data['metadata']['catalog']:
+            c = {}
+            c[_('Name:')] = catalog['id']
+            c[_('Flavor:')] = catalog['type']
+            c[_('Type:')] = catalog['mimetype']
+            catalogs.append(c)
+        if catalogs:
+            data['catalogs'] = catalogs
+            del data['metadata']
+
+        return data
 
     def do_resize(self, buttonlist, secondlist=[]):
         """Force a resize on the Media Manager"""

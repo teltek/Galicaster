@@ -55,6 +55,12 @@ GtkWindow.shaded>*{
 .dialog_body{
 	font-size: 0.9em;
 }
+.info_mp GtkFrame{
+	font-size: 0.7em;
+}
+.info_mp .frame_title{
+	font-size: 1.5em;
+}
 .dialog_button{
 	font-size: 1.3em;
 	padding: 0.3em 1em 0.3em 1em;
