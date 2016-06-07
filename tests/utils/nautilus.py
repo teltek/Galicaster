@@ -32,6 +32,5 @@ class TestFunctions(TestCase):
         pass
 
     def test_open_folder(self):
-        nautilus.open_folder('/tmp')
-        pid = systemcalls.is_running('xdg-open')
-        self.assertNotEqual(pid, None)
+        return_code = nautilus.open_folder('/tmp')
+        self.assertTrue(return_code)

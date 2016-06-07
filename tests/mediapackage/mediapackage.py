@@ -22,7 +22,7 @@ from unittest import TestCase
 from tests import get_resource
 from galicaster.mediapackage import mediapackage
 from galicaster.mediapackage import fromXML
-
+from galicaster.core import context
 
 class TestFunctions(TestCase):
     
@@ -167,6 +167,15 @@ class TestFunctions(TestCase):
         self.assertEqual(mp.getIdentifier(), "dae91194-2114-481b-8908-8a8962baf8dc")
         self.assertEqual(mp.status, 0)
         self.assertEqual(mp.properties['notes'], u"Nota de Prueba <?php Caracteres ñ I'm raros >")
+
+
+    def test_fromXML_without_galicaster_xml(self):
+        logger = context.get_logger()
+        xml = path.join(self.baseDir, 'wrongmp', 'manifest.xml')
+        mp = fromXML(xml, logger)
+        self.assertEqual(mp.title, "Opening a folder...")
+        self.assertEqual(mp.getIdentifier(), "dae91194-2114-481b-8908-8a8962baf8dc")
+        self.assertEqual(mp.status, 4)
 
 
     def test_mediapackage_size(self):
