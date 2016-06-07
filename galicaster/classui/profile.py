@@ -54,7 +54,7 @@ class ProfileUI(Gtk.Window):
         size = context.get_mainwindow().get_size()
         width = int(size[0]/2.2)
         height = int(size[1]/2.0)
-        Gtk.Window.__init__(self)
+        Gtk.Window.__init__(self, type=Gtk.WindowType.POPUP)
         self.set_transient_for(parent)
         self.set_destroy_with_parent(True)
         self.set_type_hint(Gdk.WindowTypeHint.TOOLBAR)
@@ -64,6 +64,7 @@ class ProfileUI(Gtk.Window):
         self.set_skip_taskbar_hint(True)
         self.set_modal(True)
         self.set_keep_above(False)
+        self.parent = parent
 
         strip = Header(size=size,title=_("Profile Selector"))
 
@@ -81,6 +82,7 @@ class ProfileUI(Gtk.Window):
 
         tab1 = Gtk.Label(label=_("Profile Selector"))
         self.append_tab(self.list,tab1)
+        parent.get_style_context().add_class('shaded')
         self.show_all()
         self.present()
 
@@ -114,6 +116,7 @@ class ProfileUI(Gtk.Window):
             self.profile.destroy()
         if self.track:
             self.track.destroy()
+        self.parent.get_style_context().remove_class('shaded')
         self.destroy()
 
 class ProfileDialog(Gtk.HBox):
