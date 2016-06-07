@@ -20,14 +20,17 @@ import subprocess
 import urllib, mimetypes
 
 from unittest import TestCase
-from galicaster.utils import miscellaneous
 from galicaster.core import context
 from galicaster import __version__
+
+conf = context.get_conf()
+from galicaster.utils import miscellaneous
+
 
 class TestFunctions(TestCase):
     
     def setUp(self):
-        self.conf = context.get_conf()
+        self.conf = conf
 
     def tearDown(self):
         del self.conf
