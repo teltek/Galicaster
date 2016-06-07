@@ -87,7 +87,7 @@ class Conf(object): # TODO list get and other ops arround profile
             self.__conf.read(self.conf_dist_file)
             self.__user_conf.read(self.conf_dist_file)
             self.__conf_dist.read(self.conf_dist_file)
-         
+
         self.__profiles = self.__get_profiles(self.profile_folder)
         self.hostname = self.get_hostname()
 
@@ -914,7 +914,7 @@ class Profile(object):
         self.name = name
         self.tracks = []
         self.original_tracks = []
-        self.path = path
+        self.path = path if path else datetime.utcnow().strftime('%Y-%m-%d_%H-%M-%S')
         self.execute = None
         self.template = None
         self.to_delete = False
