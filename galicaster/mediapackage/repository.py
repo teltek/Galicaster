@@ -566,9 +566,11 @@ class Repository(object):
 
     
         if add_catalogs:
-            mp.add(os.path.join(mp.getURI(), 'episode.xml'), mediapackage.TYPE_CATALOG, 'dublincore/episode', 'text/xml')
+            if not mp.getElementByBasename('episode.xml'):
+                mp.add(os.path.join(mp.getURI(), 'episode.xml'), mediapackage.TYPE_CATALOG, 'dublincore/episode', 'text/xml')
             if mp.getSeriesIdentifier():
-                mp.add(os.path.join(mp.getURI(), 'series.xml'), mediapackage.TYPE_CATALOG, 'dublincore/series', 'text/xml')
+                if not mp.getElementByBasename('series.xml'):
+                    mp.add(os.path.join(mp.getURI(), 'series.xml'), mediapackage.TYPE_CATALOG, 'dublincore/series', 'text/xml')
 
         # ADD MP to repo
         self.__add(mp) 
