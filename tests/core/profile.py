@@ -36,6 +36,7 @@ class TestFunctions(TestCase):
         
     def tearDown(self):
         shutil.copyfile(self.backup_conf_file,self.conf_file)
+        os.remove(self.backup_conf_file)
         del self.conf
 
         
