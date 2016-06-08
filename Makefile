@@ -44,7 +44,7 @@ test-recorder:
 	nosetests --all-modules -a 'recorder'
 	#python -m unittest tests.recorder.recorder
 test-functional:
-	nosetests -w tests_functional --all-modules -a 'functional'
+	nosetests --all-modules -a 'functional'
 test-all:
 	nosetests --all-modules --no-skip
 check:
