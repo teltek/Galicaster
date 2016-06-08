@@ -20,6 +20,7 @@ import subprocess
 import urllib, mimetypes
 
 from unittest import TestCase
+from nose.plugins.attrib import attr
 from galicaster.core import context
 from galicaster import __version__
 
@@ -35,6 +36,7 @@ class TestFunctions(TestCase):
     def tearDown(self):
         del self.conf
 
+    @attr('notravis')
     def test_screenshot(self):
         pb = miscellaneous.get_screenshot_as_pixbuffer()
         ifile = tempfile.NamedTemporaryFile(suffix='.png')

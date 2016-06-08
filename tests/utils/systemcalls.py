@@ -21,6 +21,7 @@ from os import path
 from datetime import datetime, timedelta
 
 from unittest import TestCase
+from nose.plugins.attrib import attr
 from galicaster.utils import systemcalls
 
 class TestFunctions(TestCase):
@@ -57,6 +58,7 @@ class TestFunctions(TestCase):
         out = systemcalls.execute(['ls', 'non existent'])
         self.assertEqual(out, False)
 
+    @attr('notravis')
     def test_write_dconf_settings(self):        
         systemcalls.write_dconf_settings(settings={'/org/compiz/profiles/unity/plugins/unityshell/launcher-hide-mode' : '1'})
         output = subprocess.check_output(['dconf', 'read', '/org/compiz/profiles/unity/plugins/unityshell/launcher-hide-mode'], stderr=subprocess.STDOUT)

@@ -32,6 +32,8 @@ all:
 	@echo 'make pep8                    - Run PEP8 compliance tests(using pep8)'
 test:
 	nosetests --all-modules -a '!nodefault'
+test-travis:
+	nosetests -v --all-modules -a '!nodefault,!notravis'
 test-with-coverage:
 	nosetests --all-modules -a '!nodefault' --with-coverage --cover-inclusive --cover-package=galicaster
 test-with-coverage-html:
@@ -42,7 +44,7 @@ test-recorder:
 	nosetests --all-modules -a 'recorder'
 	#python -m unittest tests.recorder.recorder
 test-functional:
-	nosetests --all-modules -a 'functional'
+	nosetests -w tests_functional --all-modules -a 'functional'
 test-all:
 	nosetests --all-modules --no-skip
 check:

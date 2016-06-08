@@ -17,4 +17,4 @@ before_script:
  - sudo apt-get install --yes pep8 pyflakes pychecker python-nose python-coverage python-dogtail
 
 script:
-  - make test-with-coverage
+  - make test-travis
