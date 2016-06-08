@@ -14,7 +14,7 @@
 
 import sys
 
-from gi.repository import Gtk, Gst, Gdk
+from gi.repository import Gtk, Gst, Gdk, GObject
 Gst.init(None)
 
 from galicaster.core import context
@@ -264,7 +264,12 @@ class Recorder(object):
                 self.error = error_info
                 self.dispatcher.emit("recorder-error", error_info)
                 # return True
-        
+
+    def _prepare_window_handler(self, gtk_player, message):
+        Gdk.Display.get_default().sync()            
+        message.src.set_property('force-aspect-ratio', True)
+        message.src.set_window_handle(gtk_player.get_property('window').get_xid())
+        pass
 
     def _on_sync_message(self, bus, message):
         if message.get_structure() is None:
@@ -282,13 +287,8 @@ class Recorder(object):
                 gtk_player = self.players[name]
                 if not isinstance(gtk_player, Gtk.DrawingArea):
                     raise TypeError()
-                Gdk.threads_enter()
-                Gdk.Display.get_default().sync()            
-                message.src.set_property('force-aspect-ratio', True)
-#                message.src.set_xwindow_id(gtk_player.get_property(window).get_xid())
-                message.src.set_window_handle(gtk_player.get_property('window').get_xid())
-                Gdk.threads_leave()
                 
+                GObject.idle_add(self._prepare_window_handler, gtk_player, message)
                 # Disconnect from on_sync_message (From now on it's not needed)
                 del self.players[name]
                 if not self.players:
