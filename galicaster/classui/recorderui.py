@@ -50,6 +50,7 @@ from galicaster.recorder.service import RECORDING_STATUS
 from galicaster.recorder.service import PAUSED_STATUS
 from galicaster.recorder.service import ERROR_STATUS
 
+from collections import OrderedDict
 
 Gdk.threads_init()
 
@@ -434,10 +435,40 @@ class RecorderClassUI(Gtk.Box):
     def show_next(self,button=None,tipe = None):   
         """GUI callback Pops up the Event Manager"""
         self.dispatcher.emit("action-audio-disable-msg")
-        EventManager()
+        text = {
+                'title' : 'Next Recordings',
+                'next_recs' : self.get_next_recs(),
+                }
+        message.PopUp(message.NEXT_REC, text, context.get_mainwindow())
+        #EventManager()
         self.dispatcher.emit("action-audio-enable-msg")
         return True
 
+    def get_next_recs(self):
+        mps = self.repo.get_next_mediapackages()
+        mp_info = []
+        for mp in mps:
+
+            date = ''
+            rec_time = mp.getLocalDate()
+            if rec_time.date() == datetime.date.today():
+                date = "Today"
+            elif rec_time.date() == ( datetime.date.today()+datetime.timedelta(1) ):
+                date = "Tomorrow"
+            else:
+                date = mp.getDate().strftime("%d %b %Y")
+
+            hour = rec_time.time().strftime("%H:%M")
+
+            # FIXME REFACTOR DURATION
+            info = OrderedDict()
+            info['title']    = mp.title
+            info['date']     = date
+            info['duration'] = hour
+            info['button']   = mp.identifier
+
+            mp_info.append(info)
+        return mp_info
 
     def show_about(self,button=None,tipe = None):
         text = {"title" : _("About"),

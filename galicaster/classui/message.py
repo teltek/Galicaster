@@ -31,6 +31,7 @@ OPERATIONS = 'operations.glade'
 ABOUT = 'about.glade'
 LOCKSCREEN = 'lockscreen.glade'
 MP_INFO = 'info.glade'
+NEXT_REC = 'next.glade'
 
 # FIXME
 QUESTION = Gtk.STOCK_DIALOG_QUESTION
@@ -91,6 +92,8 @@ class PopUp(Gtk.Widget):
         self.gui.connect_signals(self)
 
         self.dialog = self.configure_ui(text, message, self.gui, parent)
+
+        # Specific glade modifications
         if message == OPERATIONS:
 
             frames = {'Cancel': {'Cancel' : -2}}
@@ -119,6 +122,15 @@ class PopUp(Gtk.Widget):
 
         elif message == ABOUT:
             self.set_logos(self.gui)
+
+        elif message == NEXT_REC:
+            if text['next_recs']:
+                self.fill_mp_info(self.gui, text['next_recs'])
+            else:
+                no_recs = self.gui.get_object('no_recordings')
+                print "we"
+                if no_recs:
+                    no_recs.show()
 
 
         # Display dialog
@@ -278,6 +290,41 @@ class PopUp(Gtk.Widget):
                 grid.attach(content,1,row,1,1)
                 row += 1
         grid.show()
+
+    def fill_mp_info(self, gui, info):
+        """ Fill next recordings PopUp grid with the MP information
+        """
+        # FIXME: Merge fill info and fill mp info in any way?
+        # Make a generic function in order to fill grids with dynamic widgets information
+        grid = gui.get_object('mp_grid')
+        row = 1
+        for mp in info:
+            column = 0
+            for label, content in mp.iteritems():
+                widget = gui.get_object('{}_mp'.format(label))
+                if widget:
+                    if isinstance(widget, Gtk.Label):
+                        new_widget = Gtk.Label().new(content)
+                        new_widget.show()
+                    else:
+                        new_widget = Gtk.Button().new_with_label(_("Record Now"))
+                        # Use set_properties?
+                        new_widget.set_property('halign', widget.get_property('halign'))
+                        new_widget.set_property('valign', widget.get_property('valign'))
+                        new_widget.show()
+                        new_widget.connect("button-press-event",self.send_start, content)
+
+                grid.attach(new_widget,column,row,1,1)
+                column += 1
+            row += 1
+
+    # FIXME: so specific, give it as a callback?
+    def send_start(self,origin, event, data):
+        mp = context.get_repository().get(data)
+        context.get_recorder().record(mp)
+        self.dialog.destroy()
+        return True
+
 
     def resize_buttons(self, area, fontsize, equal = False):
         """Adapts buttons to the dialog size"""
