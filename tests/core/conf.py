@@ -16,6 +16,7 @@
 Unit tests for `galicaster.core.conf` module.
 """
 import socket
+import os
 from os import path
 from xml.dom.minidom import parseString
 from xml.parsers.expat import ExpatError
@@ -40,6 +41,10 @@ class TestFunctions(TestCase):
         del self.conf
 
         
+    def touch(self, fname, times=None):
+        with open(fname, 'a'):
+            os.utime(fname, times)
+                    
     def test_init_no_file(self):
         primary_conf = path.join('/etc/galicaster','conf.ini')
         secondary_conf = path.abspath(path.join(path.dirname(__file__), '..', '..', 'conf.ini'))
@@ -228,7 +233,9 @@ class TestFunctions(TestCase):
         for no in ['None', 'not', 'False', 'no', 'n']:
             self.conf.set('s', 'k', no)
             self.assertFalse(self.conf.get_boolean('s', 'k'), 'Check if {0} is False'.format(no))
-            
+
+        self.conf.set('s', 'k', 1)
+        self.assertFalse(self.conf.get_boolean('s', 'k', False))
         
     def test_get_lower(self):
         for lower in ['RUBENRUA', 'RubenRua', 'RubenruA', 'rubenrua']:
@@ -341,4 +348,66 @@ class TestFunctions(TestCase):
     def test_set_section(self):
         self.assertEqual(self.conf.set_section(None, {}), False)
         self.assertEqual(self.conf.set_section('k', {"a": "1", "b" :"2"}), True)
+
+    def test_get_section(self):
+        self.assertEqual(self.conf.set_section('k', {"a": "1", "b" :"2"}), True)
+        self.assertEqual(self.conf.get_section('k'), {"a": "1", "b" :"2"})
+        self.assertEqual(self.conf.get_section('kkkkkk'), {})
+
+
+    def test_get_user_section(self):
+        self.assertEqual(self.conf.set_section('k', {"a": "1", "b" :"2"}), True)
+        self.assertEqual(self.conf.get_user_section('k'), {"a": "1", "b" :"2"})
+        self.assertEqual(self.conf.get_user_section('kkkkkk'), {})
+
+    def test_get_sections(self):
+        self.conf.remove_sections()
+        self.assertEqual(self.conf.get_sections(), ['basic'])
+        self.assertEqual(self.conf.get_user_sections(), [])
+
+    def test_get_modules(self):
+        self.assertEqual(self.conf.get_modules(), ['recorder'])
+        self.conf.set('basic', 'admin', 'True')
+        self.assertEqual(self.conf.get_modules(), ['recorder', 'media_manager', 'player'])
+        self.conf.set('ingest', 'active', 'True')
+        self.assertEqual(self.conf.get_modules(), ['recorder', 'media_manager', 'player', 'scheduler'])
+
+    def test_get_color_style(self):
+        self.assertEqual(self.conf.get_color_style(), False)
+        self.conf.set('color', 'classic', 'True')
+        self.assertTrue(self.conf.get_color_style())
+
+    def test_get_free_profile(self):
+        profile_name = self.conf.get_free_profile()
+        self.assertEqual(profile_name, self.conf.get_free_profile())        
+        self.touch(profile_name)
+        self.assertNotEqual(profile_name, self.conf.get_free_profile())
+        os.remove(profile_name)
+
+        
+    def test_get_palette(self):
+        self.conf.set('color', 'none', None)
+        self.conf.set('color','nightly', None)
+        self.conf.set('color','pending', None)
+        self.conf.set('color','processing', None)
+        self.conf.set('color','done', None)
+        self.conf.set('color','failed', None)
+        self.assertEqual(self.conf.get_palette(), [None, None, None, None, None, None])
+        
+        self.conf.set('color', 'none', "#FFFFF0")
+        self.conf.set('color','nightly', "#FFFFF1")
+        self.conf.set('color','pending', "#FFFFF2")
+        self.conf.set('color','processing', "#FFFFF3")
+        self.conf.set('color','done', "#FFFFF4")
+        self.conf.set('color','failed', "#FFFFF5")
+        self.assertEqual(self.conf.get_palette(), ["#FFFFF0", "#FFFFF1", "#FFFFF2", "#FFFFF3", "#FFFFF4", "#FFFFF5"])
+
+    def test_export_to_file(self):
+        p_name = self.conf.get_profiles().keys()[0]
+        p = self.conf.get_profiles()[p_name]
+
+        p.path = "/tmp/test_profile1.ini"
+        p.export_to_file()
+        self.assertTrue(os.path.exists(p.path))
+        os.remove(p.path)
         
