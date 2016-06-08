@@ -112,7 +112,6 @@ class Recorder(object):
             return 0
 
         status = self.get_status()[1]
-        
         if status == Gst.State.NULL:
             return self.__duration
         elif status == Gst.State.PAUSED:
@@ -120,6 +119,8 @@ class Recorder(object):
 
         return self.__query_position() - self.__start_record_time - self.__paused_time
 
+    def get_recording_start_time(self):
+        return self.__start_record_time
 
     def __query_position(self):
         try:
