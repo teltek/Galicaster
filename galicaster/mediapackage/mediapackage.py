@@ -884,6 +884,26 @@ class Mediapackage(object):
         return result
         
 
+    def getElementByBasename(self, basename=None):
+        """Gets the element of the mediapackage that has a particular uri.
+        Args:
+            uri (str): the uri of the element that is going to be returned.
+        Returns:
+            Element: the element with the specified uri.
+        """
+        result = None
+        results = None
+
+        if basename:
+            results = sorted(self.elements.values(), key=lambda e: e.getIdentifier())
+            results = filter(lambda elem: path.basename(elem.getURI()) == basename, results)
+
+        if results:
+            result = results[0]
+
+        return result
+    
+    
     #TODO Remove this method an use getElementsByTags instead (string and lists allowed)    
     def getElementsByTag(self, tag, etype=None):
         """Calls getElementsByTags if the tag is a string.
@@ -1205,7 +1225,21 @@ class Mediapackage(object):
                     elem = Other(uri=item, flavor=flavor, mimetype=mime, identifier=identifier, tags=tags)
             else:
                 raise ValueError("Argument 'type' does not name a valid Element type")
-        
+
+
+        # Check if the element already exists in the repository
+        repeated = False
+        if self.getElementByBasename(os.path.basename(elem.uri)):
+            repeated = True
+
+        if self.getElementByURI(elem.uri):
+            repeated = True
+
+        if repeated:
+            # TODO: Add logger
+            raise RuntimeError("Trying to add an element {} that is already in the current Mediapackage {}".format(elem.uri, self.getIdentifier()))
+
+            
         if etype not in ELEMENT_TYPES:
             raise ValueError("Invalid element type in argument")
 
@@ -1216,7 +1250,7 @@ class Mediapackage(object):
             elem.setMediapackage(self)
             self.__howmany[etype] += 1
         elif elem.getMediapackage() != self:
-            raise RuntimeError("Trying to add an element already in another Mediapackage")
+            raise RuntimeError("Trying to add an element {} already in another Mediapackage {}".format(elem.uri, elem.getMediapackage()))
         
         self.elements[identifier] = elem
         

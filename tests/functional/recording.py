@@ -20,54 +20,48 @@
 # First, enable accessibility support in your GNOME session with:
 #  gsettings set org.gnome.desktop.interface toolkit-accessibility true
 
-import sys
-import gi
-gi.require_version('Atspi', '2.0')
-gi.require_version('Wnck', '3.0')
-from gi.repository import Atspi, Wnck
-
-from dogtail.tree import *
 from dogtail.utils import run
+
+import sys
 from sys import exit
 import time
 from galicaster.utils.systemcalls import is_running, execute
 
 galicaster = None
+# FIXME: imported libreries as global variables to avoid Travis importing errors
+root = None
+predicate = None
 
 def start_galicaster():
-    
+
     global galicaster
+    global root, predicate
+
+    import gi
+    gi.require_version('Atspi', '2.0')
+    gi.require_version('Wnck', '3.0')
+    from dogtail.tree import root, predicate
 
     pid = is_running('run_galicaster')
     if pid:
         execute(['kill',str(pid)])
     run('python run_galicaster.py')
-    galicaster =  root.application('run_galicaster.py')
+    galicaster = root.application('run_galicaster.py')
 
 def rec(recorder_time=5, repeating_times=1):
     
-    # DIST
-    dist_rec = __get_by_name('distrib_recorder_button')
-
-    # RECORDER
-    recorder_rec = __get_by_name('recorder_rec_button')
-    recorder_back = __get_by_name('recorder_back_button')
-    recorder_stop = __get_by_name('recorder_stop_button')
-
     count = 0
     try:
         count = count + 1
-        dist_rec.click()
-        recorder_rec.click()
+        go_to_recorder()
+        start_recording()
 
         time.sleep(recorder_time)
 
-        recorder_stop.click()
-        accept_click = __get_by_name('stop_dialog_ok_button')
-        accept_click.click()
+        stop_recording()
         time.sleep(5)
 
-        recorder_back.click()
+        go_to_distrib()
         print "Recorder nº {} done".format(count)
 
         #TODO: Check MP information 
@@ -75,17 +69,39 @@ def rec(recorder_time=5, repeating_times=1):
         print "Functional test error: {}".format(exc)
         exit(-1)    
 
-def quit():
-    
-    #DIST
-    dist_quit = __get_by_name('distrib_quit_button')
+def go_to_recorder():
+    #TODO: Check where we are
+    __get_by_name('distrib_recorder_button').click()
 
-    dist_quit.click()
-    accept_click = __get_by_name('quit_dialog_ok_button')
-    accept_click.click()
+def go_to_distrib():
+    #TODO: Check where we are
+    __get_by_name('recorder_back_button').click()
+
+def start_recording():
+    #TODO: Check where we are
+    __get_by_name('recorder_rec_button').click()
+
+def stop_recording():
+    #TODO: Check where we are
+    __get_by_name('recorder_stop_button').click()
+    __get_by_name('stop_dialog_ok_button').click()
+
+def pause_recording():
+    __get_by_name('recorder_pause_button').click()
+
+def rewind_recording():
+    __get_by_name('paused_dialog_ok_button').click()
+
+def quit():
+    #TODO: Check where we are
+    __get_by_name('distrib_quit_button').click()
+    __get_by_name('quit_dialog_ok_button').click()
 
 def __get_by_name(accessible_name):
 
     global galicaster
 
     return galicaster.findChild(predicate.IsNamed(accessible_name))
+
+
+

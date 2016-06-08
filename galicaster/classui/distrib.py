@@ -16,7 +16,7 @@ from gi.repository import Gtk, GdkPixbuf
 
 from galicaster.core import context
 from galicaster.classui import get_ui_path, get_image_path
-from galicaster import __version__
+from galicaster.utils.miscellaneous import get_footer
 from galicaster.classui.profile import ProfileUI as ListProfile
 from galicaster.utils.resize import relabel
 from galicaster.classui import message
@@ -36,7 +36,7 @@ class DistribUI(Gtk.Box):
         self.builder = dbuilder
         dbox = dbuilder.get_object("distbox")
         release = dbuilder.get_object("release_label")
-        release.set_label("Galicaster "+__version__)
+        release.set_label(get_footer())
 
         recorder = dbuilder.get_object("button1")        
         manager = dbuilder.get_object("button2")

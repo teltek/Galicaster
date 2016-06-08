@@ -18,6 +18,7 @@ Tests for `galicaster.recorder.bins` modules.
 """
 
 from unittest import TestCase
+from nose.plugins.attrib import attr
 from galicaster.recorder.bins.blackmagic import GCblackmagic
 from galicaster.recorder.bins.v4l2 import GCv4l2
 from galicaster.recorder.bins.datapath import GCdatapath
@@ -80,18 +81,21 @@ class TestFunctions(TestCase):
         self.assertEqual(track2.options['flavor'], 'presenter')
         self.assertEqual(track3.options['flavor'], 'other')
 
+    @attr('notravis')
     def test_validate_select_not_valid(self):   
         msg, options = validator.validate_track({'device': 'blackmagic', 'path' : '/tmp',
                                                  'input' : 'thing'})
         track = GCblackmagic(options)
         self.assertEqual(track.options['input'], 'sdi')
 
+    @attr('notravis')
     def test_validate_select_valid(self):   
         msg, options = validator.validate_track({'device': 'blackmagic', 'path' : '/tmp',
                                                  'input' : 'sdi'})
         track = GCblackmagic(options)
         self.assertEqual(track.options['input'], 'sdi')
 
+    @attr('notravis')
     def test_blackmagic_no_audio(self):
         msg, options = validator.validate_track({"device": "blackmagic", "audio-input":"none", "path":"/"})
         track = GCblackmagic(options)
@@ -118,6 +122,7 @@ class TestFunctions(TestCase):
         self.assertEqual(track2.options['cameratype'], v)
         self.assertEqual(track2.options['audiotype'], a)
 
+    @attr('notravis')
     def test_pulse_audio_activated(self):
         msg, options = validator.validate_track({"device": "pulse", "vumeter":"true", "player":"true", "path":"/"})
         track = GCpulse(options)

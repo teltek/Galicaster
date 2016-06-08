@@ -22,7 +22,7 @@ from unittest import TestCase
 from tests import get_resource
 from galicaster.mediapackage import mediapackage
 from galicaster.mediapackage import fromXML
-
+from galicaster.core import context
 
 class TestFunctions(TestCase):
     
@@ -169,6 +169,15 @@ class TestFunctions(TestCase):
         self.assertEqual(mp.properties['notes'], u"Nota de Prueba <?php Caracteres ñ I'm raros >")
 
 
+    def test_fromXML_without_galicaster_xml(self):
+        logger = context.get_logger()
+        xml = path.join(self.baseDir, 'wrongmp', 'manifest.xml')
+        mp = fromXML(xml, logger)
+        self.assertEqual(mp.title, "Opening a folder...")
+        self.assertEqual(mp.getIdentifier(), "dae91194-2114-481b-8908-8a8962baf8dc")
+        self.assertEqual(mp.status, 4)
+
+
     def test_mediapackage_size(self):
         xml = path.join(self.baseDir, 'manifest.xml')
         mp = fromXML(xml)
@@ -276,3 +285,37 @@ class TestFunctions(TestCase):
         self.assertTrue(info.has_key('start'))
         self.assertTrue(info.has_key('creator'))
         self.assertTrue(info.has_key('tracks'))
+
+    def test_element_tags(self):
+        self.assertTrue(self.track1.getTags(), ['archive'])
+        self.track1.addTag('engage')
+        self.assertTrue(self.track1.getTags(), ['archive', 'engage'])
+        self.track1.removeTag('archive')
+        self.assertEqual(self.track1.getTags(), ['engage'])
+        self.assertTrue(self.track1.containsTag('engage'))
+        self.assertEqual(self.track1.containsTag('archive'), False)
+        self.track1.setTags(['test', 'sometag'])
+        self.assertEqual(self.track1.containsTag('engage'), False)
+        self.track1.clearTags()
+        self.assertEqual(self.track1.getTags(), set([]))
+
+    def test_element_set_uri(self):
+        self.assertEqual(self.track1.uri, path.join(get_resource('mediapackage'), 'SCREEN.mpeg'))
+        self.track1.setURI(self.path_track2)
+        self.assertEqual(self.track1.uri, path.join(get_resource('mediapackage'), 'CAMERA.mpeg'))
+
+    def test_element_set_mime(self):
+        self.assertEqual(self.track1.mime, None)
+        self.track1.setMimeType('video/mp4')
+        self.assertEqual(self.track1.mime, 'video/mp4')
+
+    def test_element_set_flavor(self):
+        self.assertEqual(self.track1.flavor, 'presentation/source')
+        self.track1.setFlavor('presenter/source')
+        self.assertEqual(self.track1.flavor, 'presenter/source')
+
+    def test_element_set_mp(self):
+        mp = mediapackage.Mediapackage()
+        self.track1.setMediapackage(mp)
+        string = 'test'
+        self.assertRaises(TypeError, self.track1.setMediapackage, string)

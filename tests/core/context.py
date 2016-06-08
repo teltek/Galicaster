@@ -17,6 +17,7 @@ Unit tests for `galicaster.core.context` module.
 """
 import socket
 from unittest import TestCase
+from nose.plugins.attrib import attr
 
 from galicaster.core import context
 import galicaster
@@ -99,10 +100,15 @@ class TestFunctions(TestCase):
         context.delete('conf') # To other test
         context.delete('occlient') # To other test
 
-
+    @attr('notravis')
+    def test_get_mainwindow(self):
+        mwindow = context.get_mainwindow()
+        self.assertEqual(mwindow, context.get_mainwindow())
         
-    
-
+    def test_get_heartbeat(self):
+        hbeat = context.get_heartbeat()
+        self.assertEqual(hbeat, context.get_heartbeat())
+        
 
 
 

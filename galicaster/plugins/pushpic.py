@@ -14,7 +14,7 @@
 from StringIO import StringIO
 
 from galicaster.core import context
-from gi.repository import Gdk, GdkPixbuf
+from galicaster.utils.miscellaneous import get_screenshot_as_pixbuffer
 
 """
 Description: Galicaster Dashboard PUSH mode. It fetchs a screenchoot of the window through gtk and sends it with Galicaster's Opencast HTTP client to the Dashboard endpoint.
@@ -29,13 +29,10 @@ def init():
 
 def get_screenshot():
     """makes screenshot of the current root window, yields Gtk.Pixbuf"""
-    window = Gdk.get_default_root_window()
-    size = window.get_size()
-    pixbuf = GdkPixbuf.Pixbuf(GdkPixbuf.Colorspace.RGB, False, 8, size[0], size[1])
-    pixbuf.get_from_drawable(window, window.get_colormap(),
-                                    0, 0, 0, 0, size[0], size[1])
+    pixbuf = get_screenshot_as_pixbuffer()
+
     b = StringIO()
-    pixbuf.save_to_callback(b.write, 'png')
+    pixbuf.save_to_callback(b.write, 'png', [], ["100"])
     return b.getvalue()    
 
 
