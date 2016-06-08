@@ -36,7 +36,6 @@ from galicaster.utils.miscellaneous import get_footer
 from galicaster.core import context
 
 from galicaster.classui.metadata import MetadataClass as Metadata
-from galicaster.classui.events import EventManager
 from galicaster.classui import message
 from galicaster.classui import get_ui_path, get_image_path
 from galicaster.utils import series
@@ -440,7 +439,6 @@ class RecorderClassUI(Gtk.Box):
                 'next_recs' : self.get_next_recs(),
                 }
         message.PopUp(message.NEXT_REC, text, context.get_mainwindow())
-        #EventManager()
         self.dispatcher.emit("action-audio-enable-msg")
         return True
 
