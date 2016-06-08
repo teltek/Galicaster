@@ -269,7 +269,6 @@ class Recorder(object):
         Gdk.Display.get_default().sync()            
         message.src.set_property('force-aspect-ratio', True)
         message.src.set_window_handle(gtk_player.get_property('window').get_xid())
-        pass
 
     def _on_sync_message(self, bus, message):
         if message.get_structure() is None:
