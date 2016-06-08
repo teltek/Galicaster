@@ -20,23 +20,27 @@
 # First, enable accessibility support in your GNOME session with:
 #  gsettings set org.gnome.desktop.interface toolkit-accessibility true
 
-import sys
-import gi
-gi.require_version('Atspi', '2.0')
-gi.require_version('Wnck', '3.0')
-from gi.repository import Atspi, Wnck
-
-from dogtail.tree import *
 from dogtail.utils import run
+
+import sys
 from sys import exit
 import time
 from galicaster.utils.systemcalls import is_running, execute
 
 galicaster = None
+# FIXME: imported libreries as global variables to avoid Travis importing errors
+root = None
+predicate = None
 
 def start_galicaster():
-    
+
     global galicaster
+    global root, predicate
+
+    import gi
+    gi.require_version('Atspi', '2.0')
+    gi.require_version('Wnck', '3.0')
+    from dogtail.tree import root, predicate
 
     pid = is_running('run_galicaster')
     if pid:
