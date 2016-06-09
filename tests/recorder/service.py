@@ -17,6 +17,7 @@ Unit tests for `galicaster.recorder.service` module.
 """
 
 from unittest import TestCase
+from nose.plugins.attrib import attr
 import os
 from gi.repository import Gtk
 import tempfile
@@ -131,6 +132,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(repo), 0)
 
 
+    @attr('notravis')
     def test_recording(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
@@ -150,6 +152,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(repo), 1)
 
 
+    @attr('notravis')
     def test_stop_recoding_on_pause(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
@@ -173,6 +176,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(repo), 1)
 
 
+    @attr('notravis')
     def test_error_and_recover(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
@@ -219,6 +223,7 @@ class TestFunctions(TestCase):
         self.assertEqual(recorder_service.status, RECORDING_STATUS)
 
 
+    @attr('notravis')
     def test_new_recording_when_recording(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         conf.set("allows", "overlap", "True")
@@ -237,6 +242,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(repo), 2)
 
 
+    @attr('notravis')
     def test_new_recording_when_recording_not_allow(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         
@@ -254,6 +260,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(repo), 1)
 
 
+    @attr('notravis')
     def test_new_recording_when_paused(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         conf.set("allows", "overlap", "True")
@@ -274,6 +281,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(repo), 2)
 
 
+    @attr('notravis')
     def test_record_scheduled_mp(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()        
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)

@@ -30,15 +30,26 @@ from galicaster.utils.gstreamer import WeakMethod
 
 
 class Status(object):
-    def __init__(self, name): self.name = name
+    def __init__(self, name, description="", fg_color="#484848", bg_color=None):
+        self.name        = name
+        self.description = description
+        self.fg_color    = fg_color
+        self.bg_color    = bg_color
     def __str__(self): return self.name
     def __repr__(self): return self.name
 
-INIT_STATUS = Status('init')
-PREVIEW_STATUS = Status('preview')
-RECORDING_STATUS = Status('recording')
-PAUSED_STATUS = Status('paused')
-ERROR_STATUS = Status('error')
+
+STATUSES = [Status('init', 'Initialization'),
+            Status('preview', 'Waiting'),
+            Status('recording', 'Recording', '#484848', '#FF0000'),
+            Status('paused', 'Paused'),
+            Status('error', 'Error', '#484848', '#FF0000')]
+    
+INIT_STATUS      = STATUSES[0]
+PREVIEW_STATUS   = STATUSES[1]
+RECORDING_STATUS = STATUSES[2]
+PAUSED_STATUS    = STATUSES[3]
+ERROR_STATUS     = STATUSES[4]
 
 
 class RecorderService(object):

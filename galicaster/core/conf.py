@@ -215,17 +215,14 @@ class Conf(object): # TODO list get and other ops arround profile
         Returns:
             Bool: the value of option opt in section sect as a boolean if there are no errors. Default otherwise.
         """
-        try:
-            value = self.get_lower(sect, opt)
-            if value in YES:
-                return True
-            elif value in NO:
-                return False
-            else:
-                self.logger and self.logger.warning('Unknown value "{0}" obtaining a boolean from the parameter "{1}" in section "{2}", FORCED TO "{3}"'.format(value, opt, sect, default))
+        value = self.get_lower(sect, opt)
+        if value in YES:
+            return True
+        elif value in NO:
+            return False
+        else:
+            self.logger and self.logger.warning('Unknown value "{0}" obtaining a boolean from the parameter "{1}" in section "{2}", FORCED TO "{3}"'.format(value, opt, sect, default))
 
-        except Exception as exc:
-             self.logger and self.logger.warning('There was an error before obtaining a boolean from the parameter "{0}" in section "{1}", FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
         return default
 
          
@@ -835,18 +832,6 @@ class Conf(object): # TODO list get and other ops arround profile
             Profile: default profile.
         """
         return self.__default_profile
-
-
-    def __get_free_number(self):
-        """Gets a free number to use it as a track name.
-        Returns:
-            Int: a free number to name the following default track.
-        Note:
-            The default profile can only have 100 or less tracks.
-        """
-        for i in range(100):
-            if not self.__conf.has_section('track'+unicode(i)):
-                return i
 
 
     def get_free_profile(self): # TODO include in conf

@@ -70,12 +70,6 @@ class GCpulse(Gst.Bin, base.Base):
             "range": (1.0,10),
             "description": "Audio amplification",
             },
-        "delay": {
-            "type": "float",
-            "default": 1.0,
-            "range": (0,10),
-            "description": "Audio delay",
-            },
         "audioencoder": {
             "type": "text",
             "default": "lamemp3enc target=1 bitrate=192 cbr=true",
