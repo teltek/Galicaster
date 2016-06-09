@@ -87,7 +87,7 @@ class Conf(object): # TODO list get and other ops arround profile
             self.__conf.read(self.conf_dist_file)
             self.__user_conf.read(self.conf_dist_file)
             self.__conf_dist.read(self.conf_dist_file)
-         
+
         self.__profiles = self.__get_profiles(self.profile_folder)
         self.hostname = self.get_hostname()
 
@@ -414,7 +414,7 @@ class Conf(object): # TODO list get and other ops arround profile
         """
         self.__force_set(self.__user_conf, sect, opt, value)
         self.__force_set(self.__conf, sect, opt, value)
-
+        self.update(update_profiles=False)
 
     def set_section(self, sect_name=None, sect={}):
         """Sets the specified section
@@ -548,10 +548,10 @@ class Conf(object): # TODO list get and other ops arround profile
         for section in self.__user_conf.sections():
             self.remove_section(section)
 
-    def update(self):
+    def update(self, update_profiles=True):
         """Updates the configuration file from user.
         """
-        self.update_profiles()
+        update_profiles and self.update_profiles()
 
         # Make a backup if it was an error parsing the conf file
         if self.__parser_error:
@@ -569,13 +569,13 @@ class Conf(object): # TODO list get and other ops arround profile
             except Exception as exc:
                 self.logger and self.logger.warning("Error trying to copy the original conf file {} to {}".format(src, dst))
 
-            try:
-                configfile = open(self.conf_file, 'wb')
-                self.__user_conf.write(configfile)
-                configfile.close()
-            except Exception as exc:
-                if self.logger:
-                    self.logger.error(exc)
+        try:
+            configfile = open(self.conf_file, 'wb')
+            self.logger and self.logger.debug("Saving current configuration to {}".format(configfile.name))
+            self.__user_conf.write(configfile)
+            configfile.close()
+        except Exception as exc:
+            self.logger and self.logger.error('Erros saving configuration: {}'.format(exc))
  
 
     def update_profiles(self):
@@ -589,7 +589,7 @@ class Conf(object): # TODO list get and other ops arround profile
             elif profile.name != self.__default_profile.name:
                 #profile.export_to_file() #Uncomment if profiles are editable
                 if profile == self.__current_profile:
-                    self.__conf.set('basic','profile',profile.name)
+                    self.set('basic','profile',profile.name)
                 
 
     def get_tracks_in_oc_dict(self):
@@ -804,6 +804,7 @@ class Conf(object): # TODO list get and other ops arround profile
         """
         if name != self.__current_profile.name:
             if name in self.__profiles:
+                self.logger and self.logger.debug("Changing current profile to '{}'".format(name))
                 self.__current_profile = self.__profiles[name]
                 self.force_set_current_profile(name)
             else:
@@ -898,7 +899,7 @@ class Profile(object):
         self.name = name
         self.tracks = []
         self.original_tracks = []
-        self.path = path
+        self.path = path if path else datetime.utcnow().strftime('%Y-%m-%d_%H-%M-%S')
         self.execute = None
         self.template = None
         self.to_delete = False

@@ -12,6 +12,7 @@
 # San Francisco, California, 94105, USA.
 
 import os
+import shutil
 from os import path
 from unittest import TestCase
 from unittest import skip
@@ -23,13 +24,22 @@ from galicaster.core.conf import Track
 
 class TestFunctions(TestCase):
     def setUp(self):
-        conf_file = get_resource('profile/conf_good.ini')
+        self.conf_file = get_resource('profile/conf_good.ini')
+        self.backup_conf_file = get_resource('profile/conf_good_backup.ini')
         conf_dist_file = get_resource('profile/conf-dist.ini')
         folder_path = get_resource('profile/folder')
 
-        self.conf = Conf(conf_file,conf_dist_file, folder_path)
+        shutil.copyfile(self.conf_file,self.backup_conf_file)
+        self.conf = Conf(self.conf_file,conf_dist_file, folder_path)
+        self.conf.reload()
 
+        
+    def tearDown(self):
+        shutil.copyfile(self.backup_conf_file,self.conf_file)
+        os.remove(self.backup_conf_file)
+        del self.conf
 
+        
     @skip("out of scope")
     def test_create_profile(self):
         profile=Profile("New profile")
@@ -109,8 +119,17 @@ class TestFunctions(TestCase):
     def loof_for_an_existing_profile(self):
         return True
 
-    def change_current_profile(self):
-        return True
+    def test_change_current_profile(self):
+        self.conf.change_current_profile('test2')
+        self.assertEqual(self.conf.get_current_profile().name, 'test2')
+        self.assertEqual(self.conf.get('basic', 'profile'), 'test2')
+        
+        self.conf.change_current_profile('test')
+        self.assertEqual(self.conf.get('basic', 'profile'), 'test')
+
+        # Does not exist, so there is no change
+        self.conf.change_current_profile('test9999999')
+        self.assertEqual(self.conf.get('basic', 'profile'), 'test')
 
     def delete_current_profile(self):
         return True

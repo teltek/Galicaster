@@ -16,8 +16,8 @@
 Unit tests for `galicaster.core.conf` module.
 """
 import socket
+import shutil
 import os
-from os import path
 from xml.dom.minidom import parseString
 from xml.parsers.expat import ExpatError
 from unittest import TestCase
@@ -31,13 +31,18 @@ from galicaster.core.conf import Track
 class TestFunctions(TestCase):
         
     def setUp(self):
-        conf_file = get_resource('conf/conf.ini')
+        self.conf_file = get_resource('conf/conf.ini')
+        self.backup_conf_file =get_resource('conf/conf.backup.ini')
         dist_file = get_resource('conf/conf-dist.ini')
-        self.conf = Conf(conf_file,dist_file)
-        self.conf.reload()
 
+        shutil.copyfile(self.conf_file,self.backup_conf_file)
+        self.conf = Conf(self.conf_file,dist_file)
+        self.conf.reload()
+        
 
     def tearDown(self):
+        shutil.copyfile(self.backup_conf_file,self.conf_file)
+        os.remove(self.backup_conf_file)
         del self.conf
 
         
@@ -46,12 +51,12 @@ class TestFunctions(TestCase):
             os.utime(fname, times)
                     
     def test_init_no_file(self):
-        primary_conf = path.join('/etc/galicaster','conf.ini')
-        secondary_conf = path.abspath(path.join(path.dirname(__file__), '..', '..', 'conf.ini'))
-        secondary_dist = path.abspath(path.join(path.dirname(__file__), '..', '..', 'conf-dist.ini'))
+        primary_conf = os.path.join('/etc/galicaster','conf.ini')
+        secondary_conf = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'conf.ini'))
+        secondary_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'conf-dist.ini'))
         # Conf loads default conf and conf-dist
         conf = Conf(conf_dist_file=secondary_dist)
-        self.assertEqual( primary_conf if path.isfile(primary_conf) else secondary_conf,
+        self.assertEqual( primary_conf if os.path.isfile(primary_conf) else secondary_conf,
                           conf.conf_file) 
         self.assertEqual( secondary_dist,
                           conf.conf_dist_file) 
@@ -97,12 +102,16 @@ class TestFunctions(TestCase):
     
     def test_active_tag_default_profile(self):
         conf_file = get_resource('conf/conf_active.ini')
+        backup_conf_active = get_resource('conf/conf_active.backup.ini')
         dist_file = get_resource('conf/conf-dist.ini')
+
+        shutil.copyfile(conf_file, backup_conf_active)
         conf = Conf(conf_file, dist_file)
         conf.reload()
         profile = conf.get_current_profile()    
         self.assertEqual(1, len(profile.tracks))
-
+        shutil.copyfile(backup_conf_active, conf_file)
+        os.remove(backup_conf_active)
         
     def test_profile_with_no_profiles_in_files(self):
         conf_file = get_resource('conf/conf.ini')
@@ -137,7 +146,7 @@ class TestFunctions(TestCase):
         self.conf.remove_option('basic', 'temp')
         self.assertEqual(None, self.conf.get('basic', 'temp'))
         self.conf.reload()
-        self.assertEqual('/tmp/repo', self.conf.get('basic', 'temp'))
+        self.assertEqual('newtemporal', self.conf.get('basic', 'temp'))
         
 
     def test_get_tracks_in_oc_dict(self):
