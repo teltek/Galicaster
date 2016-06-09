@@ -3,7 +3,7 @@
 }
 
 .medium{
-	font-size: 15px;
+	font-size: 12px;
 }
 
 .small{
@@ -199,7 +199,7 @@ GtkNotebook tab{
     color:white;
 }
 .release_box{
-	border-top:0.15em solid rgb(242,241,240);
+	border-top:0.20em solid rgb(242,241,240);
 	background-image: -gtk-gradient(
 			      linear,
 			      left top, left bottom,

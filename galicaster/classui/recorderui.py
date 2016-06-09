@@ -637,7 +637,6 @@ class RecorderClassUI(Gtk.Box):
         # REC AND STATUS PANEL
         relabel(rec_title, k1*25, True)
         rec_title.set_line_wrap(True)
-        rec_title.set_width_chars(40)
 
         for child in status_panel.get_children():
             if type(child) is Gtk.Label:
@@ -648,8 +647,6 @@ class RecorderClassUI(Gtk.Box):
 
         for name  in ["recbutton","pausebutton","stopbutton","editbutton","swapbutton","helpbutton"]:
             button = self.gui.get_object(name)
-            button.set_property("width-request", int(k1*100) )
-            button.set_property("height-request", int(k1*100) )
 
             image = button.get_children()
             if type(image[0]) == Gtk.Image:
