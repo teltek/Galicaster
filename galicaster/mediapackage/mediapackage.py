@@ -28,6 +28,7 @@ from datetime import datetime
 from xml.dom import minidom
 from galicaster.mediapackage.utils import _checknget, read_ini
 
+from galicaster.utils.mediainfo import get_duration
 from galicaster.utils.i18n import _
 
 # Mediapackage Status
@@ -486,11 +487,13 @@ class Mediapackage(object):
     
     def getAsDict(self):
         mp = {}
-        mp["id"]      = self.getIdentifier()
-        mp["title"]   = self.title
-        mp["status"]  = self.status
-        mp["start"]   = self.getDate().isoformat()
-        mp["creator"] = self.getCreator() if self.getCreator() else ""
+        mp["id"]        = self.getIdentifier()
+        mp["title"]     = self.title
+        mp["status"]    = self.status
+        mp["start"]     = self.getDate().isoformat()
+        mp["creator"]   = self.getCreator() if self.getCreator() else ""
+        mp["scheduled"] = True if self.status == SCHEDULED else False
+        mp["uri"]       = self.getURI()
 
         tracks = []
         for t in self.getTracks(): 
@@ -498,6 +501,27 @@ class Mediapackage(object):
 
         mp["tracks"] = tracks
         return mp
+
+    
+    def setFromDict(self, info={}):
+
+        if 'id' in info.keys():
+            self.setIdentifier(info['id'])
+        if 'title' in info.keys():
+            self.setTitle(info['title'])
+        if 'status' in info.keys():
+            self.status = info['status']
+        if 'start' in info.keys():
+            try:
+                self.setDate(datetime.strptime(info['start'], "%Y-%m-%dT%H:%M:%S"))
+            except:
+                pass
+        if 'creator' in info.keys():
+            self.setCreator(info['creator'])
+        if 'uri' in info.keys():
+            self.setURI(info['uri'])            
+            
+        return True
 
 
     def __newElementId(self, etype):
@@ -774,6 +798,18 @@ class Mediapackage(object):
         else:
             self.__duration = duration
 
+
+    def discoverDuration(self):
+        mp_dur = None
+        for t in self.getTracks():
+            track_dur = get_duration(t.getURI())*1000
+            if not mp_dur or mp_dur < track_dur:
+                mp_dur = track_dur
+
+            t.setDuration(track_dur)
+        self.forceDuration(mp_dur)
+
+            
     def getOpStatus(self, name):
         """Checks if the name of an operation is in the mediapackage. If not exists, adds it with the status OP_IDLE.
         Then returns its status.

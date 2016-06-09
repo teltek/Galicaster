@@ -118,8 +118,8 @@ class Repository(object):
                 info = json.load(handle)
 
             # Copy the capture agent properties from the original mediapackage folder (for scheduled recordings)
-            if info['mp_path']:
-                ca_prop = os.path.join(info['mp_path'], "org.opencastproject.capture.agent.properties")
+            if info['uri']:
+                ca_prop = os.path.join(info['uri'], "org.opencastproject.capture.agent.properties")
                 if os.path.exists(ca_prop):
                     with open(ca_prop, 'rb') as fsrc:
                         dst = os.path.join(self.get_rectemp_path(), "org.opencastproject.capture.agent.properties")
@@ -128,16 +128,20 @@ class Repository(object):
                             shutil.copyfileobj(fsrc, fdst)
                             os.fsync(fdst)
 
+            # Create MP
             mp = deserializer.fromXML(os.path.join(self.get_rectemp_path(), "manifest.xml"), self.logger)
-
-            # Status to RECORDED
+            # Set saved data
+            mp.setFromDict(info)
+            # Overwrite some data
             mp.status = 4
-            mp.setTitle("Recovered recording of date {}".format(mp.getStartDateAsString()))
-            mp.setNewIdentifier()
-            info['mp_id'] = mp.getIdentifier()
+            mp.setTitle("Recovered - " + mp.getTitle())
+            if not mp.getIdentifier():
+                mp.setNewIdentifier()
 
             # Change the filenames 
             folder = self.add_after_rec(mp, info['tracks'], mp.getDuration(), add_catalogs=True, remove_tmp_files=False)
+            mp.discoverDuration()
+
             serializer.save_in_dir(mp, self.logger, folder)
             self.logger and self.logger.info("Crashed recording added to the repository")
 
@@ -150,7 +154,7 @@ class Repository(object):
                         shutil.copyfileobj(fsrc, fdst)
                         os.fsync(fdst)
 
-            # Check if there is some extra files (slides) and move the the mediapackage folder
+            # Check if there is some extra files and move it to the mediapackage folder
             mp_dir = mp.getURI()
             for temp_file in os.listdir(self.get_rectemp_path()):
                 full_path = os.path.join(self.get_rectemp_path(), temp_file)
@@ -212,12 +216,8 @@ class Repository(object):
         serializer.save_in_dir(mp, self.logger, self.get_rectemp_path())
 
         try:
-            info = {}
-            info['scheduled'] = True if mp.status == mediapackage.SCHEDULED else False
-            info['mp_id']     = mp.getIdentifier()
-            info['mp_path']   = mp.getURI()
-            info['start']     = mp.getDate().isoformat()
-            info['tracks']    = bins_info
+            info           = mp.getAsDict()
+            info['tracks'] = bins_info
             
             filename = os.path.join(self.get_rectemp_path(), 'info.json')
             f = open(filename, 'w')
