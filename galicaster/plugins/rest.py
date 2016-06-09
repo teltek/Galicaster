@@ -195,9 +195,7 @@ def quit():
         # Emit quit signal and exit
         dispatcher = context.get_dispatcher()
         dispatcher.emit('quit')
-        
-        Gdk.threads_enter()
-        Gtk.main_quit()
-        Gdk.threads_leave()
+
+        GObject.idle_add(Gtk.main_quit)
     else:
         abort(401, "Sorry, there is a current recording")

@@ -22,7 +22,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gst", "1.0")
 
-from gi.repository import Gtk, Gst, Gdk
+from gi.repository import Gtk, Gst, Gdk, GObject
 # Needed for window.get_xid(), xvimagesink.set_window_handle(), respectively:
 
 import os
@@ -244,6 +244,12 @@ class Player(object):
         logger.error(error)
         self.stop()
 
+        
+    def _prepare_window_handler(self, gtk_player, message):
+        Gdk.Display.get_default().sync()
+        message.src.set_window_handle(gtk_player.get_property('window').get_xid())
+        message.src.set_property('force-aspect-ratio', True)
+
     def _on_sync_message(self, bus, message):
         if message.get_structure() is None:
             return
@@ -256,11 +262,7 @@ class Player(object):
                 gtk_player = self.players[name]
                 if not isinstance(gtk_player, Gtk.DrawingArea):
                     raise TypeError()
-                Gdk.threads_enter()
-                Gdk.Display.get_default().sync()
-                message.src.set_window_handle(gtk_player.get_property('window').get_xid())
-                message.src.set_property('force-aspect-ratio', True)
-                Gdk.threads_leave()
+                GObject.idle_add(self._prepare_window_handler, gtk_player, message)
 
             except TypeError:
                 pass

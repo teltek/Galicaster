@@ -298,9 +298,7 @@ class PlayerClassUI(ManagerUI):
         thread_id= self.thread_id
         self.initial_time=self.player.get_time()
         self.duration = self.player.get_duration()
-        Gdk.threads_enter()
-        self.setTimer2(0,self.duration)
-        Gdk.threads_leave()        
+        GObject.idle_add(self.setTimer2, 0, self.duration)
               
         while thread_id == self.thread_id:
             if not self.seeking :
@@ -317,9 +315,7 @@ class PlayerClassUI(ManagerUI):
                     timer = actual_time / Gst.SECOND
                     self.seek_bar.set_value(timer*100/self.duration)
                 if thread_id==self.thread_id:
-                    Gdk.threads_enter()
-                    self.setTimer2(timer,self.duration)
-                    Gdk.threads_leave()
+                    GObject.idle_add(self.setTimer2, timer, self.duration)
                     
             time.sleep(0.2)          
         return True
