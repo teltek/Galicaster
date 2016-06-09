@@ -770,8 +770,15 @@
                               <packing>
                                 <property name="left_attach">11</property>
                                 <property name="top_attach">2</property>
+                                <property name="width">2</property>
                                 <property name="height">2</property>
                               </packing>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
                             </child>
                             <child>
                               <placeholder/>
@@ -817,7 +824,9 @@
                               <object class="GtkImage" id="image2">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="pixel_size">10</property>
                                 <property name="icon_name">media-record</property>
+                                <property name="icon_size">1</property>
                               </object>
                             </child>
                             <child internal-child="accessible">
@@ -842,6 +851,7 @@
                               <object class="GtkImage" id="image4">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="pixel_size">10</property>
                                 <property name="icon_name">media-playback-pause</property>
                               </object>
                             </child>

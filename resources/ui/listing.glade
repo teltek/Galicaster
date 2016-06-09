@@ -5,6 +5,7 @@
   <object class="GtkVBox" id="listingbox">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
+    <property name="border_width">0</property>
     <child>
       <placeholder/>
     </child>
@@ -18,6 +19,7 @@
           <object class="GtkScrolledWindow" id="scrolledw">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="border_width">5</property>
             <property name="hscrollbar_policy">never</property>
             <property name="shadow_type">etched-in</property>
             <child>
