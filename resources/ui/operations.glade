@@ -56,6 +56,7 @@
                             <signal name="clicked" handler="force_response" swapped="no"/>
                             <style>
                               <class name="cancel_button"/>
+                              <class name="dialog_button"/>
                             </style>
                           </object>
                           <packing>
@@ -72,6 +73,7 @@
                             <signal name="clicked" handler="force_response" swapped="no"/>
                             <style>
                               <class name="cancel_button"/>
+                              <class name="dialog_button"/>
                             </style>
                           </object>
                           <packing>
