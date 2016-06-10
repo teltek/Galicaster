@@ -294,7 +294,7 @@ class ManagerUI(Gtk.Box):
  
         # Operations
         for op,status in data['operations'].iteritems():
-            data[op] = _(status)
+            data[op] = mediapackage.op_status[status]
         del data['operations']
 
         # Tracks
