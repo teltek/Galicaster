@@ -59,6 +59,7 @@ class Player(object):
         self.players = players
         self.duration = 0
         self.has_audio = False
+        self.error = None
         self.pipeline_complete = False
         self.pipeline = None
         self.audio_sink = None
@@ -129,6 +130,7 @@ class Player(object):
             self.pipeline.set_state(Gst.State.PAUSED)
             self.pipeline_complete = True
         else:
+            self.error = None
             self.pipeline.set_state(Gst.State.PLAYING)
         return None
 
@@ -198,6 +200,10 @@ class Player(object):
             self.pipeline.set_state(Gst.State.PLAYING)
 
     def _on_new_decoded_pad(self, element, pad):
+        if self.error:
+            logger.debug('There is an error, so ingoring decoded pad: %r in %r', name, element_name)
+            return
+        
         name = pad.query_caps(None).to_string()
         element_name = element.get_name()[7:]
         logger.debug('new decoded pad: %r in %r', name, element_name)
@@ -240,9 +246,9 @@ class Player(object):
         self.dispatcher.emit("play-stopped")
 
     def _on_error(self, bus, msg):
-        error = msg.parse_error()[1]
-        logger.error(error)
-        self.stop()
+        self.error = msg.parse_error()[1]
+        logger.error(self.error)
+        self.quit()
 
         
     def _prepare_window_handler(self, gtk_player, message):
