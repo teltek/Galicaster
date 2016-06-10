@@ -504,7 +504,6 @@ class Mediapackage(object):
 
     
     def setFromDict(self, info={}):
-
         if 'id' in info.keys():
             self.setIdentifier(info['id'])
         if 'title' in info.keys():
@@ -800,7 +799,7 @@ class Mediapackage(object):
 
 
     def discoverDuration(self):
-        mp_dur = None
+        mp_dur = 0
         for t in self.getTracks():
             track_dur = get_duration(t.getURI())*1000
             if not mp_dur or mp_dur < track_dur:
@@ -1272,8 +1271,9 @@ class Mediapackage(object):
             repeated = True
 
         if repeated:
-            # TODO: Add logger
-            raise RuntimeError("Trying to add an element {} that is already in the current Mediapackage {}".format(elem.uri, self.getIdentifier()))
+            return None
+            # # TODO: Add logger
+            # raise RuntimeError("Trying to add an element {} that is already in the current Mediapackage {}".format(elem.uri, self.getIdentifier()))
 
             
         if etype not in ELEMENT_TYPES:
