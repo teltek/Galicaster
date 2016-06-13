@@ -309,7 +309,10 @@ class RecorderClassUI(Gtk.Box):
         if self.error_dialog:
             self.destroy_error_dialog()
         self.error_dialog = message.PopUp(message.ERROR, text, 
-                                context.get_mainwindow(), None)
+                                          context.get_mainwindow(), None, self.on_close_error_affirmative)
+
+    def on_close_error_affirmative(self, origin=None, builder=None, popup=None):
+        self.dispatcher.emit("action-reload-profile")
 
 
     def destroy_error_dialog(self):
