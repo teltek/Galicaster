@@ -651,8 +651,8 @@ class RecorderClassUI(Gtk.Box):
 
             image = button.get_children()
             if type(image[0]) == Gtk.Image:
-                image[0].set_pixel_size(int(k1*80))   
-            elif type(image[0]) == Gtk.VBox:
+                image[0].set_pixel_size(int(k1*60))
+            elif type(image[0]) == Gtk.Box:
                 for element in image[0].get_children():
                     if type(element) == Gtk.Image:
                         element.set_pixel_size(int(k1*46))
