@@ -130,6 +130,7 @@ class Repository(object):
 
             # Create MP
             mp = deserializer.fromXML(os.path.join(self.get_rectemp_path(), "manifest.xml"), self.logger)
+
             # Set saved data
             mp.setFromDict(info)
             # Overwrite some data
@@ -138,10 +139,12 @@ class Repository(object):
             if not mp.getIdentifier():
                 mp.setNewIdentifier()
 
-            # Change the filenames 
+            # Change the filenames
             folder = self.add_after_rec(mp, info['tracks'], mp.getDuration(), add_catalogs=True, remove_tmp_files=False)
-            mp.discoverDuration()
-
+            try:
+                mp.discoverDuration()
+            except Exception as exc:
+                self.logger and self.logger.debug("Error trying to get duration of MP {}: {}".format(mp.getIdentifier(), exc))
             serializer.save_in_dir(mp, self.logger, folder)
             self.logger and self.logger.info("Crashed recording added to the repository")
 
@@ -154,12 +157,14 @@ class Repository(object):
                         shutil.copyfileobj(fsrc, fdst)
                         os.fsync(fdst)
 
+
             # Check if there is some extra files and move it to the mediapackage folder
             mp_dir = mp.getURI()
             for temp_file in os.listdir(self.get_rectemp_path()):
                 full_path = os.path.join(self.get_rectemp_path(), temp_file)
                 if os.path.isfile(full_path) and os.path.getsize(full_path) and not "screenshot.jpg" in temp_file:
                     os.rename(full_path, os.path.join(mp_dir, temp_file))
+
 
         except Exception as exc:
             self.logger and self.logger.error("There was an error trying to recover a recording: {}. Saving crashed recording to a rectemp folder...".format(exc))
@@ -434,7 +439,7 @@ class Repository(object):
 
 
     def get_last_mediapackage(self):
-        """Gets the last mediapackage added to the repository.
+        """Gets the last mediapackage added to the repository (sorted by date).
         Returns:
             Mediapackage: the last mediapackage added.
         """
@@ -553,14 +558,15 @@ class Repository(object):
             if mp.manual or not capture_dev_names or len(capture_dev_names) == 0 or capture_dev_names == 'defaults' or bin['name'] in capture_dev_names:
                 filename = os.path.join(bin['path'], bin['file'])
                 dest = os.path.join(mp.getURI(), os.path.basename(filename))
+                
                 os.rename(filename, dest)
                 etype = 'audio/mp3' if bin['device'] in ['pulse', 'autoaudio', 'audiotest'] else 'video/' + dest.split('.')[1].lower()
                 
                 flavour = bin['flavor'] + '/source'
-
                 mp.add(dest, mediapackage.TYPE_TRACK, flavour, etype, duration) # FIXME MIMETYPE
             else:
                 self.logger and self.logger.debug("Not adding {} to MP {}").format(bin['file'],mp.getIdentifier())
+
 
         mp.forceDuration(duration)
 

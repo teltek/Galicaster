@@ -60,9 +60,7 @@ class ManagerUI(Gtk.Box):
 	self.dispatcher = context.get_dispatcher()
 	self.repository = context.get_repository()
 	self.network = False
-
-	self.dispatcher.connect_ui("opencast-connected", self.network_status, True)
-	self.dispatcher.connect_ui("opencast-unreachable", self.network_status, False)
+	self.dispatcher.connect_ui("opencast-status", self.network_status)
 
 
     def sorting(self, treemodel, iter1, iter2, data, regular=True, ascending=1):
@@ -294,7 +292,7 @@ class ManagerUI(Gtk.Box):
  
         # Operations
         for op,status in data['operations'].iteritems():
-            data[op] = _(status)
+            data[op] = mediapackage.op_status[status]
         del data['operations']
 
         # Tracks

@@ -56,7 +56,7 @@ GtkWindow.shaded>*{
 	font-size: 0.9em;
 }
 .info_mp GtkFrame{
-	font-size: 0.7em;
+	font-size: 0.8em;
 }
 .info_mp .frame_title{
 	font-size: 1.5em;
@@ -148,6 +148,9 @@ GtkNotebook tab{
 }
 #black_coloured{
 	color: shade(gray,0.5);
+}
+#orange_coloured{
+	color: #F4A00E;
 }
 #blinking_coloured_from{
 	color: shade(red,1.5);

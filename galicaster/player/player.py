@@ -33,6 +33,14 @@ from galicaster.utils.mediainfo import get_duration
 
 logger = context.get_logger()
 
+GST_TIMEOUT= Gst.SECOND*10
+
+INIT    = 0
+READY   = 1
+PLAYING = 2
+PAUSED  = 3
+STOPPED = 4
+ERRORED = 5
 
 class Player(object):
     def __init__(self, files, players={}):
@@ -59,6 +67,7 @@ class Player(object):
         self.players = players
         self.duration = 0
         self.has_audio = False
+        self.error = None
         self.pipeline_complete = False
         self.pipeline = None
         self.audio_sink = None
@@ -92,19 +101,26 @@ class Player(object):
             self.pipeline.add(dec)
             src.link(dec)
 
+        self.error = None
         return None
 
-    def get_status(self):
+    def get_status(self, timeout=GST_TIMEOUT):
         """
         Get the player status
         """
-        return self.pipeline.get_state(Gst.CLOCK_TIME_NONE)
+        status = self.pipeline.get_state(timeout)        
+                
+        if status[0] == Gst.StateChangeReturn.ASYNC:
+            logger.error('Timeout getting recorder status, current status: {}'.format(status))
+        
+        return status
 
+    
     def is_playing(self):
         """
         Get True if is playing else False
         """
-        return (self.pipeline.get_state(Gst.CLOCK_TIME_NONE)[1] == Gst.State.PLAYING)
+        return (self.get_status()[1] == Gst.State.PLAYING)
 
     def get_time(self):
         """
@@ -129,6 +145,7 @@ class Player(object):
             self.pipeline.set_state(Gst.State.PAUSED)
             self.pipeline_complete = True
         else:
+            self.dispatcher.emit("player-status", PLAYING)
             self.pipeline.set_state(Gst.State.PLAYING)
         return None
 
@@ -138,7 +155,8 @@ class Player(object):
         """
         logger.debug("player paused")
         self.pipeline.set_state(Gst.State.PAUSED)
-        self.pipeline.get_state(Gst.CLOCK_TIME_NONE)
+        self.dispatcher.emit("player-status", PAUSED)
+        self.get_status()
 
     def stop(self):
         """
@@ -149,7 +167,8 @@ class Player(object):
         logger.debug("player stoped")
         self.pipeline.set_state(Gst.State.PAUSED)
         self.seek(0)
-        self.pipeline.get_state(Gst.CLOCK_TIME_NONE)
+        self.dispatcher.emit("player-status", STOPPED)
+        self.get_status()
         return None
 
     def quit(self):
@@ -158,7 +177,8 @@ class Player(object):
         """
         logger.debug("player deleted")
         self.pipeline.set_state(Gst.State.NULL)
-        self.pipeline.get_state(Gst.CLOCK_TIME_NONE)
+        self.dispatcher.emit("player-status", STOPPED)
+        self.get_status()
         return None
 
     def seek(self, pos, recover_state=False):
@@ -172,8 +192,9 @@ class Player(object):
                                     # REVIEW sure about ACCURATE
                                     Gst.SeekType.SET, pos,
                                     Gst.SeekType.NONE, -1)
-        if recover_state and self.pipeline.get_state(Gst.CLOCK_TIME_NONE)[1] == Gst.State.PAUSED:
+        if recover_state and self.get_status()[1] == Gst.State.PAUSED:
             self.pipeline.set_state(Gst.State.PLAYING)
+            self.dispatcher.emit("player-status", PLAYING)
         return result
 
     def get_duration(self):
@@ -197,11 +218,15 @@ class Player(object):
                     (old, new) == (Gst.State.READY, Gst.State.PAUSED)):
             self.pipeline.set_state(Gst.State.PLAYING)
 
-    def _on_new_decoded_pad(self, element, pad):
+    def _on_new_decoded_pad(self, element, pad):        
         name = pad.query_caps(None).to_string()
         element_name = element.get_name()[7:]
         logger.debug('new decoded pad: %r in %r', name, element_name)
         sink = None
+
+        if self.error:
+            logger.debug('There is an error, so ingoring decoded pad: %r in %r', name, element_name)
+            return None
 
         if name.startswith('audio/'):
             # if element_name == 'presenter' or len(self.files) == 1:
@@ -237,13 +262,13 @@ class Player(object):
     def _on_eos(self, bus, msg):
         logger.info('Player EOS')
         self.stop()
-        self.dispatcher.emit("play-stopped")
+        self.dispatcher.emit("player-status", STOPPED)
 
     def _on_error(self, bus, msg):
-        error = msg.parse_error()[1]
-        logger.error(error)
-        self.stop()
-
+        self.error = msg.parse_error()[1]
+        logger.error(self.error)
+        self.dispatcher.emit("player-status", ERRORED)
+        self.quit()
         
     def _prepare_window_handler(self, gtk_player, message):
         Gdk.Display.get_default().sync()
@@ -297,8 +322,13 @@ class Player(object):
         self.dispatcher.emit("player-vumeter", valor, valor2, stereo)
 
     def __discover(self, filepath):
-        self.duration = get_duration(filepath)
-        logger.info("Duration ON_DISCOVERED: " + str(self.duration))
+        self.duration = 0
+        try:
+            self.duration = get_duration(filepath)
+            logger.info("Duration ON_DISCOVERED: " + str(self.duration))
+        except Exception as exc:
+            logger.debug("Error trying to get duration of {}: {}".format(filepath, exc))
+        
         self.create_pipeline()
         return True
 

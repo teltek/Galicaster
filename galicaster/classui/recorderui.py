@@ -125,9 +125,8 @@ class RecorderClassUI(Gtk.Box):
         self.view = self.set_status_view()
         big_status.add(self.view)
         self.dispatcher.connect_ui("init", self.check_status_area)
-        self.dispatcher.connect_ui("init", self.check_net)
-        self.dispatcher.connect_ui("opencast-connected", self.check_net, True)        
-        self.dispatcher.connect_ui("opencast-unreachable", self.check_net, False)        
+        self.dispatcher.connect_ui("init", self.check_net, None)
+        self.dispatcher.connect_ui("opencast-status", self.check_net)
 
         # UI
         self.pack_start(self.recorderui,True,True,0)
@@ -572,21 +571,23 @@ class RecorderClassUI(Gtk.Box):
             'Disabled'  : 'gray_coloured',
             'Up'        : 'green_coloured',
             'Down'      : 'red_coloured',
-            'Connecting': 'black_coloured',
+            'Connecting': 'orange_coloured',
         }
-
         s3 = self.gui.get_object("status3")
         if not self.net_activity:
             s3.set_text("Disabled")
             s3.set_name(network_css_ids['Disabled'])
         else:
             try:
-                if status:
+                if status == True:
                     s3.set_text("Up")
                     s3.set_name(network_css_ids['Up'])
-                else:
+                elif status == False:
                     s3.set_text("Down")  
                     s3.set_name(network_css_ids['Down'])
+                else:                    
+                    s3.set_text("Connecting...")
+                    s3.set_name(network_css_ids['Connecting'])
             except KeyError:
                 s3.set_text("Connecting")
                 s3.set_name(network_css_ids['Connecting'])
