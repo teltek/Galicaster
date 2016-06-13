@@ -231,8 +231,8 @@ class Switcher(Gst.Bin):
 
 
 VIDEOSINK_PROPERTIES = {
-    'xvimagesink'     : {'async': 'false', 'sync': 'false', 'qos': 'true'},
-    'ximagesink'      : {'async': 'false', 'sync': 'false', 'qos': 'true'},
+    'xvimagesink'     : {'async': 'false', 'sync': 'false', 'qos': 'true', 'force-aspect-ratio': 'true'},
+    'ximagesink'      : {'async': 'false', 'sync': 'false', 'qos': 'true', 'force-aspect-ratio': 'true'},
     'autovideosink'   : {'async': 'false', 'sync': 'false'},
     'fakesink'        : {'async': 'false', 'sync': 'false', 'silent': 'true'},
     'fpsdisplaysink'  : {'async-handling' : 'false', 'sync': 'false', 'qos': 'true'},
