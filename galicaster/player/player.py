@@ -33,6 +33,8 @@ from galicaster.utils.mediainfo import get_duration
 
 logger = context.get_logger()
 
+GST_TIMEOUT= Gst.SECOND*10
+
 INIT    = 0
 READY   = 1
 PLAYING = 2
@@ -102,17 +104,23 @@ class Player(object):
         self.error = None
         return None
 
-    def get_status(self):
+    def get_status(self, timeout=GST_TIMEOUT):
         """
         Get the player status
         """
-        return self.pipeline.get_state(Gst.CLOCK_TIME_NONE)
+        status = self.pipeline.get_state(timeout)        
+                
+        if status[0] == Gst.StateChangeReturn.ASYNC:
+            logger.error('Timeout getting recorder status, current status: {}'.format(status))
+        
+        return status
 
+    
     def is_playing(self):
         """
         Get True if is playing else False
         """
-        return (self.pipeline.get_state(Gst.CLOCK_TIME_NONE)[1] == Gst.State.PLAYING)
+        return (self.get_status()[1] == Gst.State.PLAYING)
 
     def get_time(self):
         """
@@ -148,7 +156,7 @@ class Player(object):
         logger.debug("player paused")
         self.pipeline.set_state(Gst.State.PAUSED)
         self.dispatcher.emit("player-status", PAUSED)
-        self.pipeline.get_state(Gst.CLOCK_TIME_NONE)
+        self.get_status()
 
     def stop(self):
         """
@@ -160,7 +168,7 @@ class Player(object):
         self.pipeline.set_state(Gst.State.PAUSED)
         self.seek(0)
         self.dispatcher.emit("player-status", STOPPED)
-        self.pipeline.get_state(Gst.CLOCK_TIME_NONE)
+        self.get_status()
         return None
 
     def quit(self):
@@ -170,7 +178,7 @@ class Player(object):
         logger.debug("player deleted")
         self.pipeline.set_state(Gst.State.NULL)
         self.dispatcher.emit("player-status", STOPPED)
-        self.pipeline.get_state(Gst.CLOCK_TIME_NONE)
+        self.get_status()
         return None
 
     def seek(self, pos, recover_state=False):
@@ -184,7 +192,7 @@ class Player(object):
                                     # REVIEW sure about ACCURATE
                                     Gst.SeekType.SET, pos,
                                     Gst.SeekType.NONE, -1)
-        if recover_state and self.pipeline.get_state(Gst.CLOCK_TIME_NONE)[1] == Gst.State.PAUSED:
+        if recover_state and self.get_status()[1] == Gst.State.PAUSED:
             self.pipeline.set_state(Gst.State.PLAYING)
             self.dispatcher.emit("player-status", PLAYING)
         return result
@@ -314,8 +322,13 @@ class Player(object):
         self.dispatcher.emit("player-vumeter", valor, valor2, stereo)
 
     def __discover(self, filepath):
-        self.duration = get_duration(filepath)
-        logger.info("Duration ON_DISCOVERED: " + str(self.duration))
+        self.duration = 0
+        try:
+            self.duration = get_duration(filepath)
+            logger.info("Duration ON_DISCOVERED: " + str(self.duration))
+        except Exception as exc:
+            logger.debug("Error trying to get duration of {}: {}".format(filepath, exc))
+        
         self.create_pipeline()
         return True
 
