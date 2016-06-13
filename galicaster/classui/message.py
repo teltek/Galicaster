@@ -383,12 +383,6 @@ class PopUp(Gtk.Widget):
             self.dialog = None
         instance = None
 
-    def error_reload_profile(self, origin=None):        
-        self.dialog_destroy()
-
-        dispatcher = context.get_dispatcher()
-        dispatcher.emit('action-reload-profile')
-
 
 GObject.type_register(PopUp)
 
