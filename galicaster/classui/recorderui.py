@@ -137,7 +137,7 @@ class RecorderClassUI(Gtk.Box):
         self.dispatcher.connect_ui("view-changed", self.event_change_mode)
         self.dispatcher.connect_ui("recorder-status", self.handle_status)
 
-        nb=builder.get_object("data_panel")
+        #nb=builder.get_object("data_panel")
         # pages = nb.get_n_pages()        
         # for index in range(pages):
         #     page=nb.get_nth_page(index)
