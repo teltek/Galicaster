@@ -149,6 +149,9 @@ GtkNotebook tab{
 #black_coloured{
 	color: shade(gray,0.5);
 }
+#orange_coloured{
+	color: #F4A00E;
+}
 #blinking_coloured_from{
 	color: shade(red,1.5);
 }

@@ -124,16 +124,16 @@ class Scheduler(object):
         """
         self.logger.info('Init opencast client')
         self.old_ca_status = None
-
+        self.dispatcher.emit('opencast-status', None)
         try:
             self.client.welcome()
         except Exception as exc:
             self.logger.warning('Unable to connect to opencast server: {0}'.format(exc))
             self.net = False
-            self.dispatcher.emit('opencast-unreachable')
+            self.dispatcher.emit('opencast-status', False)
         else:
             self.net = True
-            self.dispatcher.emit('opencast-connected')
+            # self.dispatcher.emit('opencast-connected')
 
 
 
@@ -149,17 +149,17 @@ class Scheduler(object):
             self.ca_status = 'capturing'
         else:
             self.ca_status = 'idle'
-        self.logger.info('Set status %s to server', self.ca_status)
+        self.logger.info('Set status %s to server', self.ca_status)        
         
         try:
             self.client.setstate(self.ca_status)
-            self.client.setconfiguration(self.conf.get_tracks_in_oc_dict()) 
+            self.client.setconfiguration(self.conf.get_tracks_in_oc_dict())
             self.net = True
-            self.dispatcher.emit('opencast-connected')
+            self.dispatcher.emit('opencast-status', True)
         except Exception as exc:
             self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
             self.net = False
-            self.dispatcher.emit('opencast-unreachable')
+            self.dispatcher.emit('opencast-status', False)
             return
 
 
@@ -172,7 +172,7 @@ class Scheduler(object):
         except Exception as exc:
             self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
             self.net = False
-            self.dispatcher.emit('opencast-unreachable')
+            self.dispatcher.emit('opencast-status', False)
             return
 
         # No data but no error implies that the calendar has not been modified (ETAG)
@@ -275,7 +275,7 @@ class Scheduler(object):
             except Exception as exc:
                 self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
                 self.net = False
-                self.dispatcher.emit('opencast-unreachable')
+                self.dispatcher.emit('opencast-status', False)
             
         self.t_stop = None
 
@@ -296,4 +296,4 @@ class Scheduler(object):
                 except:
                     self.logger.warning("Problems to connect to opencast server trying to send the state 'capture_error' ")
                     self.net = False
-                    self.dispatcher.emit('opencast-unreachable')
+                    self.dispatcher.emit('opencast-status', False)
