@@ -109,6 +109,7 @@ class RecorderClassUI(Gtk.Box):
 
         # VUMETER
         self.rangeVum = 50
+        self.thresholdVum = self.conf.get_float('audio','min')
         self.mute = False
         self.stereo = True
         self.vumeterL = builder.get_object("progressbarL")
@@ -189,24 +190,24 @@ class RecorderClassUI(Gtk.Box):
             data2 = -200
             
         average = (data + data2)/2.0
-        
         if not self.mute:
-            if average < (-self.rangeVum):
+            if average < (self.thresholdVum):
                 self.dispatcher.emit("audio-mute")
                 self.mute = True
-        if self.mute and average > (-self.rangeVum + 5.0):
+        if self.mute and average > (self.thresholdVum + 5.0):
             self.dispatcher.emit("audio-recovered")
             self.mute = False 
 
-        if data < -100:
+            
+        if data < -self.rangeVum:
             valor = 1
         else:
-            valor=1 - ((data + self.rangeVum)/float(self.rangeVum))
+            valor = 1 - ((data + self.rangeVum)/float(self.rangeVum))
 
-        if data2 < -100:
+        if data2 < -self.rangeVum:
             valor2 = 1
         else:
-            valor2=1 - ((data2 + self.rangeVum)/float(self.rangeVum))
+            valor2 = 1 - ((data2 + self.rangeVum)/float(self.rangeVum))
 
         return valor, valor2
 
