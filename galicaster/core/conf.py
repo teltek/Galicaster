@@ -162,7 +162,26 @@ class Conf(object): # TODO list get and other ops arround profile
                 self.logger and self.logger.warning('The parameter "{0}" in section "{1}" is not an int, FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
 
         return default
-       
+
+
+    def get_float(self, sect, opt, default=None):
+        """Tries to return the value of an option in a section as a float. 
+        If else, returns the given default value.
+        Args:
+            sect (str): section of configuration file.
+            opt (str): option of configuration file.
+            default (str): the string return when an exception occurs.
+        Returns:
+            Float: the value of option opt in section sect if there are no errors. Default otherwise.
+        """
+        if self.get(sect, opt):
+            try:
+                return float(self.get(sect, opt))
+            except Exception as exc:
+                self.logger and self.logger.warning('The parameter "{0}" in section "{1}" is not a float, FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
+
+        return default
+
 
     def get_hour(self, sect, opt, default='00:00'):
         """Tries to return the value of an option in a section with a hour format.
