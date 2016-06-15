@@ -53,6 +53,7 @@ class Dispatcher(GObject.GObject):
 #GObject.type_register(Dispatcher)
 GObject.signal_new('init', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('pr', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
+GObject.signal_new('gc-shown', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 #REC
 GObject.signal_new('recorder-upcoming-event', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('recorder-vumeter', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,) )

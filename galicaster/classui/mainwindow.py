@@ -70,6 +70,7 @@ class GCWindow(Gtk.Window):
         self.set_icon(pixbuf)
         self.connect('delete_event', lambda *x: self.__on_delete_event())
         self.dispatcher = dispatcher
+        self.connect('visibility-notify-event', self.on_visibility_event)
         if self.dispatcher:
             self.dispatcher.connect('action-quit', self.close)
             self.dispatcher.connect('action-shutdown', self.shutdown)
@@ -77,6 +78,9 @@ class GCWindow(Gtk.Window):
         self.nbox = Gtk.Notebook()
         self.nbox.set_show_tabs(False)
         self.add(self.nbox)
+
+    def on_visibility_event(self, *args):
+        self.dispatcher.emit('gc-shown')
 
     def start(self):
         """Shifts to fullscreen mode and triggers content resizing and drawing"""

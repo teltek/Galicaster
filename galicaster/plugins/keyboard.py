@@ -29,7 +29,7 @@ def init():
     if not pid:
         subprocess.Popen(["onboard"]).pid
 
-    dispatcher.connect('init', configure_keyboard)
+    dispatcher.connect('gc-shown', configure_keyboard)
     dispatcher.connect('quit', unconfigure_keyboard)
 
 def configure_keyboard(dispatcher=None):
