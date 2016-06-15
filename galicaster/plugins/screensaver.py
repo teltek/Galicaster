@@ -41,7 +41,7 @@ def init():
         
     dispatcher.connect('recorder-upcoming-event', deactivate_and_poke)
     dispatcher.connect('recorder-starting', deactivate_and_poke)
-    dispatcher.connect('reload-profile', configure)
+    dispatcher.connect('action-reload-profile', configure)
     dispatcher.connect('quit', configure_quit)
 
     power_settings = conf.get_json('screensaver', 'powersettings')
