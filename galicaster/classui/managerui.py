@@ -16,7 +16,6 @@ UI for the Media Manager and Player area
 
 from gi.repository import Gtk
 from gi.repository import GObject
-from galicaster.utils import series
 
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
@@ -242,7 +241,7 @@ class ManagerUI(Gtk.Box):
         """Pop ups the Metadata Editor"""
 	logger.info("Edit: {0}".format(str(key)))
 	selected_mp = self.repository.get(key)
-	Metadata(selected_mp, series.get_series())
+	Metadata(selected_mp)
 	self.repository.update(selected_mp)
 
     def info(self,key):

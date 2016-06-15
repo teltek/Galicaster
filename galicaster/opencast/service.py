@@ -17,6 +17,7 @@ from threading import Timer
 
 from galicaster.utils import ical
 from galicaster.mediapackage import mediapackage
+from galicaster.opencast.series import get_series
 
 """
 This class manages the timers and its respective signals in order to start and stop scheduled recordings.
@@ -79,6 +80,7 @@ class OCService(object):
         self.mp_rec = None
         self.last_events = self.init_last_events()
         self.net = False
+        self.series = []
 
 
     def __set_recording_state(self, mp, state):
@@ -139,9 +141,10 @@ class OCService(object):
         if self.net:
             self.proccess_ical()
             self.dispatcher.emit('ical-processed')
+            self.series = get_series()
         for mp in self.repo.get_next_mediapackages():
             self.scheduler.create_new_timer(mp)
-
+        
     
     def init_client(self):
         """Tries to initialize opencast's client and set net's state.

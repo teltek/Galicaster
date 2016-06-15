@@ -22,8 +22,8 @@ import os
 
 from galicaster.classui.calendarwindow import CalendarWindow
 from galicaster.mediapackage import mediapackage
+from galicaster.opencast import series as utils_series
 from galicaster.core import context
-from galicaster.utils import series as listseries
 from galicaster.classui import get_ui_path
 from galicaster.classui.elements.message_header import Header
 
@@ -51,7 +51,7 @@ class MetadataClass(Gtk.Widget):
     """
     __gtype_name__ = 'MetadataClass'
 
-    def __init__(self, package = None, series_list = None, parent = None,
+    def __init__(self, package = None, parent = None,
                  title=_("Edit Metadata"), subtitle=_("Edit Metadata"), ok_label = _("Save"), ko_label = _("Cancel"),
                  empty_series_label = NO_SERIES):
         """
@@ -68,7 +68,12 @@ class MetadataClass(Gtk.Widget):
         self.wprop = k1
         self.hprop = k2
 
-        self.series_list = series_list
+
+        ocservice = context.get_ocservice()
+        self.series_list = []
+        if ocservice:
+            self.series_list = context.get_ocservice().series
+            
         self.empty_series_label = empty_series_label
 
         gui = Gtk.Builder()
@@ -167,8 +172,8 @@ class MetadataClass(Gtk.Widget):
 
             if meta in ["ispartof", "isPartOf"]:
                 try:
-                    default_series = listseries.getSeriesbyId(mp.metadata_series['identifier'])['id']
-                except TypeError:
+                    default_series = utils_series.filterSeriesbyId(self.series_list, mp.metadata_series['identifier'])['id']
+                except Exception as exc:
                     default_series = None
 
                 d = ComboBoxEntryExt(self.par, self.series_list, default=default_series, empty_label = self.empty_series_label)
@@ -245,7 +250,7 @@ class MetadataClass(Gtk.Widget):
 
                 elif name in [ "ispartof", "isPartOf" ]:
                     identifier = child.get_model()[child.get_active_iter()][1]
-                    series = listseries.getSeriesbyId(identifier)
+                    series = utils_series.filterSeriesbyId(self.series_list, identifier)
                     if series:
                         mp.setSeries(series["list"])
                         if not mp.getCatalogs("dublincore/series") and mp.getURI():

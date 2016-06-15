@@ -25,7 +25,7 @@ MAPPINGS = { 'user': getpass.getuser() }
 
 def get_series():
     repo = context.get_repository() 
-    occlient = context.get_occlient()
+    ocservice = context.get_ocservice()
 
     # Import the 'series' section as a dictionary
     series_conf = context.get_conf().get_section('series')
@@ -49,9 +49,10 @@ def get_series():
         series_list = []
         check_default = True
         while True:
-            print "aaa", occlient
-            series_json = json.loads(occlient.getseries(**queries))
-            print "bbbB"
+            if not ocservice.net:
+                break
+                
+            series_json = json.loads(ocservice.client.getseries(**queries))
             for catalog in series_json['catalogs']:
                 try:
                     series_list.append(parse_json_series(catalog))

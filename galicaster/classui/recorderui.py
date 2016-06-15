@@ -38,7 +38,7 @@ from galicaster.core import context
 from galicaster.classui.metadata import MetadataClass as Metadata
 from galicaster.classui import message
 from galicaster.classui import get_ui_path, get_image_path
-from galicaster.utils import series
+from galicaster.opencast import series
 from galicaster.utils import readable
 from galicaster.utils.resize import relabel
 from galicaster.utils.i18n import _
@@ -422,7 +422,7 @@ class RecorderClassUI(Gtk.Box):
         """GUI callback Pops up the  Metadata editor of the active Mediapackage"""
         self.dispatcher.emit("action-audio-disable-msg")
         if self.recorder.current_mediapackage and self.recorder.current_mediapackage.manual:
-            Metadata(self.recorder.current_mediapackage, series.get_series(), parent=self)
+            Metadata(self.recorder.current_mediapackage, parent=self)
             self.dispatcher.emit("action-audio-enable-msg")
         return True 
 
