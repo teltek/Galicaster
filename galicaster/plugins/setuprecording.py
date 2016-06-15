@@ -17,7 +17,7 @@ metadata before starting a manual recording.
 
 from galicaster.core import context
 import getpass
-from galicaster.utils import series as list_series
+from galicaster.opencast import series as utils_series
 from galicaster.classui.metadata import MetadataClass, DCTERMS, EQUIV
 
 from galicaster.utils.i18n import _
@@ -73,16 +73,19 @@ def on_rec(button):
     
     # Add default metadata to the MP
     mp.metadata_episode.update(metadata)
+
+    ocservice = context.get_ocservice()
+    series_list= []
+    if ocservice:
+        series_list = ocservice.series
     
     # Check the series
     try:
         del(mp.metadata_episode['isPartOf'])
-        mp.metadata_series = list_series.getSeriesbyId(metadata['isPartOf'])['list']
+        mp.metadata_series = utils_series.filterSeriesbyId(series_list, metadata['isPartOf'])['list']
     except (TypeError, KeyError):
         # There was no series specified, so no change was needed
         pass
-
-    series_list = list_series.get_series()
 
     arguments = { 'package': mp,
                   'series_list': series_list,

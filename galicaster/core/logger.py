@@ -18,6 +18,7 @@ import sys
 import logging
 import getpass
 
+import os
 from os import path
 
 class Logger(logging.Logger):
@@ -29,7 +30,7 @@ class Logger(logging.Logger):
             "%(user)s",
             "%(asctime)s",
             "%(levelname)s",
-            "%(module)s",
+            "%(pathname)s",
             "%(message)s"]
 
         if use_syslog:
@@ -74,4 +75,12 @@ class GalicasterFilter(logging.Filter):
     def filter(self, record):
         # Insert the username in a parameter named 'user'
         record.user = GalicasterFilter.CURRENT_USER
+
+        pathname = record.pathname
+        if pathname.find('galicaster/') > -1:
+            new_pathname = os.path.splitext(pathname[pathname.find('galicaster/'):])[0]        
+            record.pathname = new_pathname.replace('galicaster/', '')
+
         return True
+
+

@@ -379,7 +379,7 @@ class TestFunctions(TestCase):
         self.conf.set('basic', 'admin', 'True')
         self.assertEqual(self.conf.get_modules(), ['recorder', 'media_manager', 'player'])
         self.conf.set('ingest', 'active', 'True')
-        self.assertEqual(self.conf.get_modules(), ['recorder', 'media_manager', 'player', 'scheduler'])
+        self.assertEqual(self.conf.get_modules(), ['recorder', 'media_manager', 'player', 'scheduler', 'ocservice'])
 
     def test_get_color_style(self):
         self.assertEqual(self.conf.get_color_style(), False)

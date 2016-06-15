@@ -537,7 +537,7 @@ class Repository(object):
         return self.__add(mp)
 
 
-    def add_after_rec(self, mp, bins, duration, add_catalogs=True, remove_tmp_files=True): 
+    def add_after_rec(self, mp, bins, duration, add_catalogs=True, remove_tmp_files=True):
         """Adds information to the mediapackage when a recording ends and adds it to the repository.
         Args:
             mp (Mediapackage): the mediapackage whose recordings are going to be updated.

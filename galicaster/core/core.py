@@ -61,6 +61,9 @@ class Main():
         if 'scheduler' in self.modules:        
             self.scheduler = context.get_scheduler()
 
+        if 'ocservice' in self.modules:        
+            self.ocservice = context.get_ocservice()
+
         if 'media_manager' in self.modules:
             self.dispatcher.connect('action-view-change', self.change_mode)
 
@@ -93,7 +96,7 @@ class Main():
 
     def change_mode(self, origin, page):
         old_page = self.window.get_current_page()
-        self.window.set_current_page(page)  
+        self.window.set_current_page(page)
         self.dispatcher.emit('view-changed', old_page, page)
 
     def check_net(self, origin, data):

@@ -517,6 +517,7 @@ class Conf(object): # TODO list get and other ops arround profile
 
         if self.get_boolean('ingest', 'active'):
             modules.append('scheduler')
+            modules.append('ocservice')
 
         return modules
 

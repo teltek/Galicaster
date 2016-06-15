@@ -129,6 +129,30 @@ def get_occlient():
     return __galicaster_context['occlient']
 
 
+def get_ocservice():
+    """Creates if necessary and retrieves the Ocservice class from the App Context.
+    Returns:
+        OCService: the opencast service of galicaster context.
+    """
+    from galicaster.opencast.service import OCService
+
+    if 'ocservice' not in __galicaster_context:
+        conf = get_conf()
+        if get_conf().get_boolean("ingest", "active"):
+            ocservice = OCService(get_repository(),
+                                  get_occlient(),
+                                  get_scheduler(),
+                                  get_conf(),
+                                  get_dispatcher(),
+                                  get_logger(),
+                                  get_recorder())
+        else:
+            ocservice = None
+        __galicaster_context['ocservice'] = ocservice
+
+    return __galicaster_context['ocservice']
+
+
 def get_dispatcher():
     """Creates if necessary and retrieves the Dispatcher class from the App Context.
     Returns:
@@ -228,7 +252,7 @@ def get_scheduler():
     if 'scheduler' not in __galicaster_context:
         if get_conf().get_boolean("ingest", "active"):
             sch = Scheduler(get_repository(), get_conf(), get_dispatcher(), 
-                            get_occlient(), get_logger(), get_recorder())
+                            get_logger(), get_recorder())
         else:
             sch = None
         __galicaster_context['scheduler'] = sch
