@@ -59,7 +59,7 @@ class PopUp(Gtk.Widget):
     __gtype_name__ = 'PopUp'
 
     def __init__(self, message=None, text=TEXT, parent=None,
-                 buttons=None, response_action=None, close_on_response=True):
+                 buttons=None, response_action=None, close_on_response=True,show=[]):
         """ Initializes the Gtk.Dialog from its GLADE
         Args:
             message (str): type of message (See above constants)
@@ -131,6 +131,12 @@ class PopUp(Gtk.Widget):
                 print "we"
                 if no_recs:
                     no_recs.show()
+        
+        elif message == LOCKSCREEN:
+            for element in show:
+                gtk_obj = self.gui.get_object(element)
+                if gtk_obj:
+                    gtk_obj.show()
 
 
         # Display dialog
