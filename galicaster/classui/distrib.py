@@ -34,6 +34,7 @@ class DistribUI(Gtk.Box):
         dbuilder= Gtk.Builder()
         dbuilder.add_from_file(get_ui_path('distrib.glade'))
         self.builder = dbuilder
+        self.gui = dbuilder
         dbox = dbuilder.get_object("distbox")
         release = dbuilder.get_object("release_label")
         release.set_label(get_footer())
