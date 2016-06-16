@@ -84,6 +84,7 @@ class OCService(object):
 
 
     def __set_recording_state(self, mp, state):
+        self.logger.info("Sending state {} for the scheduled MP {}".format(state, mp))
         try:
             self.client.setrecordingstate(mp.getIdentifier(), state)
         except Exception as exc:
@@ -92,15 +93,17 @@ class OCService(object):
             self.net = False
 
                 
-    def __check_recording_started(self, mp):
+    def __check_recording_started(self, element=None, mp_id=None):
         #TODO: Improve the way of checking if it is a scheduled recording
-        if mp.getOCCaptureAgentProperty('capture.device.names'):
+        mp = self.repo.get(mp_id)
+        if mp and mp.getOCCaptureAgentProperty('capture.device.names'):
             self.__set_recording_state(mp, 'capturing')
             
 
-    def __check_recording_stopped(self, mp):
+    def __check_recording_stopped(self, element=None, mp_id=None):
         #TODO: Improve the way of checking if it is a scheduled recording
-        if mp.getOCCaptureAgentProperty('capture.device.names'):
+        mp = self.repo.get(mp_id)
+        if mp and mp.getOCCaptureAgentProperty('capture.device.names'):
             self.__set_recording_state(mp, 'capture_finished')
 
         
