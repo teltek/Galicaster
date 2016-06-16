@@ -12,7 +12,7 @@
 # San Francisco, California, 94105, USA.
 
 """
-Plugin to handle the Ubuntu 12 gnome-screensaver.
+Plugin to handle the Ubuntu 16 screensaver.
 
 The screensaver will be disabled a TIME before the start of a scheduled recording, and as long as there is an active recording. The TIME is defined by classui.recorderui TIME_UPCOMING
 
@@ -21,10 +21,12 @@ In order for this to work correctly, any other screensaver tool must be disabled
 The screensaver will darken the screen after a given period of inactivity. This period can be configured using the 'screensaver' parameter in the conf.ini file, indicating the seconds of inactivity. By default 60 seconds.
 """
 
+import os
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 from galicaster.core import context
 from galicaster.utils.systemcalls import execute
+from galicaster.utils.systemcalls import write_dconf_settings
 
 
 def init():
@@ -77,15 +79,19 @@ def configure(signal=None):
     suspend_time = inactivity + 5
     off_time = inactivity + 10
 
-    set_power_settings(power_settings)
+    write_dconf_settings(power_settings, logger, logaserror=False)
+    execute(["xset", "s", "off"], logger)
     execute(["xset", "+dpms"], logger)
     execute(["xset", "dpms", str(standby_time), str(suspend_time), str(off_time)], logger)
+    os.system("dconf write /org/gnome/desktop/session/idle-delay 'uint32 0'")
 
     
 def configure_quit(signal=None):
     global default_power_settings, logger
     logger.info("On exit: deactivate screensaver and set default power settings")
-    set_power_settings(default_power_settings)
+
+    write_dconf_settings(default_power_settings, logger, logaserror=False)
+    execute(["xset", "s", "on"], logger)
     execute(['xset', '-dpms'], logger)
 
 def poke_screen(signal=None):
@@ -101,9 +107,3 @@ def poke_screen(signal=None):
 def replying(data=None):
     pass
 
-
-def set_power_settings(power_settings={}):
-    global logger
-    for schema, v_dict in power_settings.iteritems():
-        for key, value in v_dict.iteritems():
-            execute(["gsettings", "set", schema, key, value], logger, logaserror=False)
