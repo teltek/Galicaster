@@ -110,7 +110,7 @@ def filterSeriesbyId(list_series, seriesid):
     try:
         match = {"id": seriesid, "name": list_series[seriesid]['title'], "list": list_series[seriesid]}
         return match
-    except KeyError:
+    except Exception:
         return None
     
 
@@ -123,9 +123,10 @@ def getSeriesbyId(seriesid):
     try:
         match = {"id": seriesid, "name": list_series[seriesid]['title'], "list": list_series[seriesid]}
         return match
-    except KeyError:
+    except Exception:
         return None
 
+    
 def getSeriesbyName(seriesname):
     """
     Generate a list with the series value name, shortname and id
