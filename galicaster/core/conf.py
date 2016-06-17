@@ -954,6 +954,19 @@ class Profile(object):
         self.tracks.remove(track)
         return track
 
+    
+    # TODO: This is a WORKAROUND for https://github.com/teltek/Galicaster/issues/317
+    # FIXME
+    def get_tracks_audio_at_end(self):
+        """
+        """
+        for indx, element in enumerate(self.tracks):
+            if element['device'] in ['audiotest', 'autoaudio', 'pulse']:
+                self.tracks += [self.tracks.pop(indx)]
+
+        return self.tracks
+
+    
     #TODO error, be careful with self.tracks(. It's not a method
     def reorder_tracks(self, order=[]):
         """Reorders the tracks following the order set by the argument order.
