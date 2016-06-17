@@ -43,7 +43,7 @@ def init():
         
     dispatcher.connect('recorder-upcoming-event', deactivate_and_poke)
     dispatcher.connect('recorder-starting', deactivate_and_poke)
-    dispatcher.connect('action-reload-profile', configure)
+    dispatcher.connect('recorder-stopped', configure)
     dispatcher.connect('quit', configure_quit)
 
     power_settings = conf.get_json('screensaver', 'powersettings')
@@ -71,7 +71,7 @@ def deactivate_and_poke(signal=None):
     deactivate_screensaver()
     poke_screen()
 
-def configure(signal=None):
+def configure(signal=None, mp=None):
     global inactivity, logger, power_settings
     logger.info("Configure: set power settings and activate power saving mode for {} s".format(inactivity))
 
@@ -91,7 +91,6 @@ def configure_quit(signal=None):
     logger.info("On exit: deactivate screensaver and set default power settings")
 
     write_dconf_settings(default_power_settings, logger, logaserror=False)
-    execute(["xset", "s", "on"], logger)
     execute(['xset', '-dpms'], logger)
 
 def poke_screen(signal=None):

@@ -57,6 +57,7 @@ Gdk.threads_init()
 logger = context.get_logger()
 status_label_changed = True
 status_label_blink = True
+signalized = False
 
 # No-op function for i18n
 def N_(string): return string
@@ -351,7 +352,7 @@ class RecorderClassUI(Gtk.Box):
 
     def update_scheduler_timeout(self, status, event_type, title):
         """GObject.timeout callback with 500 ms intervals"""
-        global status_label_changed, status_label_blink
+        global status_label_changed, status_label_blink, signalized
 
         if self.recorder.current_mediapackage and not self.recorder.current_mediapackage.manual:
             start = self.recorder.current_mediapackage.getLocalDate()
@@ -365,7 +366,7 @@ class RecorderClassUI(Gtk.Box):
             status.set_text(_("Stopping in {0}").format(readable.long_time(dif)))
             event_type.set_text(CURRENT_TEXT) 
             title.set_text(self.recorder.current_mediapackage.title)             
-                
+
             if dif < datetime.timedelta(0, TIME_RED_STOP):
                 if not status_label_changed:
                     status.set_name('red_coloured')
@@ -391,6 +392,14 @@ class RecorderClassUI(Gtk.Box):
                     title.set_text(next_mediapackage.title)
                 status.set_text(_("Starting in {0}").format(readable.long_time(dif)))
 
+                if dif < datetime.timedelta(0,TIME_UPCOMING):
+                    if not signalized:
+                        self.dispatcher.emit("recorder-upcoming-event")
+                    signalized = True
+                elif signalized:
+                    signalized = False
+                        
+                
                 if dif < datetime.timedelta(0,TIME_RED_START):
                     if not status_label_changed:
                         status.set_name('red_coloured')
