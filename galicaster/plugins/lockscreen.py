@@ -25,20 +25,14 @@ from gi.repository import Gtk
 from galicaster.core import core
 
 def init():
-    global conf, logger, bindings, default_bindings
+    global conf, logger
     dispatcher = context.get_dispatcher()
     logger = context.get_logger()
     conf = context.get_conf()    
     dispatcher.connect('init', show_msg)
 
-    bindings = conf.get_json('lockscreen', 'bindings')
-    default_bindings = conf.get_json('lockscreen', 'defaultbindings')
-
 def show_msg(element=None):
-    global logger, bindings, conf
-    logger.info("On init: write dconf bindings")
-    write_dconf_settings(bindings, logger, logaserror=False)
-
+    global logger, conf
 
     buttonDIS = show_buttons(core.DIS)
     buttonREC = show_buttons(core.REC)
@@ -67,7 +61,7 @@ def lock(element,text,show):
     global logger
     message.PopUp(message.LOCKSCREEN, text,
                             context.get_mainwindow(),
-                            None, response_action=on_unlock, close_on_response=False,show=show)
+                            None, response_action=on_unlock, close_on_response=False,show=show,close_parent=True)
     logger.info("Galicaster locked")
 
 def show_buttons(ui):
@@ -95,7 +89,7 @@ def show_buttons(ui):
 
 
 def on_unlock(self, response=None, **kwargs):
-    global conf, logger, default_bindings
+    global conf, logger
     
     builder = kwargs.get('builder', None)
     popup = kwargs.get('popup', None)
@@ -108,7 +102,6 @@ def on_unlock(self, response=None, **kwargs):
         if conf.get('lockscreen', 'password') == lentry.get_text():
             logger.info("Galicaster unlocked")
             popup.dialog_destroy()
-            write_dconf_settings(default_bindings, logger, logaserror=False)
         else:
             lmessage = builder.get_object("lockmessage")
             lmessage.set_text("Wrong password")
@@ -116,13 +109,10 @@ def on_unlock(self, response=None, **kwargs):
         if connect_ldap(userentry.get_text(),lentry.get_text()):
             logger.info("Galicaster unlocked")
             popup.dialog_destroy()
-            write_dconf_settings(default_bindings, logger, logaserror=False)
         else:
             lmessage = builder.get_object("lockmessage")
             lmessage.set_text("Wrong username/password")
         
-
-
 def connect_ldap(user,password):
     global logger, conf
     
