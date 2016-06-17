@@ -114,7 +114,9 @@ class RecorderService(object):
     def __prepare(self):
         current_profile = self.conf.get_current_profile()
         self.logger.debug("Using {} profile".format(current_profile.name))
-        bins = current_profile.tracks
+        # TODO: This is a WORKAROUND for https://github.com/teltek/Galicaster/issues/317
+        # FIXME
+        bins = current_profile.get_tracks_audio_at_end()
         for objectbin in bins:
             objectbin['path'] = self.repo.get_rectemp_path()
 
