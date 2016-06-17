@@ -56,6 +56,7 @@ GObject.signal_new('pr', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObjec
 GObject.signal_new('gc-shown', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 #REC
 GObject.signal_new('recorder-upcoming-event', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
+GObject.signal_new('recorder-scheduled-event', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('recorder-vumeter', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('recorder-message-element', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('recorder-error', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
