@@ -88,7 +88,7 @@ def show_buttons(ui):
     return button
 
 
-def on_unlock(self, response=None, **kwargs):
+def on_unlock(*args, **kwargs):
     global conf, logger
     
     builder = kwargs.get('builder', None)
@@ -98,21 +98,18 @@ def on_unlock(self, response=None, **kwargs):
     userentry = builder.get_object("username_entry")
 
     auth_method = conf.get_choice('lockscreen', 'authentication', ['basic', 'ldap'], 'basic')
-    if auth_method == "basic":
-        if conf.get('lockscreen', 'password') == lentry.get_text():
-            logger.info("Galicaster unlocked")
-            popup.dialog_destroy()
-        else:
-            lmessage = builder.get_object("lockmessage")
-            lmessage.set_text("Wrong password")
-    else:
-        if connect_ldap(userentry.get_text(),lentry.get_text()):
-            logger.info("Galicaster unlocked")
-            popup.dialog_destroy()
-        else:
-            lmessage = builder.get_object("lockmessage")
-            lmessage.set_text("Wrong username/password")
         
+    if  (auth_method == "basic" and conf.get('lockscreen', 'password') == lentry.get_text()) \
+        or (auth_method == "ldap" and connect_ldap(userentry.get_text(),lentry.get_text())):
+        logger.info("Galicaster unlocked")
+        popup.dialog_destroy()
+
+    else:
+        lmessage = builder.get_object("lockmessage")
+        lmessage.set_text("Wrong username/password")
+
+
+
 def connect_ldap(user,password):
     global logger, conf
     
