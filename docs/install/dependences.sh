@@ -7,6 +7,7 @@ sudo apt-get install --yes python-pip python-setuptools
 # iCalendar
 sudo pip install icalendar
 # LDAP
+sudo apt-get install libsasl2-dev python-dev libldap2-dev libssl-dev
 sudo pip install python-ldap
 # pyCurl
 sudo apt-get install --yes python-pycurl
