@@ -25,10 +25,6 @@ logger = context.get_logger()
 def init():
     dispatcher = context.get_dispatcher()
 
-    pid = is_running('onboard')
-    if not pid:
-        subprocess.Popen(["onboard"]).pid
-
     dispatcher.connect('init', configure_keyboard)
     dispatcher.connect('quit', unconfigure_keyboard)
 
@@ -41,9 +37,14 @@ def configure_keyboard(dispatcher=None):
             '/org/onboard/window/landscape/dock-expand' : 'false',
             '/org/onboard/start-minimized'              : 'true',
             '/org/onboard/system-theme-tracking-enabled': 'false',
+            '/org/onboard/use-system-defaults'          : 'false',
             }
 
     write_dconf_settings(configuration, logger)
+    pid = is_running('onboard')
+    if not pid:
+        subprocess.Popen(["onboard"]).pid
+        write_dconf_settings(configuration, logger)
 
 def unconfigure_keyboard(dispatcher=None):
     write_dconf_settings({'/org/onboard/use-system-defaults':'true'},logger)
