@@ -45,6 +45,7 @@ def configure_keyboard(dispatcher=None):
     pid = is_running('onboard')
     if not pid:
         subprocess.Popen(["onboard"]).pid
+        #FIXME: Set again onboard properties, otherwise some of them would be ignored
         write_dconf_settings(configuration, logger)
 
 def unconfigure_keyboard(dispatcher=None):
