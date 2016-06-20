@@ -107,7 +107,7 @@ def on_unlock(*args, **kwargs):
     else:
         lmessage = builder.get_object("lockmessage")
         lmessage.set_text("Wrong username/password")
-
+        lmessage.show()
 
 
 def connect_ldap(user,password):
@@ -129,7 +129,7 @@ def connect_ldap(user,password):
 
     ldapDC = ""
     for x in ldapdc_list:
-        ldapDC += "dc=" + x
+        ldapDC += ", dc=" + x
 
     l = ldap.initialize(ldapserver+":"+ldapserverport)
     username = "uid="+user+ldapOU+ldapCN+ldapDC
@@ -140,6 +140,6 @@ def connect_ldap(user,password):
         valid = True
         logger.info("Connect to LDAP server success with username: {}".format(user))
     except Exception as error:
-        logger.info("Can't connect to to LDAP server: {}".format(error))
+        logger.info("Can't connect to to LDAP server {}: {}".format(ldapserver,error))
         return False
     return True
