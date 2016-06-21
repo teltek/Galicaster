@@ -125,10 +125,6 @@ class OCHTTPClient(object):
         c.setopt(pycurl.HTTPHEADER, sendheaders)
         c.setopt(pycurl.USERAGENT, 'Galicaster' + version)
         c.setopt(pycurl.SSL_VERIFYPEER, False) # equivalent to curl's --insecure
-
-        c.setopt(pycurl.HTTPHEADER, ['X-Requested-Auth: Digest', 'X-Matterhorn-Opencast-Authorization: true'])
-        c.setopt(pycurl.USERAGENT, 'Galicaster')
-        c.setopt(pycurl.SSL_VERIFYPEER, False) # equivalent to curl's --insecure
        
         if (method == 'POST'):
             if urlencode:
