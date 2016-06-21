@@ -160,9 +160,11 @@ class RecorderService(object):
         if not self.current_mediapackage:
             self.current_mediapackage = mp or self.create_mp()
             
+        self.logger.info("Recording to MP {}".format(self.current_mediapackage.getIdentifier()))
         self.current_mediapackage.status = mediapackage.RECORDING
         now = datetime.utcnow().replace(microsecond=0)
         self.current_mediapackage.setDate(now)
+        self.current_mediapackage.setProperty('origin', self.conf.get_hostname())
         self.__set_status(RECORDING_STATUS)
         self.dispatcher.emit("recorder-started", self.current_mediapackage.getIdentifier())
 
@@ -306,7 +308,6 @@ class RecorderService(object):
         now = datetime.now().replace(microsecond=0)
         title = _("Recording started at {0}").format(now.isoformat())
         mp = mediapackage.Mediapackage(title=title)
-        mp.properties['origin'] = self.conf.get_hostname()
         return mp
 
 
