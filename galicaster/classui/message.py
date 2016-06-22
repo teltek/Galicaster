@@ -236,14 +236,46 @@ class PopUp(Gtk.Widget):
                                 the buttons to be shown and its response code.
             gui (Gtk.Builder): the structure imported from glade
         """
+        grid = gui.get_object('operations grid')
+        # the different widgets positioned on frame export
+        # FIXME: extensible to grids with different sizes (2x2)
+        # Problem getting the width and height of the grid, non readable porperty
+        export_frame_pos = {
+            0 : { # column number
+                0 : None, # row number
+                1 : None,
+                },
+            1 : {
+                0 : None,
+                1 : None,
+                }
+        }
+
         for frame,operations in frames.iteritems():
-            frame = gui.get_object('{} frame'.format(frame))
-            frame.show()
+            frame_widget = gui.get_object('{} frame'.format(frame))
+            frame_widget.show()
             for operation,response in operations.iteritems():
                 button = gui.get_object("{} button".format(operation))
                 button.set_label(OPERATION_NAMES[operation])
                 button.connect("clicked",self.force_response,response)
+                # Fill the export_frame_pos dict in order to expand the buttons if
+                # necessary to achive a better look & feel
+                if frame == 'Export':
+                    row = grid.child_get_property(button,'left-attach')
+                    column = grid.child_get_property(button,'top-attach')
+                    export_frame_pos[column][row] = button
                 button.show()
+
+        # Expand the buttons if the widgets of the same column in different rows are hidden
+        for row,widget in export_frame_pos[0].iteritems():
+            if not widget:
+                if export_frame_pos[1][row]:
+                    grid.child_set_property(export_frame_pos[1][row],'top-attach',0)
+                    grid.child_set_property(export_frame_pos[1][row],'height',len(export_frame_pos))
+            else:
+                if not export_frame_pos[1][row]:
+                    grid.child_set_property(export_frame_pos[0][row],'height',len(export_frame_pos))
+
 
     def set_logos(self,gui):
         """ Set the logos of the product and the company
