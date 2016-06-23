@@ -30,7 +30,7 @@ videostr = ( ' decklinkvideosrc connection=hdmi mode=720p60 name=gc-blackmagic-s
              )
 audiostr= (
             #AUDIO
-            ' decklinkaudiosrc device-number=0 connection=auto name=gc-blackmagic-audiosrc ! queue ! '
+            ' decklinkaudiosrc device-number=0 connection=gc-blackmagic-audioconn name=gc-blackmagic-audiosrc ! queue ! '
             ' audiorate ! audioamplify name=gc-blackmagic-amplify amplification=1 ! '
             ' tee name=gc-blackmagic-audiotee ! queue ! '
             ' level name=gc-blackmagic-level message=true interval=100000000 ! '
@@ -224,6 +224,7 @@ class GCblackmagic(Gst.Bin, base.Base):
           aux += audiostr
           aux = aux.replace('gc-asink', gcaudiosink)
           aux = aux.replace('gc-blackmagic-audioenc', self.options['audioencoder'])
+          aux = aux.replace('gc-blackmagic-audioconn', self.options['audio-input'])
 
         #bin = Gst.parse_bin_from_description(aux, False)
         bin = Gst.parse_launch("( {} )".format(aux))
@@ -261,12 +262,6 @@ class GCblackmagic(Gst.Bin, base.Base):
         element_audio = self.get_by_name('gc-blackmagic-src')
         element_audio.set_property('device-number', subdevice)
         if self.has_audio:
-          try:
-            audio = int(self.options['audio-input'])
-          except ValueError:
-            audio = self.options['audio-input']                                
-          element_audio.set_property('connection', audio)
-
           if "player" in self.options and self.options["player"] == False:
             self.mute = True
             element = self.get_by_name("gc-blackmagic-volume")
