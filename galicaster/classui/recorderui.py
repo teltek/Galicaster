@@ -363,6 +363,11 @@ class RecorderClassUI(Gtk.Box):
             if dif < datetime.timedelta(0):
                 return True
 
+            if self.recorder.current_mediapackage.anticipated:
+                status.set_text("")
+                event_type.set_text(CURRENT_TEXT) 
+                return True
+            
             status.set_text(_("Stopping in {0}").format(readable.long_time(dif)))
             event_type.set_text(CURRENT_TEXT) 
             title.set_text(self.recorder.current_mediapackage.title)             

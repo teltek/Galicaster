@@ -128,7 +128,6 @@ class PopUp(Gtk.Widget):
                 self.fill_mp_info(self.gui, text['next_recs'])
             else:
                 no_recs = self.gui.get_object('no_recordings')
-                print "we"
                 if no_recs:
                     no_recs.show()
 
@@ -353,6 +352,7 @@ class PopUp(Gtk.Widget):
     # FIXME: so specific, give it as a callback?
     def send_start(self,origin, event, data):
         mp = context.get_repository().get(data)
+        mp.anticipated = True
         context.get_recorder().record(mp)
         self.dialog.destroy()
         return True

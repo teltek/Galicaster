@@ -441,6 +441,7 @@ class Mediapackage(object):
         # Secondary metadata
         self.uri = uri
         self.manual = True
+        self.anticipated = False
         self.status = NEW
         self.__duration = None
         self.__howmany = dict( (k, 0) for k in ELEMENT_TYPES )
