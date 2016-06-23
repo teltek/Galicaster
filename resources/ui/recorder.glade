@@ -269,6 +269,7 @@
                         <property name="ellipsize">end</property>
                         <style>
                           <class name="status_text"/>
+                          <class name="label_big"/>
                         </style>
                       </object>
                       <packing>

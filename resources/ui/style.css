@@ -119,6 +119,9 @@ GtkWindow.shaded>*{
     color: green;
 }
 
+.label_big{
+    font-size: 1.5em;
+}
 .label_small{
     font-size: 0.75em;
 }
