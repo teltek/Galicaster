@@ -336,21 +336,24 @@ class PopUp(Gtk.Widget):
                 if widget:
                     if isinstance(widget, Gtk.Label):
                         new_widget = Gtk.Label().new(content)
-                        new_widget.show()
                     else:
                         new_widget = Gtk.Button().new_with_label(_("Record Now"))
-                        # Use set_properties?
+                        # FIXME: Use set_properties?
                         new_widget.set_property('halign', widget.get_property('halign'))
                         new_widget.set_property('valign', widget.get_property('valign'))
-                        new_widget.show()
-                        new_widget.connect("button-press-event",self.send_start, content)
+                        new_widget.connect("clicked",self.send_start, content)
+                    widget_classes = widget.get_style_context().list_classes()
+                    for style_class in widget_classes:
+                        widget_style_context = new_widget.get_style_context()
+                        widget_style_context.add_class(style_class)
+                    new_widget.show()
 
                 grid.attach(new_widget,column,row,1,1)
                 column += 1
             row += 1
 
     # FIXME: so specific, give it as a callback?
-    def send_start(self,origin, event, data):
+    def send_start(self,origin, data):
         mp = context.get_repository().get(data)
         mp.anticipated = True
         context.get_recorder().record(mp)
