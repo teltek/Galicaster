@@ -453,7 +453,7 @@ class RecorderClassUI(Gtk.Box):
         return True
 
     def get_next_recs(self):
-        mps = self.repo.get_next_mediapackages()
+        mps = self.repo.get_next_mediapackages(5)
         mp_info = []
         for mp in mps:
 

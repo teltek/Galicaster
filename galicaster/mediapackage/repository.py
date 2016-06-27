@@ -402,8 +402,10 @@ class Repository(object):
         # TODO filter by certain parameters
         return self.__list
 
-    def get_next_mediapackages(self):
+    def get_next_mediapackages(self, limit=0):
         """Gets the mediapackage that are going to be recorded in the future.
+        Args:
+            limit (Int): limit the maximum number of future recordings to be returned.
         Returns:
             List[Mediapackage]: list of mediapackages to be recorded in the future, sorted by the start time.
         """
@@ -417,7 +419,9 @@ class Repository(object):
             return mp.getDate() > datetime.datetime.utcnow()
 
         next = filter(is_future, self.__list.values())
-        next = sorted(next, key=lambda mp: mp.startTime) 
+        next = sorted(next, key=lambda mp: mp.startTime)
+        if limit > 0:
+            next = next[0:limit]
         return next
 
 

@@ -19,18 +19,20 @@ from datetime import datetime
 from icalendar import Calendar
 from galicaster.mediapackage import mediapackage
 
-def get_events_from_string_ical(ical_data):
+def get_events_from_string_ical(ical_data, limit=0):
     # See https://github.com/collective/icalendar#api-change
     f = getattr(Calendar, 'from_ical', getattr(Calendar, 'from_string', None))
     cal = f(ical_data)
-    return cal.walk('vevent')
+    if limit > 0:
+        events = cal.walk('vevent')[0:limit]
+    else:
+        events = cal.walk('vevent')
+    return events
 
 
-def get_events_from_file_ical(ical_file):
-    # See https://github.com/collective/icalendar#api-change
-    f = getattr(Calendar, 'from_ical', getattr(Calendar, 'from_string', None))
-    cal = f(open(ical_file).read())
-    return cal.walk('vevent')
+def get_events_from_file_ical(ical_file, limit=0):
+    ical_data = open(ical_file).read()
+    return get_events_from_string_ical(ical_data, limit)
 
 
 def get_delete_events(old_events, new_events):
