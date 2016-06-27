@@ -404,6 +404,8 @@ class Repository(object):
 
     def get_next_mediapackages(self, limit=0):
         """Gets the mediapackage that are going to be recorded in the future.
+        Args:
+            limit (Int): limit the maximum number of future recordings to be returned.
         Returns:
             List[Mediapackage]: list of mediapackages to be recorded in the future, sorted by the start time.
         """
