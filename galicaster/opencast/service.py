@@ -114,7 +114,7 @@ class OCService(object):
         """
         ical_path = self.repo.get_attach_path('calendar.ical')
         if path.isfile(ical_path):
-            return ical.get_events_from_file_ical(ical_path)
+            return ical.get_events_from_file_ical(ical_path, limit=100)
         else:
             return list()
 
@@ -211,7 +211,7 @@ class OCService(object):
             return
         
         try:
-            events = ical.get_events_from_string_ical(ical_data)
+            events = ical.get_events_from_string_ical(ical_data, limit=100)
             delete_events = ical.get_delete_events(self.last_events, events)
             update_events = ical.get_update_events(self.last_events, events)
         except Exception as exc:
@@ -219,17 +219,18 @@ class OCService(object):
             return
 
         self.repo.save_attach('calendar.ical', ical_data)
-        
+
         for event in events:
-            self.logger.debug('Creating MP with UID {0} from ical'.format(event['UID']))
-            ical.create_mp(self.repo, event)
+            if not self.repo.get(event['UID']):
+                self.logger.debug('Creating MP with UID {0} from ical'.format(event['UID']))
+                ical.create_mp(self.repo, event)
         
         for event in delete_events:
             self.logger.info('Deleting MP with UID {0} from ical'.format(event['UID']))
             mp = self.repo.get(event['UID'])
-            if mp.status == mediapackage.SCHEDULED:
+            if mp and mp.status == mediapackage.SCHEDULED:
                 self.repo.delete(mp)
-            if self.start_timers.has_key(mp.getIdentifier()):
+            if mp and self.start_timers.has_key(mp.getIdentifier()):
                 self.start_timers[mp.getIdentifier()].cancel()
                 del self.start_timers[mp.getIdentifier()]
 
