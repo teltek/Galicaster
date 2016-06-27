@@ -104,6 +104,9 @@
                 <property name="receives_default">True</property>
                 <property name="halign">center</property>
                 <property name="valign">center</property>
+                <style>
+                  <class name="cancel_button"/>
+                </style>
               </object>
               <packing>
                 <property name="left_attach">3</property>
