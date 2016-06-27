@@ -14,6 +14,8 @@
 from gi.repository import Gdk
 from galicaster import __version__
 from galicaster.core import context
+import os
+import traceback
 
 conf = context.get_conf()
 
@@ -27,3 +29,14 @@ def get_screenshot_as_pixbuffer():
 
 def get_footer():
     return "Galicaster "+ __version__ + "  -  " + conf.get_hostname()
+
+
+def count_files(folder):
+    try:
+        path, dirs, files = os.walk(folder).next()
+        return len(files)
+    except Exception as exc:
+        print traceback.format_exc()
+        print exc
+
+
