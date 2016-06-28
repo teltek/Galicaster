@@ -134,7 +134,7 @@ class OCService(object):
 
 
     def do_timers_long(self, sender):
-        """Calls proccess_ical method in order to process the icalendar received from opencast if connectivity is up.
+        """Calls process_ical method in order to process the icalendar received from opencast if connectivity is up.
         Then, calls create_new_timer method with the mediapackages that have scheduled recordings in order to create a new timer if necessary.
         Args:
             sender (Dispatcher): instance of the class in charge of emitting signals.
@@ -142,7 +142,7 @@ class OCService(object):
             This method is invoked every long beat duration (1 minute by default).
         """
         if self.net:
-            self.proccess_ical()
+            self.process_ical()
             self.dispatcher.emit('ical-processed')
             self.series = get_series()
         for mp in self.repo.get_next_mediapackages():
@@ -194,10 +194,10 @@ class OCService(object):
             return
 
 
-    def proccess_ical(self):
+    def process_ical(self):
         """Creates, deletes or updates mediapackages according to scheduled events information given by opencast.
         """
-        self.logger.info('Proccess ical')
+        self.logger.info('Process ical')
         try:
             ical_data = self.client.ical()
         except Exception as exc:
@@ -215,7 +215,7 @@ class OCService(object):
             delete_events = ical.get_delete_events(self.last_events, events)
             update_events = ical.get_update_events(self.last_events, events)
         except Exception as exc:
-            self.logger.error('Error proccessing ical: {0}'.format(exc))
+            self.logger.error('Error processing ical: {0}'.format(exc))
             return
 
         self.repo.save_attach('calendar.ical', ical_data)
