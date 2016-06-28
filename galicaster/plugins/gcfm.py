@@ -13,11 +13,14 @@
 
 from StringIO import StringIO
 
-from galicaster.core import context                                                                  
+from galicaster.core import context
+
 from galicaster.utils.miscellaneous import get_screenshot_as_pixbuffer
+from galicaster.utils import readable
 
 import requests
 import json
+import os
 
 retry = False
 
@@ -34,6 +37,7 @@ def init():
 
     handshake(uuids)
     dispatcher.connect('timer-short', push_pic,uuids)
+    dispatcher.connect('timer-short', push_status,uuids)
 
 def handshake(uuids, force=False):
     global repo, logger
@@ -80,3 +84,22 @@ def push_pic(sender,uuids):
     except IOError:
         # This endpoint return 204, not 200.
         pass
+
+def push_status(sender,uuids):
+    global logger
+#    payload = {"hue":"huehuehue"}
+    recorder = context.get_recorder()
+    repo = context.get_repository()
+    #Get free space
+    space = repo.get_free_space()
+    #Get total space
+    #TODO: Maybe move to repo
+    space_info = os.statvfs(repo.get_rectemp_path())
+    total_bytes = space_info.f_bsize * space_info.f_blocks
+    payload = {"is-recording":recorder.is_recording(),"recorder-status":str(recorder.status),"storage-space":space,"total-space" : total_bytes}
+    logger.info("sending data {}".format(payload))
+    try:
+        current_uuid = uuids['current']
+        r = requests.post('http://localhost:5001/gccommunity/state',params={'id':current_uuid}, json=payload)
+    except Exception as exc:
+        print exc
