@@ -121,25 +121,27 @@ def connect_ldap(user,password):
 
     ldapOU = ""
     for x in ldapou_list:
-        ldapOU += ", ou=" + x
+        ldapOU = "{},ou={}".format(ldapOU, x)
     
     ldapCN = ""
     for x in ldapcn_list:
-        ldapCN += ", cn=" + x
+        ldapCN = "{},cn={}".format(ldapCN, x)
 
     ldapDC = ""
     for x in ldapdc_list:
-        ldapDC += ", dc=" + x
-
-    l = ldap.initialize(ldapserver+":"+ldapserverport)
-    username = "uid="+user+ldapOU+ldapCN+ldapDC
+        ldapDC = "{},dc={}".format(ldapDC, x)
     
     try:
+        fullserver = "{}:{}".format(ldapserver,ldapserverport)
+        username = "uid={}{}{}{}".format(user, ldapOU, ldapCN, ldapDC)
+
+        logger.info("Trying to connect to LDAP server with username: {}".format(username))
+        l = ldap.initialize(fullserver)
         l.protocol_version = ldap.VERSION3
         l.simple_bind_s(username, password)
         valid = True
         logger.info("Connect to LDAP server success with username: {}".format(user))
     except Exception as error:
-        logger.info("Can't connect to to LDAP server {}: {}".format(ldapserver,error))
+        logger.info("Can't connect to to LDAP server {} - {}".format(fullserver,error))
         return False
     return True
