@@ -115,33 +115,28 @@ def connect_ldap(user,password):
     
     ldapserver = conf.get("lockscreen","ldapserver")
     ldapserverport = conf.get("lockscreen","ldapserverport")
-    ldapcn_list = conf.get_list("lockscreen","ldapcn")
     ldapou_list = conf.get_list("lockscreen","ldapou")
     ldapdc_list = conf.get_list("lockscreen","ldapdc")
+    ldapusertype = conf.get_choice("lockscreen","ldapusertype", ["cn", "uid"], "cn")
 
     ldapOU = ""
     for x in ldapou_list:
         ldapOU = "{},ou={}".format(ldapOU, x)
     
-    ldapCN = ""
-    for x in ldapcn_list:
-        ldapCN = "{},cn={}".format(ldapCN, x)
-
     ldapDC = ""
     for x in ldapdc_list:
         ldapDC = "{},dc={}".format(ldapDC, x)
     
     try:
         fullserver = "{}:{}".format(ldapserver,ldapserverport)
-        username = "uid={}{}{}{}".format(user, ldapOU, ldapCN, ldapDC)
-
-        logger.info("Trying to connect to LDAP server with username: {}".format(username))
+        dn = "{}={}{}{}".format(ldapusertype, user, ldapOU, ldapDC)
+        logger.debug("Trying to connect to LDAP server with dn: {}".format(dn))
         l = ldap.initialize(fullserver)
         l.protocol_version = ldap.VERSION3
-        l.simple_bind_s(username, password)
+        l.simple_bind_s(dn, password)
         valid = True
         logger.info("Connect to LDAP server success with username: {}".format(user))
     except Exception as error:
-        logger.info("Can't connect to to LDAP server {} - {}".format(fullserver,error))
+        logger.error("Can't connect to to LDAP server {} - {}".format(fullserver,error))
         return False
     return True
