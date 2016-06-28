@@ -78,8 +78,7 @@ class GalicasterFilter(logging.Filter):
 
         pathname = record.pathname
         if pathname.find('galicaster/') > -1:
-            new_pathname = os.path.splitext(pathname[pathname.find('galicaster/'):])[0]        
-            record.pathname = new_pathname.replace('galicaster/', '')
+            record.pathname = "/".join(os.path.splitext(pathname)[0].split("/")[-2:])
 
         return True
 
