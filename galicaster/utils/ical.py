@@ -35,7 +35,7 @@ def get_events_from_file_ical(ical_file, limit=0):
     return get_events_from_string_ical(ical_data, limit)
 
 
-def get_delete_events(old_events, new_events):
+def get_deleted_events(old_events, new_events):
     out = list()
     for old_event in old_events:
         dtstart = old_event['DTSTART'].dt.replace(tzinfo=None)
