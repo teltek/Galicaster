@@ -87,7 +87,6 @@ def push_pic(sender,uuids):
 
 def push_status(sender,uuids):
     global logger
-#    payload = {"hue":"huehuehue"}
     recorder = context.get_recorder()
     repo = context.get_repository()
     #Get free space
@@ -96,7 +95,11 @@ def push_status(sender,uuids):
     #TODO: Maybe move to repo
     space_info = os.statvfs(repo.get_rectemp_path())
     total_bytes = space_info.f_bsize * space_info.f_blocks
-    payload = {"is-recording":recorder.is_recording(),"recorder-status":str(recorder.status),"storage-space":space,"total-space" : total_bytes}
+
+    four_gb = 4000000000.0
+    hours = int(space/four_gb)
+
+    payload = {"is-recording":recorder.is_recording(),"recorder-status":str(recorder.status),"storage-space":space,"total-space" : total_bytes,"hours-left":hours}
     logger.info("sending data {}".format(payload))
     try:
         current_uuid = uuids['current']
