@@ -1,4 +1,3 @@
-import traceback
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
@@ -94,16 +93,12 @@ def create_mp(repo, event):
 
 
 def handle_ical(ical_data, last_events, repo, scheduler, logger):
-    print repo
-    print scheduler
-    print logger
     try:
         events = get_events_from_string_ical(ical_data, limit=100)
         if last_events:
             delete_events = get_deleted_events(last_events, events)
             update_events = get_updated_events(last_events, events)
     except Exception as exc:
-        print traceback.format_exc()
         logger and logger.error('Error processing ical: {0}'.format(exc))
         return
     
