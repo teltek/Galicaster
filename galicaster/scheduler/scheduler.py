@@ -70,6 +70,19 @@ class Scheduler(object):
             ti.start()
 
 
+    def remove_timer(self, mp):
+        if mp and self.start_timers.has_key(mp.getIdentifier()):
+            self.start_timers[mp.getIdentifier()].cancel()
+            del self.start_timers[mp.getIdentifier()]
+
+
+    def update_timer(self, mp):
+        if self.start_timers.has_key(mp.getIdentifier()) and mp.status == mediapackage.SCHEDULED:
+            self.start_timers[mp.getIdentifier()].cancel()
+            del self.start_timers[mp.getIdentifier()]
+            self.create_new_timer(mp)
+
+        
     def __start_record(self, key):
         """Sets the timer for the duration of the scheduled recording that is about to start.
         If any connectivity errors occur, logger prints it properly.

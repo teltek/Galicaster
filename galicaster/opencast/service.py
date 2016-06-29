@@ -48,7 +48,6 @@ class OCService(object):
             logger (Logger): the object that prints all the information, warning and error messages.
             recorder (Recorder)
             t_stop (Timer): timer with the duration of a scheduled recording. 
-            start_timers (Dict{str,Timer}): set of timers with the time remaining for all the scheduled recordings that are going to start in less than 30 minutes.
             mp_rec (str): identifier of the mediapackage that is going to be recorded at the scheduled time.
             last_events (List[Events]): list of calendar Events.
             net (bool): True if the connectivity with opencast is up. False otherwise.
@@ -76,7 +75,6 @@ class OCService(object):
         
         self.t_stop = None
 
-        self.start_timers = dict()
         self.mp_rec = None
         self.last_events = self.init_last_events()
         self.net = False
@@ -230,17 +228,12 @@ class OCService(object):
             mp = self.repo.get(event['UID'])
             if mp and mp.status == mediapackage.SCHEDULED:
                 self.repo.delete(mp)
-            if mp and self.start_timers.has_key(mp.getIdentifier()):
-                self.start_timers[mp.getIdentifier()].cancel()
-                del self.start_timers[mp.getIdentifier()]
+            self.scheduler.remove_timer(mp)
 
         for event in update_events:
             self.logger.info('Updating MP with UID {0} from ical'.format(event['UID']))
             mp = self.repo.get(event['UID'])
-            if self.start_timers.has_key(mp.getIdentifier()) and mp.status == mediapackage.SCHEDULED:
-                self.start_timers[mp.getIdentifier()].cancel()
-                del self.start_timers[mp.getIdentifier()]
-                self.scheduler.create_new_timer(mp)
+            self.scheduler.update_timer(mp)
                 
         self.last_events = events
 
