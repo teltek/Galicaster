@@ -145,7 +145,7 @@ class OCService(object):
             self.process_ical()
             self.dispatcher.emit('ical-processed')
             self.series = get_series()
-        for mp in self.repo.get_next_mediapackages():
+        for mp in self.repo.get_next_mediapackages(5):
             self.scheduler.create_new_timer(mp)
         
     
