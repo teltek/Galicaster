@@ -50,7 +50,7 @@ def get_deleted_events(old_events, new_events):
     return out
 
 
-def get_update_events(old_events, new_events):
+def get_updated_events(old_events, new_events):
     out = list()
     for old_event in old_events:
         for new_event in new_events:

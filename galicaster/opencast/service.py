@@ -213,7 +213,7 @@ class OCService(object):
         try:
             events = ical.get_events_from_string_ical(ical_data, limit=100)
             delete_events = ical.get_deleted_events(self.last_events, events)
-            update_events = ical.get_update_events(self.last_events, events)
+            update_events = ical.get_updated_events(self.last_events, events)
         except Exception as exc:
             self.logger.error('Error processing ical: {0}'.format(exc))
             return
