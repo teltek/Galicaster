@@ -133,7 +133,7 @@ class OCService(object):
 
     def do_timers_long(self, sender):
         """Calls process_ical method in order to process the icalendar received from opencast if connectivity is up.
-        Then, calls create_new_timer method with the mediapackages that have scheduled recordings in order to create a new timer if necessary.
+        Then, calls create_timer method with the mediapackages that have scheduled recordings in order to create a new timer if necessary.
         Args:
             sender (Dispatcher): instance of the class in charge of emitting signals.
         Notes:
@@ -144,7 +144,7 @@ class OCService(object):
             self.dispatcher.emit('ical-processed')
             self.series = get_series()
         for mp in self.repo.get_next_mediapackages(5):
-            self.scheduler.create_new_timer(mp)
+            self.scheduler.create_timer(mp)
         
     
     def init_client(self):

@@ -57,7 +57,7 @@ class Scheduler(object):
         self.mp_rec = None
     
 
-    def create_new_timer(self, mp):
+    def create_timer(self, mp):
         """Creates a timer for a future mediapackage recording if there are less than 30 minutes to the scheduled event.
         Args:
             mp (Mediapackage): the mediapackage whose timer is going to be created.
@@ -80,7 +80,7 @@ class Scheduler(object):
         if self.start_timers.has_key(mp.getIdentifier()) and mp.status == mediapackage.SCHEDULED:
             self.start_timers[mp.getIdentifier()].cancel()
             del self.start_timers[mp.getIdentifier()]
-            self.create_new_timer(mp)
+            self.create_timer(mp)
 
         
     def __start_record(self, key):
