@@ -16,7 +16,6 @@ from os import path
 from threading import Timer
 
 from galicaster.utils import ical
-from galicaster.mediapackage import mediapackage
 from galicaster.opencast.series import get_series
 
 """
@@ -133,7 +132,6 @@ class OCService(object):
 
     def do_timers_long(self, sender):
         """Calls process_ical method in order to process the icalendar received from opencast if connectivity is up.
-        Then, calls create_timer method with the mediapackages that have scheduled recordings in order to create a new timer if necessary.
         Args:
             sender (Dispatcher): instance of the class in charge of emitting signals.
         Notes:
@@ -143,8 +141,6 @@ class OCService(object):
             self.process_ical()
             self.dispatcher.emit('ical-processed')
             self.series = get_series()
-        for mp in self.repo.get_next_mediapackages(5):
-            self.scheduler.create_timer(mp)
         
     
     def init_client(self):
@@ -208,34 +204,9 @@ class OCService(object):
         if ical_data == None:
             return
         
-        try:
-            events = ical.get_events_from_string_ical(ical_data, limit=100)
-            delete_events = ical.get_deleted_events(self.last_events, events)
-            update_events = ical.get_updated_events(self.last_events, events)
-        except Exception as exc:
-            self.logger.error('Error processing ical: {0}'.format(exc))
-            return
-
         self.repo.save_attach('calendar.ical', ical_data)
-
-        for event in events:
-            if not self.repo.get(event['UID']):
-                self.logger.debug('Creating MP with UID {0} from ical'.format(event['UID']))
-                ical.create_mp(self.repo, event)
-        
-        for event in delete_events:
-            self.logger.info('Deleting MP with UID {0} from ical'.format(event['UID']))
-            mp = self.repo.get(event['UID'])
-            if mp and mp.status == mediapackage.SCHEDULED:
-                self.repo.delete(mp)
-            self.scheduler.remove_timer(mp)
-
-        for event in update_events:
-            self.logger.info('Updating MP with UID {0} from ical'.format(event['UID']))
-            mp = self.repo.get(event['UID'])
-            self.scheduler.update_timer(mp)
-                
-        self.last_events = events
+        self.last_events = ical.handle_ical(ical_data, self.last_events, self.repo,
+                                             self.scheduler, self.logger)
 
 
         

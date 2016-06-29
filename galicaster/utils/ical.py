@@ -1,3 +1,4 @@
+import traceback
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
@@ -92,7 +93,42 @@ def create_mp(repo, event):
     repo.update(mp)
 
 
+def handle_ical(ical_data, last_events, repo, scheduler, logger):
+    print repo
+    print scheduler
+    print logger
+    try:
+        events = get_events_from_string_ical(ical_data, limit=100)
+        if last_events:
+            delete_events = get_deleted_events(last_events, events)
+            update_events = get_updated_events(last_events, events)
+    except Exception as exc:
+        print traceback.format_exc()
+        logger and logger.error('Error processing ical: {0}'.format(exc))
+        return
+    
+    for event in events:
+        if not repo.get(event['UID']):
+            logger and logger.debug('Creating MP with UID {0} from ical'.format(event['UID']))
+            create_mp(repo, event)
 
+    if last_events:
+        for event in delete_events:
+            logger and logger.info('Deleting MP with UID {0} from ical'.format(event['UID']))
+            mp = repo.get(event['UID'])
+            if mp and mp.status == mediapackage.SCHEDULED:
+                repo.delete(mp)
+            scheduler.remove_timer(mp)
+            
+            for event in update_events:
+                logger and logger.info('Updating MP with UID {0} from ical'.format(event['UID']))
+                mp = repo.get(event['UID'])
+                scheduler.update_timer(mp)
+
+    for mp in repo.get_next_mediapackages(5):
+        scheduler.create_timer(mp)
+
+    return events
 
 
 
