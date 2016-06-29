@@ -190,7 +190,8 @@ def post_calendar():
     # DEBUG purposes
     # TODO: be able to receive an icalendar using a post field
 
-    if not conf.get_boolean('ingest', 'active'):
+    conf = context.get_conf()
+    if conf.get_boolean('ingest', 'active'):
         abort(503, "The Opencast service is enabled, so ingoring this command to avoid inconsisten behaviour")
     
     repo = context.get_repository()
