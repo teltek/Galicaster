@@ -23,6 +23,7 @@ from gi.repository import Gtk, Gdk, GObject
 from galicaster.core import context
 from galicaster.mediapackage.serializer import set_manifest
 from galicaster.utils import readable
+from galicaster.utils import ical
 from galicaster.utils.miscellaneous import get_screenshot_as_pixbuffer
 
 """
@@ -82,6 +83,7 @@ def state():
     response.content_type = 'application/json' 
     #TODO: Complete!
     return json.dumps({"is-recording": context.get_recorder().is_recording()})
+
 
 @route('/repository')
 def list():
@@ -183,6 +185,26 @@ def logstale():
     return json.dumps(info)
 
 
+@route('/scheduler/calendar', method='POST')
+def post_calendar():
+    # DEBUG purposes
+    # TODO: be able to receive an icalendar using a post field
+
+    conf = context.get_conf()
+    if conf.get_boolean('ingest', 'active'):
+        abort(503, "The Opencast service is enabled, so ingoring this command to avoid inconsisten behaviour")
+    
+    repo = context.get_repository()
+    scheduler = context.get_scheduler()
+    logger = context.get_logger()
+
+    repo.delete_next_mediapackages()
+    ical_data = repo.get_attach('calendar.ical').read()
+    ical.handle_ical(ical_data, None, repo, scheduler, logger)
+
+    return "OK"
+
+    
 @route('/quit', method='POST')
 def quit():    
     logger = context.get_logger()

@@ -402,6 +402,7 @@ class Repository(object):
         # TODO filter by certain parameters
         return self.__list
 
+    
     def get_next_mediapackages(self, limit=0):
         """Gets the mediapackage that are going to be recorded in the future.
         Args:
@@ -632,7 +633,33 @@ class Repository(object):
         shutil.rmtree(mp.getURI())
         return mp
 
+
+    def delete_next_mediapackages(self, limit=0):
+        """Deletes future mediapackages
+        Args:
+            limit (Int): limit the maximum number of future recordings to be deleted.
+        Returns:
+            List[Mediapackage]: list of mediapackages to be recorded in the future, should be [] if limit=0.
+        """
+        def is_future(mp):
+            """Checks if the date of a mediapackage is later than now.
+            Args:
+                mp: the mediapackage whose recording date is going to be checked.
+            Returns:
+                Bool: True if the date is later than now. False otherwise.
+            """
+            return mp.getDate() > datetime.datetime.utcnow()
+
+        next = filter(is_future, self.__list.values())
+        next = sorted(next, key=lambda mp: mp.startTime)
+        if limit > 0:
+            next = next[0:limit]
+
+        for item in next:
+            self.delete(item)
+        return self.get_next_mediapackages()
         
+
     def update(self, mp):
         """If a mediapackage is in the repository, calls the private method __add in order to add it to the repository.
         Args:
