@@ -17,7 +17,7 @@ from galicaster.classui import get_image_path, get_ui_path
 from galicaster.classui.elements.message_header import Header
 
 from galicaster.utils.i18n import _
-from galicaster.core import context
+from galicaster.core import context 
 
 TEXT = {'title': None, 'main': None, 'text': None}
 
@@ -59,7 +59,7 @@ class PopUp(Gtk.Widget):
     __gtype_name__ = 'PopUp'
 
     def __init__(self, message=None, text=TEXT, parent=None,
-                 buttons=None, response_action=None, close_on_response=True):
+                 buttons=None, response_action=None, close_on_response=True,show=[],close_parent = False):
         """ Initializes the Gtk.Dialog from its GLADE
         Args:
             message (str): type of message (See above constants)
@@ -82,6 +82,7 @@ class PopUp(Gtk.Widget):
         self.response_action = response_action
         self.close_on_response = close_on_response
         self.message = message
+        self.close_parent = close_parent
         self.size = size
         self.wprop = size[0]/1920.0
         self.hprop = size[1]/1080.0
@@ -130,7 +131,13 @@ class PopUp(Gtk.Widget):
                 no_recs = self.gui.get_object('no_recordings')
                 if no_recs:
                     no_recs.show()
-
+        
+        elif message == LOCKSCREEN:
+            for element in show:
+                gtk_obj = self.gui.get_object(element)
+                if gtk_obj:
+                    gtk_obj.show()
+            self.gui.get_object("quitbutton").connect("clicked",context.get_mainwindow().do_quit)
 
         # Display dialog
         parent.get_style_context().add_class('shaded')
@@ -409,6 +416,9 @@ class PopUp(Gtk.Widget):
                 self.dialog_destroy()
         else:
             self.dialog_destroy()
+            if self.close_parent:
+                GObject.idle_add(context.get_mainwindow().do_quit)
+
 
     def dialog_destroy(self, origin=None):
         global instance

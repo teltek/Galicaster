@@ -187,15 +187,13 @@ def logstale():
 def quit():    
     logger = context.get_logger()
     recorder = context.get_recorder()
+    main_window = context.get_mainwindow()
 
     force = request.forms.get('force')
     
     if not recorder.is_recording() or readable.str2bool(force):
         logger.info("Quit Galicaster through API rest")
-        # Emit quit signal and exit
-        dispatcher = context.get_dispatcher()
-        dispatcher.emit('quit')
 
-        GObject.idle_add(Gtk.main_quit)
+        GObject.idle_add(main_window.do_quit)
     else:
         abort(401, "Sorry, there is a current recording")
