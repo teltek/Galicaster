@@ -61,7 +61,7 @@ class Scheduler(object):
         
     def _check_next_recording(self, origin):
         next_mp = self.repo.get_next_mediapackage()
-        if not self.start_timers.has_key(next_mp.getIdentifier()):
+        if next_mp and not self.start_timers.has_key(next_mp.getIdentifier()):
             self.create_timer(next_mp)
 
             
