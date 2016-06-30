@@ -55,8 +55,16 @@ class Scheduler(object):
 
         self.start_timers = dict()
         self.mp_rec = None
-    
 
+        self.dispatcher.connect("timer-long", self._check_next_recording)
+
+        
+    def _check_next_recording(self, origin):
+        next_mp = self.repo.get_next_mediapackage()
+        if not self.start_timers.has_key(next_mp.getIdentifier()):
+            self.create_timer(next_mp)
+
+            
     def create_timer(self, mp):
         """Creates a timer for a future mediapackage recording if there are less than 30 minutes to the scheduled event.
         Args:
@@ -64,6 +72,7 @@ class Scheduler(object):
         """
         diff = (mp.getDate() - datetime.datetime.utcnow())
         if diff < datetime.timedelta(minutes=30) and mp.getIdentifier() != self.mp_rec and not self.start_timers.has_key(mp.getIdentifier()):
+            self.logger.info('Create timer for MP {}, it starts at {}'.format(mp.getIdentifier(), mp.getStartDateAsString()))
             self.dispatcher.emit('recorder-scheduled-event', mp.getIdentifier())
             ti = Timer(diff.seconds, self.__start_record, [mp.getIdentifier()]) 
             self.start_timers[mp.getIdentifier()] = ti

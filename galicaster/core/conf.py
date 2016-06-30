@@ -510,13 +510,13 @@ class Conf(object): # TODO list get and other ops arround profile
         """
         modules = []
         modules.append('recorder')
+        modules.append('scheduler')
                  
         if self.get_boolean('basic', 'admin'):
             modules.append('media_manager')
             modules.append('player')
 
         if self.get_boolean('ingest', 'active'):
-            modules.append('scheduler')
             modules.append('ocservice')
 
         return modules
