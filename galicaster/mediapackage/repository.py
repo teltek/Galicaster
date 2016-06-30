@@ -402,8 +402,10 @@ class Repository(object):
         # TODO filter by certain parameters
         return self.__list
 
-    def get_next_mediapackages(self):
+    def get_next_mediapackages(self, limit=0):
         """Gets the mediapackage that are going to be recorded in the future.
+        Args:
+            limit (Int): limit the maximum number of future recordings to be returned.
         Returns:
             List[Mediapackage]: list of mediapackages to be recorded in the future, sorted by the start time.
         """
@@ -417,7 +419,9 @@ class Repository(object):
             return mp.getDate() > datetime.datetime.utcnow()
 
         next = filter(is_future, self.__list.values())
-        next = sorted(next, key=lambda mp: mp.startTime) 
+        next = sorted(next, key=lambda mp: mp.startTime)
+        if limit > 0:
+            next = next[0:limit]
         return next
 
 
@@ -537,7 +541,7 @@ class Repository(object):
         return self.__add(mp)
 
 
-    def add_after_rec(self, mp, bins, duration, add_catalogs=True, remove_tmp_files=True): 
+    def add_after_rec(self, mp, bins, duration, add_catalogs=True, remove_tmp_files=True):
         """Adds information to the mediapackage when a recording ends and adds it to the repository.
         Args:
             mp (Mediapackage): the mediapackage whose recordings are going to be updated.
@@ -558,10 +562,9 @@ class Repository(object):
             if mp.manual or not capture_dev_names or len(capture_dev_names) == 0 or capture_dev_names == 'defaults' or bin['name'] in capture_dev_names:
                 filename = os.path.join(bin['path'], bin['file'])
                 dest = os.path.join(mp.getURI(), os.path.basename(filename))
-                
                 os.rename(filename, dest)
-                etype = 'audio/mp3' if bin['device'] in ['pulse', 'autoaudio', 'audiotest'] else 'video/' + dest.split('.')[1].lower()
                 
+                etype   = bin['mimetype']                
                 flavour = bin['flavor'] + '/source'
                 mp.add(dest, mediapackage.TYPE_TRACK, flavour, etype, duration) # FIXME MIMETYPE
             else:

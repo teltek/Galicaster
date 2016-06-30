@@ -18,7 +18,7 @@ import math
 import threading
 import tempfile
 from bottle import route, run, response, abort, request, install
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk, GObject
 
 from galicaster.core import context
 from galicaster.mediapackage.serializer import set_manifest

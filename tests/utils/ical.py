@@ -54,20 +54,20 @@ class TestFunctions(TestCase):
         self.assertEqual(nexts[0].getDate(), datetime.strptime('2019-04-05 11:00:00', '%Y-%m-%d %H:%M:%S'))
             
 
-    def test_ical_get_delete_events(self):
+    def test_ical_get_deleted_events(self):
         old_events = ical.get_events_from_file_ical(path.join(self.base_dir, 'test.ical'))
         new_events = ical.get_events_from_file_ical(path.join(self.base_dir, 'none.ical'))
         
-        delete_events = ical.get_delete_events(old_events, new_events)
+        delete_events = ical.get_deleted_events(old_events, new_events)
 
         self.assertEqual(len(delete_events), 1)
         
         
-    def test_ical_get_update_events(self):
+    def test_ical_get_updated_events(self):
         old_events = ical.get_events_from_file_ical(path.join(self.base_dir, 'test.ical'))
         new_events = ical.get_events_from_file_ical(path.join(self.base_dir, 'test_update.ical'))
         
-        update_events = ical.get_update_events(old_events, new_events)
+        update_events = ical.get_updated_events(old_events, new_events)
 
         self.assertEqual(len(update_events), 0)
 

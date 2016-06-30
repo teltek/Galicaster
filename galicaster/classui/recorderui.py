@@ -38,7 +38,7 @@ from galicaster.core import context
 from galicaster.classui.metadata import MetadataClass as Metadata
 from galicaster.classui import message
 from galicaster.classui import get_ui_path, get_image_path
-from galicaster.utils import series
+from galicaster.opencast import series
 from galicaster.utils import readable
 from galicaster.utils.resize import relabel
 from galicaster.utils.i18n import _
@@ -57,6 +57,7 @@ Gdk.threads_init()
 logger = context.get_logger()
 status_label_changed = True
 status_label_blink = True
+signalized = False
 
 # No-op function for i18n
 def N_(string): return string
@@ -109,6 +110,7 @@ class RecorderClassUI(Gtk.Box):
 
         # VUMETER
         self.rangeVum = 50
+        self.thresholdVum = self.conf.get_float('audio','min')
         self.mute = False
         self.stereo = True
         self.vumeterL = builder.get_object("progressbarL")
@@ -189,24 +191,24 @@ class RecorderClassUI(Gtk.Box):
             data2 = -200
             
         average = (data + data2)/2.0
-        
         if not self.mute:
-            if average < (-self.rangeVum):
+            if average < (self.thresholdVum):
                 self.dispatcher.emit("audio-mute")
                 self.mute = True
-        if self.mute and average > (-self.rangeVum + 5.0):
+        if self.mute and average > (self.thresholdVum + 5.0):
             self.dispatcher.emit("audio-recovered")
             self.mute = False 
 
-        if data < -100:
+            
+        if data < -self.rangeVum:
             valor = 1
         else:
-            valor=1 - ((data + self.rangeVum)/float(self.rangeVum))
+            valor = 1 - ((data + self.rangeVum)/float(self.rangeVum))
 
-        if data2 < -100:
+        if data2 < -self.rangeVum:
             valor2 = 1
         else:
-            valor2=1 - ((data2 + self.rangeVum)/float(self.rangeVum))
+            valor2 = 1 - ((data2 + self.rangeVum)/float(self.rangeVum))
 
         return valor, valor2
 
@@ -309,7 +311,10 @@ class RecorderClassUI(Gtk.Box):
         if self.error_dialog:
             self.destroy_error_dialog()
         self.error_dialog = message.PopUp(message.ERROR, text, 
-                                context.get_mainwindow(), None)
+                                          context.get_mainwindow(), None, self.on_close_error_affirmative)
+
+    def on_close_error_affirmative(self, origin=None, builder=None, popup=None):
+        self.dispatcher.emit("action-reload-profile")
 
 
     def destroy_error_dialog(self):
@@ -347,7 +352,7 @@ class RecorderClassUI(Gtk.Box):
 
     def update_scheduler_timeout(self, status, event_type, title):
         """GObject.timeout callback with 500 ms intervals"""
-        global status_label_changed, status_label_blink
+        global status_label_changed, status_label_blink, signalized
 
         if self.recorder.current_mediapackage and not self.recorder.current_mediapackage.manual:
             start = self.recorder.current_mediapackage.getLocalDate()
@@ -358,10 +363,15 @@ class RecorderClassUI(Gtk.Box):
             if dif < datetime.timedelta(0):
                 return True
 
+            if self.recorder.current_mediapackage.anticipated:
+                status.set_text("")
+                event_type.set_text(CURRENT_TEXT) 
+                return True
+            
             status.set_text(_("Stopping in {0}").format(readable.long_time(dif)))
             event_type.set_text(CURRENT_TEXT) 
             title.set_text(self.recorder.current_mediapackage.title)             
-                
+
             if dif < datetime.timedelta(0, TIME_RED_STOP):
                 if not status_label_changed:
                     status.set_name('red_coloured')
@@ -387,6 +397,14 @@ class RecorderClassUI(Gtk.Box):
                     title.set_text(next_mediapackage.title)
                 status.set_text(_("Starting in {0}").format(readable.long_time(dif)))
 
+                if dif < datetime.timedelta(0,TIME_UPCOMING):
+                    if not signalized:
+                        self.dispatcher.emit("recorder-upcoming-event")
+                    signalized = True
+                elif signalized:
+                    signalized = False
+                        
+                
                 if dif < datetime.timedelta(0,TIME_RED_START):
                     if not status_label_changed:
                         status.set_name('red_coloured')
@@ -418,7 +436,7 @@ class RecorderClassUI(Gtk.Box):
         """GUI callback Pops up the  Metadata editor of the active Mediapackage"""
         self.dispatcher.emit("action-audio-disable-msg")
         if self.recorder.current_mediapackage and self.recorder.current_mediapackage.manual:
-            Metadata(self.recorder.current_mediapackage, series.get_series(), parent=self)
+            Metadata(self.recorder.current_mediapackage, parent=self)
             self.dispatcher.emit("action-audio-enable-msg")
         return True 
 
@@ -435,7 +453,7 @@ class RecorderClassUI(Gtk.Box):
         return True
 
     def get_next_recs(self):
-        mps = self.repo.get_next_mediapackages()
+        mps = self.repo.get_next_mediapackages(5)
         mp_info = []
         for mp in mps:
 
@@ -651,8 +669,8 @@ class RecorderClassUI(Gtk.Box):
 
             image = button.get_children()
             if type(image[0]) == Gtk.Image:
-                image[0].set_pixel_size(int(k1*80))   
-            elif type(image[0]) == Gtk.VBox:
+                image[0].set_pixel_size(int(k1*60))
+            elif type(image[0]) == Gtk.Box:
                 for element in image[0].get_children():
                     if type(element) == Gtk.Image:
                         element.set_pixel_size(int(k1*46))

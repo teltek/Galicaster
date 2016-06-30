@@ -162,7 +162,26 @@ class Conf(object): # TODO list get and other ops arround profile
                 self.logger and self.logger.warning('The parameter "{0}" in section "{1}" is not an int, FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
 
         return default
-       
+
+
+    def get_float(self, sect, opt, default=None):
+        """Tries to return the value of an option in a section as a float. 
+        If else, returns the given default value.
+        Args:
+            sect (str): section of configuration file.
+            opt (str): option of configuration file.
+            default (str): the string return when an exception occurs.
+        Returns:
+            Float: the value of option opt in section sect if there are no errors. Default otherwise.
+        """
+        if self.get(sect, opt):
+            try:
+                return float(self.get(sect, opt))
+            except Exception as exc:
+                self.logger and self.logger.warning('The parameter "{0}" in section "{1}" is not a float, FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
+
+        return default
+
 
     def get_hour(self, sect, opt, default='00:00'):
         """Tries to return the value of an option in a section with a hour format.
@@ -498,6 +517,7 @@ class Conf(object): # TODO list get and other ops arround profile
 
         if self.get_boolean('ingest', 'active'):
             modules.append('scheduler')
+            modules.append('ocservice')
 
         return modules
 
@@ -934,6 +954,19 @@ class Profile(object):
         self.tracks.remove(track)
         return track
 
+    
+    # TODO: This is a WORKAROUND for https://github.com/teltek/Galicaster/issues/317
+    # FIXME
+    def get_tracks_audio_at_end(self):
+        """
+        """
+        for indx, element in enumerate(self.tracks):
+            if element['device'] in ['audiotest', 'autoaudio', 'pulse']:
+                self.tracks += [self.tracks.pop(indx)]
+
+        return self.tracks
+
+    
     #TODO error, be careful with self.tracks(. It's not a method
     def reorder_tracks(self, order=[]):
         """Reorders the tracks following the order set by the argument order.

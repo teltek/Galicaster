@@ -131,7 +131,8 @@ def remove_temp(tempdir, tmpf):
     os.remove(tmpf)
 
 
-def failover_audio(self, mpUri):
+def failover_audio(self, mp):
+    mpUri = mp.getURI()
     flavour = 'presenter/source'
     mp_list = context.get_repository()
     for uid,mp in mp_list.iteritems():

@@ -468,7 +468,7 @@ class Worker(object):
         try:
             
             if not camera or not screen:
-                raise IOError, 'Error in SideBySide proccess: Two videos needed (with presenter and presentation flavors)'
+                raise IOError, 'Error in SideBySide process: Two videos needed (with presenter and presentation flavors)'
 
             if audio_mode == "auto":                
                 self.logger.debug('SideBySide for MP {0}: auto audio-mode'.format(mp.getIdentifier()))

@@ -114,7 +114,9 @@ class RecorderService(object):
     def __prepare(self):
         current_profile = self.conf.get_current_profile()
         self.logger.debug("Using {} profile".format(current_profile.name))
-        bins = current_profile.tracks
+        # TODO: This is a WORKAROUND for https://github.com/teltek/Galicaster/issues/317
+        # FIXME
+        bins = current_profile.get_tracks_audio_at_end()
         for objectbin in bins:
             objectbin['path'] = self.repo.get_rectemp_path()
 
@@ -158,9 +160,11 @@ class RecorderService(object):
         if not self.current_mediapackage:
             self.current_mediapackage = mp or self.create_mp()
             
+        self.logger.info("Recording to MP {}".format(self.current_mediapackage.getIdentifier()))
         self.current_mediapackage.status = mediapackage.RECORDING
         now = datetime.utcnow().replace(microsecond=0)
         self.current_mediapackage.setDate(now)
+        self.current_mediapackage.setProperty('origin', self.conf.get_hostname())
         self.__set_status(RECORDING_STATUS)
         self.dispatcher.emit("recorder-started", self.current_mediapackage.getIdentifier())
 
@@ -193,9 +197,7 @@ class RecorderService(object):
         self.repo.add_after_rec(self.current_mediapackage, self.recorder.get_bins_info(),
                                 close_duration, self.current_mediapackage.manual)
 
-        # FIXME
-        mp_mod_Uri = self.current_mediapackage.getURI()
-        self.dispatcher.emit("recorder-stopped", mp_mod_Uri)
+        self.dispatcher.emit("recorder-stopped", self.current_mediapackage.getIdentifier())
         
         code = 'manual' if self.current_mediapackage.manual else 'scheduled'
         if self.conf.get_lower('ingest', code) == 'immediately':
@@ -306,7 +308,6 @@ class RecorderService(object):
         now = datetime.now().replace(microsecond=0)
         title = _("Recording started at {0}").format(now.isoformat())
         mp = mediapackage.Mediapackage(title=title)
-        mp.properties['origin'] = self.conf.get_hostname()
         return mp
 
 
