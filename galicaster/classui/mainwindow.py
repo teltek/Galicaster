@@ -196,7 +196,7 @@ class GCWindow(Gtk.Window):
                 self.logger.info("Cancel Quit")
 
 
-    def do_quit(self):
+    def do_quit(self,element=None):
         if self.logger:
             self.logger.info("Quit Galicaster")
         if self.dispatcher:

@@ -17,7 +17,7 @@ from galicaster.classui import get_image_path, get_ui_path
 from galicaster.classui.elements.message_header import Header
 
 from galicaster.utils.i18n import _
-from galicaster.core import context
+from galicaster.core import context 
 
 TEXT = {'title': None, 'main': None, 'text': None}
 
@@ -138,7 +138,7 @@ class PopUp(Gtk.Widget):
                 gtk_obj = self.gui.get_object(element)
                 if gtk_obj:
                     gtk_obj.show()
-
+            self.gui.get_object("quitbutton").connect("clicked",context.get_mainwindow().do_quit)
 
         # Display dialog
         parent.get_style_context().add_class('shaded')
@@ -398,7 +398,6 @@ class PopUp(Gtk.Widget):
 
         dispatcher = context.get_dispatcher()
         dispatcher.emit('action-reload-profile')
-
 
 GObject.type_register(PopUp)
 

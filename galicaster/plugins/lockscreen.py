@@ -43,10 +43,14 @@ def show_msg(element=None):
 
     show = []
     auth_method = conf.get_choice('lockscreen', 'authentication', ['basic', 'ldap'], 'basic')
+    quit_button = conf.get_boolean('lockscreen','quit')
+
     if auth_method == "ldap":
         show = ["username_label","username_entry"]
         text = {"title" : _("Lock screen"),
             "main" : _("LDAP authentication")}
+    if quit_button:
+        show.append("quitbutton")
 
     if buttonDIS is not None:
         buttonDIS.connect("clicked",lock,text,show)
