@@ -30,9 +30,9 @@ class Heartbeat(object):
 
 
     def init_timer(self):
-        timeout_id = GObject.timeout_add(self.get_seg_until_next()*1000, self.__notify_timer_daily)
-        timeout_id = GObject.timeout_add(self.interval_short*1000, self.__notify_timer_short)
-        timeout_id = GObject.timeout_add(self.interval_long*1000, self.__notify_timer_long)
+        timeout_id = GObject.timeout_add_seconds(self.get_seg_until_next(), self.__notify_timer_daily)
+        timeout_id = GObject.timeout_add_seconds(self.interval_short, self.__notify_timer_short)
+        timeout_id = GObject.timeout_add_seconds(self.interval_long, self.__notify_timer_long)
 
 
     def get_seg_until_next(self):

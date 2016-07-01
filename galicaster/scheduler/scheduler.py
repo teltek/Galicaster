@@ -72,7 +72,7 @@ class Scheduler(object):
             self.logger.info('Create timer for MP {}, it starts at {}'.format(mp.getIdentifier(), mp.getStartDateAsString()))
             self.dispatcher.emit('recorder-scheduled-event', mp.getIdentifier())
 
-            timeout_id = GObject.timeout_add(diff.seconds*1000, self.__start_record, mp.getIdentifier())
+            timeout_id = GObject.timeout_add_seconds(diff.seconds, self.__start_record, mp.getIdentifier())
             self.start_timers[mp.getIdentifier()] = timeout_id
 
 
@@ -103,7 +103,7 @@ class Scheduler(object):
             
             self.logger.info('Start record %s, duration %s ms', mp.getIdentifier(), mp.getDuration())
 
-            timeout_id = GObject.timeout_add(mp.getDuration(), self.__stop_record, mp.getIdentifier())
+            timeout_id = GObject.timeout_add_seconds(mp.getDuration()/1000, self.__stop_record, mp.getIdentifier())
             self.recorder.record(mp)
 
         del self.start_timers[mp.getIdentifier()]

@@ -39,7 +39,7 @@ def create_timer(sender=None, mp_id=None):
     global timeout_id
     do_stop_timers()
     logger.debug("Init a timer to stop a record in {} minutes".format(max_duration))
-    timeout_id = GObject.timeout_add(60 * max_duration* 1000, stop_recording)
+    timeout_id = GObject.timeout_add_seconds(60 * max_duration, stop_recording)
 
 
 def stop_recording(sender=None):

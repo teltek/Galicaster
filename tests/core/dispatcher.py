@@ -55,7 +55,7 @@ class TestFunctions(TestCase):
         dispatcher.connect_ui('pr', self.callback_ui)
         obj = {'called': False}
 
-        timeout_id = GObject.timeout_add(1.0, self.emit_signal, dispatcher, 'pr', obj)
+        timeout_id = GObject.timeout_add_seconds(1, self.emit_signal, dispatcher, 'pr', obj)
         Gtk.main()
         self.assertTrue(called)
 
