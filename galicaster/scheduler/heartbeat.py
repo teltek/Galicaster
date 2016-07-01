@@ -13,8 +13,7 @@
 
 from datetime import datetime, timedelta
 import threading
-from threading import Timer
-from threading import _Timer
+from gi.repository import GObject
 
 class Heartbeat(object):
     
@@ -29,13 +28,11 @@ class Heartbeat(object):
         self.dispatcher     = dispatcher 
         self.logger         = logger
 
-        self.dispatcher.connect('quit', self.do_stop_timers)
-
 
     def init_timer(self):
-        Timer(self.get_seg_until_next(), self.__notify_timer_daily).start()
-        self.__notify_timer_short()
-        self.__notify_timer_long()
+        timeout_id = GObject.timeout_add(self.get_seg_until_next()*1000, self.__notify_timer_daily)
+        timeout_id = GObject.timeout_add(self.interval_short*1000, self.__notify_timer_short)
+        timeout_id = GObject.timeout_add(self.interval_long*1000, self.__notify_timer_long)
 
 
     def get_seg_until_next(self):
@@ -47,31 +44,22 @@ class Heartbeat(object):
         return diff.seconds + 1
 
 
-    def do_stop_timers(self, sender=None):
-        # NOTE: Stop all _Timers.
-        for t in threading.enumerate():
-            if isinstance(t, _Timer):
-                t.cancel()
-
-
     def __notify_timer_daily(self):
         seg = self.get_seg_until_next()
         self.dispatcher.emit('timer-nightly')
         if self.logger:
             self.logger.debug('timer-nightly in %s', seg)
-        Timer(seg, self.__notify_timer_daily).start()
+        return True
 
 
     def __notify_timer_short(self):
         self.dispatcher.emit('timer-short')
         if self.logger:
             self.logger.debug('galicaster-notify-short in %s', self.interval_short)
-        Timer(self.interval_short, self.__notify_timer_short).start()
-
+        return True
 
     def __notify_timer_long(self):
         self.dispatcher.emit('timer-long')
         if self.logger:
             self.logger.debug('galicaster-notify-long in %s', self.interval_long)
-        Timer(self.interval_long, self.__notify_timer_long).start()
-
+        return True

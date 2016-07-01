@@ -13,7 +13,6 @@
 
 import datetime
 from os import path
-from threading import Timer
 
 from galicaster.utils import ical
 from galicaster.opencast.series import get_series
@@ -46,7 +45,6 @@ class OCService(object):
             client (MHTTPClient): opencast HTTP client given by the argument occlient. 
             logger (Logger): the object that prints all the information, warning and error messages.
             recorder (Recorder)
-            t_stop (Timer): timer with the duration of a scheduled recording. 
             mp_rec (str): identifier of the mediapackage that is going to be recorded at the scheduled time.
             last_events (List[Events]): list of calendar Events.
             net (bool): True if the connectivity with opencast is up. False otherwise.

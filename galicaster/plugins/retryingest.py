@@ -36,12 +36,13 @@ check_after = conf.get_int('retryingest', 'check_after') or 300
 check_nightly = conf.get_boolean('retryingest', 'nightly')
 last_checked = time.time()
 
-logger.debug('check_published set to {}'.format(check_published))
-logger.debug('check_after set to {}'.format(str(check_after)))
-logger.debug('check_nightly set to {}'.format(check_nightly))
 
 
 def init():        
+    logger.debug('check_published set to {}'.format(check_published))
+    logger.debug('check_after set to {}'.format(str(check_after)))
+    logger.debug('check_nightly set to {}'.format(check_nightly))
+    
     try:
         dispatcher = context.get_dispatcher()
         dispatcher.connect('timer-short', reingest)        
