@@ -115,7 +115,7 @@ class PlayerClassUI(ManagerUI):
         if (self.mediapackage != mp):
             if self.status == PAUSED:
                 self.on_stop_clicked()
-                self.clearTimer()
+                self.clear_timer()
 
             self.mediapackage = mp
 
@@ -182,7 +182,7 @@ class PlayerClassUI(ManagerUI):
         self.thread_id = None
         self.player.stop()
         self.seek_bar.set_value(0)
-        self.setTimer2(0,self.duration)
+        self.set_timer(0,self.duration)
         self.change_state(STOPPED)
         return True
 
@@ -218,7 +218,7 @@ class PlayerClassUI(ManagerUI):
             if self.player.is_playing():
                 self.player.pause()
             value=new_value * self.duration // 100 
-            self.setTimer2(value,self.duration)
+            self.set_timer(value,self.duration)
             self.jump=temp
             if not self.jump_id:
                 log.warning("Handling Seek Jump")
@@ -283,7 +283,7 @@ class PlayerClassUI(ManagerUI):
             self.player.stop()
             self.setVideo(None, "")
             self.setPresenter(None, "")
-            self.clearTimer()
+            self.clear_timer()
             self.change_state(INIT)
             self.mediapackage = None
             self.dispatcher.emit("action-view-change", 1)
@@ -297,7 +297,7 @@ class PlayerClassUI(ManagerUI):
         thread_id= self.thread_id
         self.initial_time=self.player.get_time()
         self.duration = self.player.get_duration()
-        GObject.idle_add(self.setTimer2, 0, self.duration)
+        GObject.idle_add(self.set_timer, 0, self.duration)
               
         while thread_id == self.thread_id:
             if not self.seeking :
@@ -314,7 +314,7 @@ class PlayerClassUI(ManagerUI):
                     timer = actual_time / Gst.SECOND
                     self.seek_bar.set_value(timer*100/self.duration)
                 if thread_id==self.thread_id:
-                    GObject.idle_add(self.setTimer2, timer, self.duration)
+                    GObject.idle_add(self.set_timer, timer, self.duration)
                     
             time.sleep(0.2)          
         return True
@@ -428,7 +428,7 @@ class PlayerClassUI(ManagerUI):
 
 #-------------------------- STATUSBAR -----------------------------
 
-    def clearTimer(self):
+    def clear_timer(self):
         """Empties the timer"""
         self.timer.set_text("")
 
@@ -441,7 +441,7 @@ class PlayerClassUI(ManagerUI):
         self.presenter.set_text(value or '')
         self.presenter.set_property("tooltip-text",value or '')
 
-    def setTimer2(self,value,duration):
+    def set_timer(self,value,duration):
         """Sets the timer on reproduction environments"""
         self.timer.set_text(self.time_readable2(value,duration))
 
