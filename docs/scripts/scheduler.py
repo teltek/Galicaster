@@ -60,7 +60,7 @@ client._session.verify = False
 cli = MHClient(options.server, options.username, options.password)
 
 post_template={
-        'dublincore'    : '<dublincore xmlns="http://www.opencastproject.org/xsd/1.0/dublincore/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oc="http://www.opencastproject.org/matterhorn/"><dcterms:title>{}</dcterms:title><dcterms:creator>b</dcterms:creator><dcterms:contributor></dcterms:contributor><dcterms:isPartOf></dcterms:isPartOf><dcterms:subject></dcterms:subject><dcterms:abstract></dcterms:abstract><dcterms:available></dcterms:available><dcterms:coverage></dcterms:coverage><dcterms:created></dcterms:created><dcterms:date></dcterms:date><dcterms:extent></dcterms:extent><dcterms:format></dcterms:format><dcterms:isReferencedBy></dcterms:isReferencedBy><dcterms:isReplacedBy></dcterms:isReplacedBy><dcterms:publisher></dcterms:publisher><dcterms:relation></dcterms:relation><dcterms:replaces></dcterms:replaces><dcterms:rights></dcterms:rights><dcterms:rightsHolder></dcterms:rightsHolder><dcterms:source></dcterms:source><dcterms:type></dcterms:type><dcterms:license>Creative Commons 3.0: Attribution-NonCommercial-NoDerivs</dcterms:license><dcterms:language></dcterms:language><dcterms:description></dcterms:description><dcterms:rights></dcterms:rights><dcterms:identifier></dcterms:identifier><dcterms:temporal>start={}; end={}; scheme=W3C-DTF;</dcterms:temporal><dcterms:spatial>{}</dcterms:spatial><oc:agentTimeZone></oc:agentTimeZone></dublincore>',
+        'dublincore'    : '<dublincore xmlns="http://www.opencastproject.org/xsd/1.0/dublincore/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oc="http://www.opencastproject.org/matterhorn/"><dcterms:title>{title}</dcterms:title><dcterms:creator>iCalendar Opencast</dcterms:creator><dcterms:contributor></dcterms:contributor><dcterms:isPartOf></dcterms:isPartOf><dcterms:subject></dcterms:subject><dcterms:abstract></dcterms:abstract><dcterms:available></dcterms:available><dcterms:coverage></dcterms:coverage><dcterms:created></dcterms:created><dcterms:date></dcterms:date><dcterms:extent></dcterms:extent><dcterms:format></dcterms:format><dcterms:isReferencedBy></dcterms:isReferencedBy><dcterms:isReplacedBy></dcterms:isReplacedBy><dcterms:publisher></dcterms:publisher><dcterms:relation></dcterms:relation><dcterms:replaces></dcterms:replaces><dcterms:rights></dcterms:rights><dcterms:rightsHolder></dcterms:rightsHolder><dcterms:source></dcterms:source><dcterms:type></dcterms:type><dcterms:license>Creative Commons 3.0: Attribution-NonCommercial-NoDerivs</dcterms:license><dcterms:language></dcterms:language><dcterms:description></dcterms:description><dcterms:rights></dcterms:rights><dcterms:identifier></dcterms:identifier><dcterms:temporal>start={start}; end={end}; scheme=W3C-DTF;</dcterms:temporal><dcterms:spatial>{ca}</dcterms:spatial><oc:agentTimeZone></oc:agentTimeZone></dublincore>',
         'agentparameters': ['org.opencastproject.workflow.definition=full',
                             'capture.device.names=defaults',
                             'org.opencastproject.workflow.config.trimHold=false',
@@ -124,15 +124,28 @@ for x in range(0, options.recordings):
     start = start_date.isoformat() + 'Z'
     end_date = start_date + duration
     end = end_date.isoformat() + 'Z'
+
     print "  Start: {}".format(start)
     print "  End: {}".format(end)
-
-    if options.opencastMode:    
+    
+    if options.opencastMode:
         print "  Doing POST request..."
+
         extra_headers = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"}
-        post_template['dublincore'] = post_template['dublincore'].format(title,start,end,options.ca)
-        response = cli.post("recordings/", data=urllib.urlencode(post_template), extra_headers=extra_headers)
+
+        dictionary = {'title': title,
+                      'start': start,
+                      'end': end,
+                      'ca': options.ca
+        }
+
+        post_data = post_template.copy()
+        post_data['dublincore'] = post_data['dublincore'].format(**dictionary)
+        response = cli.post("recordings/", data=urllib.urlencode(post_data), extra_headers=extra_headers)
         print response
+
+
+
     else:
         print "  Creating calendar event locally..."
         new_uuid = '-'.join(unicode(uuid.uuid4()).split('-')[-2:])
