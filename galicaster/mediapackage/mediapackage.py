@@ -1501,7 +1501,7 @@ class Mediapackage(object):
         try:
             attach = self.getAttachment('org.opencastproject.capture.agent.properties')
             values = dict(read_ini(attach.getURI()))
-            return values[name]
+            return values[name].lower()
         except:
             return None
 
