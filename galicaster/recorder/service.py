@@ -295,6 +295,7 @@ class RecorderService(object):
     def _handle_reload_profile(self, origin):
         if self.status in (PREVIEW_STATUS, ERROR_STATUS):
             self.logger.debug("Resetting recorder after reloading the profile")
+            self.repo.check_for_recover_recordings()
             if self.recorder:
                 self.recorder.stop(True)
             self.__set_status(INIT_STATUS)
