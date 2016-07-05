@@ -22,7 +22,7 @@ from galicaster.utils.i18n import _
 
 import ldap
 from gi.repository import Gtk
-from galicaster.core import core
+from galicaster.core.core import PAGES
 
 def init():
     global conf, logger
@@ -34,9 +34,9 @@ def init():
 def show_msg(element=None):
     global logger, conf
 
-    buttonDIS = show_buttons(core.DIS)
-    buttonREC = show_buttons(core.REC)
-    buttonMMA = show_buttons(core.MMA)
+    buttonDIS = show_buttons(PAGES['DIS'])
+    buttonREC = show_buttons(PAGES['REC'])
+    buttonMMA = show_buttons(PAGES['MMA'])
 
     text = {"title" : _("Lock screen"),
             "main" : _("Please insert the password")}

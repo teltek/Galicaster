@@ -201,7 +201,7 @@
                           <object class="GtkLabel" id="nextlabel">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Next REC</property>
+                            <property name="label" translatable="yes"> </property>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -249,7 +249,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="ypad">1</property>
-                        <property name="label" translatable="yes">Very long title, this is always for sure</property>
+                        <property name="label" translatable="yes">No upcoming events</property>
                         <property name="justify">center</property>
                         <property name="wrap">True</property>
                       </object>
@@ -264,7 +264,7 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">scheduled</property>
+                        <property name="label" translatable="yes"> </property>
                         <property name="justify">center</property>
                         <property name="ellipsize">end</property>
                         <style>
