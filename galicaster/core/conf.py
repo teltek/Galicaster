@@ -17,6 +17,7 @@ import shutil
 import ConfigParser
 import socket
 import json
+import urlparse
 
 from collections import OrderedDict
 from datetime import datetime
@@ -163,6 +164,16 @@ class Conf(object): # TODO list get and other ops arround profile
 
         return default
 
+    def get_url(self, sect, opt, default=None):
+        if self.get(sect, opt):
+            try:
+                url = urlparse.urlparse(self.get(sect,opt))
+                if url.scheme and url.netloc:
+                    return url.scheme+'://'+url.netloc
+                else:
+                    raise Exception('URL malformed')
+            except Exception as exc:
+                self.logger and self.logger.warning('The parameter "{0}" in section "{1}" is not a URL, FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
 
     def get_float(self, sect, opt, default=None):
         """Tries to return the value of an option in a section as a float. 
