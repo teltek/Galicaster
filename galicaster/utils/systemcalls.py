@@ -30,6 +30,9 @@ def execute(command=[], logger=None, logaserror=True):
     
     return True
 
+def execute_without_check(command=[],logger=None):
+    subprocess.Popen(command,shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return None
 
 def write_dconf_settings(settings={}, logger=None, logaserror=False):
     for key, value in settings.iteritems():
