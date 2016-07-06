@@ -84,8 +84,7 @@ class OCService(object):
             self.client.setrecordingstate(mp.getIdentifier(), state)
         except Exception as exc:
             self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
-            self.dispatcher.emit('opencast-status', False)
-            self.net = False
+            self.__set_opencast_down()
 
                 
     def __check_recording_started(self, element=None, mp_id=None):
@@ -101,7 +100,23 @@ class OCService(object):
         if mp and mp.getOCCaptureAgentProperty('capture.device.names'):
             self.__set_recording_state(mp, 'capture_finished')
 
+            
+    def __set_opencast_up(self, force=False):
+        if not self.net or force:
+            self.net = True
+            self.dispatcher.emit('opencast-status', True)
+
         
+    def __set_opencast_down(self, force=False):
+        if self.net or force:
+            self.net = False
+            self.dispatcher.emit('opencast-status', False)
+
+        
+    def __set_opencast_connecting(self):
+        self.dispatcher.emit('opencast-status', None)
+
+
     def init_last_events(self):
         """Initializes the last_events parameter with the events represented in calendar.ical (attach directory).
         Returns:
@@ -147,17 +162,13 @@ class OCService(object):
         """
         self.logger.info('Init opencast client')
         self.old_ca_status = None
-        self.dispatcher.emit('opencast-status', None)
+        self.__set_opencast_connecting()
         try:
             self.client.welcome()
+            self.__set_opencast_up()
         except Exception as exc:
             self.logger.warning('Unable to connect to opencast server: {0}'.format(exc))
-            self.net = False
-            self.dispatcher.emit('opencast-status', False)
-        else:
-            self.net = True
-            # self.dispatcher.emit('opencast-connected')
-
+            self.__set_opencast_down()
 
 
     def set_state(self):
@@ -177,12 +188,10 @@ class OCService(object):
         try:
             self.client.setstate(self.ca_status)
             self.client.setconfiguration(self.conf.get_tracks_in_oc_dict())
-            self.net = True
-            self.dispatcher.emit('opencast-status', True)
+            self.__set_opencast_up()
         except Exception as exc:
             self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
-            self.net = False
-            self.dispatcher.emit('opencast-status', False)
+            self.__set_opencast_down()
             return
 
 
@@ -194,8 +203,7 @@ class OCService(object):
             ical_data = self.client.ical()
         except Exception as exc:
             self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
-            self.net = False
-            self.dispatcher.emit('opencast-status', False)
+            self.__set_opencast_down()
             return
 
         # No data but no error implies that the calendar has not been modified (ETAG)
