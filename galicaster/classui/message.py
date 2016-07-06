@@ -141,6 +141,7 @@ class PopUp(Gtk.Widget):
 
         # Display dialog
         parent.get_style_context().add_class('shaded')
+        self.dialog.set_transient_for(parent)
         if message in [ERROR, WARN_QUIT, WARN_STOP, ABOUT, INFO, WARN_DELETE, LOCKSCREEN, MP_INFO]:
             self.dialog.show()
             self.dialog.connect('response', self.on_dialog_response)
