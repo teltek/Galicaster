@@ -303,8 +303,8 @@ class ListProfileBox(ProfileDialog):
         view.columns_autosize()
 
         render = Gtk.CellRendererText()
-        #render.set_property('width-chars',25)
-        render.set_property('xalign',0.5)
+        render.set_property('width-chars', 300)
+        render.set_property('xalign', 0)
         #render.set_property('height', 40)
         font = Pango.FontDescription("bold "+str(int(self.hprop*20)))
         render.set_property('font-desc', font)
@@ -314,6 +314,7 @@ class ListProfileBox(ProfileDialog):
 
         column0 = Gtk.TreeViewColumn("Profile", render, text = 1)
         column1 = Gtk.TreeViewColumn("Current", image)
+        column1.set_property('fixed-width', 40)
         column1.set_cell_data_func(image, self.show_current_image)
         view.append_column(column1)
         view.append_column(column0)
@@ -336,6 +337,7 @@ class ListProfileBox(ProfileDialog):
         profile = model[iterator][0]
         if profile == context.get_conf().get_current_profile():
             cell.set_property("stock-id", Gtk.STOCK_YES)
+            cell.set_property("stock-size", Gtk.IconSize.LARGE_TOOLBAR)
         else:
             cell.set_property("stock-id", "0")
         return None
