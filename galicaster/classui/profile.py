@@ -327,9 +327,9 @@ class ListProfileBox(ProfileDialog):
         first = treemodel[iter1][1]
         second = treemodel[iter2][1]
 
-        if first == "Default" or first < second:
+        if first == "Default" or first.lower() < second.lower():
             return -1
-        elif second == "Default" or second < first:
+        elif second == "Default" or second.lower() < first.lower():
             return 1
 
     def show_current_image(self, column, cell, model, iterator, data=None):
