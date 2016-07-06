@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       galicaster/plugins/pushpic
+#       galicaster/plugins/gcfm
 #
-# Copyright (c) 2012, Teltek Video Research <galicaster@teltek.es>
+# Copyright (c) 2016, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
 # NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
@@ -17,18 +17,21 @@ from galicaster.core import context
 
 from galicaster.utils.miscellaneous import get_screenshot_as_pixbuffer
 from galicaster.utils import readable
+from galicaster.utils import systemcalls
 
 import requests
 import json
 import os
+import subprocess
 
 retry = False
 
 def init():
-    global repo, logger
+    global repo, logger, dispatcher, conf
     dispatcher = context.get_dispatcher()
     logger = context.get_logger()
     repo = context.get_repository()
+    conf = context.get_conf()
     try:
         uuids =json.load(repo.get_attach("uuid1.json"))
     except Exception as exc:
@@ -38,12 +41,13 @@ def init():
     handshake(uuids)
     dispatcher.connect('timer-short', push_pic,uuids)
     dispatcher.connect('timer-short', push_status,uuids)
+    dispatcher.connect('quit',close_vnc)
 
 def handshake(uuids, force=False):
-    global repo, logger
-
+    global repo, logger,conf
+    url_gcfm = conf.get_url('gcfm','url_gcfm')
     if not 'current' in uuids:
-        r = requests.get('http://localhost:5001/gcfm_uuid')
+        r = requests.get(url_gcfm+'/gcfm_uuid')
         gcfm_uuid = r.json()
         if ('uuids' in uuids) and  (gcfm_uuid['gcfm_uuid'] in uuids['uuids']) and not force:
             uuids['current'] = uuids['uuids'][gcfm_uuid['gcfm_uuid']]
@@ -60,6 +64,8 @@ def handshake(uuids, force=False):
             uuids['current'] = uuid['uuid']
             repo.save_attach('uuid1.json',json.dumps(uuids))
             logger.debug("New UUDI: {} from GCFM_UDDI: {}".format(uuid['uuid'],gcfm_uuid['gcfm_uuid']))
+            
+    start_vnc(uuids['current'])
     return
 def get_screenshot():
     """makes screenshot of the current root window, yields Gtk.Pixbuf"""
@@ -69,10 +75,11 @@ def get_screenshot():
     return b
 
 def push_pic(sender,uuids):
-    global retry
+    global retry,conf
+    url_gcfm = conf.get_url('gcfm','url_gcfm')
     try:
         current_uuid = uuids['current']
-        r = requests.post('http://localhost:5001/pushpic',params={'id':current_uuid}, files={'screenshot.png': get_screenshot()[1]})
+        r = requests.post(url_gcfm+'/pushpic',params={'id':current_uuid}, files={'screenshot.png': get_screenshot()[1]})
         if r.status_code == 403:
             if not retry:
                 retry = True
@@ -86,9 +93,10 @@ def push_pic(sender,uuids):
         pass
 
 def push_status(sender,uuids):
-    global logger
+    global logger, conf
     recorder = context.get_recorder()
     repo = context.get_repository()
+    url_gcfm = conf.get_url('gcfm','url_gcfm')
     #Get free space
     space = repo.get_free_space()
     #Get total space
@@ -100,9 +108,33 @@ def push_status(sender,uuids):
     hours = int(space/four_gb)
 
     payload = {"is-recording":recorder.is_recording(),"recorder-status":str(recorder.status),"storage-space":space,"total-space" : total_bytes,"hours-left":hours}
-    logger.info("sending data {}".format(payload))
+    host = url_gcfm+"/gccommunity/state"
+    logger.info("Sending data {} to host: {}".format(payload, host))
     try:
         current_uuid = uuids['current']
-        r = requests.post('http://localhost:5001/gccommunity/state',params={'id':current_uuid}, json=payload)
+        hostname = conf.get_hostname()
+        r = requests.post(host,params={'id':current_uuid,'hostname':hostname}, json=payload)
     except Exception as exc:
         print exc
+
+def start_vnc(uuid):
+    global logger,dispatcher,conf
+    url_repeater = conf.get_url('gcfm','url_repeater')
+    command = ["which","x11vnc"]
+    if not systemcalls.execute(command):
+       logger.error("x11vnc not installed")
+       return
+
+    else:
+        if not systemcalls.is_running("x11vnc"):
+            command = ["x11vnc","-loop","-shared","-coe",url_repeater+"+ID:"+uuid]
+            systemcalls.execute_without_check(command)
+            logger.info("VNC server started")
+        else:
+            logger.info("VNC server already running")
+
+def close_vnc(element=None):
+    global logger
+    command = ["killall", "-9", "x11vnc"]
+    systemcalls.execute(command)
+    logger.info("VNC server stopped")
