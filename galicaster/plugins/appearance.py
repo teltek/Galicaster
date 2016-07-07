@@ -30,14 +30,14 @@ def init():
     dispatcher.connect('init', configure_init)
     dispatcher.connect('quit', configure_quit)
 
-    settings = conf.get_json('appeareance', 'settings')
-    default_settings = conf.get_json('appeareance', 'defaultsettings')
-    hidecursor = conf.get_boolean('appeareance', 'hidecursor')
+    settings = conf.get_json('appearance', 'settings')
+    default_settings = conf.get_json('appearance', 'defaultsettings')
+    hidecursor = conf.get_boolean('appearance', 'hidecursor')
 
         
 def configure_init(signal=None):
     global logger, hidecursor, settings
-    logger.info("On init: set appeareance settings")
+    logger.info("On init: set appearance settings")
     write_dconf_settings(settings, logger, logaserror=False)
     
     if hidecursor:
@@ -48,7 +48,7 @@ def configure_init(signal=None):
 
 def configure_quit(signal=None):
     global logger, hidecursor, default_settings
-    logger.info("On exit: set default appeareance settings")
+    logger.info("On exit: set default appearance settings")
     write_dconf_settings(default_settings, logger, logaserror=False)
     if hidecursor:
         show_cursor()

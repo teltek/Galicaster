@@ -14,7 +14,7 @@
 
 import sys
 
-from gi.repository import Gtk, Gst, Gdk
+from gi.repository import Gtk, Gst, Gdk, GObject
 Gst.init(None)
 
 from galicaster.core import context
@@ -62,7 +62,6 @@ class Recorder(object):
         self.callback = None
 
         self.bus.add_signal_watch()
-        self.bus.enable_sync_message_emission()
 #        self.bus.connect('message', WeakMethod(self, '_debug')) # TO DEBUG
         self.bus.connect('message::error', WeakMethod(self, '_on_error'))        
         self.bus.connect('message::element', WeakMethod(self, '_on_message_element'))
@@ -265,42 +264,11 @@ class Recorder(object):
                 self.error = error_info
                 self.dispatcher.emit("recorder-error", error_info)
                 # return True
+                
         
-
     def _on_sync_message(self, bus, message):
         if message.get_structure() is None:
             return
-        if message.get_structure().get_name() == 'prepare-window-handle':
-            name = message.src.get_property('name')
-            logger.debug("on sync message 'prepare-window-handle' %r", name)
-
-            # Workaround for autovideosink (it name contains the sink that is being used)
-            sep_autovideosink = "-actual-sink"
-            if sep_autovideosink in name:
-                name = name.split(sep_autovideosink, 1)[0]
-            
-            try:
-                gtk_player = self.players[name]
-                if not isinstance(gtk_player, Gtk.DrawingArea):
-                    raise TypeError()
-                Gdk.threads_enter()
-                Gdk.Display.get_default().sync()            
-                message.src.set_property('force-aspect-ratio', True)
-#                message.src.set_xwindow_id(gtk_player.get_property(window).get_xid())
-                message.src.set_window_handle(gtk_player.get_property('window').get_xid())
-                Gdk.threads_leave()
-                
-                # Disconnect from on_sync_message (From now on it's not needed)
-                del self.players[name]
-                if not self.players:
-                    #self.bus.disable_sync_message_emission()
-                    self.bus.handler_disconnect(self.__sync_handle)
-                
-            except KeyError:
-                pass
-            except TypeError:
-                logger.error('players[{}]: need a {}; got a {}: {}'.format(
-                        name, Gtk.DrawingArea, type(gtk_player), gtk_player))
         
 
     def _on_message_element(self, bus, message):
@@ -343,10 +311,14 @@ class Recorder(object):
                 
 
     def set_drawing_areas(self, players):
-        self.players = players        
-        if self.players:
-            self.__sync_handle = self.bus.connect('sync-message::element', WeakMethod(self, '_on_sync_message'))
-
+        self.players = players
+        
+        # Link videoareas with sinks
+        for name, element in self.players.iteritems(): 
+            # TODO: check xid
+            xid = element.get_property('window').get_xid()
+            self.pipeline.get_by_name(name).set_window_handle(xid)
+            
 
     def get_display_areas_info(self):
         display_areas_info = []

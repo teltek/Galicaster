@@ -25,11 +25,7 @@ logger = context.get_logger()
 def init():
     dispatcher = context.get_dispatcher()
 
-    pid = is_running('onboard')
-    if not pid:
-        subprocess.Popen(["onboard"]).pid
-
-    dispatcher.connect('init', configure_keyboard)
+    dispatcher.connect('gc-shown', configure_keyboard)
     dispatcher.connect('quit', unconfigure_keyboard)
 
 def configure_keyboard(dispatcher=None):
@@ -39,9 +35,18 @@ def configure_keyboard(dispatcher=None):
             '/org/onboard/theme'                        : "'Ambiance'",
             '/org/onboard/theme-settings/color-scheme'  : "'/usr/share/onboard/themes/Aubergine.colors'",
             '/org/onboard/window/landscape/dock-expand' : 'false',
+            '/org/onboard/auto-show/enabled'            : 'true',
+            '/org/onboard/start-minimized'              : 'true',
+            '/org/onboard/system-theme-tracking-enabled': 'false',
+            '/org/onboard/use-system-defaults'          : 'false',
             }
 
     write_dconf_settings(configuration, logger)
+    pid = is_running('onboard')
+    if not pid:
+        subprocess.Popen(["onboard"]).pid
+        #FIXME: Set again onboard properties, otherwise some of them would be ignored
+        write_dconf_settings(configuration, logger)
 
 def unconfigure_keyboard(dispatcher=None):
     write_dconf_settings({'/org/onboard/use-system-defaults':'true'},logger)

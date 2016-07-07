@@ -47,6 +47,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="orientation">vertical</property>
+                        <property name="spacing">10</property>
                         <property name="layout_style">spread</property>
                         <child>
                           <object class="GtkButton" id="Ingest button">
@@ -56,6 +57,7 @@
                             <signal name="clicked" handler="force_response" swapped="no"/>
                             <style>
                               <class name="cancel_button"/>
+                              <class name="dialog_button"/>
                             </style>
                           </object>
                           <packing>
@@ -72,6 +74,7 @@
                             <signal name="clicked" handler="force_response" swapped="no"/>
                             <style>
                               <class name="cancel_button"/>
+                              <class name="dialog_button"/>
                             </style>
                           </object>
                           <packing>
@@ -123,26 +126,28 @@
                   <object class="GtkAlignment" id="alignment2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xscale">0.69999998807907104</property>
-                    <property name="yscale">0.69999998807907104</property>
+                    <property name="xscale">0.60000002384185791</property>
+                    <property name="yscale">0.60000002384185791</property>
                     <property name="top_padding">10</property>
                     <property name="bottom_padding">5</property>
                     <property name="left_padding">10</property>
                     <property name="right_padding">10</property>
                     <child>
-                      <object class="GtkGrid" id="grid1">
+                      <object class="GtkGrid" id="operations grid">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">baseline</property>
                         <property name="valign">baseline</property>
+                        <property name="margin_top">10</property>
+                        <property name="margin_bottom">10</property>
                         <property name="row_spacing">10</property>
                         <property name="column_spacing">10</property>
-                        <property name="row_homogeneous">True</property>
                         <child>
                           <object class="GtkButton" id="Export to Zip button">
                             <property name="label" translatable="yes">Export to Zip</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="valign">center</property>
                             <signal name="clicked" handler="force_response" swapped="no"/>
                             <style>
                               <class name="cancel_button"/>
@@ -159,6 +164,7 @@
                             <property name="label" translatable="yes">Side by Side</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="valign">center</property>
                             <signal name="clicked" handler="force_response" swapped="no"/>
                             <style>
                               <class name="cancel_button"/>
@@ -175,6 +181,7 @@
                             <property name="label" translatable="yes">Export to Zip Nightly</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="valign">center</property>
                             <signal name="clicked" handler="force_response" swapped="no"/>
                             <style>
                               <class name="cancel_button"/>
@@ -191,6 +198,7 @@
                             <property name="label" translatable="yes">Side by Side Nightly</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="valign">center</property>
                             <signal name="clicked" handler="force_response" swapped="no"/>
                             <style>
                               <class name="cancel_button"/>
@@ -207,6 +215,7 @@
                             <property name="label" translatable="yes">Cancel Export to Zip Nightly</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="valign">center</property>
                             <property name="yalign">0.43000000715255737</property>
                             <style>
                               <class name="cancel_button"/>
@@ -223,6 +232,7 @@
                             <property name="label" translatable="yes">Cancel Side by Side Nightly</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="valign">center</property>
                             <style>
                               <class name="cancel_button"/>
                               <class name="dialog_button"/>

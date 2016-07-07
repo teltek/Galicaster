@@ -87,7 +87,7 @@ class Conf(object): # TODO list get and other ops arround profile
             self.__conf.read(self.conf_dist_file)
             self.__user_conf.read(self.conf_dist_file)
             self.__conf_dist.read(self.conf_dist_file)
-         
+
         self.__profiles = self.__get_profiles(self.profile_folder)
         self.hostname = self.get_hostname()
 
@@ -162,7 +162,26 @@ class Conf(object): # TODO list get and other ops arround profile
                 self.logger and self.logger.warning('The parameter "{0}" in section "{1}" is not an int, FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
 
         return default
-       
+
+
+    def get_float(self, sect, opt, default=None):
+        """Tries to return the value of an option in a section as a float. 
+        If else, returns the given default value.
+        Args:
+            sect (str): section of configuration file.
+            opt (str): option of configuration file.
+            default (str): the string return when an exception occurs.
+        Returns:
+            Float: the value of option opt in section sect if there are no errors. Default otherwise.
+        """
+        if self.get(sect, opt):
+            try:
+                return float(self.get(sect, opt))
+            except Exception as exc:
+                self.logger and self.logger.warning('The parameter "{0}" in section "{1}" is not a float, FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
+
+        return default
+
 
     def get_hour(self, sect, opt, default='00:00'):
         """Tries to return the value of an option in a section with a hour format.
@@ -414,7 +433,7 @@ class Conf(object): # TODO list get and other ops arround profile
         """
         self.__force_set(self.__user_conf, sect, opt, value)
         self.__force_set(self.__conf, sect, opt, value)
-
+        self.update(update_profiles=False)
 
     def set_section(self, sect_name=None, sect={}):
         """Sets the specified section
@@ -491,13 +510,14 @@ class Conf(object): # TODO list get and other ops arround profile
         """
         modules = []
         modules.append('recorder')
+        modules.append('scheduler')
                  
         if self.get_boolean('basic', 'admin'):
             modules.append('media_manager')
             modules.append('player')
 
         if self.get_boolean('ingest', 'active'):
-            modules.append('scheduler')
+            modules.append('ocservice')
 
         return modules
 
@@ -548,10 +568,10 @@ class Conf(object): # TODO list get and other ops arround profile
         for section in self.__user_conf.sections():
             self.remove_section(section)
 
-    def update(self):
+    def update(self, update_profiles=True):
         """Updates the configuration file from user.
         """
-        self.update_profiles()
+        update_profiles and self.update_profiles()
 
         # Make a backup if it was an error parsing the conf file
         if self.__parser_error:
@@ -569,13 +589,13 @@ class Conf(object): # TODO list get and other ops arround profile
             except Exception as exc:
                 self.logger and self.logger.warning("Error trying to copy the original conf file {} to {}".format(src, dst))
 
-            try:
-                configfile = open(self.conf_file, 'wb')
-                self.__user_conf.write(configfile)
-                configfile.close()
-            except Exception as exc:
-                if self.logger:
-                    self.logger.error(exc)
+        try:
+            configfile = open(self.conf_file, 'wb')
+            self.logger and self.logger.debug("Saving current configuration to {}".format(configfile.name))
+            self.__user_conf.write(configfile)
+            configfile.close()
+        except Exception as exc:
+            self.logger and self.logger.error('Erros saving configuration: {}'.format(exc))
  
 
     def update_profiles(self):
@@ -589,7 +609,7 @@ class Conf(object): # TODO list get and other ops arround profile
             elif profile.name != self.__default_profile.name:
                 #profile.export_to_file() #Uncomment if profiles are editable
                 if profile == self.__current_profile:
-                    self.__conf.set('basic','profile',profile.name)
+                    self.set('basic','profile',profile.name)
                 
 
     def get_tracks_in_oc_dict(self):
@@ -804,6 +824,7 @@ class Conf(object): # TODO list get and other ops arround profile
         """
         if name != self.__current_profile.name:
             if name in self.__profiles:
+                self.logger and self.logger.debug("Changing current profile to '{}'".format(name))
                 self.__current_profile = self.__profiles[name]
                 self.force_set_current_profile(name)
             else:
@@ -898,7 +919,7 @@ class Profile(object):
         self.name = name
         self.tracks = []
         self.original_tracks = []
-        self.path = path
+        self.path = path if path else datetime.utcnow().strftime('%Y-%m-%d_%H-%M-%S')
         self.execute = None
         self.template = None
         self.to_delete = False
@@ -933,6 +954,19 @@ class Profile(object):
         self.tracks.remove(track)
         return track
 
+    
+    # TODO: This is a WORKAROUND for https://github.com/teltek/Galicaster/issues/317
+    # FIXME
+    def get_tracks_audio_at_end(self):
+        """
+        """
+        for indx, element in enumerate(self.tracks):
+            if element['device'] in ['audiotest', 'autoaudio', 'pulse']:
+                self.tracks += [self.tracks.pop(indx)]
+
+        return self.tracks
+
+    
     #TODO error, be careful with self.tracks(. It's not a method
     def reorder_tracks(self, order=[]):
         """Reorders the tracks following the order set by the argument order.

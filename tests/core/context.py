@@ -54,7 +54,7 @@ class TestFunctions(TestCase):
 
         conf.set('ingest', 'active', 'False')
         self.assertEqual(context.get_occlient(), None)
-        self.assertEqual(context.get_scheduler(), None)
+        self.assertTrue(context.get_scheduler() != None)
 
         context.delete('occlient')
         context.delete('scheduler')

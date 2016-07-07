@@ -16,7 +16,6 @@ UI for the Media Manager and Player area
 
 from gi.repository import Gtk
 from gi.repository import GObject
-from galicaster.utils import series
 
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
@@ -60,9 +59,7 @@ class ManagerUI(Gtk.Box):
 	self.dispatcher = context.get_dispatcher()
 	self.repository = context.get_repository()
 	self.network = False
-
-	self.dispatcher.connect_ui("opencast-connected", self.network_status, True)
-	self.dispatcher.connect_ui("opencast-unreachable", self.network_status, False)
+	self.dispatcher.connect_ui("opencast-status", self.network_status)
 
 
     def sorting(self, treemodel, iter1, iter2, data, regular=True, ascending=1):
@@ -218,13 +215,13 @@ class ManagerUI(Gtk.Box):
         operations_dialog = message.PopUp(message.OPERATIONS,text,
                                 context.get_mainwindow(),
                                 operations)
-
+        
         if operations_dialog.response == Gtk.ResponseType.REJECT or \
             operations_dialog.response == Gtk.ResponseType.DELETE_EVENT or \
             operations_dialog.response == Gtk.ResponseType.OK:
             return True
 
-        elif 0 < operations_dialog.response < len(response_list):
+        elif 0 < operations_dialog.response <= len(response_list):
             chosen_job = response_list[operations_dialog.response-1].lower().replace (" ", "_")
             if chosen_job.count('nightly'):
                 context.get_worker().do_job_nightly(chosen_job.replace("_",""), package)
@@ -244,7 +241,7 @@ class ManagerUI(Gtk.Box):
         """Pop ups the Metadata Editor"""
 	logger.info("Edit: {0}".format(str(key)))
 	selected_mp = self.repository.get(key)
-	Metadata(selected_mp, series.get_series())
+	Metadata(selected_mp)
 	self.repository.update(selected_mp)
 
     def info(self,key):
@@ -294,7 +291,7 @@ class ManagerUI(Gtk.Box):
  
         # Operations
         for op,status in data['operations'].iteritems():
-            data[op] = _(status)
+            data[op] = mediapackage.op_status[status]
         del data['operations']
 
         # Tracks

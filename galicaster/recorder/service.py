@@ -30,15 +30,26 @@ from galicaster.utils.gstreamer import WeakMethod
 
 
 class Status(object):
-    def __init__(self, name): self.name = name
+    def __init__(self, name, description="", fg_color="#484848", bg_color=None):
+        self.name        = name
+        self.description = description
+        self.fg_color    = fg_color
+        self.bg_color    = bg_color
     def __str__(self): return self.name
     def __repr__(self): return self.name
 
-INIT_STATUS = Status('init')
-PREVIEW_STATUS = Status('preview')
-RECORDING_STATUS = Status('recording')
-PAUSED_STATUS = Status('paused')
-ERROR_STATUS = Status('error')
+
+STATUSES = [Status('init', 'Initialization'),
+            Status('preview', 'Waiting'),
+            Status('recording', 'Recording', '#484848', '#FF0000'),
+            Status('paused', 'Paused'),
+            Status('error', 'Error', '#484848', '#FF0000')]
+    
+INIT_STATUS      = STATUSES[0]
+PREVIEW_STATUS   = STATUSES[1]
+RECORDING_STATUS = STATUSES[2]
+PAUSED_STATUS    = STATUSES[3]
+ERROR_STATUS     = STATUSES[4]
 
 
 class RecorderService(object):
@@ -103,7 +114,9 @@ class RecorderService(object):
     def __prepare(self):
         current_profile = self.conf.get_current_profile()
         self.logger.debug("Using {} profile".format(current_profile.name))
-        bins = current_profile.tracks
+        # TODO: This is a WORKAROUND for https://github.com/teltek/Galicaster/issues/317
+        # FIXME
+        bins = current_profile.get_tracks_audio_at_end()
         for objectbin in bins:
             objectbin['path'] = self.repo.get_rectemp_path()
 
@@ -147,9 +160,11 @@ class RecorderService(object):
         if not self.current_mediapackage:
             self.current_mediapackage = mp or self.create_mp()
             
+        self.logger.info("Recording to MP {}".format(self.current_mediapackage.getIdentifier()))
         self.current_mediapackage.status = mediapackage.RECORDING
         now = datetime.utcnow().replace(microsecond=0)
         self.current_mediapackage.setDate(now)
+        self.current_mediapackage.setProperty('origin', self.conf.get_hostname())
         self.__set_status(RECORDING_STATUS)
         self.dispatcher.emit("recorder-started", self.current_mediapackage.getIdentifier())
 
@@ -182,9 +197,7 @@ class RecorderService(object):
         self.repo.add_after_rec(self.current_mediapackage, self.recorder.get_bins_info(),
                                 close_duration, self.current_mediapackage.manual)
 
-        # FIXME
-        mp_mod_Uri = self.current_mediapackage.getURI()
-        self.dispatcher.emit("recorder-stopped", mp_mod_Uri)
+        self.dispatcher.emit("recorder-stopped", self.current_mediapackage.getIdentifier())
         
         code = 'manual' if self.current_mediapackage.manual else 'scheduled'
         if self.conf.get_lower('ingest', code) == 'immediately':
@@ -282,6 +295,7 @@ class RecorderService(object):
     def _handle_reload_profile(self, origin):
         if self.status in (PREVIEW_STATUS, ERROR_STATUS):
             self.logger.debug("Resetting recorder after reloading the profile")
+            self.repo.check_for_recover_recordings()
             if self.recorder:
                 self.recorder.stop(True)
             self.__set_status(INIT_STATUS)
@@ -295,7 +309,6 @@ class RecorderService(object):
         now = datetime.now().replace(microsecond=0)
         title = _("Recording started at {0}").format(now.isoformat())
         mp = mediapackage.Mediapackage(title=title)
-        mp.properties['origin'] = self.conf.get_hostname()
         return mp
 
 

@@ -70,6 +70,7 @@ class GCWindow(Gtk.Window):
         self.set_icon(pixbuf)
         self.connect('delete_event', lambda *x: self.__on_delete_event())
         self.dispatcher = dispatcher
+        self.connect('visibility-notify-event', self.on_visibility_event)
         if self.dispatcher:
             self.dispatcher.connect('action-quit', self.close)
             self.dispatcher.connect('action-shutdown', self.shutdown)
@@ -77,6 +78,9 @@ class GCWindow(Gtk.Window):
         self.nbox = Gtk.Notebook()
         self.nbox.set_show_tabs(False)
         self.add(self.nbox)
+
+    def on_visibility_event(self, *args):
+        self.dispatcher.emit('gc-shown')
 
     def start(self):
         """Shifts to fullscreen mode and triggers content resizing and drawing"""
@@ -190,15 +194,18 @@ class GCWindow(Gtk.Window):
 
     def on_close_dialog_response(self, response_id, **kwargs):
         if response_id in message.POSITIVE:
-            if self.logger:
-                self.logger.info("Quit Galicaster")
-            if self.dispatcher:
-                self.dispatcher.emit('quit')
-            Gtk.main_quit()
+            self.do_quit()
         else:
             if self.logger:
                 self.logger.info("Cancel Quit")
 
+
+    def do_quit(self,element=None):
+        if self.logger:
+            self.logger.info("Quit Galicaster")
+        if self.dispatcher:
+            self.dispatcher.emit('quit')
+        Gtk.main_quit()
 
     def shutdown(self, signal):
         """Pops up a dialog asking to shutdown the computer"""

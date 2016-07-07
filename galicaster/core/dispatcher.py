@@ -53,8 +53,10 @@ class Dispatcher(GObject.GObject):
 #GObject.type_register(Dispatcher)
 GObject.signal_new('init', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('pr', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
+GObject.signal_new('gc-shown', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 #REC
 GObject.signal_new('recorder-upcoming-event', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
+GObject.signal_new('recorder-scheduled-event', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('recorder-vumeter', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('recorder-message-element', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('recorder-error', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
@@ -63,7 +65,7 @@ GObject.signal_new('action-reload-profile', Dispatcher, GObject.SignalFlags.RUN_
 GObject.signal_new('recorder-ready', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('recorder-starting', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('recorder-started', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
-GObject.signal_new('recorder-stopped', Dispatcher, GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, (GObject.TYPE_PYOBJECT,) )
+GObject.signal_new('recorder-stopped', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 
 #AUDIO
 GObject.signal_new('audio-mute', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
@@ -72,7 +74,7 @@ GObject.signal_new('action-audio-enable-msg', Dispatcher, GObject.SignalFlags.RU
 GObject.signal_new('action-audio-disable-msg', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 #PLAYER
 GObject.signal_new('player-vumeter', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,) )
-GObject.signal_new('play-stopped', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
+GObject.signal_new('player-status', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('play-list', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 
 #MEDIAMANAGER
@@ -91,8 +93,7 @@ GObject.signal_new('timer-short', Dispatcher, GObject.SignalFlags.RUN_LAST, None
 GObject.signal_new('timer-long', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('ical-processed', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 #NET
-GObject.signal_new('opencast-connected', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
-GObject.signal_new('opencast-unreachable', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
+GObject.signal_new('opencast-status', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 #PROVISIONAL
 GObject.signal_new('action-create-mock-mp', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 #WORKER

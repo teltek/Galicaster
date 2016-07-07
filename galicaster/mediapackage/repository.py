@@ -118,8 +118,8 @@ class Repository(object):
                 info = json.load(handle)
 
             # Copy the capture agent properties from the original mediapackage folder (for scheduled recordings)
-            if info['mp_path']:
-                ca_prop = os.path.join(info['mp_path'], "org.opencastproject.capture.agent.properties")
+            if info['uri']:
+                ca_prop = os.path.join(info['uri'], "org.opencastproject.capture.agent.properties")
                 if os.path.exists(ca_prop):
                     with open(ca_prop, 'rb') as fsrc:
                         dst = os.path.join(self.get_rectemp_path(), "org.opencastproject.capture.agent.properties")
@@ -128,16 +128,23 @@ class Repository(object):
                             shutil.copyfileobj(fsrc, fdst)
                             os.fsync(fdst)
 
+            # Create MP
             mp = deserializer.fromXML(os.path.join(self.get_rectemp_path(), "manifest.xml"), self.logger)
 
-            # Status to RECORDED
+            # Set saved data
+            mp.setFromDict(info)
+            # Overwrite some data
             mp.status = 4
-            mp.setTitle("Recovered recording of date {}".format(mp.getStartDateAsString()))
-            mp.setNewIdentifier()
-            info['mp_id'] = mp.getIdentifier()
+            mp.setTitle("Recovered - " + mp.getTitle())
+            if not mp.getIdentifier():
+                mp.setNewIdentifier()
 
-            # Change the filenames 
+            # Change the filenames
             folder = self.add_after_rec(mp, info['tracks'], mp.getDuration(), add_catalogs=True, remove_tmp_files=False)
+            try:
+                mp.discoverDuration()
+            except Exception as exc:
+                self.logger and self.logger.debug("Error trying to get duration of MP {}: {}".format(mp.getIdentifier(), exc))
             serializer.save_in_dir(mp, self.logger, folder)
             self.logger and self.logger.info("Crashed recording added to the repository")
 
@@ -150,12 +157,14 @@ class Repository(object):
                         shutil.copyfileobj(fsrc, fdst)
                         os.fsync(fdst)
 
-            # Check if there is some extra files (slides) and move the the mediapackage folder
+
+            # Check if there is some extra files and move it to the mediapackage folder
             mp_dir = mp.getURI()
             for temp_file in os.listdir(self.get_rectemp_path()):
                 full_path = os.path.join(self.get_rectemp_path(), temp_file)
                 if os.path.isfile(full_path) and os.path.getsize(full_path) and not "screenshot.jpg" in temp_file:
                     os.rename(full_path, os.path.join(mp_dir, temp_file))
+
 
         except Exception as exc:
             self.logger and self.logger.error("There was an error trying to recover a recording: {}. Saving crashed recording to a rectemp folder...".format(exc))
@@ -212,12 +221,8 @@ class Repository(object):
         serializer.save_in_dir(mp, self.logger, self.get_rectemp_path())
 
         try:
-            info = {}
-            info['scheduled'] = True if mp.status == mediapackage.SCHEDULED else False
-            info['mp_id']     = mp.getIdentifier()
-            info['mp_path']   = mp.getURI()
-            info['start']     = mp.getDate().isoformat()
-            info['tracks']    = bins_info
+            info           = mp.getAsDict()
+            info['tracks'] = bins_info
             
             filename = os.path.join(self.get_rectemp_path(), 'info.json')
             f = open(filename, 'w')
@@ -397,8 +402,11 @@ class Repository(object):
         # TODO filter by certain parameters
         return self.__list
 
-    def get_next_mediapackages(self):
+    
+    def get_next_mediapackages(self, limit=0):
         """Gets the mediapackage that are going to be recorded in the future.
+        Args:
+            limit (Int): limit the maximum number of future recordings to be returned.
         Returns:
             List[Mediapackage]: list of mediapackages to be recorded in the future, sorted by the start time.
         """
@@ -412,7 +420,9 @@ class Repository(object):
             return mp.getDate() > datetime.datetime.utcnow()
 
         next = filter(is_future, self.__list.values())
-        next = sorted(next, key=lambda mp: mp.startTime) 
+        next = sorted(next, key=lambda mp: mp.startTime)
+        if limit > 0:
+            next = next[0:limit]
         return next
 
 
@@ -434,7 +444,7 @@ class Repository(object):
 
 
     def get_last_mediapackage(self):
-        """Gets the last mediapackage added to the repository.
+        """Gets the last mediapackage added to the repository (sorted by date).
         Returns:
             Mediapackage: the last mediapackage added.
         """
@@ -532,7 +542,7 @@ class Repository(object):
         return self.__add(mp)
 
 
-    def add_after_rec(self, mp, bins, duration, add_catalogs=True, remove_tmp_files=True): 
+    def add_after_rec(self, mp, bins, duration, add_catalogs=True, remove_tmp_files=True):
         """Adds information to the mediapackage when a recording ends and adds it to the repository.
         Args:
             mp (Mediapackage): the mediapackage whose recordings are going to be updated.
@@ -550,17 +560,17 @@ class Repository(object):
         for bin in bins:
             # TODO rec all and ingest 
             capture_dev_names = mp.getOCCaptureAgentProperty('capture.device.names')
-            if mp.manual or not capture_dev_names or len(capture_dev_names) == 0 or capture_dev_names == 'defaults' or bin['name'] in capture_dev_names:
+            if mp.manual or not capture_dev_names or len(capture_dev_names) == 0 or capture_dev_names == 'defaults' or bin['name'].lower() in capture_dev_names:
                 filename = os.path.join(bin['path'], bin['file'])
                 dest = os.path.join(mp.getURI(), os.path.basename(filename))
                 os.rename(filename, dest)
-                etype = 'audio/mp3' if bin['device'] in ['pulse', 'autoaudio', 'audiotest'] else 'video/' + dest.split('.')[1].lower()
                 
+                etype   = bin['mimetype']                
                 flavour = bin['flavor'] + '/source'
-
                 mp.add(dest, mediapackage.TYPE_TRACK, flavour, etype, duration) # FIXME MIMETYPE
             else:
-                self.logger and self.logger.debug("Not adding {} to MP {}").format(bin['file'],mp.getIdentifier())
+                self.logger and self.logger.debug("Not adding {} to MP {}".format(bin['file'],mp.getIdentifier()))
+
 
         mp.forceDuration(duration)
 
@@ -623,7 +633,33 @@ class Repository(object):
         shutil.rmtree(mp.getURI())
         return mp
 
+
+    def delete_next_mediapackages(self, limit=0):
+        """Deletes future mediapackages
+        Args:
+            limit (Int): limit the maximum number of future recordings to be deleted.
+        Returns:
+            List[Mediapackage]: list of mediapackages to be recorded in the future, should be [] if limit=0.
+        """
+        def is_future(mp):
+            """Checks if the date of a mediapackage is later than now.
+            Args:
+                mp: the mediapackage whose recording date is going to be checked.
+            Returns:
+                Bool: True if the date is later than now. False otherwise.
+            """
+            return mp.getDate() > datetime.datetime.utcnow()
+
+        next = filter(is_future, self.__list.values())
+        next = sorted(next, key=lambda mp: mp.startTime)
+        if limit > 0:
+            next = next[0:limit]
+
+        for item in next:
+            self.delete(item)
+        return self.get_next_mediapackages()
         
+
     def update(self, mp):
         """If a mediapackage is in the repository, calls the private method __add in order to add it to the repository.
         Args:

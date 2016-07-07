@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       galicaster/utils/series
+#       galicaster/opencast/series
 #
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
@@ -25,7 +25,7 @@ MAPPINGS = { 'user': getpass.getuser() }
 
 def get_series():
     repo = context.get_repository() 
-    occlient = context.get_occlient()
+    ocservice = context.get_ocservice()
 
     # Import the 'series' section as a dictionary
     series_conf = context.get_conf().get_section('series')
@@ -49,7 +49,10 @@ def get_series():
         series_list = []
         check_default = True
         while True:
-            series_json = json.loads(occlient.getseries(**queries))
+            if not ocservice.net:
+                break
+                
+            series_json = json.loads(ocservice.client.getseries(**queries))
             for catalog in series_json['catalogs']:
                 try:
                     series_list.append(parse_json_series(catalog))
@@ -99,6 +102,18 @@ def transform(a):
 def get_default_series():
     return context.get_conf().get('series', 'default')
 
+
+def filterSeriesbyId(list_series, seriesid):
+    """
+    Generate a list with the series value name, shortname and id
+    """
+    try:
+        match = {"id": seriesid, "name": list_series[seriesid]['title'], "list": list_series[seriesid]}
+        return match
+    except Exception:
+        return None
+    
+
 def getSeriesbyId(seriesid):
     #TODO
     """
@@ -108,9 +123,10 @@ def getSeriesbyId(seriesid):
     try:
         match = {"id": seriesid, "name": list_series[seriesid]['title'], "list": list_series[seriesid]}
         return match
-    except KeyError:
+    except Exception:
         return None
 
+    
 def getSeriesbyName(seriesname):
     """
     Generate a list with the series value name, shortname and id

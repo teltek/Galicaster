@@ -19,21 +19,23 @@ from datetime import datetime
 from icalendar import Calendar
 from galicaster.mediapackage import mediapackage
 
-def get_events_from_string_ical(ical_data):
+def get_events_from_string_ical(ical_data, limit=0):
     # See https://github.com/collective/icalendar#api-change
     f = getattr(Calendar, 'from_ical', getattr(Calendar, 'from_string', None))
     cal = f(ical_data)
-    return cal.walk('vevent')
+    if limit > 0:
+        events = cal.walk('vevent')[0:limit]
+    else:
+        events = cal.walk('vevent')
+    return events
 
 
-def get_events_from_file_ical(ical_file):
-    # See https://github.com/collective/icalendar#api-change
-    f = getattr(Calendar, 'from_ical', getattr(Calendar, 'from_string', None))
-    cal = f(open(ical_file).read())
-    return cal.walk('vevent')
+def get_events_from_file_ical(ical_file, limit=0):
+    ical_data = open(ical_file).read()
+    return get_events_from_string_ical(ical_data, limit)
 
 
-def get_delete_events(old_events, new_events):
+def get_deleted_events(old_events, new_events):
     out = list()
     for old_event in old_events:
         dtstart = old_event['DTSTART'].dt.replace(tzinfo=None)
@@ -48,7 +50,7 @@ def get_delete_events(old_events, new_events):
     return out
 
 
-def get_update_events(old_events, new_events):
+def get_updated_events(old_events, new_events):
     out = list()
     for old_event in old_events:
         for new_event in new_events:
@@ -90,7 +92,38 @@ def create_mp(repo, event):
     repo.update(mp)
 
 
+def handle_ical(ical_data, last_events, repo, scheduler, logger):
+    try:
+        events = get_events_from_string_ical(ical_data, limit=100)
+        if last_events:
+            delete_events = get_deleted_events(last_events, events)
+            update_events = get_updated_events(last_events, events)
+    except Exception as exc:
+        logger and logger.error('Error processing ical: {0}'.format(exc))
+        return
+    
+    for event in events:
+        if not repo.get(event['UID']):
+            logger and logger.debug('Creating MP with UID {0} from ical'.format(event['UID']))
+            create_mp(repo, event)
 
+    if last_events:
+        for event in delete_events:
+            logger and logger.info('Deleting MP with UID {0} from ical'.format(event['UID']))
+            mp = repo.get(event['UID'])
+            if mp and mp.status == mediapackage.SCHEDULED:
+                repo.delete(mp)
+            scheduler.remove_timer(mp)
+            
+            for event in update_events:
+                logger and logger.info('Updating MP with UID {0} from ical'.format(event['UID']))
+                mp = repo.get(event['UID'])
+                scheduler.update_timer(mp)
+
+    for mp in repo.get_next_mediapackages(5):
+        scheduler.create_timer(mp)
+
+    return events
 
 
 

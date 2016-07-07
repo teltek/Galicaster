@@ -105,7 +105,7 @@ class OCHTTPClient(object):
         b = StringIO()
 
         url = list(urlparse.urlparse(theServer, 'http'))
-        url[2] = url[2] + endpoint.format(**path_params)
+        url[2] = urlparse.urljoin(url[2], endpoint.format(**path_params))
         url[4] = urllib.urlencode(query_params)
         c.setopt(pycurl.URL, urlparse.urlunparse(url))
 
@@ -124,10 +124,6 @@ class OCHTTPClient(object):
             c.setopt(pycurl.HEADERFUNCTION, self.scanforetag)
         c.setopt(pycurl.HTTPHEADER, sendheaders)
         c.setopt(pycurl.USERAGENT, 'Galicaster' + version)
-        c.setopt(pycurl.SSL_VERIFYPEER, False) # equivalent to curl's --insecure
-
-        c.setopt(pycurl.HTTPHEADER, ['X-Requested-Auth: Digest', 'X-Matterhorn-Opencast-Authorization: true'])
-        c.setopt(pycurl.USERAGENT, 'Galicaster')
         c.setopt(pycurl.SSL_VERIFYPEER, False) # equivalent to curl's --insecure
        
         if (method == 'POST'):

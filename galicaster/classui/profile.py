@@ -341,14 +341,11 @@ class ListProfileBox(ProfileDialog):
         return None
 
     def change_selected_profile(self, button):
-
         model,iterator=self.view.get_selection().get_selected()
         if type(iterator) is Gtk.TreeIter:
             profile=model.get_value(iterator,0)
-
             context.get_conf().change_current_profile(profile.name)
-        #self.refresh()
-        context.get_conf().update()
+
         context.get_dispatcher().emit("action-reload-profile")
         self.close()
 

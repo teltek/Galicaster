@@ -270,10 +270,16 @@ class Worker(object):
         name=name.replace('nightly','')
         try:
             if name.count('cancel'):
-                getattr(self, name.replace('cancel',''))
+                # getattr(self, name.replace('cancel',''))
+                if not name.replace('cancel','') in JOB_NAMES.keys():
+                    raise Exception('Unknown operation named {}'.format(name))
+                
                 self.cancel_nightly(mp, name.replace('cancel',''))
             else:
-                getattr(self, name)
+                # getattr(self, name)
+                if not name in JOB_NAMES.keys():
+                    raise Exception('Unknown operation named {}'.format(name))
+
                 self.operation_nightly(mp, name, params)
         except Exception as exc:
             self.logger.error("Failure performing nightly job {0} for MP {1}. Exception: {2}".format(name, mp, exc))
@@ -462,7 +468,7 @@ class Worker(object):
         try:
             
             if not camera or not screen:
-                raise IOError, 'Error in SideBySide proccess: Two videos needed (with presenter and presentation flavors)'
+                raise IOError, 'Error in SideBySide process: Two videos needed (with presenter and presentation flavors)'
 
             if audio_mode == "auto":                
                 self.logger.debug('SideBySide for MP {0}: auto audio-mode'.format(mp.getIdentifier()))
