@@ -14,7 +14,7 @@
 
 import sys
 
-from gi.repository import Gtk, Gst, Gdk, GObject
+from gi.repository import Gtk, Gst, Gdk, GObject, GdkX11
 Gst.init(None)
 
 from galicaster.core import context
@@ -46,7 +46,7 @@ class Recorder(object):
         self.dispatcher = context.get_dispatcher() 
         self.players = players
         self.restart = False
-        self.mute = False
+#        self.mute = False
         self.error = False
         self.is_recording = False
         self.__start_record_time = -1
@@ -308,6 +308,32 @@ class Recorder(object):
             if bin.has_audio:
                 bin.mute_preview(value)
                 
+
+    def mute_input(self, value, bin_name=None):
+        for bin_nam, bin in self.bins.iteritems():
+            if bin_name and bin.gc_parameters['name']['default'] in bin_name:
+                bin.mute_input(value)
+            else:
+                bin.mute_input(value)
+
+    def disable_input(self, bin_name=None):
+        for bin_nam, bin in self.bins.iteritems():
+            print "ñladfjñakjdflk"+bin_name
+            print bin.gc_parameters['name']['default']
+            if bin_name:
+                if bin.gc_parameters['name']['default'] in bin_name:
+                    print "noooou"
+                    bin.disable_input()
+            else:
+                bin.disable_input()
+        
+    def enable_input(self, bin_name=None):
+        for bin_nam, bin in self.bins.iteritems():
+            if bin_name:
+                if bin.gc_parameters['name']['default'] in bin_name:
+                    bin.enable_input()
+            else:
+                bin.enable_input()        
 
     def set_drawing_areas(self, players):
         self.players = players

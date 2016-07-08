@@ -19,7 +19,7 @@ from gi.repository import GObject, Gst
 from galicaster.recorder import base
 from galicaster.recorder.utils import get_videosink
 
-pipestr = (' videotestsrc name=gc-videotest-src pattern=0 is-live=true ! capsfilter name=gc-videotest-filter ! '
+pipestr = (' videotestsrc name=gc-videotest-src pattern=0 is-live=true ! capsfilter name=gc-videotest-filter ! videobox name=gc-videotest-videobox top=0 bottom=0 !'
            ' queue ! videoconvert ! video/x-raw,format=YUY2 ! tee name=tee-vt  ! '
            ' queue ! gc-vsink '
            ' tee-vt. ! queue ! valve drop=false name=gc-videotest-valve ! videoconvert ! queue ! '
@@ -153,5 +153,18 @@ class GCvideotest(Gst.Bin, base.Base):
     def send_event_to_src(self, event):
         src1 = self.get_by_name('gc-videotest-src')
         src1.send_event(event)
+        
+    def mute_input(self, value):
+        src1 = self.get_by_name('gc-videotest-videobox')
+        src1.set_property('top', -10000 if value else 0)
+        src1.set_property('bottom', 10000 if value else 0)
 
+    def disable_input(self):
+        src1 = self.get_by_name('gc-videotest-videobox')
+        src1.set_property('top', -10000)
+        src1.set_property('bottom', 10000)
 
+    def enable_input(self):
+        src1 = self.get_by_name('gc-videotest-videobox')
+        src1.set_property('top',0)
+        src1.set_property('bottom',0)

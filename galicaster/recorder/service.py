@@ -71,6 +71,7 @@ class RecorderService(object):
         self.conf = conf
         self.overlap = conf.get_permission("overlap")
         self.mute = True
+        self.mute_status = {"input":False}
         
         self.__set_status(INIT_STATUS)
 
@@ -243,6 +244,24 @@ class RecorderService(object):
         self.mute = value
         self.recorder and self.recorder.mute_preview(value)
 
+
+    def mute_input(self, value, bin_name=None):
+        """Proxy function to mute input"""
+        self.mute = value
+        self.recorder and self.recorder.mute_input(value, bin_name)
+
+
+    def disable_input(self, bin_name=None):
+        """Proxy function to disable input"""
+#        self.mute_status = {"input":True}
+        self.mute_status = bin_name
+        self.recorder and self.recorder.disable_input(bin_name)
+
+    def enable_input(self, bin_name=None):
+        """Proxy function to enable input"""
+#        self.mute_status = {"input":False}
+        self.mute_status = bin_name
+        self.recorder and self.recorder.enable_input(bin_name)
 
     def is_pausable(self):
         """Proxy function to know if actual recorder is pausable"""

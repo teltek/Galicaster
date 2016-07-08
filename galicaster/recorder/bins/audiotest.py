@@ -177,3 +177,17 @@ class GCaudiotest(Gst.Bin, base.Base):
             element = self.get_by_name("gc-audiotest-volume")
             element.set_property("mute", value)
 
+    def mute_input(self, value):
+        if not self.mute:
+            element = self.get_by_name("gc-audiotest-src")
+            element.set_property("volume", 0 if value else float(self.options["volume"]))
+
+    def disable_input(self):
+        if not self.mute:
+            element = self.get_by_name("gc-audiotest-src")
+            element.set_property("volume", 0)
+
+    def enable_input(self):
+        if not self.mute:
+            element = self.get_by_name("gc-audiotest-src")
+            element.set_property("volume", float(self.options["volume"]))
