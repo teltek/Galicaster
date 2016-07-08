@@ -22,7 +22,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gst", "1.0")
 
-from gi.repository import Gtk, Gst, Gdk, GObject
+from gi.repository import Gtk, Gst, Gdk, GObject, GdkX11
 # Needed for window.get_xid(), xvimagesink.set_window_handle(), respectively:
 
 import os
