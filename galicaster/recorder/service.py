@@ -11,16 +11,6 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
-"""
-TODO:
- - Scheduled recordings
- - profile.execute (see recorderui configure_profile)
- - Add connect:
-   * start-record
-   * stop-record
-   * start-before
- - Add doc
-"""
 
 from datetime import datetime
 from galicaster.mediapackage import mediapackage
