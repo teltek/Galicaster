@@ -98,7 +98,7 @@ class RecorderService(object):
 
     def __prepare(self):
         current_profile = self.conf.get_current_profile()
-        self.logger.debug("Using {} profile".format(current_profile.name))
+        self.logger.debug("Using profile with name {} and path {}".format(current_profile.name, current_profile.path))
         if current_profile.execute:
             out = os.system(current_profile.execute)
             logger.info("Executing {0} with out {1}".format(current_profile.execute, out))
@@ -284,6 +284,7 @@ class RecorderService(object):
         if self.status in (PREVIEW_STATUS, ERROR_STATUS):
             self.logger.debug("Resetting recorder after reloading the profile")
             self.repo.check_for_recover_recordings()
+            self.current_mediapackage = None
             if self.recorder:
                 self.recorder.stop(True)
             self.__set_status(INIT_STATUS)
