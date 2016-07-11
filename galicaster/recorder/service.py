@@ -39,18 +39,13 @@ class Status(object):
     def __repr__(self): return self.name
 
 
-STATUSES = [Status('init', 'Initialization'),
-            Status('preview', 'Waiting'),
-            Status('recording', 'Recording', '#484848', '#FF0000'),
-            Status('paused', 'Paused'),
-            Status('error', 'Error', '#484848', '#FF0000')]
-    
-INIT_STATUS      = STATUSES[0]
-PREVIEW_STATUS   = STATUSES[1]
-RECORDING_STATUS = STATUSES[2]
-PAUSED_STATUS    = STATUSES[3]
-ERROR_STATUS     = STATUSES[4]
+INIT_STATUS      = Status('init', 'Initialization')
+PREVIEW_STATUS   = Status('preview', 'Waiting')
+RECORDING_STATUS = Status('recording', 'Recording', '#484848', '#FF0000')
+PAUSED_STATUS    = Status('paused', 'Paused')
+ERROR_STATUS     = Status('error', 'Error', '#484848', '#FF0000')
 
+STATUSES = [INIT_STATUS, PREVIEW_STATUS, RECORDING_STATUS, PAUSED_STATUS, ERROR_STATUS]
 
 class RecorderService(object):
     def __init__(self, dispatcher, repo, worker, conf, logger, autorecover=False, recorderklass=Recorder):
