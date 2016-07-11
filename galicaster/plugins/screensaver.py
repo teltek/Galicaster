@@ -43,37 +43,29 @@ def init():
         
     dispatcher.connect('recorder-upcoming-event', deactivate_and_poke)
     dispatcher.connect('recorder-starting', deactivate_and_poke)
-    dispatcher.connect('recorder-stopped', configure)
+    dispatcher.connect('recorder-stopped', activate_and_poke)
     dispatcher.connect('quit', configure_quit)
 
     power_settings = conf.get_json('screensaver', 'powersettings')
     default_power_settings = conf.get_json('screensaver', 'defaultpowersettings')
-    configure()
+    activate_screensaver()
 
     
-def get_screensaver_method(method):
-    dbus_loop = DBusGMainLoop()
-    session = dbus.SessionBus(mainloop=dbus_loop)
-    bus_name = "org.gnome.ScreenSaver"
-    object_path = "/org/gnome/ScreenSaver"
-    screen_saver = session.get_object(bus_name, object_path)
-    return screen_saver.get_dbus_method(method)
+def activate_and_poke(signal=None, mp=None):
+    poke_screen()
+    activate_screensaver()
 
-
-def activate_screensaver(signal=None):
-    configure()
+def deactivate_and_poke(signal=None, mp=None):
+    deactivate_screensaver()
+    poke_screen()
 
 def deactivate_screensaver(signal=None):
     global logger
     execute(['xset', 'dpms', '0', '0', '0'], logger)
 
-def deactivate_and_poke(signal=None):
-    deactivate_screensaver()
-    poke_screen()
-
-def configure(signal=None, mp=None):
+def activate_screensaver(signal=None, mp=None):
     global inactivity, logger, power_settings
-    logger.info("Configure: set power settings and activate power saving mode for {} s".format(inactivity))
+    logger.info("Activate screensaver: set power settings and activate power saving mode for {} s".format(inactivity))
 
     standby_time = inactivity
     suspend_time = inactivity + 5
@@ -85,13 +77,22 @@ def configure(signal=None, mp=None):
     execute(["xset", "dpms", str(standby_time), str(suspend_time), str(off_time)], logger)
     os.system("dconf write /org/gnome/desktop/session/idle-delay 'uint32 0'")
 
-    
+
 def configure_quit(signal=None):
     global default_power_settings, logger
     logger.info("On exit: deactivate screensaver and set default power settings")
 
     write_dconf_settings(default_power_settings, logger, logaserror=False)
     execute(['xset', '-dpms'], logger)
+    
+def get_screensaver_method(method):
+    dbus_loop = DBusGMainLoop()
+    session = dbus.SessionBus(mainloop=dbus_loop)
+    bus_name = "org.gnome.ScreenSaver"
+    object_path = "/org/gnome/ScreenSaver"
+    screen_saver = session.get_object(bus_name, object_path)
+    return screen_saver.get_dbus_method(method)
+
 
 def poke_screen(signal=None):
     global logger
@@ -100,9 +101,8 @@ def poke_screen(signal=None):
     poke(
         reply_handler=replying,
         error_handler=replying)
-    execute(['xset','dpms','force','on'], logger)
+    execute(['xset','dpms','force','on'], logger)    
 
-    
 def replying(data=None):
     pass
 
