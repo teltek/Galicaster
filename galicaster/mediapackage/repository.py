@@ -64,7 +64,7 @@ class Repository(object):
         if self.logger:
             self.logger.info("Creating repository from {}".format(self.root))
         self.__list.clear()
-        self.__refresh(True)
+        self.refresh(True)
 
 
     def create_repo(self, hostname):
@@ -236,7 +236,7 @@ class Repository(object):
 
     
 
-    def __refresh(self, check_inconsistencies=False, first_time=True):
+    def refresh(self, check_inconsistencies=False, first_time=True):
         """Tries to check if it's been done a new recording. If true, it updates the repository with the new recordings.
         If error, logs it appropriately.
         Args:
