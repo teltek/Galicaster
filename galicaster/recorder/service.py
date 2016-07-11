@@ -113,7 +113,7 @@ class RecorderService(object):
 
     def __prepare(self):
         current_profile = self.conf.get_current_profile()
-        self.logger.debug("Using {} profile".format(current_profile.name))
+        self.logger.debug("Using profile with name {} and path {}".format(current_profile.name, current_profile.path))
         # TODO: This is a WORKAROUND for https://github.com/teltek/Galicaster/issues/317
         # FIXME
         bins = current_profile.get_tracks_audio_at_end()
@@ -296,6 +296,7 @@ class RecorderService(object):
         if self.status in (PREVIEW_STATUS, ERROR_STATUS):
             self.logger.debug("Resetting recorder after reloading the profile")
             self.repo.check_for_recover_recordings()
+            self.current_mediapackage = None
             if self.recorder:
                 self.recorder.stop(True)
             self.__set_status(INIT_STATUS)
