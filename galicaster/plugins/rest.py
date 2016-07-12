@@ -219,3 +219,37 @@ def quit():
         GObject.idle_add(main_window.do_quit)
     else:
         abort(401, "Sorry, there is a current recording")
+
+#JSON format: {"input":{}} or {"preview":{}} to enable or disable al bins
+# {"input":{"Pulse":"","Webcam":""}} to enable or disable specific bins
+@route('/enable_input', method='POST')
+def enable_input():
+    logger = context.get_logger()
+    recorder = context.get_recorder()
+    preview = request.json
+    recorder.enable_input(preview)
+    logger.info("Input enabled")
+
+@route('/disable_input', method='POST')
+def disable_input():
+    logger = context.get_logger()
+    recorder = context.get_recorder()
+    preview = request.json
+    recorder.disable_input(preview)
+    logger.info("Input disabled")
+
+@route('/enable_preview', method='POST')
+def enable_preview():
+    logger = context.get_logger()
+    recorder = context.get_recorder()
+    preview = request.json
+    recorder.enable_preview(preview)
+    logger.info("Preview enabled")
+
+@route('/disable_preview', method='POST')
+def disable_preview():
+    logger = context.get_logger()
+    recorder = context.get_recorder()
+    preview = request.json
+    recorder.disable_preview(preview)
+    logger.info("Preview disabled")

@@ -168,3 +168,14 @@ class GCvideotest(Gst.Bin, base.Base):
         src1 = self.get_by_name('gc-videotest-videobox')
         src1.set_property('top',0)
         src1.set_property('bottom',0)
+
+    def disable_preview(self):
+        src1 = self.get_by_name('sink-'+self.options['name'])
+        print src1
+        src1.set_property('saturation', -1000)
+        src1.set_property('contrast', -1000)
+
+    def enable_preview(self):
+        src1 = self.get_by_name('sink-'+self.options['name'])
+        src1.set_property('saturation',0)
+        src1.set_property('contrast',0)

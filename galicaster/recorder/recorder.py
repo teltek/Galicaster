@@ -47,6 +47,7 @@ class Recorder(object):
         self.players = players
         self.restart = False
 #        self.mute = False
+        self.mute_status = {"input":{},"preview":{}}
         self.error = False
         self.is_recording = False
         self.__start_record_time = -1
@@ -318,22 +319,43 @@ class Recorder(object):
 
     def disable_input(self, bin_name=None):
         for bin_nam, bin in self.bins.iteritems():
-            print "ñladfjñakjdflk"+bin_name
-            print bin.gc_parameters['name']['default']
-            if bin_name:
-                if bin.gc_parameters['name']['default'] in bin_name:
-                    print "noooou"
+            if bin_name[bin_name.keys()[0]]:
+                if bin.gc_parameters['name']['default'] in bin_name[bin_name.keys()[0]]:
+                    self.mute_status[bin_name.keys()[0]][bin.gc_parameters['name']['default']] = True
                     bin.disable_input()
             else:
+                self.mute_status[bin_name.keys()[0]][bin.gc_parameters['name']['default']] = True
                 bin.disable_input()
-        
+
     def enable_input(self, bin_name=None):
         for bin_nam, bin in self.bins.iteritems():
-            if bin_name:
-                if bin.gc_parameters['name']['default'] in bin_name:
+            if bin_name[bin_name.keys()[0]]:
+                if bin.gc_parameters['name']['default'] in bin_name[bin_name.keys()[0]]:
+                    self.mute_status[bin_name.keys()[0]][bin.gc_parameters['name']['default']] = False
                     bin.enable_input()
             else:
+                self.mute_status[bin_name.keys()[0]][bin.gc_parameters['name']['default']] = False
                 bin.enable_input()        
+
+    def disable_preview(self, bin_name=None):
+        for bin_nam, bin in self.bins.iteritems():
+            if bin_name[bin_name.keys()[0]]:
+                if bin.gc_parameters['name']['default'] in bin_name[bin_name.keys()[0]]:
+                    self.mute_status[bin_name.keys()[0]][bin.gc_parameters['name']['default']] = True
+                    bin.disable_preview()
+            else:
+                self.mute_status[bin_name.keys()[0]][bin.gc_parameters['name']['default']] = True
+                bin.disable_preview()
+
+    def enable_preview(self, bin_name=None):
+        for bin_nam, bin in self.bins.iteritems():
+            if bin_name[bin_name.keys()[0]]:
+                if bin.gc_parameters['name']['default'] in bin_name[bin_name.keys()[0]]:
+                    self.mute_status[bin_name.keys()[0]][bin.gc_parameters['name']['default']] = False
+                    bin.enable_preview()
+            else:
+                self.mute_status[bin_name.keys()[0]][bin.gc_parameters['name']['default']] = False
+                bin.enable_preview()
 
     def set_drawing_areas(self, players):
         self.players = players

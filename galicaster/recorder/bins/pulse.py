@@ -169,5 +169,19 @@ class GCpulse(Gst.Bin, base.Base):
         if not self.mute:
             element = self.get_by_name("gc-audio-volume")
             element.set_property("mute", value)
-
     
+    def disable_input(self):
+        element = self.get_by_name("gc-audio-src")
+        element.set_property("volume", 0)
+
+    def enable_input(self):
+        element = self.get_by_name("gc-audio-src")
+        element.set_property("volume",1)
+
+    def disable_preview(self):
+        element = self.get_by_name("gc-audio-volume")
+        element.set_property("mute", True)
+
+    def enable_preview(self):
+        element = self.get_by_name("gc-audio-volume")
+        element.set_property("mute", False)

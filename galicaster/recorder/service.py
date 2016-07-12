@@ -71,7 +71,6 @@ class RecorderService(object):
         self.conf = conf
         self.overlap = conf.get_permission("overlap")
         self.mute = True
-        self.mute_status = {"input":False}
         
         self.__set_status(INIT_STATUS)
 
@@ -88,8 +87,6 @@ class RecorderService(object):
         self.dispatcher.connect("init", WeakMethod(self, '_handle_init'))
         self.dispatcher.connect("action-reload-profile", WeakMethod(self, '_handle_reload_profile'))
         self.dispatcher.connect("recorder-error", WeakMethod(self, '_handle_error'))
-        
-
 
     def set_create_drawing_areas_func(self, func):
         self.__create_drawing_areas_func = func
@@ -253,15 +250,23 @@ class RecorderService(object):
 
     def disable_input(self, bin_name=None):
         """Proxy function to disable input"""
-#        self.mute_status = {"input":True}
-        self.mute_status = bin_name
         self.recorder and self.recorder.disable_input(bin_name)
+
 
     def enable_input(self, bin_name=None):
         """Proxy function to enable input"""
-#        self.mute_status = {"input":False}
-        self.mute_status = bin_name
         self.recorder and self.recorder.enable_input(bin_name)
+
+
+    def disable_preview(self, bin_name=None):
+        """Proxy function to disable input"""
+        self.recorder and self.recorder.disable_preview(bin_name)
+
+
+    def enable_preview(self, bin_name=None):
+        """Proxy function to enable input"""
+        self.recorder and self.recorder.enable_preview(bin_name)
+
 
     def is_pausable(self):
         """Proxy function to know if actual recorder is pausable"""
