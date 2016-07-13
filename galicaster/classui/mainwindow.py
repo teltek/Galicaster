@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 """
 UI for the welcoming page
@@ -163,6 +163,28 @@ class GCWindow(Gtk.Window):
     def insert_page(self, page, label, cod):
         """Insert an area on the main window notebook widget"""
         self.nbox.insert_page(page, Gtk.Label(label=label), cod)
+
+    def insert_button(self, button, ui, box_id, **kwargs):
+        try:
+            builder = self.nbox.get_nth_page(ui).gui
+        except Exception as error:
+            self.logger.error("La vista no existe")
+            return None
+        box = builder.get_object(box_id)
+        method_names = ["pack_start", "attach"]
+        for method_name in method_names:
+            try:
+                m = getattr(box,method_name)
+            except AttributeError:
+                pass
+            else:
+                m(button,**kwargs)
+                box.show_all()
+                self.logger.debug("Button inserted in id: {}".format(box_id))
+                return button
+        else:
+            self.logger.error("Error trying to add the element {} to the box {}, tried the methods: {}".format(button, box, method_names))
+
 
     def set_current_page(self, cod):
         """Changes active area"""
