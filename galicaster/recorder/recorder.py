@@ -81,6 +81,10 @@ class Recorder(object):
                 self.bins[name] = Klass(bin)
                 self.pipeline.add(self.bins[name])
                 
+                self.mute_status["input"][name] = True
+                self.mute_status["preview"][name] = True
+
+                
         except Exception as exc:
             logger.info("Removing loaded bins due to an error...")
             for bin_name in self.bins:
@@ -310,52 +314,53 @@ class Recorder(object):
                 bin.mute_preview(value)
                 
 
-    def mute_input(self, value, bin_name=None):
-        for bin_nam, bin in self.bins.iteritems():
-            if bin_name and bin.gc_parameters['name']['default'] in bin_name:
-                bin.mute_input(value)
-            else:
-                bin.mute_input(value)
-
-    def disable_input(self, bin_name=None):
-        for bin_nam, bin in self.bins.iteritems():
-            if bin_name[bin_name.keys()[0]]:
-                if bin.gc_parameters['name']['default'] in bin_name[bin_name.keys()[0]]:
-                    self.mute_status[bin_name.keys()[0]][bin.gc_parameters['name']['default']] = True
-                    bin.disable_input()
-            else:
-                self.mute_status[bin_name.keys()[0]][bin.gc_parameters['name']['default']] = True
+    def disable_input(self, bin_names=[]):
+        if bin_names:
+            for elem in bin_names:
+                if elem in self.bins.keys():
+                    self.bins[elem].disable_input()
+                    self.mute_status["input"][elem] = False
+        else:
+            for bin_nam,bin in self.bins.iteritems():
                 bin.disable_input()
+                self.mute_status["input"][bin_nam] = False
 
-    def enable_input(self, bin_name=None):
-        for bin_nam, bin in self.bins.iteritems():
-            if bin_name[bin_name.keys()[0]]:
-                if bin.gc_parameters['name']['default'] in bin_name[bin_name.keys()[0]]:
-                    self.mute_status[bin_name.keys()[0]][bin.gc_parameters['name']['default']] = False
-                    bin.enable_input()
-            else:
-                self.mute_status[bin_name.keys()[0]][bin.gc_parameters['name']['default']] = False
-                bin.enable_input()        
 
-    def disable_preview(self, bin_name=None):
-        for bin_nam, bin in self.bins.iteritems():
-            if bin_name[bin_name.keys()[0]]:
-                if bin.gc_parameters['name']['default'] in bin_name[bin_name.keys()[0]]:
-                    self.mute_status[bin_name.keys()[0]][bin.gc_parameters['name']['default']] = True
-                    bin.disable_preview()
-            else:
-                self.mute_status[bin_name.keys()[0]][bin.gc_parameters['name']['default']] = True
+    def enable_input(self, bin_names=[]):
+        if bin_names:
+            for elem in bin_names:
+                if elem in self.bins.keys():
+                    self.bins[elem].enable_input()
+                    self.mute_status["input"][elem] = True
+        else:
+            for bin_nam,bin in self.bins.iteritems():
+                bin.enable_input()
+                self.mute_status["input"][bin_nam] = True
+
+
+    def disable_preview(self, bin_names=[]):
+        if bin_names:
+            for elem in bin_names:
+                if elem in self.bins.keys():
+                    self.bins[elem].disable_preview()
+                    self.mute_status["preview"][elem] = False
+        else:
+            for bin_nam,bin in self.bins.iteritems():
                 bin.disable_preview()
+                self.mute_status["preview"][bin_nam] = False
 
-    def enable_preview(self, bin_name=None):
-        for bin_nam, bin in self.bins.iteritems():
-            if bin_name[bin_name.keys()[0]]:
-                if bin.gc_parameters['name']['default'] in bin_name[bin_name.keys()[0]]:
-                    self.mute_status[bin_name.keys()[0]][bin.gc_parameters['name']['default']] = False
-                    bin.enable_preview()
-            else:
-                self.mute_status[bin_name.keys()[0]][bin.gc_parameters['name']['default']] = False
+
+    def enable_preview(self, bin_names=[]):
+        if bin_names:
+            for elem in bin_names:
+                if elem in self.bins.keys():
+                    self.bins[elem].enable_preview()
+                    self.mute_status["preview"][elem] = True
+        else:
+            for bin_nam,bin in self.bins.iteritems():
                 bin.enable_preview()
+                self.mute_status["preview"][bin_nam] = True
+
 
     def set_drawing_areas(self, players):
         self.players = players
