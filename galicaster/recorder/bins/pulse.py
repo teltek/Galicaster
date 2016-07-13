@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 from os import path
@@ -29,8 +29,8 @@ pipestr = (" pulsesrc name=gc-audio-src  ! queue ! audioamplify name=gc-audio-am
 
 
 class GCpulse(Gst.Bin, base.Base):
-    
-    order = ["name", "flavor", "location", "file", 
+
+    order = ["name", "flavor", "location", "file",
              "vumeter", "player", "amplification", "audioencoder"]
 
     gc_parameters = {
@@ -92,13 +92,13 @@ class GCpulse(Gst.Bin, base.Base):
             "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
             "description": "Audio sink",
         },
-        
+
     }
 
     is_pausable = True
     has_audio   = True
     has_video   = False
-    
+
     __gstdetails__ = (
         "Galicaster Audio BIN",
         "Generic/Audio",
@@ -106,7 +106,7 @@ class GCpulse(Gst.Bin, base.Base):
         "Teltek Video Research"
         )
 
-    def __init__(self, options={}): 
+    def __init__(self, options={}):
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
@@ -114,7 +114,7 @@ class GCpulse(Gst.Bin, base.Base):
         aux = (pipestr.replace('gc-asink', gcaudiosink)
                .replace("gc-audio-enc", self.options["audioencoder"])
                .replace("gc-audio-channels", str(self.options["channels"])))
-        
+
         if self.options["audiomuxer"]:
             aux = aux.replace("gc-audio-mux", self.options["audiomuxer"])
         else:
@@ -142,11 +142,12 @@ class GCpulse(Gst.Bin, base.Base):
         if "vumeter" in self.options:
             level = self.get_by_name("gc-audio-level")
             if self.options["vumeter"] == False:
-                level.set_property("message", False) 
+                level.set_property("message", False)
         if "amplification" in self.options:
             ampli = self.get_by_name("gc-audio-amplify")
             ampli.set_property("amplification", float(self.options["amplification"]))
 
+        self.enable_input()
 
     def changeValve(self, value):
         valve1=self.get_by_name('gc-audio-valve')
@@ -163,20 +164,20 @@ class GCpulse(Gst.Bin, base.Base):
 
     def send_event_to_src(self, event):
         src1 = self.get_by_name("gc-audio-src")
-        src1.send_event(event)        
+        src1.send_event(event)
 
     def mute_preview(self, value):
         if not self.mute:
             element = self.get_by_name("gc-audio-volume")
             element.set_property("mute", value)
-    
+
     def disable_input(self):
         element = self.get_by_name("gc-audio-src")
         element.set_property("volume", 0)
 
     def enable_input(self):
         element = self.get_by_name("gc-audio-src")
-        element.set_property("volume",1)
+        element.set_property("volume", 1)
 
     def disable_preview(self):
         element = self.get_by_name("gc-audio-volume")

@@ -139,6 +139,9 @@ class GCvideotest(Gst.Bin, base.Base):
             source.set_property('foreground-color', int(self.options['color1']))
         #if self.options["color2"]:
         #    source.set_property('background-color', int(self.options['color2']))
+        
+        self.enable_preview()
+        self.enable_input()
      
     def changeValve(self, value):
         valve1=self.get_by_name('gc-videotest-valve')
@@ -154,11 +157,6 @@ class GCvideotest(Gst.Bin, base.Base):
         src1 = self.get_by_name('gc-videotest-src')
         src1.send_event(event)
         
-    def mute_input(self, value):
-        src1 = self.get_by_name('gc-videotest-videobox')
-        src1.set_property('top', -10000 if value else 0)
-        src1.set_property('bottom', 10000 if value else 0)
-
     def disable_input(self):
         src1 = self.get_by_name('gc-videotest-videobox')
         src1.set_property('top', -10000)

@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 from os import path
@@ -17,6 +17,7 @@ from gi.repository import Gst
 
 from galicaster.recorder import base
 from galicaster.recorder.utils import get_videosink, get_audiosink
+
 
 pipestr = ( ' dv1394src use-avc=false name=gc-firewire-src ! queue ! tee name=gc-firewire-maintee ! '
             ' queue ! dvdemux name=gc-firewire-demuxer ! '
@@ -47,7 +48,7 @@ class GCfirewire(Gst.Bin, base.Base):
             "default": "/dev/fw1",
             "description": "Device's mount point of the firewire module",
             },
-            
+
         "file": {
             "type": "text",
             "default": "CAMERA.dv",
@@ -87,11 +88,11 @@ class GCfirewire(Gst.Bin, base.Base):
             "description": "Audio sink",
         },
     }
-    
+
     is_pausable = False
     has_audio   = True
     has_video   = True
-    
+
     __gstdetails__ = (
         "Galicaster Firewire BIN",
         "Generic/Video",
@@ -99,7 +100,7 @@ class GCfirewire(Gst.Bin, base.Base):
         "Teltek Video Research"
         )
 
-    def __init__(self, options={}): 
+    def __init__(self, options={}):
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
@@ -117,12 +118,12 @@ class GCfirewire(Gst.Bin, base.Base):
 
         if self.options["vumeter"] == False:
             level = self.get_by_name("gc-firewire-level")
-            level.set_property("message", False) 
+            level.set_property("message", False)
 
         if self.options["player"] == False:
             self.mute = True
             element = self.get_by_name("gc-firewire-volume")
-            element.set_property("mute", True)        
+            element.set_property("mute", True)
         else:
             self.mute = False
 
@@ -138,7 +139,7 @@ class GCfirewire(Gst.Bin, base.Base):
 
     def getSource(self):
         return self.get_by_name("gc-firewire-src")
-  
+
     def send_event_to_src(self,event):
         src1 = self.get_by_name("gc-firewire-src")
         src1.send_event(event)
@@ -149,9 +150,20 @@ class GCfirewire(Gst.Bin, base.Base):
             element.set_property("mute", value)
 
     def configure(self):
-        ## 
+        ##
         # v4l2-ctl -d self.options["location"] -s self.options["standard"]
         # v4l2-ctl -d self.options["location"] -i self.options["input"]
         pass
-     
 
+
+    def disable_input(self):
+        raise Exception("disable_input not implemented")
+
+    def enable_input(self):
+        raise Exception("enable_input not implemented")
+
+    def disable_preview(self):
+        raise Exception("disable_preview not implemented")
+
+    def enable_preview(self):
+        raise Exception("enable_preview not implemented")

@@ -29,9 +29,9 @@ pipestr = (' v4l2src name=gc-v4l2-src ! capsfilter name=gc-v4l2-filter ! queue !
 class GCv4l2(Gst.Bin, base.Base):
 
 
-    order = ["name","flavor","location","file","caps", 
+    order = ["name","flavor","location","file","caps",
              "videoencoder", "muxer"]
-    
+
     gc_parameters = {
         "name": {
             "type": "text",
@@ -55,8 +55,8 @@ class GCv4l2(Gst.Bin, base.Base):
             },
         "caps": {
             "type": "caps",
-            "default": "video/x-raw,framerate=20/1,width=640,height=480", 
-            # image/jpeg,framerate=10/1,width=640,height=480", 
+            "default": "video/x-raw,framerate=20/1,width=640,height=480",
+            # image/jpeg,framerate=10/1,width=640,height=480",
             "description": "Forced capabilities",
             },
         "videocrop-right": {
@@ -105,7 +105,7 @@ class GCv4l2(Gst.Bin, base.Base):
             "description": "Video sink",
         },
     }
-    
+
     is_pausable = True
     has_audio   = False
     has_video   = True
@@ -125,12 +125,12 @@ class GCv4l2(Gst.Bin, base.Base):
         aux = (pipestr.replace('gc-vsink', gcvideosink)
                .replace('gc-v4l2-enc', self.options['videoencoder'])
                .replace('gc-v4l2-mux', self.options['muxer']))
-    
+
         if self.options['videofilter']:
             aux = aux.replace('gc-videofilter', self.options['videofilter'])
         else:
             aux = aux.replace('gc-videofilter !', '')
-            
+
 
         if 'image/jpeg' in self.options['caps']:
             aux = aux.replace('gc-v4l2-dec', 'jpegdec max-errors=-1 ! queue !')
@@ -147,7 +147,8 @@ class GCv4l2(Gst.Bin, base.Base):
         self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-v4l2-sink', 'location')
 
         self.set_option_in_pipeline('caps', 'gc-v4l2-filter', 'caps', None)
-
+        self.enable_input()
+        self.enable_preview()
 
     def changeValve(self, value):
         valve1=self.get_by_name('gc-v4l2-valve')
@@ -155,9 +156,9 @@ class GCv4l2(Gst.Bin, base.Base):
 
     def getVideoSink(self):
         return self.get_by_name('sink-' + self.options['name'])
-    
+
     def getSource(self):
-        return self.get_by_name('gc-v4l2-src') 
+        return self.get_by_name('gc-v4l2-src')
 
     def send_event_to_src(self, event):
         src1 = self.get_by_name('gc-v4l2-src')
@@ -168,6 +169,7 @@ class GCv4l2(Gst.Bin, base.Base):
         src1.set_property('top', -10000)
         src1.set_property('bottom', 10000)
 
+
     def enable_input(self):
         src1 = self.get_by_name('gc-v4l2-videobox')
         src1.set_property('top',0)
@@ -175,7 +177,6 @@ class GCv4l2(Gst.Bin, base.Base):
 
     def disable_preview(self):
         src1 = self.get_by_name('sink-'+self.options['name'])
-        print src1
         src1.set_property('saturation', -1000)
         src1.set_property('contrast', -1000)
 
