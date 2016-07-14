@@ -260,8 +260,6 @@ class GCblackmagic(Gst.Bin, base.Base):
             ampli = self.get_by_name("gc-blackmagic-amplify")
             ampli.set_property("amplification", float(self.options["amplification"]))
 
-        self.enable_input()
-
   def changeValve(self, value):
     valve1=self.get_by_name('gc-blackmagic-valve')
     if self.has_audio:
@@ -292,8 +290,7 @@ class GCblackmagic(Gst.Bin, base.Base):
 
     def disable_input(self):
         src1 = self.get_by_name('gc-blackmagic-videobox')
-        src1.set_property('top', -10000)
-        src1.set_property('bottom', 10000)
+        src1.set_properties(top = -10000, bottom = 10000)
         element = self.get_by_name("gc-blackmagic-volumeinput")
         element.set_property("mute", True)
 

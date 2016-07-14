@@ -157,8 +157,6 @@ class GCfirewire_renc(Gst.Bin, base.Base):
         else:
             self.mute = False
 
-        self.enable_input()
-
     def changeValve(self, value):
         valve1=self.get_by_name('gc-firewire_renc-video-valve')
         valve2=self.get_by_name('gc-firewire_renc-audio-valve')
@@ -191,8 +189,7 @@ class GCfirewire_renc(Gst.Bin, base.Base):
 
     def disable_input(self):
         src1 = self.get_by_name('gc-firewire_renc-videobox')
-        src1.set_property('top', -10000)
-        src1.set_property('bottom', 10000)
+        src1.set_properties(top = -10000, bottom = 10000)
         element = self.get_by_name("gc-firewire_renc-volumeinput")
         element.set_property("mute", True)
 

@@ -29,10 +29,10 @@ pipestr = (' videotestsrc name=gc-videotest-src pattern=0 is-live=true ! capsfil
 
 class GCvideotest(Gst.Bin, base.Base):
 
-    order = ["name","flavor","location","file","caps", 
+    order = ["name","flavor","location","file","caps",
              "pattern","color1","color2", "videoencoder", "muxer"
              ]
- 
+
     gc_parameters = {
         "name": {
             "type": "text",
@@ -56,8 +56,8 @@ class GCvideotest(Gst.Bin, base.Base):
              },
         "caps": {
             "type": "text",
-            "default": "video/x-raw,framerate=10/1,width=640,height=480", 
-            "description": "Forced capabilities", 
+            "default": "video/x-raw,framerate=10/1,width=640,height=480",
+            "description": "Forced capabilities",
             },
         "pattern": {
             "type": "integer",
@@ -79,7 +79,7 @@ class GCvideotest(Gst.Bin, base.Base):
             },
         "videoencoder": {
             "type": "text",
-            "default": "x264enc pass=5 quantizer=22 speed-preset=4", 
+            "default": "x264enc pass=5 quantizer=22 speed-preset=4",
             "description": "Gstreamer encoder element used in the bin",
             },
         "muxer": {
@@ -94,7 +94,7 @@ class GCvideotest(Gst.Bin, base.Base):
             "description": "Video sink",
         },
     }
-    
+
     is_pausable = True
     has_audio   = False
     has_video   = True
@@ -127,22 +127,19 @@ class GCvideotest(Gst.Bin, base.Base):
         #if fr:
         #    newcaps = 'video/x-raw,' + fr[0]
             #self.get_by_name('gc-videotest-vrate').set_property('caps', Gst.Caps(newcaps))
-            
+
         source = self.get_by_name('gc-videotest-src')
         source.set_property('pattern', int(self.options['pattern']))
         coloured = False
         for properties in GObject.list_properties(source):
             if properties.name == 'foreground-color':
                 coloured = True
-        
+
         if self.options["color1"] and coloured:
             source.set_property('foreground-color', int(self.options['color1']))
         #if self.options["color2"]:
         #    source.set_property('background-color', int(self.options['color2']))
-        
-        self.enable_preview()
-        self.enable_input()
-     
+
     def changeValve(self, value):
         valve1=self.get_by_name('gc-videotest-valve')
         valve1.set_property('drop', value)
@@ -156,11 +153,10 @@ class GCvideotest(Gst.Bin, base.Base):
     def send_event_to_src(self, event):
         src1 = self.get_by_name('gc-videotest-src')
         src1.send_event(event)
-        
+
     def disable_input(self):
         src1 = self.get_by_name('gc-videotest-videobox')
-        src1.set_property('top', -10000)
-        src1.set_property('bottom', 10000)
+        src1.set_properties(top = -10000, bottom = 10000)
 
     def enable_input(self):
         src1 = self.get_by_name('gc-videotest-videobox')

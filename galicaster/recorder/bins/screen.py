@@ -168,8 +168,6 @@ class GCscreen(Gst.Bin, base.Base):
 
         self.set_option_in_pipeline('caps', 'gc-v4l2-filter', 'caps', None)
 
-        self.enable_input()
-
     def changeValve(self, value):
         valve1=self.get_by_name('gc-screen-valve')
         valve1.set_property('drop', value)
@@ -186,9 +184,7 @@ class GCscreen(Gst.Bin, base.Base):
 
     def disable_input(self):
         src1 = self.get_by_name('gc-screen-videobox')
-        src1.set_property('top', -10000)
-        src1.set_property('bottom', 10000)
-
+        src1.set_properties(top = -10000, bottom = 10000)
 
     def enable_input(self):
         src1 = self.get_by_name('gc-screen-videobox')

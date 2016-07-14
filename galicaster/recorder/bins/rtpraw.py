@@ -121,8 +121,6 @@ class GCrtpraw(Gst.Bin, base.Base):
         self.set_option_in_pipeline('location', 'gc-rtpraw-src', 'location')
         self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-rtpraw-sink', 'location')
 
-        self.enable_input()
-
     def changeValve(self, value):
         valve1=self.get_by_name('gc-rtpraw-valve')
         valve1.set_property('drop', value)
@@ -139,9 +137,7 @@ class GCrtpraw(Gst.Bin, base.Base):
 
     def disable_input(self):
         src1 = self.get_by_name('gc-rtpraw-videobox')
-        src1.set_property('top', -10000)
-        src1.set_property('bottom', 10000)
-
+        src1.set_properties(top = -10000, bottom = 10000)
 
     def enable_input(self):
         src1 = self.get_by_name('gc-rtpraw-videobox')

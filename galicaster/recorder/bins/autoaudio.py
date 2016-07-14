@@ -135,8 +135,6 @@ class GCautoaudio(Gst.Bin, base.Base):
             ampli = self.get_by_name("gc-autoaudio-amplify")
             ampli.set_property("amplification", float(self.options["amplification"]))
 
-        self.enable_input()
-
     def changeValve(self, value):
         valve1=self.get_by_name('gc-autoaudio-valve')
         valve1.set_property('drop', value)

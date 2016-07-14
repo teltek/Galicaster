@@ -147,8 +147,6 @@ class GCv4l2(Gst.Bin, base.Base):
         self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-v4l2-sink', 'location')
 
         self.set_option_in_pipeline('caps', 'gc-v4l2-filter', 'caps', None)
-        self.enable_input()
-        self.enable_preview()
 
     def changeValve(self, value):
         valve1=self.get_by_name('gc-v4l2-valve')
@@ -166,9 +164,7 @@ class GCv4l2(Gst.Bin, base.Base):
 
     def disable_input(self):
         src1 = self.get_by_name('gc-v4l2-videobox')
-        src1.set_property('top', -10000)
-        src1.set_property('bottom', 10000)
-
+        src1.set_properties(top = -10000, bottom = 10000)
 
     def enable_input(self):
         src1 = self.get_by_name('gc-v4l2-videobox')

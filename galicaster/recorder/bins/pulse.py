@@ -22,7 +22,7 @@ from galicaster.recorder.utils import get_audiosink
 pipestr = (" pulsesrc name=gc-audio-src  ! queue ! audioamplify name=gc-audio-amplify amplification=1 ! "
            " audioconvert ! audio/x-raw,channels=gc-audio-channels ! "
            " tee name=tee-aud  ! queue ! level name=gc-audio-level message=true interval=100000000 ! "
-           " volume name=gc-audio-volume ! gc-asink "
+           " volume name=gc-audio-volumemaster ! volume name=gc-audio-volume ! gc-asink "
            " tee-aud. ! queue ! valve drop=false name=gc-audio-valve ! "
            " audioconvert ! gc-audio-enc ! gc-audio-mux ! "
            " queue ! filesink name=gc-audio-sink async=false " )
@@ -134,7 +134,7 @@ class GCpulse(Gst.Bin, base.Base):
 
         if "player" in self.options and self.options["player"] == False:
             self.mute = True
-            element = self.get_by_name("gc-audio-volume")
+            element = self.get_by_name("gc-audio-volumemaster")
             element.set_property("mute", True)
         else:
             self.mute = False
@@ -146,8 +146,6 @@ class GCpulse(Gst.Bin, base.Base):
         if "amplification" in self.options:
             ampli = self.get_by_name("gc-audio-amplify")
             ampli.set_property("amplification", float(self.options["amplification"]))
-
-        self.enable_input()
 
     def changeValve(self, value):
         valve1=self.get_by_name('gc-audio-valve')
@@ -168,7 +166,7 @@ class GCpulse(Gst.Bin, base.Base):
 
     def mute_preview(self, value):
         if not self.mute:
-            element = self.get_by_name("gc-audio-volume")
+            element = self.get_by_name("gc-audio-volumemaster")
             element.set_property("mute", value)
 
     def disable_input(self):
