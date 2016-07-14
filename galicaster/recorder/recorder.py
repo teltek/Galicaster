@@ -43,7 +43,7 @@ class Recorder(object):
                 '{}: need a {}; got a {}: {}'.format('players', dict,
                                                      type(players), players))
 
-        self.dispatcher = context.get_dispatcher() 
+        self.dispatcher = context.get_dispatcher()
         self.players = players
         self.restart = False
         self.mute = False
@@ -63,29 +63,30 @@ class Recorder(object):
 
         self.bus.add_signal_watch()
 #        self.bus.connect('message', WeakMethod(self, '_debug')) # TO DEBUG
-        self.bus.connect('message::error', WeakMethod(self, '_on_error'))        
+        self.bus.connect('message::error', WeakMethod(self, '_on_error'))
         self.bus.connect('message::element', WeakMethod(self, '_on_message_element'))
 
 
-        try:            
+        try:
             for bin in bins:
                 name = bin['name']
-                
+
                 mod_name = 'galicaster.recorder.bins.' + bin['device']
                 __import__(mod_name)
                 mod = sys.modules[mod_name]
                 Klass = getattr(mod, "GC" + bin['device'])
-                
+
                 logger.debug("Init bin {} {}".format(name, mod_name))
                 self.bins[name] = Klass(bin)
                 self.pipeline.add(self.bins[name])
-                
+                self.bins[name].prepare(self.bus)
+
         except Exception as exc:
             logger.info("Removing loaded bins due to an error...")
             for bin_name in self.bins:
                 self.pipeline.remove(self.bins[bin_name])
             self.bins.clear()
-            
+
             self.error = str(exc)
             name = name if 'name' in locals() else 'Unknown'
             message = 'Invalid track type "{}" for "{}" track: {}'.format(bin.get('device'), name, exc)
@@ -93,12 +94,12 @@ class Recorder(object):
 
 
 
-    def get_status(self, timeout=GST_TIMEOUT):        
-        status = self.pipeline.get_state(timeout)        
+    def get_status(self, timeout=GST_TIMEOUT):
+        status = self.pipeline.get_state(timeout)
 
         if status[0] == Gst.StateChangeReturn.ASYNC:
             self.__emit_error('Timeout getting recorder status, current status: {}'.format(status), '', stop=False)
-        
+
         return status
 
     def get_time(self):
@@ -111,7 +112,7 @@ class Recorder(object):
             return 0
 
         status = self.get_status()[1]
-        
+
         if status == Gst.State.NULL:
             return self.__duration
         elif status == Gst.State.PAUSED:
@@ -146,7 +147,7 @@ class Recorder(object):
 
     def __set_state(self, new_state=Gst.State.PAUSED):
         change = self.pipeline.set_state(new_state)
-            
+
         if change == Gst.StateChangeReturn.FAILURE:
             # text = None
             random_bin = None
@@ -163,7 +164,7 @@ class Recorder(object):
             # error = Glib.GError(Gst.ResourceError, Gst.ResourceError.FAILED, text)
 
             a = Gst.Structure.new_from_string('letpass')
-            message = Gst.Message.new_custom(Gst.MessageType.ERROR,src, a)   
+            message = Gst.Message.new_custom(Gst.MessageType.ERROR,src, a)
             # message = Gst.Message.new_error(src, error, str(random_bin)+"\nunknown system_error")
             self.bus.post(message)
             self.dispatcher.emit("recorder-error","Driver error")
@@ -178,7 +179,7 @@ class Recorder(object):
             for bin in self.bins.values():
                 bin.changeValve(False)
             self.__valves_status = False
-        
+
         self.__start_record_time = self.__query_position()
         self.is_recording = True
 
@@ -195,7 +196,7 @@ class Recorder(object):
             logger.debug("recording paused (warning: this doesn't pause pipeline, just stops recording)")
             self.__pause_timestamp = self.__query_position()
             for bin in self.bins.values():
-                bin.changeValve(True)                
+                bin.changeValve(True)
             self.__valves_status = True
 
 
@@ -224,9 +225,9 @@ class Recorder(object):
         if self.is_recording and not force:
             if self.__valves_status == True:
                 self.resume_recording()
-                
+
             logger.debug("Stopping recorder, sending EOS event to sources")
-                
+
             self.is_recording = False
             self.__duration = self.__query_position() - self.__start_record_time - self.__paused_time
             a = Gst.Structure.new_from_string('letpass')
@@ -234,7 +235,7 @@ class Recorder(object):
             for bin_name, bin in self.bins.iteritems():
                 bin.send_event_to_src(event)
 
-            msg = self.bus.timed_pop_filtered(GST_TIMEOUT, Gst.MessageType.EOS)            
+            msg = self.bus.timed_pop_filtered(GST_TIMEOUT, Gst.MessageType.EOS)
             if not msg:
                 self.__emit_error('Timeout trying to receive EOS message', '', stop=False)
             else:
@@ -243,7 +244,7 @@ class Recorder(object):
         self.pipeline.set_state(Gst.State.NULL)
 
 
-    def _debug(self, bus, msg):       
+    def _debug(self, bus, msg):
         if msg.type != Gst.MessageType.ELEMENT or msg.get_structure().get_name() != 'level':
             print "DEBUG ", msg
 
@@ -253,7 +254,7 @@ class Recorder(object):
         error_info = "{} ({})".format(error, debug)
         return self.__emit_error(error_info, debug)
 
-    
+
     def __emit_error(self, error_info, debug, stop=True):
         if not self.error:
             logger.error(error_info)
@@ -263,12 +264,12 @@ class Recorder(object):
                 self.error = error_info
                 self.dispatcher.emit("recorder-error", error_info)
                 # return True
-                
-        
+
+
     def _on_sync_message(self, bus, message):
         if message.get_structure() is None:
             return
-        
+
 
     def _on_message_element(self, bus, message):
         if message.get_structure().get_name() == 'level':
@@ -284,13 +285,13 @@ class Recorder(object):
 
         if float(rms_values[0]) == float("-inf"):
             valor = "Inf"
-        else:            
+        else:
             valor = float(rms_values[0])
 
         if len(rms_values) > 1:
             if float(rms_values[1]) == float("-inf"):
                 valor2 = "Inf"
-            else:            
+            else:
                 valor2 = float(rms_values[1])
         else:
             stereo = False
@@ -307,17 +308,17 @@ class Recorder(object):
         for bin_name, bin in self.bins.iteritems():
             if bin.has_audio:
                 bin.mute_preview(value)
-                
+
 
     def set_drawing_areas(self, players):
         self.players = players
-        
+
         # Link videoareas with sinks
-        for name, element in self.players.iteritems(): 
+        for name, element in self.players.iteritems():
             # TODO: check xid
             xid = element.get_property('window').get_xid()
             self.pipeline.get_by_name(name).set_window_handle(xid)
-            
+
 
     def get_display_areas_info(self):
         display_areas_info = []
@@ -331,4 +332,3 @@ class Recorder(object):
         for bin_name, bin in self.bins.iteritems():
             bins_info.extend(bin.get_bins_info())
         return bins_info
-
