@@ -44,7 +44,7 @@ STATUSES = [Status('init', 'Initialization'),
             Status('recording', 'Recording', '#484848', '#FF0000'),
             Status('paused', 'Paused'),
             Status('error', 'Error', '#484848', '#FF0000')]
-    
+
 INIT_STATUS      = STATUSES[0]
 PREVIEW_STATUS   = STATUSES[1]
 RECORDING_STATUS = STATUSES[2]
@@ -62,8 +62,8 @@ class RecorderService(object):
         :param worker service.
         :param conf service.
         :param logger service.
-        :param recorderklass (only to test) 
-        """        
+        :param recorderklass (only to test)
+        """
         self.repo = repo
         self.dispatcher = dispatcher
         self.worker = worker
@@ -84,7 +84,7 @@ class RecorderService(object):
         self.autorecover = autorecover
 
         self.logger.debug("Autorecover mode: {}".format(self.autorecover))
-        
+
         self.dispatcher.connect("init", WeakMethod(self, '_handle_init'))
         self.dispatcher.connect("action-reload-profile", WeakMethod(self, '_handle_reload_profile'))
         self.dispatcher.connect("recorder-error", WeakMethod(self, '_handle_error'))
@@ -96,7 +96,7 @@ class RecorderService(object):
     def preview(self):
         if self.status not in (INIT_STATUS, ERROR_STATUS):
             return False
-        
+
         try:
             self.logger.info("Starting recording service in the preview status")
             self.__prepare()
@@ -119,7 +119,7 @@ class RecorderService(object):
         for objectbin in bins:
             objectbin['path'] = self.repo.get_rectemp_path()
 
-        
+
         self.recorder = self.__recorderklass(bins)
         self.dispatcher.emit("recorder-ready")
 
@@ -128,7 +128,7 @@ class RecorderService(object):
             info = self.recorder.get_display_areas_info()
             areas = self.__create_drawing_areas_func(info)
             self.recorder.set_drawing_areas(areas)
-            
+
 
     def record(self, mp=None):
         self.dispatcher.emit("recorder-starting")
@@ -155,10 +155,10 @@ class RecorderService(object):
                 return False
         else:
             self.recorder and self.recorder.record()
-            
+
         if not self.current_mediapackage:
             self.current_mediapackage = mp or self.create_mp()
-            
+
         self.logger.info("Recording to MP {}".format(self.current_mediapackage.getIdentifier()))
         self.current_mediapackage.status = mediapackage.RECORDING
         now = datetime.utcnow().replace(microsecond=0)
@@ -197,7 +197,7 @@ class RecorderService(object):
                                 close_duration, self.current_mediapackage.manual)
 
         self.dispatcher.emit("recorder-stopped", self.current_mediapackage.getIdentifier())
-        
+
         code = 'manual' if self.current_mediapackage.manual else 'scheduled'
         if self.conf.get_lower('ingest', code) == 'immediately':
             self.worker.ingest(self.current_mediapackage)
@@ -215,7 +215,7 @@ class RecorderService(object):
                 self.recorder.pause()
             else:
                 self.recorder.pause_recording()
-        
+
             self.__set_status(PAUSED_STATUS)
             return True
         self.logger.warning("Cancel pause: status error (in {})".format(self.status))
@@ -230,7 +230,7 @@ class RecorderService(object):
                 self.recorder.resume()
             else:
                 self.recorder.resume_recording()
-            
+
             self.__set_status(RECORDING_STATUS)
             return True
         self.logger.warning("Cancel resume: status error (in {})".format(self.status))
@@ -249,7 +249,6 @@ class RecorderService(object):
             self.logger.info("Input disabled {}".format(bin_name))
         except Exception as exc:
             self.logger.error("Error in bins {}: {}".format(bin_name,exc))
-
 
     def enable_input(self, bin_name=None):
         """Proxy function to enable input"""
@@ -274,6 +273,9 @@ class RecorderService(object):
             self.logger.info("Preview enabled {}".format(bin_name))
         except Exception as exc:
             self.logger.error("Error in bins {}: {}".format(bin_name,exc))
+
+    def get_mute_status(self):
+        return self.recorder.mute_status
 
     def is_pausable(self):
         """Proxy function to know if actual recorder is pausable"""
@@ -306,16 +308,16 @@ class RecorderService(object):
         if self.autorecover and not self.__handle_recover_id:
             self.repo.save_crash_recordings()
             self.logger.debug("Connecting recover recorder callback")
-            self.__handle_recover_id = self.dispatcher.connect("timer-long", 
+            self.__handle_recover_id = self.dispatcher.connect("timer-long",
                                                              WeakMethod(self, '_handle_recover'))
 
 
     def _handle_recover(self, origin):
         self.logger.info("Handle recover from error")
-        if self.__handle_recover_id and self.preview(): 
+        if self.__handle_recover_id and self.preview():
             self.error_msg = None
             self.logger.debug("Disconnecting recover recorder callback")
-            self.__handle_recover_id = self.dispatcher.disconnect(self.__handle_recover_id)        
+            self.__handle_recover_id = self.dispatcher.disconnect(self.__handle_recover_id)
 
 
     def _handle_init(self, origin):
