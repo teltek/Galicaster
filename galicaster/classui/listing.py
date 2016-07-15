@@ -63,7 +63,7 @@ class ListingClassUI(ManagerUI):
         self.box = builder.get_object("listingbox")
         self.vista = builder.get_object("vista")
         self.scroll = builder.get_object("scrolledw")
-        self.vista.get_selection().set_mode(Gtk.SelectionMode.SINGLE) # could SELECTION_MULTIPLE
+        self.vista.get_selection().set_mode(Gtk.SelectionMode.MULTIPLE) # could SELECTION_MULTIPLE
 
         old_style = context.get_conf().get_color_style()
         self.color = context.get_conf().get_palette(old_style)
@@ -289,11 +289,17 @@ class ListingClassUI(ManagerUI):
             iters = []
             for row in selected:
                 iterator=self.lista.get_iter(row)
-            iters.append(iterator)
+                print iterator
+                iters.append(iterator)
+            print iters
+            key = []
             for i in iters:
                 #self.on_delete(self.lista,i)
-                key = self.lista[i][0]
-                self.delete(key,self.create_delete_dialog_response(self.lista, i))
+                key.append(self.lista[i][0])
+#                self.delete(key,self.create_delete_dialog_response(self.lista, i))
+            self.delete(key,self.create_delete_dialog_response(self.lista, iters))
+
+
             #TODO connect "row-deleted" to delete package
         elif action == "operations_action":
             self.vista.get_selection().selected_foreach(self.on_ingest_question)
@@ -357,9 +363,10 @@ class ListingClassUI(ManagerUI):
 
         def on_delete_dialog_response(response_id, **kwargs):
             if response_id in message.POSITIVE:
-                self.repository.delete(self.repository.get(store[iterator][0]))
-                self.lista.remove(iterator)
-                self.vista.get_selection().select_path(0)
+                for i in iterator:
+                    self.repository.delete(self.repository.get(store[i][0]))
+                    self.lista.remove(i)
+                    self.vista.get_selection().select_path(0)
 
         return on_delete_dialog_response
 
@@ -481,4 +488,3 @@ class ListingClassUI(ManagerUI):
 
 
 GObject.type_register(ListingClassUI)
-
