@@ -30,7 +30,7 @@ class GCv4l2(Gst.Bin, base.Base):
 
 
     order = ["name","flavor","location","file","caps", 
-             "videoencoder", "muxer"]
+             "videoencoder", "muxer", "io-mode"]
     
     gc_parameters = {
         "name": {
@@ -104,6 +104,12 @@ class GCv4l2(Gst.Bin, base.Base):
             "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
             "description": "Video sink",
         },
+        "io-mode": {
+            "type": "select",            
+            "default": "auto",
+            "options": ["auto", "rw", "mmap", "userptr", "dmabuf", "dmabuf-import"],            
+            "description": "I/O mode",
+        },        
     }
     
     is_pausable = True
@@ -143,6 +149,10 @@ class GCv4l2(Gst.Bin, base.Base):
 
         if self.options['location']:
             self.set_option_in_pipeline('location', 'gc-v4l2-src', 'device')
+
+        print self.options['io-mode']            
+        self.set_option_in_pipeline('io-mode', 'gc-v4l2-src', 'io-mode')
+
 
         self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-v4l2-sink', 'location')
 
