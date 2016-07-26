@@ -158,15 +158,3 @@ class GCfirewireavi(Gst.Bin, base.Base):
         # v4l2-ctl -d self.options["location"] -s self.options["standard"]
         # v4l2-ctl -d self.options["location"] -i self.options["input"]
         pass
-
-    def disable_input(self):
-        raise Exception("disable_input not implemented")
-
-    def enable_input(self):
-        raise Exception("enable_input not implemented")
-
-    def disable_preview(self):
-        raise Exception("disable_preview not implemented")
-
-    def enable_preview(self):
-        raise Exception("enable_preview not implemented")
