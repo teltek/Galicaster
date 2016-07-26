@@ -11,17 +11,7 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
-"""
-TODO:
- - Scheduled recordings
- - profile.execute (see recorderui configure_profile)
- - Add connect:
-   * start-record
-   * stop-record
-   * start-before
- - Add doc
-"""
-
+import os
 from datetime import datetime
 from galicaster.mediapackage import mediapackage
 from galicaster.recorder import Recorder
@@ -39,18 +29,13 @@ class Status(object):
     def __repr__(self): return self.name
 
 
-STATUSES = [Status('init', 'Initialization'),
-            Status('preview', 'Waiting'),
-            Status('recording', 'Recording', '#484848', '#FF0000'),
-            Status('paused', 'Paused'),
-            Status('error', 'Error', '#484848', '#FF0000')]
+INIT_STATUS      = Status('init', 'Initialization')
+PREVIEW_STATUS   = Status('preview', 'Waiting')
+RECORDING_STATUS = Status('recording', 'Recording', '#484848', '#FF0000')
+PAUSED_STATUS    = Status('paused', 'Paused')
+ERROR_STATUS     = Status('error', 'Error', '#484848', '#FF0000')
 
-INIT_STATUS      = STATUSES[0]
-PREVIEW_STATUS   = STATUSES[1]
-RECORDING_STATUS = STATUSES[2]
-PAUSED_STATUS    = STATUSES[3]
-ERROR_STATUS     = STATUSES[4]
-
+STATUSES = [INIT_STATUS, PREVIEW_STATUS, RECORDING_STATUS, PAUSED_STATUS, ERROR_STATUS]
 
 class RecorderService(object):
     def __init__(self, dispatcher, repo, worker, conf, logger, autorecover=False, recorderklass=Recorder):
@@ -71,7 +56,6 @@ class RecorderService(object):
         self.conf = conf
         self.overlap = conf.get_permission("overlap")
         self.mute = True
-#        self.mute_status = {"input":{},"preview":{}}
 
         self.__set_status(INIT_STATUS)
 
@@ -88,6 +72,7 @@ class RecorderService(object):
         self.dispatcher.connect("init", WeakMethod(self, '_handle_init'))
         self.dispatcher.connect("action-reload-profile", WeakMethod(self, '_handle_reload_profile'))
         self.dispatcher.connect("recorder-error", WeakMethod(self, '_handle_error'))
+
 
     def set_create_drawing_areas_func(self, func):
         self.__create_drawing_areas_func = func
@@ -112,7 +97,10 @@ class RecorderService(object):
 
     def __prepare(self):
         current_profile = self.conf.get_current_profile()
-        self.logger.debug("Using {} profile".format(current_profile.name))
+        self.logger.debug("Using profile with name {} and path {}".format(current_profile.name, current_profile.path))
+        if current_profile.execute:
+            out = os.system(current_profile.execute)
+            logger.info("Executing {0} with out {1}".format(current_profile.execute, out))
         # TODO: This is a WORKAROUND for https://github.com/teltek/Galicaster/issues/317
         # FIXME
         bins = current_profile.get_tracks_audio_at_end()
@@ -329,6 +317,7 @@ class RecorderService(object):
         if self.status in (PREVIEW_STATUS, ERROR_STATUS):
             self.logger.debug("Resetting recorder after reloading the profile")
             self.repo.check_for_recover_recordings()
+            self.current_mediapackage = None
             if self.recorder:
                 self.recorder.stop(True)
             self.__set_status(INIT_STATUS)

@@ -19,8 +19,8 @@ from galicaster.recorder import base
 #from galicaster.recorder import module_register
 from galicaster.recorder.utils import get_audiosink
 
-pipestr = (" pulsesrc name=gc-audio-src  ! queue ! audioamplify name=gc-audio-amplify amplification=1 ! "
-           " audioconvert ! audio/x-raw,channels=gc-audio-channels ! "
+pipestr = (" pulsesrc name=gc-audio-src  ! queue name=gc-min-threshold-time gc-max-size-time gc-max-size-buffers gc-max-size-bytes gc-leaky ! "
+           " audioamplify name=gc-audio-amplify amplification=1 ! audioconvert ! audio/x-raw,channels=gc-audio-channels ! "
            " tee name=tee-aud  ! queue ! level name=gc-audio-level message=true interval=100000000 ! "
            " volume name=gc-audio-volumemaster ! volume name=gc-audio-volume ! gc-asink "
            " tee-aud. ! queue ! valve drop=false name=gc-audio-valve ! "
@@ -75,6 +75,12 @@ class GCpulse(Gst.Bin, base.Base):
             "default": "lamemp3enc target=1 bitrate=192 cbr=true",
             "description": "Gstreamer audio encoder element used in the bin",
             },
+        "delay": {
+            "type": "float",
+            "default": 0.0,
+            "range": (0,10),
+            "description": "Audio delay",
+            },
         "audiomuxer": {
             "type": "text",
             "default": "",
@@ -120,6 +126,18 @@ class GCpulse(Gst.Bin, base.Base):
         else:
             aux = aux.replace("gc-audio-mux !", "")
 
+
+        if self.options["delay"] > 0.0:
+            aux = aux.replace('gc-max-size-time', 'max-size-time=0')
+            aux = aux.replace('gc-max-size-buffers', 'max-size-buffers=0')
+            aux = aux.replace('gc-max-size-bytes', 'max-size-bytes=0')
+            aux = aux.replace('gc-leaky', 'leaky=0')
+        else:
+            aux = aux.replace('gc-max-size-time', '')
+            aux = aux.replace('gc-max-size-buffers', '')
+            aux = aux.replace('gc-max-size-bytes', '')
+            aux = aux.replace('gc-leaky', '')
+
         #bin = Gst.parse_bin_from_description(aux, True)
         bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)
@@ -146,6 +164,12 @@ class GCpulse(Gst.Bin, base.Base):
         if "amplification" in self.options:
             ampli = self.get_by_name("gc-audio-amplify")
             ampli.set_property("amplification", float(self.options["amplification"]))
+
+        if self.options["delay"] > 0.0:
+            delay = float(self.options["delay"])
+            minttime = self.get_by_name('gc-min-threshold-time')
+            minttime.set_property('min-threshold-time', long(delay * 1000000000))
+
 
     def changeValve(self, value):
         valve1=self.get_by_name('gc-audio-valve')

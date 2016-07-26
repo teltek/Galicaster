@@ -80,6 +80,7 @@ class Recorder(object):
                 logger.debug("Init bin {} {}".format(name, mod_name))
                 self.bins[name] = Klass(bin)
                 self.pipeline.add(self.bins[name])
+                self.bins[name].prepare(self.bus)
 
             self.enable_input()
             self.enable_preview()
