@@ -263,7 +263,7 @@ class RecorderService(object):
             self.logger.error("Error in bins {}: {}".format(bin_name,exc))
 
     def get_mute_status(self):
-        return self.recorder.mute_status
+        return self.recorder.mute_status if self.recorder else {}
 
     def is_pausable(self):
         """Proxy function to know if actual recorder is pausable"""
