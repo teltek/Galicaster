@@ -16,7 +16,6 @@ The 'datapath' bin is preserved to keep backwards compatibility. The 'datapath' 
 """
 
 from galicaster.recorder.bins import v4l2
-#from galicaster.recorder import module_register
 
 class GCdatapath(v4l2.GCv4l2):
 
@@ -84,5 +83,3 @@ class GCdatapath(v4l2.GCv4l2):
 
     def __init__(self, options={}):
         v4l2.GCv4l2.__init__(self, options)
-
-#module_register(GCdatapath, 'datapath')

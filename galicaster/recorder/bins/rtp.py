@@ -198,3 +198,24 @@ class GCrtp(Gst.Bin, base.Base):
     def send_event_to_src(self, event):
         src1 = self.get_by_name('gc-rtp-src')
         src1.send_event(event)
+
+    def disable_input(self):
+        raise Exception("disable_input not implemented")
+
+    def enable_input(self):
+        raise Exception("enable_input not implemented")
+
+    def disable_preview(self):
+        src1 = self.get_by_name('sink-'+self.options['name'])
+        src1.set_property('saturation', -1000)
+        src1.set_property('contrast', -1000)
+        element = self.get_by_name("gc-rtp-volume")
+        element.set_property("mute", True)
+
+
+    def enable_preview(self):
+        src1 = self.get_by_name('sink-'+self.options['name'])
+        src1.set_property('saturation',0)
+        src1.set_property('contrast',0)
+        element = self.get_by_name("gc-rtp-volume")
+        element.set_property("mute", False)
