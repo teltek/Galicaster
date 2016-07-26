@@ -165,6 +165,7 @@ class GCWindow(Gtk.Window):
         self.nbox.insert_page(page, Gtk.Label(label=label), cod)
 
     def insert_button(self, button, ui, box_id, **kwargs):
+        """Insert a button in the container named box_id in the notebook page with number ui"""
         try:
             builder = self.nbox.get_nth_page(ui).gui
         except Exception as error:
