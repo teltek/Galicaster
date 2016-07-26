@@ -40,7 +40,7 @@ def manage_button(element=None):
     hbox.pack_start(icon,True,True,0)
 
     to_disable = conf.get_list("mute_inputs","bins")
-    mute_type = conf.get("mute_inputs","mute_type")
+    mute_type = conf.get_choice("mute_inputs","mute_type", ["input", "source"], "input")
     started_mute = conf.get_boolean("mute_inputs","mute_on_startup")
     if started_mute:
         mute_inputs(None, mute_type, label1, to_disable)
