@@ -41,7 +41,7 @@ def manage_button(element=None):
 
     to_disable = conf.get_list("mute_inputs","bins")
     mute_type = conf.get("mute_inputs","mute_type")
-    started_mute = conf.get_boolean("mute_inputs","started_mute")
+    started_mute = conf.get_boolean("mute_inputs","mute_on_startup")
     if started_mute:
         mute_inputs(None, mute_type, label1, to_disable)
         dispatcher.connect("recorder-ready", mute_inputs, mute_type, label1,  to_disable)
