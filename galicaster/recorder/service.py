@@ -100,7 +100,7 @@ class RecorderService(object):
         self.logger.debug("Using profile with name {} and path {}".format(current_profile.name, current_profile.path))
         if current_profile.execute:
             out = os.system(current_profile.execute)
-            logger.info("Executing {0} with out {1}".format(current_profile.execute, out))
+            self.logger.info("Executing {0} with out {1}".format(current_profile.execute, out))
         # TODO: This is a WORKAROUND for https://github.com/teltek/Galicaster/issues/317
         # FIXME
         bins = current_profile.get_tracks_audio_at_end()
