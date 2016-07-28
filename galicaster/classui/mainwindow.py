@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 """
 UI for the welcoming page
@@ -78,6 +78,9 @@ class GCWindow(Gtk.Window):
         self.nbox = Gtk.Notebook()
         self.nbox.set_show_tabs(False)
         self.add(self.nbox)
+
+        self.connect('key-press-event', self.on_key_press)
+        self.connect('key-release-event', self.on_key_release)
 
     def on_visibility_event(self, *args):
         self.dispatcher.emit('gc-shown')
@@ -226,3 +229,9 @@ class GCWindow(Gtk.Window):
         else:
             if self.logger:
                 self.logger.info("Cancel Shutdown")
+
+    def on_key_press(self, source, event):
+        self.dispatcher.emit("action-key-press", source, event)
+
+    def on_key_release(self, source, event):
+        self.dispatcher.emit("action-key-release", source, event)

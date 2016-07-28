@@ -86,6 +86,8 @@ GObject.signal_new('action-quit', Dispatcher, GObject.SignalFlags.RUN_LAST, None
 GObject.signal_new('quit', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('action-shutdown', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('shutdown', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
+GObject.signal_new('action-key-press', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT) )
+GObject.signal_new('action-key-release', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT) )
 
 #TIMER
 GObject.signal_new('timer-nightly', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )

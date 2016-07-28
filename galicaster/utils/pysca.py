@@ -63,6 +63,7 @@ VISCA_INQUIRY=0x09
 VISCA_CATEGORY_INTERFACE=0x00
 VISCA_CATEGORY_CAMERA=0x04
 VISCA_CATEGORY_PAN_TILTER=0x06
+VISCA_CATEGORY_DISPLAY=0x7e
 
 VISCA_ADDR=0x30
 VISCA_ADDR_SET=0x30
@@ -242,6 +243,8 @@ VISCA_PT_LIMITSET_SET_DL=0x00
 H_NIBBLE_MASK=0xF0
 L_NIBBLE_MASK=0x0F
 
+VISCA_INFO_DISPLAY=0x18
+VISCA_INFO_DISPLAY_OFF=0x03
 
 # EXCEPTIONS
 class ViscaError(RuntimeError):
@@ -525,7 +528,7 @@ class Socket(object):
                         # If the packet is not set here, the command was cancelled before an answer could be received
                         # Or the wait() exited for timeout
                         if self.__packet is None:
-                                raise ViscaTimeoutError()
+                                raise ViscaTimeoutError("Timeout waiting for a response")
                         # Return the packet, but set it to None afterwards
                         try:
                                 return self.__packet
@@ -1002,6 +1005,9 @@ def __cmd_cam(device, *parts):
 
 def __cmd_pt(device, *parts):
         __send(device, VISCA_COMMAND, VISCA_CATEGORY_PAN_TILTER, *parts)
+
+def __cmd_dis(device, *parts):
+        __send(device, VISCA_COMMAND, VISCA_CATEGORY_DISPLAY, *parts)
 
 
 # POWER control
@@ -1487,3 +1493,10 @@ def pan_tilt_reset(device):
         Force the device to recalibrate the pan-tilt position.
         """
         __cmd_pt(device, VISCA_PT_RESET)
+
+
+def osd_off(device):
+        """
+        Remove OSD info in display
+        """
+        __cmd_dis(device, VISCA_COMMAND, VISCA_INFO_DISPLAY, VISCA_INFO_DISPLAY_OFF)
