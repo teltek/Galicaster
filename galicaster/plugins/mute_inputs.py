@@ -17,6 +17,11 @@ from gi.repository import Pango
 from gi.repository import Gtk
 from galicaster.core.core import PAGES
 
+conf = None
+logger = None
+recorder = None
+dispatcher = None
+
 def init():
     global conf, logger, recorder, dispatcher
     dispatcher = context.get_dispatcher()
@@ -26,8 +31,6 @@ def init():
     dispatcher.connect('init', manage_button)
 
 def manage_button(element=None):
-    global conf, recorder, dispatcher
-
     label = set_label(2,2,"Input status: ")
     label1 = set_label(0,1)
     context.get_mainwindow().insert_button(label,PAGES['REC'],"status_panel", left=0,top=4,width=1,height=1)
@@ -83,7 +86,6 @@ def set_status_label(label1, mute_type):
     logger.debug("Status label changed to: {}".format(status))
 
 def mute_inputs(element, mute_type, label1, to_disable=[]):
-    global logger, recorder
     bins_disable = []
     bins_enable = []
     if not to_disable:
@@ -103,7 +105,7 @@ def mute_inputs(element, mute_type, label1, to_disable=[]):
                 else:
                     bins_enable.append(bin)
             except Exception as exc:
-                logger.warning("Bin: "+bin+" not loaded in this profile")
+                logger.warning("Bin: "+bin+" not loaded in this profile"+exc)
 
     if bins_disable:
         if mute_type == "input":
