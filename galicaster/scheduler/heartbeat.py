@@ -6,18 +6,17 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 from datetime import datetime, timedelta
-import threading
 from gi.repository import GObject
 
 class Heartbeat(object):
-    
-    def __init__(self, dispatcher, interval_short=10, interval_long=60, nighty_time='00:00', 
+
+    def __init__(self, dispatcher, interval_short=10, interval_long=60, nighty_time='00:00',
                  logger=None):
         # Raise ValueErrors
         aux = datetime.strptime(nighty_time, '%H:%M')
@@ -25,7 +24,7 @@ class Heartbeat(object):
         self.nighty_minute  = aux.minute
         self.interval_short = interval_short
         self.interval_long  = interval_long
-        self.dispatcher     = dispatcher 
+        self.dispatcher     = dispatcher
         self.logger         = logger
 
 
@@ -37,8 +36,8 @@ class Heartbeat(object):
 
     def get_seg_until_next(self):
         now = datetime.now()
-        tomorrow = (datetime(now.year, now.month, now.day, 
-          self.nighty_hour, self.nighty_minute, 0, 0) 
+        tomorrow = (datetime(now.year, now.month, now.day,
+          self.nighty_hour, self.nighty_minute, 0, 0)
           + timedelta(days=1))
         diff = tomorrow - now
         return diff.seconds + 1
