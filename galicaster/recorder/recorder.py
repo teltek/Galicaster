@@ -14,7 +14,7 @@
 
 import sys
 
-from gi.repository import Gtk, Gst, Gdk, GObject, GdkX11
+from gi.repository import Gst, GdkX11
 Gst.init(None)
 
 from galicaster.core import context
