@@ -6,9 +6,9 @@
 # Copyright (c) 2016, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 """
@@ -20,13 +20,17 @@ from gi.repository import Gdk
 from galicaster.core import context
 from galicaster.utils.systemcalls import write_dconf_settings
 
+logger = None
+hidecursor = None
+settings = None
+default_settings = None
 
 def init():
     global logger, hidecursor, settings, default_settings
     dispatcher = context.get_dispatcher()
     logger = context.get_logger()
     conf = context.get_conf()
-            
+
     dispatcher.connect('init', configure_init)
     dispatcher.connect('quit', configure_quit)
 
@@ -34,12 +38,12 @@ def init():
     default_settings = conf.get_json('appearance', 'defaultsettings')
     hidecursor = conf.get_boolean('appearance', 'hidecursor')
 
-        
+
 def configure_init(signal=None):
     global logger, hidecursor, settings
     logger.info("On init: set appearance settings")
     write_dconf_settings(settings, logger, logaserror=False)
-    
+
     if hidecursor:
         hide_cursor()
     else:
@@ -65,5 +69,4 @@ def show_cursor(emiter=None):
     logger.info("Show cursor")
     arrow_cursor = Gdk.Cursor(Gdk.CursorType.ARROW)
     window = Gdk.get_default_root_window()
-    window.set_cursor(arrow_cursor) 
-
+    window.set_cursor(arrow_cursor)
