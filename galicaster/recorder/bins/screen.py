@@ -19,7 +19,7 @@ from galicaster.recorder import base
 from galicaster.recorder.utils import get_videosink
 
 pipestr = (' ximagesrc startx=gc-startx starty=gc-starty endx=gc-endx endy=gc-endy xid=gc-xid xname=gc-xname name=gc-screen-src use-damage=0 ! queue ! '
-           ' videorate ! videoconvert ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! '
+           ' videorate ! videoconvert ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop !  videobox name=gc-screen-videobox top=0 bottom=0 !'
            ' tee name=gc-screen-tee  ! queue !  videoconvert  ! gc-vsink '
            ' gc-screen-tee. ! queue ! valve drop=false name=gc-screen-valve ! videoconvert ! capsfilter name=gc-v4l2-filter ! queue ! videoconvert ! '
            ' gc-screen-enc ! queue ! gc-screen-mux ! '
@@ -28,10 +28,10 @@ pipestr = (' ximagesrc startx=gc-startx starty=gc-starty endx=gc-endx endy=gc-en
 
 class GCscreen(Gst.Bin, base.Base):
 
-    order = ["name","flavor","location","file","caps", 
+    order = ["name","flavor","location","file","caps",
              "muxer", "endx"
              ]
- 
+
     gc_parameters = {
         "name": {
             "type": "text",
@@ -55,7 +55,7 @@ class GCscreen(Gst.Bin, base.Base):
              },
         "caps": {
             "type": "caps",
-            "default": "video/x-raw,framerate=5/1", 
+            "default": "video/x-raw,framerate=5/1",
             "description": "Forced capabilities",
             },
         "videocrop-right": {
@@ -103,7 +103,7 @@ class GCscreen(Gst.Bin, base.Base):
             "default": 0,
             "range": (0,10000),
             "description": "top left.  Must be odd (since we start at 0)",
-        },    
+        },
         "endx":{
             "type": "integer",
             "default": 0,
@@ -115,17 +115,17 @@ class GCscreen(Gst.Bin, base.Base):
             "default": 0,
             "range": (0,10000),
             "description": "bottom right.  Must be odd (since we start at 0)",
-        },           
+        },
         "xid":{
             "type": "hexadecimal",
             "default": '0',
             "description": "Window XID to capture from (xwininfo -tree -root)",
-        },           
+        },
         "xname":{
             "type": "text",
             "default": "null",
             "description": "Window name to capture from",
-        },           
+        },
         "videosink" : {
             "type": "select",
             "default": "xvimagesink",
@@ -133,7 +133,7 @@ class GCscreen(Gst.Bin, base.Base):
             "description": "Video sink",
         },
     }
-    
+
     is_pausable = True
     has_audio   = False
     has_video   = True
@@ -168,7 +168,6 @@ class GCscreen(Gst.Bin, base.Base):
 
         self.set_option_in_pipeline('caps', 'gc-v4l2-filter', 'caps', None)
 
-     
     def changeValve(self, value):
         valve1=self.get_by_name('gc-screen-valve')
         valve1.set_property('drop', value)
@@ -183,4 +182,21 @@ class GCscreen(Gst.Bin, base.Base):
         src1 = self.get_by_name('gc-screen-src')
         src1.send_event(event)
 
+    def disable_input(self):
+        src1 = self.get_by_name('gc-screen-videobox')
+        src1.set_properties(top = -10000, bottom = 10000)
 
+    def enable_input(self):
+        src1 = self.get_by_name('gc-screen-videobox')
+        src1.set_property('top',0)
+        src1.set_property('bottom',0)
+
+    def disable_preview(self):
+        src1 = self.get_by_name('sink-'+self.options['name'])
+        src1.set_property('saturation', -1000)
+        src1.set_property('contrast', -1000)
+
+    def enable_preview(self):
+        src1 = self.get_by_name('sink-'+self.options['name'])
+        src1.set_property('saturation',0)
+        src1.set_property('contrast',0)
