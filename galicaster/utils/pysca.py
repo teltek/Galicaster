@@ -992,12 +992,12 @@ def clear_commands(dest):
                 clear_all()
         else:
                 __send(dest, VISCA_IF_CLEAR_PAYLOAD)
-                try:
-                        __devices[i].clear()
-                except KeyError:
-                        # Ignore. This command may be send on initialization, when
-                        # the different 'Device' instances are not yet created
-                        pass
+                # try:
+                #         __devices[i].clear()
+                # except KeyError:
+                #         # Ignore. This command may be send on initialization, when
+                #         # the different 'Device' instances are not yet created
+                #         pass
 
 
 def __cmd_cam(device, *parts):
