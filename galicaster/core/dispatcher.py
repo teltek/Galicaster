@@ -38,9 +38,13 @@ class Dispatcher(GObject.GObject):
     def __init__(self):
         GObject.GObject.__init__(self)
 
-    def add_new_signal(self, name, param=False):
-        parameters = (GObject.TYPE_PYOBJECT,) if param else ()
+    def add_new_signal(self, name, *args):
+        parameters = ()
+        for element in args:
+            parameters = parameters + (GObject.TYPE_PYOBJECT,)
+
         GObject.signal_new(name, self, GObject.SignalFlags.RUN_LAST, None, parameters)
+
 
     def connect_ui(self, detailed_signal, handler, *args):
         def f(*args):
@@ -49,6 +53,10 @@ class Dispatcher(GObject.GObject):
         self.connect(detailed_signal, f, *args)
 
 
+    def is_signal(self, name):
+        if name in GObject.signal_list_names(self):
+            return True
+        return False
 
 #GObject.type_register(Dispatcher)
 GObject.signal_new('init', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
@@ -99,6 +107,3 @@ GObject.signal_new('action-create-mock-mp', Dispatcher, GObject.SignalFlags.RUN_
 #WORKER
 GObject.signal_new('operation-started', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('operation-stopped', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT) )
-
-#GENERIC PURPOSE
-GObject.signal_new('generic-event', Dispatcher, GObject.SignalFlags.RUN_LAST, GObject.TYPE_NONE, (GObject.TYPE_PYOBJECT,) )
