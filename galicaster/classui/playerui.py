@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 """
 UI for the player area
@@ -30,7 +30,7 @@ from galicaster.utils.miscellaneous import get_footer
 from galicaster.player import Player
 from galicaster.core import context
 from galicaster.classui.managerui import ManagerUI
-from galicaster.classui import get_ui_path
+from galicaster.classui import get_ui_path, message
 
 
 Gdk.threads_init()
@@ -49,11 +49,11 @@ class PlayerClassUI(ManagerUI):
     Graphic User Interface for Listing Player and Player Alone
     """
     __gtype_name__ = 'PlayerClass'
-    
-    
-    def __init__(self,package=None):       
+
+
+    def __init__(self,package=None):
         ManagerUI.__init__(self,1)
-	builder = Gtk.Builder()
+        builder = Gtk.Builder()
         builder.add_from_file(get_ui_path('player.glade'))
         release = builder.get_object("release_label")
         release.set_label(get_footer())
@@ -73,8 +73,8 @@ class PlayerClassUI(ManagerUI):
         self.correct=False # To correct SCROLL_JUMP, after release it
         self.seek_bar=self.gui.get_object("seekbar")
         self.seek_bar.add_events(Gdk.EventMask.SCROLL_MASK)
-        self.seek_bar.connect("change-value", self.on_seek) 
-      
+        self.seek_bar.connect("change-value", self.on_seek)
+
         # VUMETER
 
         self.vumeterL = builder.get_object("progressbarL")
@@ -89,7 +89,7 @@ class PlayerClassUI(ManagerUI):
         self.timer=builder.get_object("timer")
         self.video=builder.get_object("video")
         self.presenter=builder.get_object("presenter")
-      
+
         self.playerui.pack_start(self.strip,False,False,0)
         self.playerui.reorder_child(self.strip,0)
         self.pack_start(self.playerui,True,True,0)
@@ -123,8 +123,8 @@ class PlayerClassUI(ManagerUI):
             videos = OrderedDict()
 
             index = 0
-    
-            for t in mp.getTracks(): 
+
+            for t in mp.getTracks():
                 if not t.getFlavor().count('other'):
                     tracks[t.getIdentifier()] = t.getURI()
 
@@ -133,11 +133,11 @@ class PlayerClassUI(ManagerUI):
                         videos[t.getIdentifier()] = index
 
             areas = self.create_drawing_areas(videos)
-        
+
             self.seek_bar.set_value(0)
             if self.player:
                 self.player.quit()
-                  
+
             self.player = Player(tracks, areas)
             self.change_state(READY)
 
@@ -149,7 +149,7 @@ class PlayerClassUI(ManagerUI):
     def play_from_list(self, origin, package):
         """Takes a MP from the listing area and plays it"""
         self.dispatcher.emit("action-view-change", 2)
-        self.init_player(None, package)          
+        self.init_player(None, package)
 
 
 #------------------------- PLAYER ACTIONS ------------------------
@@ -167,7 +167,7 @@ class PlayerClassUI(ManagerUI):
         self.thread_id = 1
         self.timer_thread.daemon = True
         self.timer_thread.start()
-        
+
     def on_pause_clicked(self, button=None):
         """Pauses the reproduction"""
         if not button or button.get_active():
@@ -192,12 +192,12 @@ class PlayerClassUI(ManagerUI):
         gui.add_from_file(get_ui_path("quit.glade"))
         dialog = gui.get_object("dialog")
         response = dialog.run()
-        if response == Gtk.ResponseType.OK:   
+        if response == Gtk.ResponseType.OK:
             dialog.destroy()
             if self.status > 0:
                 self.player.quit()
             self.change_state(ERRORED)
-            self.emit("delete_event", Gdk.Event(Gdk.DELETE))            
+            self.emit("delete_event", Gdk.Event(Gdk.DELETE))
         else:
             dialog.destroy()
         return True
@@ -217,14 +217,14 @@ class PlayerClassUI(ManagerUI):
             self.seeking = True
             if self.player.is_playing():
                 self.player.pause()
-            value=new_value * self.duration // 100 
+            value=new_value * self.duration // 100
             self.set_timer(value,self.duration)
             self.jump=temp
             if not self.jump_id:
                 log.warning("Handling Seek Jump")
-                self.jump_id=self.seek_bar.connect("button-release-event",self.on_seek,0)# FIXME ensure real release, not click                        
+                self.jump_id=self.seek_bar.connect("button-release-event",self.on_seek,0)# FIXME ensure real release, not click
         if self.correct:
-            self.correct=False            
+            self.correct=False
 
         if scroll_type != Gtk.ScrollType.JUMP: # handel regular scroll
             if scroll_type ==  Gtk.ScrollType.PAGE_FORWARD or scroll_type ==  Gtk.ScrollType.PAGE_BACKWARD:
@@ -254,9 +254,9 @@ class PlayerClassUI(ManagerUI):
 
         for child in main.get_children():
             child.show()
-         
+
         return areas
-        
+
 
 #------------------------- PACKAGE ACTIONS ------------------------
 
@@ -271,25 +271,34 @@ class PlayerClassUI(ManagerUI):
     def on_question(self,button):
         """Pops up a dialog with the available operations"""
         package = self.mediapackage
-        self.ingest_question(package)      
+        self.ingest_question(package)
 
     def on_delete(self, button):
         """ Pops up a dialog.
         If response is positive the mediapackage is deleted and the focus goes to the previous area"""
         key = self.mediapackage.identifier
-        response=self.delete(key)		
-        if response:
-            self.thread_id = None
-            self.player.stop()
-            self.setVideo(None, "")
-            self.setPresenter(None, "")
-            self.clear_timer()
-            self.change_state(INIT)
-            self.mediapackage = None
-            self.dispatcher.emit("action-view-change", 1)
-            
+        response=self.delete(key,self.create_delete_dialog_response(key))
+
         return True
-    
+
+    def create_delete_dialog_response(self, key):
+
+        def on_delete_dialog_response(response_id, **kwargs):
+            if response_id in message.POSITIVE:
+                self.repository.delete(self.repository.get(key))
+                self.thread_id = None
+                self.player.stop()
+                self.setVideo(None, "")
+                self.setPresenter(None, "")
+                self.clear_timer()
+                self.change_state(INIT)
+                self.mediapackage = None
+                self.dispatcher.emit("action-view-change", 1)
+
+
+        return on_delete_dialog_response
+
+
 #-------------------------- UI ACTIONS -----------------------------
 
     def timer_launch_thread(self):
@@ -298,25 +307,25 @@ class PlayerClassUI(ManagerUI):
         self.initial_time=self.player.get_time()
         self.duration = self.player.get_duration()
         GObject.idle_add(self.set_timer, 0, self.duration)
-              
+
         while thread_id == self.thread_id:
             if not self.seeking :
                 if not self.duration:
-                    actual_time=self.player.get_time()  
+                    actual_time=self.player.get_time()
                     timer=(actual_time-self.initial_time)/Gst.SECOND
                 else:
                     try:
                         format_type, actual_time =self.player.get_position()
                     except:
-                            actual_time = 0                        
+                            actual_time = 0
                             log.warning("Query position failed")
 
                     timer = actual_time / Gst.SECOND
                     self.seek_bar.set_value(timer*100/self.duration)
                 if thread_id==self.thread_id:
                     GObject.idle_add(self.set_timer, timer, self.duration)
-                    
-            time.sleep(0.2)          
+
+            time.sleep(0.2)
         return True
 
     def resize(self):
@@ -328,13 +337,13 @@ class PlayerClassUI(ManagerUI):
 
         k = self.proportion
         calign.set_padding(int(k*20),int(k*10),0,0)
-  
+
         return True
 
     def event_change_mode(self, orig, old_state, new_state):
         """Pause a recording in the event of a change of mode"""
         if old_state == 2 and self.status == PLAYING:
-            self.on_pause_clicked()        
+            self.on_pause_clicked()
 
     def change_state_bypass(self,origin,state):
         """To handles change state through signal"""
@@ -346,8 +355,8 @@ class PlayerClassUI(ManagerUI):
         play=self.gui.get_object("playbutton")
         pause=self.gui.get_object("pausebutton")
         stop=self.gui.get_object("stopbutton")
-        editb=self.gui.get_object("editbutton")       
-        deleteb=self.gui.get_object("deletebutton")       
+        editb=self.gui.get_object("editbutton")
+        deleteb=self.gui.get_object("deletebutton")
 
         self.previous,self.status = self.status,state
 
@@ -375,7 +384,7 @@ class PlayerClassUI(ManagerUI):
             play.set_sensitive(True)
             pause.set_sensitive(True)
             stop.set_sensitive(True)
-            
+
         if state==STOPPED:
             play.set_sensitive(True)
             pause.set_sensitive(False)
@@ -391,7 +400,7 @@ class PlayerClassUI(ManagerUI):
         self.thread_id=None
         if self.status in [PLAYING, PAUSED]:
             self.player.quit()
-        return True        
+        return True
 
 #-------------------------- AUDIOBAR -----------------------------
 
