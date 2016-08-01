@@ -113,16 +113,9 @@ class Worker(object):
             if not os.path.isdir(dir_path):
                 os.makedirs(dir_path)
 
-        # Fill operations
-        F_OPERATION.update({
-            INGEST_CODE: self._ingest,
-            ZIPPING_CODE: self._export_to_zip,
-            SBS_CODE: self._side_by_side})
-
-        F_OPERATION_QUEUED.update({
-            INGEST_CODE: self.ingest,
-            ZIPPING_CODE: self.export_to_zip,
-            SBS_CODE: self.side_by_side})
+        self.set_operation(SBS, SBS_CODE, self._side_by_side)
+        self.set_operation(INGEST, INGEST_CODE, self._ingest)
+        self.set_operation(ZIPPING, ZIPPING_CODE, self._export_to_zip)
 
         self.jobs = Queue.Queue()
 
@@ -263,7 +256,8 @@ class Worker(object):
             mp (Mediapackage): the mediapackage.
         """
         try:
-            f = getattr(self, name)
+            # Do not perform immediately operations (it blocks)
+            f = F_OPERATION_QUEUED[name]
             f(mp, params)
         except Exception as exc:
             self.logger.error("Failure performing job {0} for MP {1}. Exception: {2}".format(name, mp, exc))
@@ -317,16 +311,6 @@ class Worker(object):
         """
         self.operation_nightly(mp, INGEST_CODE)
 
-    def ingest(self, mp, params={}):
-        """Sets mediapackage status to be ingested.
-        Adds the ingest operation to the threads queue.
-        Args:
-            mp (Mediapackage): the mediapackage to be immediately ingested.
-        """
-        self.logger.info('Creating Ingest Job for MP {0}'.format(mp.getIdentifier()))
-        mp.setOpStatus('ingest',mediapackage.OP_PENDING)
-        self.repo.update(mp)
-        self.jobs.put((self._ingest, (mp, params)))
 
     def _ingest(self, mp, params={}):
         """Tries to immediately ingest the mediapackage into opencast.
@@ -335,17 +319,11 @@ class Worker(object):
             mp(Mediapackage): the mediapackage to be immediately ingested.
         """
         if not self.oc_client:
-            self.operation_error(mp, INGEST, 'MH client is not enabled')
-            return
+            raise Exception('Opencast client is not enabled')
 
         workflow = None if not "workflow" in params else params["workflow"]
         workflow_parameters = None if not "workflow_parameters" in params else params["workflow_parameters"]
 
-        self.logger.info('Executing Ingest for MP {0}'.format(mp.getIdentifier()))
-        mp.setOpStatus('ingest',mediapackage.OP_PROCESSING)
-        self.repo.update(mp)
-
-        self.dispatcher.emit('operation-started', 'ingest', mp)
         self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
 
         if workflow or workflow_parameters:
@@ -355,11 +333,7 @@ class Worker(object):
         self._export_to_zip(mp, params={"location" : ifile, "is_action": False})
 
         if mp.manual:
-            try:
-                self.oc_client.ingest(ifile.name, mp.getIdentifier(), workflow=workflow, workflow_instance=None, workflow_parameters=workflow_parameters)
-                self.operation_success(mp, INGEST)
-            except Exception as exc:
-                self.operation_error(mp, INGEST, exc)
+            self.oc_client.ingest(ifile.name, mp.getIdentifier(), workflow=workflow, workflow_instance=None, workflow_parameters=workflow_parameters)
         else:
             if not workflow:
                 properties = mp.getOCCaptureAgentProperties()
@@ -375,29 +349,11 @@ class Worker(object):
                     if k[0:36] == 'org.opencastproject.workflow.config.':
                         workflow_parameters[k[36:]] = v
 
-            try:
-                self.oc_client.ingest(ifile.name, mp.getIdentifier(), workflow, mp.getIdentifier(), workflow_parameters)
-                self.operation_success(mp, INGEST)
-            except Exception as exc:
-                self.operation_error(mp, INGEST, exc)
+            self.oc_client.ingest(ifile.name, mp.getIdentifier(), workflow, mp.getIdentifier(), workflow_parameters)
 
         ifile.close()
-        self.repo.update(mp)
 
         self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
-
-
-    def export_to_zip(self, mp, params={}):
-        """Sets mediapackage status to be exported as a zip.
-        Adds the export operation to the threads queue.
-        Args:
-            mp (Mediapackage): the mediapackage to be exported as a zip.
-            location (str): absolute path of the destination export file.
-        """
-        self.logger.info('Creating ExportToZIP Job for MP {0}'.format(mp.getIdentifier()))
-        mp.setOpStatus('exporttozip',mediapackage.OP_PENDING)
-        self.repo.update(mp)
-        self.jobs.put((self._export_to_zip, (mp, params)))
 
 
     def _export_to_zip(self, mp, params={}):
@@ -415,19 +371,10 @@ class Worker(object):
             self.logger.info("Executing ExportToZIP for MP {} to {}".format(mp.getIdentifier(), location if type(location) in [str,unicode] else location.name))
             mp.setOpStatus('exporttozip',mediapackage.OP_PROCESSING)
             self.dispatcher.emit('operation-started', 'exporttozip', mp)
-            self.repo.update(mp)
         else:
             self.logger.info("Zipping MP {} to {}".format(mp.getIdentifier(), location if type(location) in [str,unicode] else location.name))
-        try:
-            serializer.save_in_zip(mp, location, self.use_namespace, self.logger)
-            if is_action:
-                self.operation_success(mp, ZIPPING)
-        except Exception as exc:
-            if is_action:
-                self.operation_error(mp, ZIPPING, exc)
-            else:
-                pass
-        self.repo.update(mp)
+
+        serializer.save_in_zip(mp, location, self.use_namespace, self.logger)
 
 
 
@@ -461,7 +408,7 @@ class Worker(object):
                 handler(mp, params)
                 self.operation_success(mp, name)
             except Exception as exc:
-                self.operation_error(mp, code, exc)
+                self.operation_error(mp, name, exc)
 
             self.repo.update(mp)
 
@@ -479,18 +426,6 @@ class Worker(object):
         return queued_handler_template
 
 
-    def side_by_side(self, mp, params={}):
-        """Sets the mediapackage status in order to do side by side operation.
-            Adds the side by side operation to the threads queue.
-        Args:
-            mp (Mediapackage): the mediapackage.
-            location (str): the location for the new video file.
-        """
-        self.logger.info('Creating SideBySide Job for MP {0}'.format(mp.getIdentifier()))
-        mp.setOpStatus('sidebyside',mediapackage.OP_PENDING)
-        self.repo.update(mp)
-        self.jobs.put((self._side_by_side, (mp, params)))
-
 
     def _side_by_side(self, mp, params={}):
         """Tries to immediately do the side by side operation to a mediapackage.
@@ -507,11 +442,6 @@ class Worker(object):
             self.logger.warning("SideBySide for MP {}: unknown value {} for parameter 'audio', default to auto-mode".format(mp.getIdentifier(), audio))
             audio_mode = "auto"
 
-        self.logger.info('Executing SideBySide for MP {0}'.format(mp.getIdentifier()))
-        mp.setOpStatus('sidebyside',mediapackage.OP_PROCESSING)
-        self.repo.update(mp)
-        self.dispatcher.emit('operation-started', 'sidebyside', mp)
-
         audio = None  #'camera'
         camera = screen = None
 
@@ -524,44 +454,38 @@ class Worker(object):
         if mp.getTracksAudio():
             audio = mp.getTracksAudio()[0].getURI()
 
-        try:
+        if not camera or not screen:
+            raise IOError, 'Error in SideBySide process: Two videos needed (with presenter and presentation flavors)'
 
-            if not camera or not screen:
-                raise IOError, 'Error in SideBySide process: Two videos needed (with presenter and presentation flavors)'
+        if audio_mode == "auto":
+            self.logger.debug('SideBySide for MP {0}: auto audio-mode'.format(mp.getIdentifier()))
 
-            if audio_mode == "auto":
-                self.logger.debug('SideBySide for MP {0}: auto audio-mode'.format(mp.getIdentifier()))
-
-                # Look for embedded audio track, if this not exists use external audio
-                info = get_info(camera)
-                if 'audio-codec' in info.get_stream_info().get_streams()[0].get_tags().to_string():
-                    self.logger.debug('SideBySide for MP {0}: embedded audio detected'.format(mp.getIdentifier()))
-                    audio = None
-                else:
-                    self.logger.debug('SideBySide for MP {0}: embedded audio NOT detected, trying to use external audio...'.format(mp.getIdentifier()))
-
-            elif audio_mode == "embedded":
-                self.logger.debug('SideBySide for MP {0}: embedded audio-mode'.format(mp.getIdentifier()))
-
-                # Look for embedded audio track, if this not exists use external audio
-                info = get_info(camera)
-                if 'audio-codec' in info.get_stream_info().get_streams()[0].get_tags().to_string():
-                    self.logger.debug('SideBySide for MP {0}: embedded audio detected'.format(mp.getIdentifier()))
-                    audio = None
-                else:
-                    self.logger.debug('SideBySide for MP {0}: embedded audio NOT detected, trying to use external audio...'.format(mp.getIdentifier()))
-
+            # Look for embedded audio track, if this not exists use external audio
+            info = get_info(camera)
+            if 'audio-codec' in info.get_stream_info().get_streams()[0].get_tags().to_string():
+                self.logger.debug('SideBySide for MP {0}: embedded audio detected'.format(mp.getIdentifier()))
+                audio = None
             else:
-                self.logger.debug('SideBySide for MP {0}: external audio-mode'.format(mp.getIdentifier()))
-                if not audio:
-                    self.logger.debug('SideBySide for MP {0}: external audio NOT detected, trying to use embedded audio...'.format(mp.getIdentifier()))
+                self.logger.debug('SideBySide for MP {0}: embedded audio NOT detected, trying to use external audio...'.format(mp.getIdentifier()))
 
-            sidebyside.create_sbs(location, camera, screen, audio, sbs_layout, self.logger)
-            self.operation_success(mp, SBS)
-        except Exception as exc:
-            self.operation_error(mp, SBS, exc)
+        elif audio_mode == "embedded":
+            self.logger.debug('SideBySide for MP {0}: embedded audio-mode'.format(mp.getIdentifier()))
 
-        self.repo.update(mp)
+            # Look for embedded audio track, if this not exists use external audio
+            info = get_info(camera)
+            if 'audio-codec' in info.get_stream_info().get_streams()[0].get_tags().to_string():
+                self.logger.debug('SideBySide for MP {0}: embedded audio detected'.format(mp.getIdentifier()))
+                audio = None
+            else:
+                self.logger.debug('SideBySide for MP {0}: embedded audio NOT detected, trying to use external audio...'.format(mp.getIdentifier()))
+
+        else:
+            self.logger.debug('SideBySide for MP {0}: external audio-mode'.format(mp.getIdentifier()))
+            if not audio:
+                self.logger.debug('SideBySide for MP {0}: external audio NOT detected, trying to use embedded audio...'.format(mp.getIdentifier()))
+
+        sidebyside.create_sbs(location, camera, screen, audio, sbs_layout, self.logger)
+
 
 
     def operation_error(self, mp, OP_NAME, exc):
@@ -569,6 +493,7 @@ class Worker(object):
         mp.setOpStatus(JOBS[OP_NAME], mediapackage.OP_FAILED)
         self.dispatcher.emit('operation-stopped', JOBS[OP_NAME], mp, False, None)
         self.repo.update(mp)
+
 
     def operation_success(self, mp, OP_NAME):
         self.logger.info("Finalized {} for MP {}".format(OP_NAME, mp.getIdentifier()))
