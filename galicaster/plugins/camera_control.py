@@ -11,7 +11,6 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
-import threading
 import Queue
 
 from galicaster.core import context
@@ -22,30 +21,8 @@ import galicaster.utils.pysca as pysca
 
 from gi.repository import Gtk, Gdk, GObject, Pango, GdkPixbuf
 
-class T(threading.Thread):
+from galicaster.utils.queuethread import T
 
-    def __init__(self, queue):
-        """
-        Initializes a Thread with a queue of jobs to be done concurrently with other Galicaster tasks.
-        Args:
-                queue (Queue): queue of jobs.
-        Attributes:
-            queue (Queue): queue of jobs.
-        """
-        threading.Thread.__init__(self)
-        self.queue = queue
-
-    def run(self):
-        """Runs and removes a job from the queue.
-        Marks the job as done.
-        """
-        while True:
-            job, params = self.queue.get()
-            try:
-                job(*params)
-            except Exception as exc:
-                print exc
-            self.queue.task_done()
 
 dispatcher = None
 conf = None
