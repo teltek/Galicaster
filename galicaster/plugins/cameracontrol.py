@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # Galicaster, Multistream Recorder and Player
 #
-#       galicaster/plugins/camera_control
+#       galicaster/plugins/cameracontrol
 #
 # Copyright (c) 2016, Teltek Video Research <galicaster@teltek.es>
 #
@@ -34,7 +34,7 @@ def init():
     conf = context.get_conf()
     logger = context.get_logger()
 
-    path = conf.get('camera_control','path')
+    path = conf.get('cameracontrol','path')
     pysca.connect(path)
     pysca.set_zoom(1,0)
     pysca.pan_tilt_home(1)
@@ -84,8 +84,8 @@ def load_ui(element):
     notebook.append_page(notebook2,label)
     builder.connect_signals(event_handler)
 
-    zoom_levels = conf.get_int('camera_control','zoom_levels')
-    max_speed_pan_tilt = conf.get('camera_control','max_speed_pan_tilt')
+    zoom_levels = conf.get_int('cameracontrol','zoom_levels')
+    max_speed_pan_tilt = conf.get('cameracontrol','max_speed_pan_tilt')
     speed_zoom = builder.get_object("adjustment1")
     speed_pan_tilt = builder.get_object("adjustment2")
     speed_zoom.set_upper(zoom_levels)
