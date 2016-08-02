@@ -412,12 +412,13 @@ class Worker(object):
             self.dispatcher.emit('operation-started', code, mp)
 
             try:
-                handler(mp, params)
-                self.__operation_success(mp, name)
+                pending_process = handler(mp, params)
+                if not pending_process:
+                    self.__operation_success(mp, name)
+                else:
+                    self.logger.info('Completed first part of {} for MP {} (It is not marked as completed until the whole process is done)'.format(name, mp.getIdentifier()))
             except Exception as exc:
                 self.__operation_error(mp, name, exc)
-
-            self.repo.update(mp)
 
         return handler_template
 
