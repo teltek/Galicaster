@@ -113,9 +113,9 @@ class Worker(object):
             if not os.path.isdir(dir_path):
                 os.makedirs(dir_path)
 
-        self.set_operation(SBS, SBS_CODE, self._side_by_side)
-        self.set_operation(INGEST, INGEST_CODE, self._ingest)
-        self.set_operation(ZIPPING, ZIPPING_CODE, self._export_to_zip)
+        self.add_operation(SBS, SBS_CODE, self._side_by_side)
+        self.add_operation(INGEST, INGEST_CODE, self._ingest)
+        self.add_operation(ZIPPING, ZIPPING_CODE, self._export_to_zip)
 
         self.jobs = Queue.Queue()
 
@@ -378,7 +378,7 @@ class Worker(object):
 
 
 
-    def set_operation(self, name, code, handler):
+    def add_operation(self, name, code, handler):
         """Sets an operation in the worker
         Args:
             name (str): operation name.
