@@ -79,6 +79,9 @@ class GCWindow(Gtk.Window):
         self.nbox.set_show_tabs(False)
         self.add(self.nbox)
 
+        self.connect('key-press-event', self.on_key_press)
+        self.connect('key-release-event', self.on_key_release)
+
     def on_visibility_event(self, *args):
         self.dispatcher.emit('gc-shown')
 
@@ -249,3 +252,9 @@ class GCWindow(Gtk.Window):
         else:
             if self.logger:
                 self.logger.info("Cancel Shutdown")
+
+    def on_key_press(self, source, event):
+        self.dispatcher.emit("action-key-press", source, event)
+
+    def on_key_release(self, source, event):
+        self.dispatcher.emit("action-key-release", source, event)
