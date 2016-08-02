@@ -10,7 +10,7 @@
 # this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
-# 
+#
 # TODO:
 #  - Change mux. Dont use flvmux
 #  - In cameratype mpeg4 dont use decodebin2
@@ -26,10 +26,10 @@ from galicaster.recorder.utils import get_videosink, get_audiosink
 pipe_config = {'mpeg4':
                    {'depay': 'rtpmp4vdepay', 'parse': 'mpeg4videoparse', 'dec': 'avdec_mpeg4'},
                'h264':
-                   {'depay': 'rtph264depay', 'parse': 'h264parse', 'dec': 'avdec_h264'}} 
+                   {'depay': 'rtph264depay', 'parse': 'h264parse', 'dec': 'avdec_h264'}}
 
 pipe_config_audio = {'mp3':
-                         {'depay': 'rtpmpadepay', 'parse': 'mpegaudioparse', 'dec': 'flump3dec'},
+                         {'depay': 'rtpmpadepay', 'parse': 'mpegaudioparse', 'dec': 'avdec_mp3'},
                      'aac':
                          {'depay': 'rtpmp4gdepay', 'parse': 'aacparse', 'dec': 'faad'}}
 
@@ -44,13 +44,13 @@ audiostr = (' gc-rtp-src. ! gc-rtp-audio-depay ! gc-rtp-audioparse ! queue !'
            ' gc-rtp-audio-tee. ! queue ! gc-rtp-audio-dec ! '
            ' level name=gc-rtp-level message=true interval=100000000 ! '
            ' volume name=gc-rtp-volume ! gc-asink ')
- 
+
 
 
 class GCrtp(Gst.Bin, base.Base):
 
 
-    order = ["name", "flavor", "location", "file", "muxer", 
+    order = ["name", "flavor", "location", "file", "muxer",
              "cameratype", "audio", "audiotype", "vumeter", "player"]
     gc_parameters = {
         "name": {
@@ -114,7 +114,7 @@ class GCrtp(Gst.Bin, base.Base):
             "default": "xvimagesink",
             "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
             "description": "Video sink",
-        },    
+        },
         "audiosink" : {
             "type": "select",
             "default": "alsasink",
@@ -122,7 +122,7 @@ class GCrtp(Gst.Bin, base.Base):
             "description": "Audio sink",
         },
     }
-    
+
     is_pausable = False
     has_audio   = True
     has_video   = True
@@ -188,7 +188,7 @@ class GCrtp(Gst.Bin, base.Base):
         return self.get_by_name('sink-audio-'+self.options['name'])
 
     def getSource(self):
-        return self.get_by_name('gc-rtp-src') 
+        return self.get_by_name('gc-rtp-src')
 
     def mute_preview(self, value):
         if not self.mute:
@@ -199,3 +199,17 @@ class GCrtp(Gst.Bin, base.Base):
         src1 = self.get_by_name('gc-rtp-src')
         src1.send_event(event)
 
+    def disable_preview(self):
+        src1 = self.get_by_name('sink-'+self.options['name'])
+        src1.set_property('saturation', -1000)
+        src1.set_property('contrast', -1000)
+        element = self.get_by_name("gc-rtp-volume")
+        element.set_property("mute", True)
+
+
+    def enable_preview(self):
+        src1 = self.get_by_name('sink-'+self.options['name'])
+        src1.set_property('saturation',0)
+        src1.set_property('contrast',0)
+        element = self.get_by_name("gc-rtp-volume")
+        element.set_property("mute", False)

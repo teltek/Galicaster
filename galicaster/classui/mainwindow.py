@@ -167,6 +167,29 @@ class GCWindow(Gtk.Window):
         """Insert an area on the main window notebook widget"""
         self.nbox.insert_page(page, Gtk.Label(label=label), cod)
 
+    def insert_button(self, button, ui, box_id, **kwargs):
+        """Insert a button in the container named box_id in the notebook page with number ui"""
+        try:
+            builder = self.nbox.get_nth_page(ui).gui
+        except Exception as error:
+            self.logger.error("The view not exist")
+            return None
+        box = builder.get_object(box_id)
+        method_names = ["pack_start", "attach"]
+        for method_name in method_names:
+            try:
+                m = getattr(box,method_name)
+            except AttributeError:
+                pass
+            else:
+                m(button,**kwargs)
+                box.show_all()
+                self.logger.debug("Button inserted in id: {}".format(box_id))
+                return button
+        else:
+            self.logger.error("Error trying to add the element {} to the box {}, tried the methods: {}".format(button, box, method_names))
+
+
     def set_current_page(self, cod):
         """Changes active area"""
         self.nbox.set_current_page(cod)

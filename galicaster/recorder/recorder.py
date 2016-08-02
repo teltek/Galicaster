@@ -46,7 +46,8 @@ class Recorder(object):
         self.dispatcher = context.get_dispatcher()
         self.players = players
         self.restart = False
-        self.mute = False
+#        self.mute = False
+        self.mute_status = {"input":{},"preview":{}}
         self.error = False
         self.is_recording = False
         self.__start_record_time = -1
@@ -80,6 +81,9 @@ class Recorder(object):
                 self.bins[name] = Klass(bin)
                 self.pipeline.add(self.bins[name])
                 self.bins[name].prepare(self.bus)
+
+            self.enable_input()
+            self.enable_preview()
 
         except Exception as exc:
             logger.info("Removing loaded bins due to an error...")
@@ -308,6 +312,54 @@ class Recorder(object):
         for bin_name, bin in self.bins.iteritems():
             if bin.has_audio:
                 bin.mute_preview(value)
+
+
+    def disable_input(self, bin_names=[]):
+        if bin_names:
+            for elem in bin_names:
+                if elem in self.bins.keys():
+                    self.bins[elem].disable_input()
+                    self.mute_status["input"][elem] = False
+        else:
+            for bin_nam,bin in self.bins.iteritems():
+                bin.disable_input()
+                self.mute_status["input"][bin_nam] = False
+
+
+    def enable_input(self, bin_names=[]):
+        if bin_names:
+            for elem in bin_names:
+                if elem in self.bins.keys():
+                    self.bins[elem].enable_input()
+                    self.mute_status["input"][elem] = True
+        else:
+            for bin_nam,bin in self.bins.iteritems():
+                bin.enable_input()
+                self.mute_status["input"][bin_nam] = True
+
+
+    def disable_preview(self, bin_names=[]):
+        if bin_names:
+            for elem in bin_names:
+                if elem in self.bins.keys():
+                    self.bins[elem].disable_preview()
+                    self.mute_status["preview"][elem] = False
+        else:
+            for bin_nam,bin in self.bins.iteritems():
+                bin.disable_preview()
+                self.mute_status["preview"][bin_nam] = False
+
+
+    def enable_preview(self, bin_names=[]):
+        if bin_names:
+            for elem in bin_names:
+                if elem in self.bins.keys():
+                    self.bins[elem].enable_preview()
+                    self.mute_status["preview"][elem] = True
+        else:
+            for bin_nam,bin in self.bins.iteritems():
+                bin.enable_preview()
+                self.mute_status["preview"][bin_nam] = True
 
 
     def set_drawing_areas(self, players):

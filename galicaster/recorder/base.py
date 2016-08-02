@@ -77,7 +77,7 @@ class Base(object):
                 path, self.options['name'], exc)
 
             logger.error(error_msg)
-            raise SystemError(error_msg)        
+            raise SystemError(error_msg)
 
         # Sanitaze values
         self.options["name"] = re.sub(r'\W+', '', self.options["name"])
@@ -101,7 +101,7 @@ class Base(object):
             self.logger.error("There isn't an element named {}".format(element_name))
         else:
             element.set_property(prop, parse(value))
-            
+
 
     def get_display_areas_info(self):
         if self.has_video:
@@ -117,6 +117,18 @@ class Base(object):
     def prepare(self, bus=None):
         pass
 
+    def disable_input(self):
+        self.logger.warning("disable_input not implemented")
+
+    def enable_input(self):
+        self.logger.warning("enable_input not implemented")
+
+    def disable_preview(self):
+        self.logger.warning("disable_preview not implemented")
+
+    def enable_preview(self):
+        self.logger.warning("enable_preview not implemented")
+
     @classmethod
     def get_gc_parameters(klass):
         ps = {}
@@ -128,4 +140,3 @@ class Base(object):
     def get_conf_form(self):
         ##TODO necesito GLADE
         pass
-
