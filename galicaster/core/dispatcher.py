@@ -43,7 +43,8 @@ class Dispatcher(GObject.GObject):
         for element in args:
             parameters = parameters + (GObject.TYPE_PYOBJECT,)
 
-        GObject.signal_new(name, self, GObject.SignalFlags.RUN_LAST, None, parameters)
+        if not self.is_signal(name):
+            GObject.signal_new(name, self, GObject.SignalFlags.RUN_LAST, None, parameters)
 
 
     def connect_ui(self, detailed_signal, handler, *args):
