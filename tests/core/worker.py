@@ -231,7 +231,6 @@ class TestFunctions(TestCase):
 
         dispatcher.emit('timer-nightly')
         time.sleep(1) # Need time to create zip
-
         self.assertEqual(len(self.client.calls), 1)
         self.assertEqual(mp.getOpStatus(worker.INGEST_CODE), mediapackage.OP_DONE)
         rmtree('/tmp/repo_night')
@@ -244,7 +243,7 @@ class TestFunctions(TestCase):
         repo.add(mp)
 
         filename = '/tmp/mp.zip'
-        w.export_to_zip(mp, {'location': filename})
+        w.enqueue_job_by_name('exporttozip', mp, {'location': filename})
         time.sleep(0.25)
         self.assertTrue(os.path.exists(filename))
 
@@ -283,6 +282,6 @@ class TestFunctions(TestCase):
         repo.add(mp)
 
         filename = '/tmp/sidebyside.mpeg'
-        w.side_by_side(mp, {'location': filename})
+        w.enqueue_job_by_name('sidebyside', mp, {'location': filename})
         time.sleep(2)
         self.assertTrue(os.path.exists(filename))

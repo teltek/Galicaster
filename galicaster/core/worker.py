@@ -212,7 +212,7 @@ class Worker(object):
         return jobname
 
 
-    def do_job_by_name(self, name, mp_id, params={}):
+    def do_job_by_name(self, name, mp, params={}):
         """Does a particular operation for a particular mediapackage.
         Args:
             name (str): the name of the operation (code).
@@ -221,16 +221,17 @@ class Worker(object):
             Bool: True if success. False otherwise.
         """
         try:
-            mp = self.repo[mp_id]
+            if isinstance(mp, basestring):
+                mp = self.repo[mp]
             f = F_OPERATION[name]
         except Exception as exc:
-            self.logger.error("Fail get MP with id {0} or operation with name {1}. Exception: {2}".format(mp_id, name, exc))
+            self.logger.error("Fail get MP {0} or operation with name {1}. Exception: {2}".format(mp, name, exc))
             return False
         f(mp, params)
         return True
 
 
-    def enqueue_job_by_name(self, name, mp_id, params={}):
+    def enqueue_job_by_name(self, name, mp, params={}):
         """Enqeues a particular mediapackage operation to be done.
         Args:
             name (str): the name of the operation (code).
@@ -239,13 +240,26 @@ class Worker(object):
             Bool: True if success. False otherwise.
         """
         try:
-            mp = self.repo[mp_id]
+            if isinstance(mp, basestring):
+                mp = self.repo[mp]
             f = F_OPERATION_QUEUED[name]
         except Exception as exc:
-            self.logger.error("Fail get MP with id {0} or operation with name {1}. Exception: {2}".format(mp_id, name, exc))
+            self.logger.error("Fail get MP {0} or operation with name {1}. Exception: {2}".format(mp, name, exc))
             return False
         f(mp, params)
         return True
+
+
+    def enqueue_nightly_job_by_name(self, operation, mp, params={}):
+        """Adds a mediapackage operation to be done at nightly configured time.
+        Args:
+            mp (Mediapackage): the mediapackage with a operation to be processed.
+            operation (str): name of the nighly operation to be done.
+        """
+        self.logger.debug("Set nightly operation {} for MP {}".format(operation, mp.getIdentifier()))
+        mp.setOpStatus(operation,mediapackage.OP_NIGHTLY)
+        self.repo.update(mp)
+        self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
 
 
     def do_job(self, name, mp, params={}):
@@ -278,13 +292,13 @@ class Worker(object):
                 if not name.replace('cancel','') in JOB_NAMES.keys():
                     raise Exception('Unknown operation named {}'.format(name))
 
-                self.cancel_nightly(mp, name.replace('cancel',''))
+                self.cancel_nightly(name.replace('cancel',''), mp)
             else:
                 # getattr(self, name)
                 if not name in JOB_NAMES.keys():
                     raise Exception('Unknown operation named {}'.format(name))
 
-                self.operation_nightly(mp, name, params)
+                self.enqueue_nightly_job_by_name(name, mp, params)
         except Exception as exc:
             self.logger.error("Failure performing nightly job {0} for MP {1}. Exception: {2}".format(name, mp, exc))
             return False
@@ -303,13 +317,6 @@ class Worker(object):
         while os.path.exists(os.path.join(self.export_path, name + '.' + extension)):
             name += '_2'
         return os.path.join(self.export_path, name + '.' + extension)
-
-    def ingest_nightly(self, mp):
-        """Ingests nigthly a mediapackage into opencast.
-        Args:
-            mp (Mediapackage): the mediapackage to be nightly ingested.
-        """
-        self.operation_nightly(mp, INGEST_CODE)
 
 
     def _ingest(self, mp, params={}):
@@ -390,10 +397,10 @@ class Worker(object):
         JOB_NAMES.update({code: name})
 
         operation = self.__create_operation(name, code, handler)
-        F_OPERATION.update({name : operation})
+        F_OPERATION.update({code : operation})
 
         operation_queued = self.__create_operation_queued(name, code, operation)
-        F_OPERATION_QUEUED.update({name: operation_queued})
+        F_OPERATION_QUEUED.update({code: operation_queued})
 
 
     def __create_operation(self, name, code, handler):
@@ -406,9 +413,9 @@ class Worker(object):
 
             try:
                 handler(mp, params)
-                self.operation_success(mp, name)
+                self.__operation_success(mp, name)
             except Exception as exc:
-                self.operation_error(mp, name, exc)
+                self.__operation_error(mp, name, exc)
 
             self.repo.update(mp)
 
@@ -488,33 +495,21 @@ class Worker(object):
 
 
 
-    def operation_error(self, mp, OP_NAME, exc):
+    def __operation_error(self, mp, OP_NAME, exc):
         self.logger.error("Failed {} for MP {}. Exception: {}".format(OP_NAME, mp.getIdentifier(), exc))
         mp.setOpStatus(JOBS[OP_NAME], mediapackage.OP_FAILED)
         self.dispatcher.emit('operation-stopped', JOBS[OP_NAME], mp, False, None)
         self.repo.update(mp)
 
 
-    def operation_success(self, mp, OP_NAME):
+    def __operation_success(self, mp, OP_NAME):
         self.logger.info("Finalized {} for MP {}".format(OP_NAME, mp.getIdentifier()))
         mp.setOpStatus(JOBS[OP_NAME], mediapackage.OP_DONE)
         self.dispatcher.emit('operation-stopped', JOBS[OP_NAME], mp, True, None)
         self.repo.update(mp)
 
 
-    def operation_nightly(self, mp, operation, params={}):
-        """Adds a mediapackage operation to be done at nightly configured time.
-        Args:
-            mp (Mediapackage): the mediapackage with a operation to be processed.
-            operation (str): name of the nighly operation to be done.
-        """
-        self.logger.debug("Set nightly operation {} for MP {}".format(operation, mp.getIdentifier()))
-        mp.setOpStatus(operation,mediapackage.OP_NIGHTLY)
-        self.repo.update(mp)
-        self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
-
-
-    def cancel_nightly(self, mp, operation):
+    def cancel_nightly(self, operation, mp):
         """Removes a mediapackage operation to be done at nightly configured time.
         Args:
             mp (Mediapackage): the mediapackage with a operation to be processed.
@@ -535,9 +530,4 @@ class Worker(object):
         for mp in self.repo.values():
             for (op_name, op_status) in mp.operation.iteritems():
                 if op_status == mediapackage.OP_NIGHTLY:
-                    if op_name == INGEST_CODE:
-                        self.ingest(mp)
-                    elif op_name == ZIPPING_CODE:
-                        self.export_to_zip(mp)
-                    elif op_name == SBS_CODE:
-                        self.side_by_side(mp)
+                    self.enqueue_job_by_name(op_name, mp)

@@ -188,9 +188,9 @@ class RecorderService(object):
 
         code = 'manual' if self.current_mediapackage.manual else 'scheduled'
         if self.conf.get_lower('ingest', code) == 'immediately':
-            self.worker.ingest(self.current_mediapackage)
+            self.worker.enqueue_job_by_name('ingest', self.current_mediapackage)
         elif self.conf.get_lower('ingest', code) == 'nightly':
-            self.worker.ingest_nightly(self.current_mediapackage)
+            self.worker.enqueue_nightly_job_by_name('ingest', self.current_mediapackage)
         self.current_mediapackage = None
 
 
