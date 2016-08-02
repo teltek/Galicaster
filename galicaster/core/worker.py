@@ -352,11 +352,7 @@ class Worker(object):
         location = self.gen_location('zip') if not "location" in params else params["location"]
         is_action = True if not "is_action" in params else params["is_action"]
 
-        if is_action:
-            self.logger.info("Executing ExportToZIP for MP {} to {}".format(mp.getIdentifier(), location if type(location) in [str,unicode] else location.name))
-            mp.setOpStatus('exporttozip',mediapackage.OP_PROCESSING)
-            self.dispatcher.emit('operation-started', 'exporttozip', mp)
-        else:
+        if not is_action:
             self.logger.info("Zipping MP {} to {}".format(mp.getIdentifier(), location if type(location) in [str,unicode] else location.name))
 
         serializer.save_in_zip(mp, location, self.use_namespace, self.logger)
@@ -392,11 +388,11 @@ class Worker(object):
             try:
                 pending_process = handler(mp, params)
                 if not pending_process:
-                    self.__operation_success(mp, name)
+                    self.operation_success(mp, code)
                 else:
                     self.logger.info('Completed first part of {} for MP {} (It is not marked as completed until the whole process is done)'.format(name, mp.getIdentifier()))
             except Exception as exc:
-                self.__operation_error(mp, name, exc)
+                self.operation_error(mp, code, exc)
 
         return handler_template
 
@@ -474,17 +470,17 @@ class Worker(object):
 
 
 
-    def __operation_error(self, mp, OP_NAME, exc):
-        self.logger.error("Failed {} for MP {}. Exception: {}".format(OP_NAME, mp.getIdentifier(), exc))
-        mp.setOpStatus(JOBS[OP_NAME], mediapackage.OP_FAILED)
-        self.dispatcher.emit('operation-stopped', JOBS[OP_NAME], mp, False, None)
+    def operation_error(self, mp, OP_CODE, exc):
+        self.logger.error("Failed {} for MP {}. Exception: {}".format(JOB_NAMES[OP_CODE], mp.getIdentifier(), exc))
+        mp.setOpStatus(OP_CODE, mediapackage.OP_FAILED)
+        self.dispatcher.emit('operation-stopped', OP_CODE, mp, False, None)
         self.repo.update(mp)
 
 
-    def __operation_success(self, mp, OP_NAME):
-        self.logger.info("Finalized {} for MP {}".format(OP_NAME, mp.getIdentifier()))
-        mp.setOpStatus(JOBS[OP_NAME], mediapackage.OP_DONE)
-        self.dispatcher.emit('operation-stopped', JOBS[OP_NAME], mp, True, None)
+    def operation_success(self, mp, OP_CODE):
+        self.logger.info("Finalized {} for MP {}".format(JOB_NAMES[OP_CODE], mp.getIdentifier()))
+        mp.setOpStatus(OP_CODE, mediapackage.OP_DONE)
+        self.dispatcher.emit('operation-stopped', OP_CODE, mp, True, None)
         self.repo.update(mp)
 
 
