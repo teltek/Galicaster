@@ -55,11 +55,11 @@ class ManagerUI(Gtk.Box):
         Gtk.Box.__init__(self)
         self.strip = StripUI(element)
 
-	self.conf = context.get_conf()
-	self.dispatcher = context.get_dispatcher()
-	self.repository = context.get_repository()
-	self.network = False
-	self.dispatcher.connect_ui("opencast-status", self.network_status)
+        self.conf = context.get_conf()
+        self.dispatcher = context.get_dispatcher()
+        self.repository = context.get_repository()
+        self.network = False
+        self.dispatcher.connect_ui("opencast-status", self.network_status)
 
 
     def sorting(self, treemodel, iter1, iter2, data, regular=True, ascending=1):
@@ -111,7 +111,7 @@ class ManagerUI(Gtk.Box):
             else:
                 return -1
 
-	    # Regular sorting
+            # Regular sorting
         if first > second:
             return 1 * ascending
         elif first == second:
@@ -147,7 +147,7 @@ class ManagerUI(Gtk.Box):
             else:
                 return -1
 
-	    # Regular sorting
+            # Regular sorting
         if first > second:
             return 1 * ascending
         elif first == second:
@@ -215,14 +215,14 @@ class ManagerUI(Gtk.Box):
         operations_dialog = message.PopUp(message.OPERATIONS,text,
                                 context.get_mainwindow(),
                                 operations)
-        
+
         if operations_dialog.response == Gtk.ResponseType.REJECT or \
             operations_dialog.response == Gtk.ResponseType.DELETE_EVENT or \
             operations_dialog.response == Gtk.ResponseType.OK:
             return True
 
         elif 0 < operations_dialog.response <= len(response_list):
-            chosen_job = response_list[operations_dialog.response-1].lower().replace (" ", "_")
+            chosen_job = response_list[operations_dialog.response-1].lower().replace (" ", "")
             if chosen_job.count('nightly'):
                 context.get_worker().do_job_nightly(chosen_job.replace("_",""), package)
             else:
@@ -239,10 +239,10 @@ class ManagerUI(Gtk.Box):
 
     def edit(self,key):
         """Pop ups the Metadata Editor"""
-	logger.info("Edit: {0}".format(str(key)))
-	selected_mp = self.repository.get(key)
-	Metadata(selected_mp)
-	self.repository.update(selected_mp)
+        logger.info("Edit: {0}".format(str(key)))
+        selected_mp = self.repository.get(key)
+        Metadata(selected_mp)
+        self.repository.update(selected_mp)
 
     def info(self,key):
         """Pops up de MP info dialog"""
@@ -288,14 +288,14 @@ class ManagerUI(Gtk.Box):
 
         if data.has_key('seriestitle'):
             data['isPartOf'] = data['seriestitle']
- 
+
         # Operations
         for op,status in data['operations'].iteritems():
             data[op] = mediapackage.op_status[status]
         del data['operations']
 
         # Tracks
-        tracks = [] 
+        tracks = []
         for track in data['media']['track']:
             t = {}
             t[_('Name:')] = track['id']
@@ -325,57 +325,57 @@ class ManagerUI(Gtk.Box):
         """Force a resize on the Media Manager"""
         size = context.get_mainwindow().get_size()
         self.strip.resize()
-	altura = size[1]
-	anchura = size[0]
+        altura = size[1]
+        anchura = size[0]
 
-	k1 = anchura / 1920.0
-	k2 = altura / 1080.0
-	self.proportion = k1
+        k1 = anchura / 1920.0
+        k2 = altura / 1080.0
+        self.proportion = k1
 
-	for name in buttonlist:
-	    button = self.gui.get_object(name)
-	    button.set_property("width-request", int(k1*100) )
-	    button.set_property("height-request", int(k1*100) )
+        for name in buttonlist:
+            button = self.gui.get_object(name)
+            button.set_property("width-request", int(k1*100) )
+            button.set_property("height-request", int(k1*100) )
 
-	    image = button.get_children()
-	    if type(image[0]) == Gtk.Image:
-		image[0].set_pixel_size(int(k1*80))
+            image = button.get_children()
+            if type(image[0]) == Gtk.Image:
+                image[0].set_pixel_size(int(k1*80))
 
-	    elif type(image[0]) == Gtk.VBox:
-		for element in image[0].get_children():
-		    if type(element) == Gtk.Image:
-			element.set_pixel_size(int(k1*46))
+            elif type(image[0]) == Gtk.VBox:
+                for element in image[0].get_children():
+                    if type(element) == Gtk.Image:
+                        element.set_pixel_size(int(k1*46))
 
-	for name in secondlist:
-	    button2 = self.gui.get_object(name)
-	    button2.set_property("width-request", int(k2*85) )
-	    button2.set_property("height-request", int(k2*85) )
+        for name in secondlist:
+            button2 = self.gui.get_object(name)
+            button2.set_property("width-request", int(k2*85) )
+            button2.set_property("height-request", int(k2*85) )
 
-	    image = button2.get_children()[0].get_children()
-	    if type(image[0]) == Gtk.Image:
-		image[0].set_pixel_size(int(k1*56))
+            image = button2.get_children()[0].get_children()
+            if type(image[0]) == Gtk.Image:
+                image[0].set_pixel_size(int(k1*56))
                 image[0].show()
 
-	    elif type(image[0]) == Gtk.VBox:
-		for element in image[0].get_children():
-		    if type(element) == Gtk.Image:
-			element.set_pixel_size(int(k1*46))
+            elif type(image[0]) == Gtk.VBox:
+                for element in image[0].get_children():
+                    if type(element) == Gtk.Image:
+                        element.set_pixel_size(int(k1*46))
 
-	return True
+        return True
 
     def delete(self,key, response=None):
         """Pops up a dialog. If response is positive, deletes a MP."""
         self.selected = key
-	package = self.repository.get(key)
-	logger.info("Delete: {0}".format(str(key)))
-	t1 = _("This action will remove the recording from the hard disk.")
-	t2 = _('Recording: "{0}"').format(package.getTitle())
-	text = {"title" : _("Media Manager"),
-		"main" : _("Are you sure you want to delete?"),
-		"text" : t1+"\n\n"+t2
-		    }
-	buttons = ( Gtk.STOCK_DELETE, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
-	message.PopUp(message.WARN_DELETE, text,
+        package = self.repository.get(key)
+        logger.info("Delete: {0}".format(str(key)))
+        t1 = _("This action will remove the recording from the hard disk.")
+        t2 = _('Recording: "{0}"').format(package.getTitle())
+        text = {"title" : _("Media Manager"),
+                "main" : _("Are you sure you want to delete?"),
+                "text" : t1+"\n\n"+t2
+                    }
+        buttons = ( Gtk.STOCK_DELETE, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
+        message.PopUp(message.WARN_DELETE, text,
                       context.get_mainwindow(),
                       buttons, response)
 
