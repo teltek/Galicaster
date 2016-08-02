@@ -12,7 +12,6 @@
 # San Francisco, California, 94105, USA.
 
 import os
-import threading
 import tempfile
 import Queue
 
@@ -22,6 +21,8 @@ from galicaster.mediapackage import serializer
 from galicaster.mediapackage import mediapackage
 from galicaster.utils import sidebyside
 from galicaster.utils.mediainfo import get_info
+
+from galicaster.utils.queuethread import T
 
 INGEST = 'Ingest'
 ZIPPING = 'Export to Zip'
@@ -49,29 +50,6 @@ This class manages the long operations to be done with a mediapackage:
 This operations are threads concurrently done with the rest of galicaster tasks to avoid blocking them.
 """
 class Worker(object):
-
-    class T(threading.Thread):
-
-        def __init__(self, queue):
-            """
-            Initializes a Thread with a queue of jobs to be done concurrently with other Galicaster tasks.
-            Args:
-                queue (Queue): queue of jobs.
-            Attributes:
-                queue (Queue): queue of jobs.
-            """
-            threading.Thread.__init__(self)
-            self.queue = queue
-
-        def run(self):
-            """Runs and removes a job from the queue.
-            Marks the job as done.
-            """
-            while True:
-                job, params = self.queue.get()
-                job(*params)
-                self.queue.task_done()
-
 
     def __init__(self, dispatcher, repo, logger, oc_client=None, export_path=None, tmp_path=None,
                  use_namespace=True, sbs_layout='sbs', hide_ops=[], hide_nightly=[]):
@@ -119,7 +97,7 @@ class Worker(object):
 
         self.jobs = Queue.Queue()
 
-        self.t = self.T(self.jobs)
+        self.t = T(self.jobs)
         self.t.setDaemon(True)
         self.t.start()
 
