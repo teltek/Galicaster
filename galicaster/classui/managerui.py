@@ -222,7 +222,7 @@ class ManagerUI(Gtk.Box):
             return True
 
         elif 0 < operations_dialog.response <= len(response_list):
-            chosen_job = response_list[operations_dialog.response-1]
+            chosen_job = response_list[operations_dialog.response-1].lower().replace (" ", "")
             if chosen_job.count('nightly'):
                 context.get_worker().do_job_nightly(chosen_job.replace("_",""), package)
             else:
