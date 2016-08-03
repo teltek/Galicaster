@@ -40,7 +40,7 @@ from galicaster.classui import message
 from galicaster.classui import get_ui_path, get_image_path
 from galicaster.opencast import series
 from galicaster.utils import readable
-from galicaster.utils.resize import relabel
+from galicaster.utils.resize import relabel, resize_button
 from galicaster.utils.i18n import _
 
 from galicaster.recorder.service import STATUSES
@@ -218,7 +218,6 @@ class RecorderClassUI(Gtk.Box):
         self.swap = not self.swap
         self.dispatcher.emit("action-reload-profile")
         self.mute = False
-
 
     def on_rec(self,button=None):
         """GUI callback for manual recording"""
@@ -664,15 +663,8 @@ class RecorderClassUI(Gtk.Box):
         for name  in ["recbutton","pausebutton","stopbutton","editbutton","swapbutton","helpbutton"]:
             button = self.gui.get_object(name)
 
-            image = button.get_children()
-            if type(image[0]) == Gtk.Image:
-                image[0].set_pixel_size(int(k1*60))
-            elif type(image[0]) == Gtk.Box:
-                for element in image[0].get_children():
-                    if type(element) == Gtk.Image:
-                        element.set_pixel_size(int(k1*46))
-            else:
-                relabel(image[0],k1*28,False)
+            resize_button(button,size_image=k1*60,size_box=k1*46,size_label=k1*28)
+
         # change stop button
         for name in ["pause","stop"]:
             button = self.gui.get_object(name+"button")
@@ -696,10 +688,8 @@ class RecorderClassUI(Gtk.Box):
         vum = self.gui.get_object("vubox")
         vum.set_padding(int(k1*20),int(k1*10),0,0)
         pbox.set_property("width-request", int(k1*225) )
-
         hbox1 = self.gui.get_object('hbox1')
         hbox1.set_property('spacing', int(k1*325))
-
         return True
 
 
