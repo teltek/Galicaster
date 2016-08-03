@@ -379,8 +379,6 @@ class ManagerUI(Gtk.Box):
                       context.get_mainwindow(),
                       buttons, response)
 
-
-
     def network_status(self, signal, status):
         """Updates the signal status from a received signal"""
         self.network = status
