@@ -22,8 +22,11 @@ from galicaster.classui import get_image_path
 from galicaster.classui import get_ui_path
 from galicaster.utils.shutdown import shutdown as UtilsShutdown
 
+from galicaster.core import context
+
 from galicaster.utils.i18n import _
 
+from galicaster.utils.resize import resize_button
 
 class GCWindow(Gtk.Window):
     """
@@ -182,6 +185,9 @@ class GCWindow(Gtk.Window):
                 m(button,**kwargs)
                 box.show_all()
                 self.logger.debug("Button inserted in id: {}".format(box_id))
+                size = context.get_mainwindow().get_size()
+                k1 = size[0] / 1920.0
+                resize_button(button,size_image=k1*44,size_box=k1*46)
                 return button
         else:
             self.logger.error("Error trying to add the element {} to the box {}, tried the methods: {}".format(button, box, method_names))
