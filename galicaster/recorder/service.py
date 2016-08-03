@@ -29,7 +29,7 @@ class Status(object):
     def __repr__(self): return self.name
 
 
-INIT_STATUS      = Status('init', 'Initialization')
+INIT_STATUS      = Status('init', 'Init')
 PREVIEW_STATUS   = Status('preview', 'Waiting')
 RECORDING_STATUS = Status('recording', 'Recording', '#484848', '#FF0000')
 PAUSED_STATUS    = Status('paused', 'Paused')
