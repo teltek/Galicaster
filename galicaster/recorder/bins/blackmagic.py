@@ -138,7 +138,7 @@ class GCblackmagic(Gst.Bin, base.Base):
       "type": "select",
       "default": "0",
       "options": [
-        "0", "1", "2","3"
+        0,1,2,3
         ],
       "description": "Select a Blackmagic card from a maximum of 4 devices",
       },
