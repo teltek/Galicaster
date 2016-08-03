@@ -172,10 +172,10 @@ class GCWindow(Gtk.Window):
         try:
             builder = self.nbox.get_nth_page(ui).gui
         except Exception as error:
-            self.logger.error("The view not exist")
+            self.logger.error("The view not exist: {}".format(error))
             return None
         box = builder.get_object(box_id)
-        method_names = ["pack_start", "attach"]
+        method_names = ["add", "pack_start", "attach"]
         for method_name in method_names:
             try:
                 m = getattr(box,method_name)
