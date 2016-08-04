@@ -136,7 +136,7 @@ class GCblackmagic(Gst.Bin, base.Base):
       },
     "subdevice" : {
       "type": "select",
-      "default": "0",
+      "default": 0,
       "options": [
         0,1,2,3
         ],
@@ -214,7 +214,7 @@ class GCblackmagic(Gst.Bin, base.Base):
         aux = (pipestr.replace('gc-vsink', gcvideosink)
                .replace('gc-blackmagic-conn', self.options['input'])
                .replace('gc-blackmagic-mode', self.options['input-mode'])
-               .replace('gc-blackmagic-subd', self.options['subdevice'])
+               .replace('gc-blackmagic-subd', str(self.options['subdevice']))
                .replace('gc-blackmagic-enc', self.options['videoencoder'])
                .replace('gc-blackmagic-muxer', self.options['muxer']+" name=gc-blackmagic-muxer")
                .replace('gc-blackmagic-capsfilter', "video/x-raw,framerate={0}".format(self.options['framerate']))
@@ -228,7 +228,7 @@ class GCblackmagic(Gst.Bin, base.Base):
           aux = aux.replace('gc-asink', gcaudiosink)
           aux = aux.replace('gc-blackmagic-audioenc', self.options['audioencoder'])
           aux = aux.replace('gc-blackmagic-audioconn', self.options['audio-input'])
-          aux = aux.replace('gc-blackmagic-audiosubd', self.options['subdevice'])
+          aux = aux.replace('gc-blackmagic-audiosubd', str(self.options['subdevice']))
 
         #bin = Gst.parse_bin_from_description(aux, False)
         bin = Gst.parse_launch("( {} )".format(aux))

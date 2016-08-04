@@ -6,9 +6,9 @@
 # Copyright (c) 2014, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 
@@ -21,7 +21,7 @@ from os import path
 from galicaster.utils import validator
 
 class TestFunctions(TestCase):
-    
+
     def setUp(self):
         pass
 
@@ -60,7 +60,7 @@ class TestFunctions(TestCase):
         error, valid_track = validator.validate_track(track, gc_params)
         self.assertNotEqual(error, None)
         self.assertEqual(valid_track['pattern'], 0)
-        
+
 
     def test_validate_integer(self):
         track = {'device': 'videotest'}
@@ -71,8 +71,8 @@ class TestFunctions(TestCase):
         track['pattern'] = '10'
         error, valid_track = validator.validate_track(track)
         self.assertEqual(error, None)
-        self.assertEqual(valid_track['pattern'], 10)        
-        
+        self.assertEqual(valid_track['pattern'], 10)
+
         # Out of range
         track['pattern'] = '-10'
         error, valid_track = validator.validate_track(track)
@@ -85,12 +85,12 @@ class TestFunctions(TestCase):
         self.assertNotEqual(error, None)
         self.assertEqual(valid_track['pattern'], 0)
 
-        
+
     def test_validate_float(self):
         track = {'device': 'audiotest'}
         error, valid_track = validator.validate_track(track)
         self.assertEqual(error, None)
-        
+
         # Valid
         track['amplification'] = '2.0'
         error, valid_track = validator.validate_track(track)
@@ -116,24 +116,24 @@ class TestFunctions(TestCase):
         self.assertEqual(error, None)
 
         # Valid
-        track['xid'] = '65CB00'
+        track['xid'] = '0x65CB00'
         error, valid_track = validator.validate_track(track)
         self.assertEqual(error, None)
-        self.assertEqual(valid_track['xid'], '65CB00')        
-       
+        self.assertEqual(valid_track['xid'], 0x65CB00)
+
         # Out of range
-        track['xid'] = 'FFFFFG'
+        track['xid'] = '0xFFFFFG'
         error, valid_track = validator.validate_track(track)
         self.assertNotEqual(error, None)
-        self.assertEqual(valid_track['xid'], '0')
+        self.assertEqual(valid_track['xid'], 0)
 
         # Invalid
         track['xid'] = 'nonumber'
         error, valid_track = validator.validate_track(track)
         self.assertNotEqual(error, None)
-        self.assertEqual(valid_track['xid'], '0')
+        self.assertEqual(valid_track['xid'], 0)
 
-        
+
     def test_validate_boolean(self):
         track = {'device': 'audiotest'}
         error, valid_track = validator.validate_track(track)
@@ -143,15 +143,15 @@ class TestFunctions(TestCase):
         track['player'] = 'True'
         error, valid_track = validator.validate_track(track)
         self.assertEqual(error, None)
-        self.assertEqual(valid_track['player'], True)        
-       
+        self.assertEqual(valid_track['player'], True)
+
         # Invalid
         track['player'] = 'noboolean'
         error, valid_track = validator.validate_track(track)
         self.assertNotEqual(error, None)
         self.assertEqual(valid_track['player'], 'True')
 
-        
+
     def test_validate_flavor(self):
         track = {'device': 'videotest'}
         error, valid_track = validator.validate_track(track)
@@ -161,15 +161,15 @@ class TestFunctions(TestCase):
         track['flavor'] = 'presentation'
         error, valid_track = validator.validate_track(track)
         self.assertEqual(error, None)
-        self.assertEqual(valid_track['flavor'], 'presentation')        
-       
+        self.assertEqual(valid_track['flavor'], 'presentation')
+
         # Invalid
         track['flavor'] = 'noflavor'
         error, valid_track = validator.validate_track(track)
         self.assertNotEqual(error, None)
         self.assertEqual(valid_track['flavor'], 'presenter')
 
-        
+
     def test_validate_select(self):
         track = {'device': 'videotest'}
         error, valid_track = validator.validate_track(track)
@@ -179,22 +179,22 @@ class TestFunctions(TestCase):
         track['videosink'] = 'fakesink'
         error, valid_track = validator.validate_track(track)
         self.assertEqual(error, None)
-        self.assertEqual(valid_track['videosink'], 'fakesink')        
-       
+        self.assertEqual(valid_track['videosink'], 'fakesink')
+
         # Invalid
         track['videosink'] = 'novideosink'
         error, valid_track = validator.validate_track(track)
         self.assertNotEqual(error, None)
         self.assertEqual(valid_track['videosink'], 'xvimagesink')
 
-        
+
     def test_validate_list(self):
         track = {'listparam': '[1,2,3,4]'}
         gc_params = { "listparam": {
             "type": "list",
             "default": []}
         }
-        
+
         error, valid_track = validator.validate_track(track, gc_params)
         self.assertEqual(error, None)
 
@@ -202,21 +202,21 @@ class TestFunctions(TestCase):
         track['listparam'] = [1,2,3,4,5,6]
         error, valid_track = validator.validate_track(track, gc_params)
         self.assertEqual(error, None)
-        
+
         # Invalid
         track['listparam'] = 'nolist'
         error, valid_track = validator.validate_track(track, gc_params)
         self.assertNotEqual(error, None)
         self.assertEqual(valid_track['listparam'], [])
 
-        
+
     def test_validate_dict(self):
         track = {'dictparam': '{"1":"2","3":"4"}'}
         gc_params = { "dictparam": {
             "type": "dict",
             "default": {}}
         }
-        
+
         error, valid_track = validator.validate_track(track, gc_params)
         self.assertEqual(error, None)
         self.assertEqual(valid_track['dictparam'], {'1':'2','3':'4'})
@@ -226,7 +226,7 @@ class TestFunctions(TestCase):
         error, valid_track = validator.validate_track(track, gc_params)
         self.assertEqual(error, None)
         self.assertEqual(valid_track['dictparam'], {1:2,3:4,5:6})
-        
+
         # Invalid
         track['dictparam'] = 'nodict'
         error, valid_track = validator.validate_track(track, gc_params)
@@ -254,5 +254,3 @@ class TestFunctions(TestCase):
         error, valid_track = validator.validate_track(track, gc_params)
         self.assertEqual(error, None)
         self.assertEqual(valid_track['pattern'], 0)
-
-        

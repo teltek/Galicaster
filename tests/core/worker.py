@@ -227,7 +227,7 @@ class TestFunctions(TestCase):
         w = worker.Worker(self.dispatcher, self.repo1, self.logger, self.client)
 
         filename = '/tmp/mp.zip'
-        w.enqueue_job_by_name('exporttozip', mp, {'location': filename})
+        w.enqueue_job_by_name('exporttozip', self.mp, {'location': filename})
         time.sleep(0.25)
         self.assertTrue(os.path.exists(filename))
 
@@ -261,6 +261,6 @@ class TestFunctions(TestCase):
 
 
         filename = '/tmp/sidebyside.mpeg'
-        w.side_by_side(self.mp, {'location': filename})
+        w.enqueue_job_by_name('sidebyside', self.mp, {'location': filename})
         time.sleep(2)
         self.assertTrue(os.path.exists(filename))
