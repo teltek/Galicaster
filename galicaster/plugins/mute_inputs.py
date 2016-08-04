@@ -30,8 +30,8 @@ def manage_button(element=None):
 
     label = set_label(2,2,"Input status: ")
     label1 = set_label(0,1)
-    context.get_mainwindow().insert_button(label,PAGES['REC'],"status_panel", left=0,top=4,width=1,height=1)
-    context.get_mainwindow().insert_button(label1,PAGES['REC'],"status_panel", left=1,top=4,width=1,height=1)
+    context.get_mainwindow().insert_button(label,PAGES['REC'],"status_panel")
+    context.get_mainwindow().insert_button(label1,PAGES['REC'],"status_panel")
 
     button = Gtk.Button()
     hbox = Gtk.Box()
@@ -49,7 +49,7 @@ def manage_button(element=None):
         dispatcher.connect("recorder-ready", mute_inputs, mute_type, label1)
 
     try:
-        buttonREC = context.get_mainwindow().insert_button(button,PAGES['REC'],"buttonbox", left=6,top=0,width=1,height=1)
+        buttonREC = context.get_mainwindow().insert_button(button,PAGES['REC'],"buttonbox")
         buttonREC.connect("clicked",mute_inputs, mute_type, label1, to_disable)
     except Exception as exc:
         logger.error(exc)

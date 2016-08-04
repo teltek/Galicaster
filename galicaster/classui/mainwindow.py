@@ -79,6 +79,9 @@ class GCWindow(Gtk.Window):
         self.nbox.set_show_tabs(False)
         self.add(self.nbox)
 
+        self.connect('key-press-event', self.on_key_press)
+        self.connect('key-release-event', self.on_key_release)
+
     def on_visibility_event(self, *args):
         self.dispatcher.emit('gc-shown')
 
@@ -164,15 +167,16 @@ class GCWindow(Gtk.Window):
         """Insert an area on the main window notebook widget"""
         self.nbox.insert_page(page, Gtk.Label(label=label), cod)
 
+
     def insert_button(self, button, ui, box_id, **kwargs):
         """Insert a button in the container named box_id in the notebook page with number ui"""
         try:
             builder = self.nbox.get_nth_page(ui).gui
         except Exception as error:
-            self.logger.error("The view not exist")
+            self.logger.error("The view does not exist: {}".format(error))
             return None
         box = builder.get_object(box_id)
-        method_names = ["pack_start", "attach"]
+        method_names = ["add", "pack_start", "attach"]
         for method_name in method_names:
             try:
                 m = getattr(box,method_name)
@@ -185,6 +189,55 @@ class GCWindow(Gtk.Window):
                 return button
         else:
             self.logger.error("Error trying to add the element {} to the box {}, tried the methods: {}".format(button, box, method_names))
+
+
+    def insert_element(self, element, ui, box_id, **kwargs):
+        """Insert an element in the container named box_id
+           in the notebook page with number ui"""
+        try:
+            box = self.get_element(box_id, ui)
+            if box:
+                method_names = ["add", "pack_start", "attach"]
+                for method_name in method_names:
+                    try:
+                        m = getattr(box,method_name)
+                    except AttributeError:
+                        pass
+                    else:
+                        m(element,**kwargs)
+                        box.show_all()
+                        self.logger.debug("Element inserted in id: {}".format(box_id))
+                        return element
+                else:
+                    self.logger.error("Error trying to add the element {} to the box {}, tried the methods: {}".format(element, box, method_names))
+                    return None
+        except Exception as error:
+            self.logger.error("Error trying to add the element: {}".format(error))
+            return None
+
+
+    def insert_element_with_position(self, element, ui, box_id, position=0, **kwargs):
+        """Insert an element in the container named box_id
+           in the notebook page with number ui"""
+        element = self.insert_element(element, ui, box_id, **kwargs)
+        if element:
+            try:
+                builder = self.nbox.get_nth_page(ui).gui
+                box = builder.get_object(box_id)
+                box.reorder_child(element,position)
+                return element
+            except Exception as exc:
+                self.logger.error("Error trying to reorcer element {}: {}".format(element, exc))
+
+
+
+    def get_element(self, element_name, ui):
+        try:
+            builder = self.nbox.get_nth_page(ui).gui
+            box = builder.get_object(element_name)
+            return box
+        except Exception as exc:
+            self.logger.error("Error trying to get element with name {} from {}: {}".format(element_name, ui, exc))
 
 
     def set_current_page(self, cod):
@@ -249,3 +302,9 @@ class GCWindow(Gtk.Window):
         else:
             if self.logger:
                 self.logger.info("Cancel Shutdown")
+
+    def on_key_press(self, source, event):
+        self.dispatcher.emit("action-key-press", source, event)
+
+    def on_key_release(self, source, event):
+        self.dispatcher.emit("action-key-release", source, event)

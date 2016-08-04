@@ -119,8 +119,15 @@ GtkWindow.shaded>*{
     color: green;
 }
 
+.label_extrabig{
+    font-weight: bold;
+    font-size: 2.3em;
+}
 .label_big{
     font-size: 1.5em;
+}
+.label_medium{
+    font-size: 1em;
 }
 .label_small{
     font-size: 0.75em;
@@ -133,10 +140,18 @@ GtkWindow.shaded>*{
 GtkNotebook tab:active{
 	background-image: inherit;
 }
-GtkNotebook tab{
+.notebook_horizontal tab{
 	background-image: -gtk-gradient(
 		linear,
 		left top, right top,
+		from(shade(gray,1.9)),
+		to(shade(gray,1.5)));
+}
+
+.notebook_vertical tab{
+	background-image: -gtk-gradient(
+		linear,
+		left bottom, left top,
 		from(shade(gray,1.9)),
 		to(shade(gray,1.5)));
 }

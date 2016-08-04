@@ -105,10 +105,9 @@ class TestFunctions(TestCase):
         # Even length
         self.assertTrue(len(jtypes)%2 == 0)
 
-        for indx, element in enumerate(jtypes_2):
-            jtypes_2[indx] = jtypes_2[indx].replace(' Nightly', '')
-
-        self.assertEqual(jtypes_1, jtypes_2)
+        for indx, element in enumerate(jtypes):
+            if indx%2 == 0:
+                self.assertEqual(jtypes[indx] + ' Nightly', jtypes[indx+1])
 
 
     def test_get_ui_job_types(self):
@@ -219,7 +218,6 @@ class TestFunctions(TestCase):
 
         dispatcher.emit('timer-nightly')
         time.sleep(1) # Need time to create zip
-
         self.assertEqual(len(self.client.calls), 1)
         self.assertEqual(mp.getOpStatus(worker.INGEST_CODE), mediapackage.OP_DONE)
         rmtree('/tmp/repo_night')
@@ -229,7 +227,7 @@ class TestFunctions(TestCase):
         w = worker.Worker(self.dispatcher, self.repo1, self.logger, self.client)
 
         filename = '/tmp/mp.zip'
-        w.export_to_zip(self.mp, {'location': filename})
+        w.enqueue_job_by_name('exporttozip', mp, {'location': filename})
         time.sleep(0.25)
         self.assertTrue(os.path.exists(filename))
 
@@ -246,7 +244,6 @@ class TestFunctions(TestCase):
         path_track2 = path.join(baseDir, 'CAMERA.mp4')
         path_catalog = path.join(baseDir, 'episode.xml')
         path_attach = path.join(baseDir, 'attachment.txt')
-        print path_track1, path_track2
         path_capture_agent_properties = path.join(baseDir, 'org.opencastproject.capture.agent.properties')
         path_other = path.join(baseDir, 'manifest.xml')
 
