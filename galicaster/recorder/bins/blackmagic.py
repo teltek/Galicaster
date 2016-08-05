@@ -288,30 +288,30 @@ class GCblackmagic(Gst.Bin, base.Base):
     if src2:
       src2.send_event(event)
 
-    def disable_input(self):
-        src1 = self.get_by_name('gc-blackmagic-videobox')
-        src1.set_properties(top = -10000, bottom = 10000)
-        element = self.get_by_name("gc-blackmagic-volumeinput")
-        element.set_property("mute", True)
+  def disable_input(self):
+    src1 = self.get_by_name('gc-blackmagic-videobox')
+    src1.set_properties(top = -10000, bottom = 10000)
+    element = self.get_by_name("gc-blackmagic-volumeinput")
+    element.set_property("mute", True)
 
-    def enable_input(self):
-        src1 = self.get_by_name('gc-blackmagic-videobox')
-        src1.set_property('top',0)
-        src1.set_property('bottom',0)
-        element = self.get_by_name("gc-blackmagic-volumeinput")
-        element.set_property("mute", False)
+  def enable_input(self):
+    src1 = self.get_by_name('gc-blackmagic-videobox')
+    src1.set_property('top',0)
+    src1.set_property('bottom',0)
+    element = self.get_by_name("gc-blackmagic-volumeinput")
+    element.set_property("mute", False)
 
-    def disable_preview(self):
-        src1 = self.get_by_name('sink-'+self.options['name'])
-        src1.set_property('saturation', -1000)
-        src1.set_property('contrast', -1000)
-        element = self.get_by_name("gc-blackmagic-volume")
-        element.set_property("mute", True)
+  def disable_preview(self):
+    src1 = self.get_by_name('sink-'+self.options['name'])
+    src1.set_property('saturation', -1000)
+    src1.set_property('contrast', -1000)
+    element = self.get_by_name("gc-blackmagic-volume")
+    element.set_property("mute", True)
 
 
-    def enable_preview(self):
-        src1 = self.get_by_name('sink-'+self.options['name'])
-        src1.set_property('saturation',0)
-        src1.set_property('contrast',0)
-        element = self.get_by_name("gc-blackmagic-volume")
-        element.set_property("mute", False)
+  def enable_preview(self):
+    src1 = self.get_by_name('sink-'+self.options['name'])
+    src1.set_property('saturation',0)
+    src1.set_property('contrast',0)
+    element = self.get_by_name("gc-blackmagic-volume")
+    element.set_property("mute", False)
