@@ -230,37 +230,37 @@ class RecorderService(object):
         self.mute = value
         self.recorder and self.recorder.mute_preview(value)
 
-    def disable_input(self, bin_name=None):
+    def disable_input(self, bin_names=[]):
         """Proxy function to disable input"""
         try:
-            self.recorder and self.recorder.disable_input(bin_name)
-            self.logger.info("Input disabled {}".format(bin_name))
+            self.recorder and self.recorder.disable_input(bin_names)
+            self.logger.info("Input disabled {}".format(bin_names))
         except Exception as exc:
-            self.logger.error("Error in bins {}: {}".format(bin_name,exc))
+            self.logger.error("Error in bins {}: {}".format(bin_names,exc))
 
-    def enable_input(self, bin_name=None):
+    def enable_input(self, bin_names=[]):
         """Proxy function to enable input"""
         try:
-            self.recorder and self.recorder.enable_input(bin_name)
-            self.logger.info("Input enabled {}".format(bin_name))
+            self.recorder and self.recorder.enable_input(bin_names)
+            self.logger.info("Input enabled {}".format(bin_names))
         except Exception as exc:
-            self.logger.error("Error in bins {}: {}".format(bin_name,exc))
+            self.logger.error("Error in bins {}: {}".format(bin_names,exc))
 
-    def disable_preview(self, bin_name=None):
+    def disable_preview(self, bin_names=[]):
         """Proxy function to disable input"""
         try:
-            self.recorder and self.recorder.disable_preview(bin_name)
-            self.logger.info("Preview disabled {}".format(bin_name))
+            self.recorder and self.recorder.disable_preview(bin_names)
+            self.logger.info("Preview disabled {}".format(bin_names))
         except Exception as exc:
-            self.logger.error("Error in bins {}: {}".format(bin_name,exc))
+            self.logger.error("Error in bins {}: {}".format(bin_names,exc))
 
-    def enable_preview(self, bin_name=None):
+    def enable_preview(self, bin_names=[]):
         """Proxy function to enable input"""
         try:
-            self.recorder and self.recorder.enable_preview(bin_name)
-            self.logger.info("Preview enabled {}".format(bin_name))
+            self.recorder and self.recorder.enable_preview(bin_names)
+            self.logger.info("Preview enabled {}".format(bin_names))
         except Exception as exc:
-            self.logger.error("Error in bins {}: {}".format(bin_name,exc))
+            self.logger.error("Error in bins {}: {}".format(bin_names,exc))
 
     def get_mute_status(self):
         return self.recorder.mute_status if self.recorder else {"input":{},"preview":{}}

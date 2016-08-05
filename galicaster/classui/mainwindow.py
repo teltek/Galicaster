@@ -171,61 +171,31 @@ class GCWindow(Gtk.Window):
         self.nbox.insert_page(page, Gtk.Label(label=label), cod)
 
 
-    def insert_button(self, button, ui, box_id, **kwargs):
-        """Insert a button in the container named box_id in the notebook page with number ui"""
-        try:
-            builder = self.nbox.get_nth_page(ui).gui
-        except Exception as error:
-            self.logger.error("The view does not exist: {}".format(error))
-            return None
-        box = builder.get_object(box_id)
-        method_names = ["add", "pack_start", "attach"]
-        for method_name in method_names:
-            try:
-                m = getattr(box,method_name)
-            except AttributeError:
-                pass
-            else:
-                m(button,**kwargs)
-                box.show_all()
-                self.logger.debug("Button inserted in id: {}".format(box_id))
-                size = context.get_mainwindow().get_size()
-                k1 = size[0] / 1920.0
-                resize_button(button,size_image=k1*44,size_box=k1*46)
-                return button
-        else:
-            self.logger.error("Error trying to add the element {} to the box {}, tried the methods: {}".format(button, box, method_names))
-
-
-    def insert_element(self, element, ui, box_id, **kwargs):
+    def insert_element(self, element, ui, box_id, method="add",  **kwargs):
         """Insert an element in the container named box_id
            in the notebook page with number ui"""
         try:
             box = self.get_element(box_id, ui)
             if box:
-                method_names = ["add", "pack_start", "attach"]
-                for method_name in method_names:
-                    try:
-                        m = getattr(box,method_name)
-                    except AttributeError:
-                        pass
-                    else:
-                        m(element,**kwargs)
-                        box.show_all()
-                        self.logger.debug("Element inserted in id: {}".format(box_id))
-                        return element
-                else:
-                    self.logger.error("Error trying to add the element {} to the box {}, tried the methods: {}".format(element, box, method_names))
+                try:
+                    m = getattr(box,method)
+                except AttributeError:
+                    self.logger.error("Error trying to add the element {} to the box {}, tried the method: {}".format(element, box, method))
                     return None
+                else:
+                    m(element,**kwargs)
+                    box.show_all()
+                    self.logger.debug("Element inserted in id: {}".format(box_id))
+                    return element
         except Exception as error:
             self.logger.error("Error trying to add the element: {}".format(error))
             return None
 
 
-    def insert_element_with_position(self, element, ui, box_id, position=0, **kwargs):
+    def insert_element_with_position(self, element, ui, box_id, method="add", position=0, **kwargs):
         """Insert an element in the container named box_id
            in the notebook page with number ui"""
-        element = self.insert_element(element, ui, box_id, **kwargs)
+        element = self.insert_element(element, ui, box_id, method, **kwargs)
         if element:
             try:
                 builder = self.nbox.get_nth_page(ui).gui

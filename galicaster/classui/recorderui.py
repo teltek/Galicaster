@@ -137,6 +137,7 @@ class RecorderClassUI(Gtk.Box):
         self.dispatcher.connect_ui("recorder-vumeter", self.set_vumeter)
         self.dispatcher.connect_ui("view-changed", self.event_change_mode)
         self.dispatcher.connect_ui("recorder-status", self.handle_status)
+        self.dispatcher.connect_ui("recorder-ready", self.reset_mute)
 
         #nb=builder.get_object("data_panel")
         # pages = nb.get_n_pages()
@@ -774,5 +775,7 @@ class RecorderClassUI(Gtk.Box):
         editbutton = self.gui.get_object("editbutton")
         editbutton.set_visible(False)
 
+    def reset_mute(self, element):
+        self.mute = False
 
 GObject.type_register(RecorderClassUI)

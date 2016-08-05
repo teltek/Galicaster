@@ -320,6 +320,8 @@ class Recorder(object):
                 if elem in self.bins.keys():
                     self.bins[elem].disable_input()
                     self.mute_status["input"][elem] = False
+                else:
+                    raise Exception("Bin: "+elem+" not loaded in this profile")
         else:
             for bin_nam,bin in self.bins.iteritems():
                 bin.disable_input()
@@ -332,6 +334,8 @@ class Recorder(object):
                 if elem in self.bins.keys():
                     self.bins[elem].enable_input()
                     self.mute_status["input"][elem] = True
+                else:
+                    raise Exception("Bin: "+elem+" not loaded in this profile")
         else:
             for bin_nam,bin in self.bins.iteritems():
                 bin.enable_input()
@@ -344,6 +348,8 @@ class Recorder(object):
                 if elem in self.bins.keys():
                     self.bins[elem].disable_preview()
                     self.mute_status["preview"][elem] = False
+                else:
+                    raise Exception("Bin: "+elem+" not loaded in this profile")
         else:
             for bin_nam,bin in self.bins.iteritems():
                 bin.disable_preview()
@@ -356,6 +362,8 @@ class Recorder(object):
                 if elem in self.bins.keys():
                     self.bins[elem].enable_preview()
                     self.mute_status["preview"][elem] = True
+                else:
+                    raise Exception("Bin: "+elem+" not loaded in this profile")
         else:
             for bin_nam,bin in self.bins.iteritems():
                 bin.enable_preview()
