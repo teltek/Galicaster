@@ -26,7 +26,7 @@ def init():
     dispatcher.connect('init', manage_button)
 
 def manage_button(element=None):
-    global conf, recorder, dispatcher, asdf
+    global conf, recorder, dispatcher
 
     label = set_label(2,2,"Input status: ")
     label1 = set_label(0,1)
