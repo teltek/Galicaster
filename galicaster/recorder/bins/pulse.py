@@ -89,7 +89,7 @@ class GCpulse(Gst.Bin, base.Base):
         "channels": {
             "type": "integer",
             "default": 2,
-            "range": (1,16),
+            "range": (1,2),
             "description": "Number of audio channels",
             },
         "audiosink" : {
