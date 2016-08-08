@@ -182,7 +182,7 @@ class RecorderService(object):
         self.logger.info("Adding new mediapackage ({}) to the repository".format(
                 self.current_mediapackage.getIdentifier()))
         self.repo.add_after_rec(self.current_mediapackage, self.recorder.get_bins_info(),
-                                close_duration, self.current_mediapackage.manual)
+                                close_duration, self.current_mediapackage.manual, None, self.conf.get_boolean('ingest', 'ignore_capture_devices'))
 
         self.dispatcher.emit("recorder-stopped", self.current_mediapackage.getIdentifier())
 
