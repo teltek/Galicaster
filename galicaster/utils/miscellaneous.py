@@ -6,14 +6,15 @@
 # Copyright (c) 2016, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 from gi.repository import Gdk
 from galicaster import __version__
 from galicaster.core import context
+import datetime
 
 conf = context.get_conf()
 
@@ -27,3 +28,16 @@ def get_screenshot_as_pixbuffer():
 
 def get_footer():
     return "Galicaster "+ __version__ + "  -  " + conf.get_hostname()
+
+def round_microseconds(date):
+    print date
+    print date.microsecond
+    fraction = date.microsecond / 1000000.0
+    rounded = round(fraction, 0)
+    print rounded
+
+    if not rounded < 1:
+        print "dentro if"
+        date = date + datetime.timedelta(seconds=1)
+    print datetime.datetime(date.year, date.month, date.day, date.hour, date.minute, date.second).isoformat()
+    return datetime.datetime(date.year, date.month, date.day, date.hour, date.minute, date.second)
