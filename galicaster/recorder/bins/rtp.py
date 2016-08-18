@@ -34,7 +34,7 @@ pipe_config_audio = {'mp3':
                          {'depay': 'rtpmp4gdepay', 'parse': 'aacparse', 'dec': 'faad'}}
 
 pipestr = (' rtspsrc name=gc-rtp-src ! gc-rtp-depay ! gc-rtp-videoparse ! queue !'
-           ' tee name=gc-rtp-tee  ! queue ! gc-rtp-dec  ! caps-preview gc-vsink '
+           ' tee name=gc-rtp-tee  ! queue ! gc-rtp-dec  ! caps-preview ! gc-vsink '
            ' gc-rtp-tee. ! queue ! valve drop=false name=gc-rtp-valve ! '
            ' queue ! gc-rtp-muxer name=gc-rtp-mux ! queue ! filesink name=gc-rtp-sink async=false')
 
@@ -161,9 +161,9 @@ class GCrtp(Gst.Bin, base.Base):
             self.has_audio = False
 
         if self.options["caps-preview"]:
-            aux = aux.replace("caps-preview","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
+            aux = aux.replace("caps-preview !","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
         else:
-            aux = aux.replace("caps-preview","")
+            aux = aux.replace("caps-preview !","")
 
 
         bin = Gst.parse_launch("( {} )".format(aux))

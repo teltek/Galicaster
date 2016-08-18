@@ -21,7 +21,7 @@ from galicaster.recorder.utils import get_videosink, get_audiosink
 
 pipestr = ( " filesrc name=gc-hauppauge-file-src ! valve drop=false name=gc-hauppauge-valve !  filesink  name=gc-hauppauge-sink async=false "
             " v4l2src name=gc-hauppauge-device-src ! video/x-raw,format=YV12,framerate=25/1,width=720,height=576,pixel-aspect-ratio=1/1 ! "
-            " queue name=queue-hauprevideo ! videoconvert ! caps-preview gc-vsink "
+            " queue name=queue-hauprevideo ! videoconvert ! caps-preview ! gc-vsink "
             " filesrc name= gc-hauppauge-audio-src ! "
             " audio/x-raw, rate=48000, channels=2, endianness=1234, width=16, depth=16, signed=true ! queue ! "
             " level name=gc-hauppauge-level message=true interval=100000000 ! "
@@ -150,9 +150,9 @@ class GChauppauge(Gst.Bin, base.Base):
                .replace('gc-asink', gcaudiosink))
 
         if self.options["caps-preview"]:
-            aux = aux.replace("caps-preview","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
+            aux = aux.replace("caps-preview !","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
         else:
-            aux = aux.replace("caps-preview","")
+            aux = aux.replace("caps-preview !","")
 
 
         #bin = Gst.parse_bin_from_description(aux, True)

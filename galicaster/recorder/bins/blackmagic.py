@@ -22,7 +22,7 @@ from galicaster.recorder.utils import get_videosink, get_audiosink
 videostr = ( ' decklinkvideosrc connection=gc-blackmagic-conn mode=gc-blackmagic-mode device-number=gc-blackmagic-subd name=gc-blackmagic-src ! videoconvert ! queue ! videobox name=gc-blackmagic-videobox top=0 bottom=0 ! '
              ' videorate ! gc-blackmagic-capsfilter !'
              ' queue ! videocrop name=gc-blackmagic-crop ! '
-             ' tee name=gc-blackmagic-tee  ! queue ! videoconvert ! caps-preview gc-vsink '
+             ' tee name=gc-blackmagic-tee  ! queue ! videoconvert ! caps-preview ! gc-vsink '
              #REC VIDEO
              ' gc-blackmagic-tee. ! queue ! valve drop=false name=gc-blackmagic-valve ! videoconvert ! '
              ' gc-blackmagic-enc ! queue ! gc-blackmagic-muxer ! '
@@ -237,9 +237,9 @@ class GCblackmagic(Gst.Bin, base.Base):
           aux = aux.replace('gc-blackmagic-audiosubd', str(self.options['subdevice']))
 
         if self.options["caps-preview"]:
-          aux = aux.replace("caps-preview","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
+          aux = aux.replace("caps-preview !","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
         else:
-            aux = aux.replace("caps-preview","")
+            aux = aux.replace("caps-preview !","")
 
 
         #bin = Gst.parse_bin_from_description(aux, False)
