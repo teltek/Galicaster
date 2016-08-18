@@ -95,8 +95,7 @@
             </child>
             <child>
               <object class="GtkButton" id="save1">
-                <property name="name">preset 0</property>
-                <property name="visible">True</property>
+                <property name="name">save 0</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <signal name="clicked" handler="on_save_presets" swapped="no"/>
@@ -117,8 +116,7 @@
             </child>
             <child>
               <object class="GtkButton" id="save2">
-                <property name="name">preset 1</property>
-                <property name="visible">True</property>
+                <property name="name">save 1</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <signal name="clicked" handler="on_save_presets" swapped="no"/>
@@ -139,8 +137,7 @@
             </child>
             <child>
               <object class="GtkButton" id="save3">
-                <property name="name">preset 2</property>
-                <property name="visible">True</property>
+                <property name="name">save 2</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <signal name="clicked" handler="on_save_presets" swapped="no"/>
@@ -242,8 +239,7 @@
             </child>
             <child>
               <object class="GtkButton" id="save4">
-                <property name="name">preset 3</property>
-                <property name="visible">True</property>
+                <property name="name">save 3</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="xalign">0.50999999046325684</property>
@@ -265,8 +261,7 @@
             </child>
             <child>
               <object class="GtkButton" id="save5">
-                <property name="name">preset 4</property>
-                <property name="visible">True</property>
+                <property name="name">save 4</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <signal name="clicked" handler="on_save_presets" swapped="no"/>
@@ -288,7 +283,6 @@
             <child>
               <object class="GtkButton" id="save6">
                 <property name="name">save 5</property>
-                <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <signal name="clicked" handler="on_save_presets" swapped="no"/>

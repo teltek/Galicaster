@@ -105,8 +105,11 @@ def load_ui(element):
         except:
             pass
 
+    admin = conf.get_boolean('basic','admin')
     for widget in ["grid2","grid3"]:
         for button in builder.get_object(widget):
+            if admin and "save" in button.get_name():
+                button.show_all()
             image = button.get_children()
             if type(image[0]) == Gtk.Image:
                 image[0].set_pixel_size(int(k1*40))
