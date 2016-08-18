@@ -212,6 +212,7 @@ class OCService(object):
         if ical_data1:
             self.ical_data = ical_data1
             self.repo.save_attach('calendar.ical', self.ical_data)
+            ical.count = 0
 
         self.last_events = ical.handle_ical(self.ical_data, self.last_events, self.repo,
                                              self.scheduler, self.logger)
