@@ -328,7 +328,7 @@ class RecorderClassUI(Gtk.Box):
         if self.recorder.status == RECORDING_STATUS:
             if rec_title.get_text() != self.recorder.current_mediapackage.getTitle():
                 rec_title.set_text(self.recorder.current_mediapackage.getTitle())
-            msec = datetime.timedelta(microseconds=(self.recorder.get_recorded_time()/1000))
+            msec = datetime.timedelta(microseconds=(round(self.recorder.get_recorded_time()/1000.0,-6)))
             rec_elapsed.set_text(_("Elapsed Time: ") + readable.long_time(msec))
             return True
         return False
