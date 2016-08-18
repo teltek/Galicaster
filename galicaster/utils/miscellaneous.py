@@ -30,14 +30,9 @@ def get_footer():
     return "Galicaster "+ __version__ + "  -  " + conf.get_hostname()
 
 def round_microseconds(date):
-    print date
-    print date.microsecond
     fraction = date.microsecond / 1000000.0
     rounded = round(fraction, 0)
-    print rounded
 
     if not rounded < 1:
-        print "dentro if"
         date = date + datetime.timedelta(seconds=1)
-    print datetime.datetime(date.year, date.month, date.day, date.hour, date.minute, date.second).isoformat()
     return datetime.datetime(date.year, date.month, date.day, date.hour, date.minute, date.second)
