@@ -31,7 +31,7 @@ pipestr = (' dv1394src name=gc-firewire_renc-src ! queue ! '
            '       gc-firewire_renc-audioenc ! gc-firewire_renc-muxer ! '
            '       queue ! filesink name=gc-firewire_renc-sink async=false '
            ' gc-firewire_renc-demuxer. ! queue ! avdec_dvvideo ! videoconvert ! queue ! videobox name=gc-firewire_renc-videobox top=0 bottom=0 ! '
-           '    tee name=gc-firewire_renc-videotee ! gc-vsink '
+           '    tee name=gc-firewire_renc-videotee ! caps-preview gc-vsink '
            '    gc-firewire_renc-videotee. ! queue ! valve drop=false name=gc-firewire_renc-video-valve ! '
            '       videorate skip-to-first=true ! videoscale ! gc-firewire_renc-capsfilter ! gc-firewire_renc-videoenc ! gc-firewire_renc-mux. '
            )
@@ -112,6 +112,12 @@ class GCfirewire_renc(Gst.Bin, base.Base):
             "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
             "description": "Audio sink",
         },
+        "caps-preview" : {
+            "type": "text",
+            "default": None,
+            "description": "Caps-preview",
+        },
+
     }
 
     is_pausable = False
@@ -138,6 +144,12 @@ class GCfirewire_renc(Gst.Bin, base.Base):
                .replace('gc-firewire_renc-audioenc', self.options['audioencoder'])
                .replace('gc-firewire_renc-capsfilter', self.options['caps'])
               )
+
+        if self.options["caps-preview"]:
+            aux = aux.replace("caps-preview","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
+        else:
+            aux = aux.replace("caps-preview","")
+
         #bin = Gst.parse_bin_from_description(aux, False)
         bin = Gst.parse_launch("( {} )".format(aux))
 

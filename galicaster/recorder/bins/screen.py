@@ -20,7 +20,7 @@ from galicaster.recorder.utils import get_videosink
 
 pipestr = (' ximagesrc startx=gc-startx starty=gc-starty endx=gc-endx endy=gc-endy xid=gc-xid xname=gc-xname name=gc-screen-src use-damage=0 ! queue ! '
            ' videorate ! videoconvert ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop !  videobox name=gc-screen-videobox top=0 bottom=0 !'
-           ' tee name=gc-screen-tee  ! queue !  videoconvert  ! gc-vsink '
+           ' tee name=gc-screen-tee  ! queue !  videoconvert  ! caps-preview gc-vsink '
            ' gc-screen-tee. ! queue ! valve drop=false name=gc-screen-valve ! videoconvert ! capsfilter name=gc-v4l2-filter ! queue ! videoconvert ! '
            ' gc-screen-enc ! queue ! gc-screen-mux ! '
            ' queue ! filesink name=gc-screen-sink async=false')
@@ -29,7 +29,7 @@ pipestr = (' ximagesrc startx=gc-startx starty=gc-starty endx=gc-endx endy=gc-en
 class GCscreen(Gst.Bin, base.Base):
 
     order = ["name","flavor","location","file","caps",
-             "muxer", "endx"
+             "muxer", "endx", "caps-preview"
              ]
 
     gc_parameters = {
@@ -132,6 +132,12 @@ class GCscreen(Gst.Bin, base.Base):
             "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
             "description": "Video sink",
         },
+        "caps-preview" : {
+            "type": "text",
+            "default": None,
+            "description": "Caps-preview",
+        },
+
     }
 
     is_pausable = True
@@ -160,6 +166,12 @@ class GCscreen(Gst.Bin, base.Base):
                       .replace('gc-endy', str(self.options['endy']))
                       .replace('gc-xid', str(self.options['xid']))
                       .replace('gc-xname', str(self.options['xname'])))
+
+        if self.options["caps-preview"]:
+            aux = aux.replace("caps-preview","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
+        else:
+            aux = aux.replace("caps-preview","")
+
 
         bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)

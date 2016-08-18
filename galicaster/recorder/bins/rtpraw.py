@@ -27,7 +27,7 @@ pipe_config = {'mpeg4':
 
 pipestr = (' rtspsrc name=gc-rtpraw-src ! gc-rtpraw-depay ! gc-rtpraw-videoparse ! queue ! '
            ' gc-rtpraw-dec ! videoscale ! capsfilter name=gc-rtpraw-filter ! videobox name=gc-rtpraw-videobox top=0 bottom=0 ! '
-           ' tee name=gc-rtpraw-tee  ! queue ! gc-vsink '
+           ' tee name=gc-rtpraw-tee  ! queue ! caps-preview gc-vsink '
            ' gc-rtpraw-tee. ! queue ! valve drop=false name=gc-rtpraw-valve ! videoconvert ! '
            ' queue ! gc-rtpraw-enc ! queue ! gc-rtpraw-muxer name=gc-rtpraw-mux ! queue ! filesink name=gc-rtpraw-sink async=false')
 
@@ -36,7 +36,7 @@ pipestr = (' rtspsrc name=gc-rtpraw-src ! gc-rtpraw-depay ! gc-rtpraw-videoparse
 class GCrtpraw(Gst.Bin, base.Base):
 
 
-    order = ["name", "flavor", "location", "file", "videoencoder", "muxer", "cameratype"]
+    order = ["name", "flavor", "location", "file", "videoencoder", "muxer", "cameratype", "caps-preview"]
     gc_parameters = {
         "name": {
             "type": "text",
@@ -89,6 +89,12 @@ class GCrtpraw(Gst.Bin, base.Base):
             "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
             "description": "Video sink",
         },
+        "caps-preview" : {
+            "type": "text",
+            "default": None,
+            "description": "Caps-preview",
+        },
+
     }
 
     is_pausable = False
@@ -113,6 +119,12 @@ class GCrtpraw(Gst.Bin, base.Base):
                .replace('gc-rtpraw-dec', pipe_config[self.options['cameratype']]['dec'])
                .replace('gc-rtpraw-enc', self.options['videoencoder'])
                .replace('gc-rtpraw-muxer', self.options['muxer']))
+
+        if self.options["caps-preview"]:
+            aux = aux.replace("caps-preview","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
+        else:
+            aux = aux.replace("caps-preview","")
+
 
         bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)

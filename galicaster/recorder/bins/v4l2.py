@@ -20,7 +20,7 @@ from galicaster.recorder.utils import get_videosink
 
 pipestr = (' v4l2src name=gc-v4l2-src ! capsfilter name=gc-v4l2-filter ! queue ! gc-v4l2-dec  videobox name=gc-v4l2-videobox top=0 bottom=0 !'
            ' videorate ! videoconvert ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! gc-videofilter ! '
-           ' tee name=gc-v4l2-tee  ! queue ! gc-vsink '
+           ' tee name=gc-v4l2-tee ! queue ! caps-preview gc-vsink '
            ' gc-v4l2-tee. ! queue ! valve drop=false name=gc-v4l2-valve ! videoconvert ! queue ! '
            ' gc-v4l2-enc ! queue ! gc-v4l2-mux ! '
            ' queue ! filesink name=gc-v4l2-sink async=false')
@@ -30,7 +30,7 @@ class GCv4l2(Gst.Bin, base.Base):
 
 
     order = ["name","flavor","location","file","caps",
-             "videoencoder", "muxer", "io-mode"]
+             "videoencoder", "muxer", "io-mode", "caps-preview"]
 
     gc_parameters = {
         "name": {
@@ -110,6 +110,12 @@ class GCv4l2(Gst.Bin, base.Base):
             "options": ["auto", "rw", "mmap", "userptr", "dmabuf", "dmabuf-import"],
             "description": "I/O mode",
         },
+        "caps-preview" : {
+            "type": "text",
+            "default": None,
+            "description": "Caps-preview",
+        },
+
     }
 
     is_pausable = True
@@ -142,6 +148,12 @@ class GCv4l2(Gst.Bin, base.Base):
             aux = aux.replace('gc-v4l2-dec', 'jpegdec max-errors=-1 ! queue !')
         else:
             aux = aux.replace('gc-v4l2-dec', '')
+
+        if self.options["caps-preview"]:
+            aux = aux.replace("caps-preview","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
+        else:
+            aux = aux.replace("caps-preview","")
+
 
         #bin = Gst.parse_bin_from_description(aux, True)
         bin = Gst.parse_launch("( {} )".format(aux))
