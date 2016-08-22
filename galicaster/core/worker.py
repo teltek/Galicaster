@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 import os
@@ -31,12 +31,12 @@ INGEST_CODE = 'ingest'
 ZIPPING_CODE = 'exporttozip'
 SBS_CODE = 'sidebyside'
 
-JOBS = { INGEST: INGEST_CODE, 
-         ZIPPING: ZIPPING_CODE, 
+JOBS = { INGEST: INGEST_CODE,
+         ZIPPING: ZIPPING_CODE,
          SBS:  SBS_CODE}
 
-JOB_NAMES = { INGEST_CODE: INGEST, 
-              ZIPPING_CODE: ZIPPING, 
+JOB_NAMES = { INGEST_CODE: INGEST,
+              ZIPPING_CODE: ZIPPING,
               SBS_CODE:  SBS}
 
 """
@@ -54,7 +54,7 @@ class Worker(object):
             """
             Initializes a Thread with a queue of jobs to be done concurrently with other Galicaster tasks.
             Args:
-            	queue (Queue): queue of jobs.
+                queue (Queue): queue of jobs.
             Attributes:
                 queue (Queue): queue of jobs.
             """
@@ -63,19 +63,19 @@ class Worker(object):
 
         def run(self):
             """Runs and removes a job from the queue.
-            Marks the job as done. 
+            Marks the job as done.
             """
-            while True: 
+            while True:
                 job, params = self.queue.get()
                 job(*params)
                 self.queue.task_done()
-    
 
-    def __init__(self, dispatcher, repo, logger, oc_client=None, export_path=None, tmp_path=None, 
+
+    def __init__(self, dispatcher, repo, logger, oc_client=None, export_path=None, tmp_path=None,
                  use_namespace=True, sbs_layout='sbs', hide_ops=[], hide_nightly=[]):
         """Initializes a worker that manages the mediapackages of the repository in order to do long operations concurrently by throwing Threads when necessay.
         Args:
-            dispacher (Dispatcher): the galicaster event-dispatcher to emit signals. 
+            dispacher (Dispatcher): the galicaster event-dispatcher to emit signals.
             repo (Repository): the galicaster mediapackage repository.
             logger (Logger): the object that prints all the information, warning and error messages.
             oc_client (OCHTTPClient): the opencast HTTP client.
@@ -90,7 +90,7 @@ class Worker(object):
             t (Thread)
         Note:
             sbs_layouts possible values:
-                'sbs': screen and camera have the same size. 
+                'sbs': screen and camera have the same size.
                 'pip_screen': screen smaller than camera.
                 'pip_camera:': camera smaller than screen.
             """
@@ -112,7 +112,7 @@ class Worker(object):
                 os.makedirs(dir_path)
 
         self.jobs = Queue.Queue()
-        
+
         self.t = self.T(self.jobs)
         self.t.setDaemon(True)
         self.t.start()
@@ -122,7 +122,7 @@ class Worker(object):
     def get_all_job_types(self):
         """Gets all the possible mediapackage operations.
         Returns:
-            List[str]: List of the possible operations (including nightly mode) 
+            List[str]: List of the possible operations (including nightly mode)
         """
         nn = ' Nightly'
         return [INGEST, ZIPPING, SBS, INGEST+nn, ZIPPING+nn, SBS+nn]
@@ -131,7 +131,7 @@ class Worker(object):
     def get_ui_job_types(self):
         """Gets the mediapackage operations that are going to be showed in the user's interface.
         Returns:
-            List[str]: List of the possible operations (including nightly mode) in user's interface. 
+            List[str]: List of the possible operations (including nightly mode) in user's interface.
         """
         nn = ' Nightly'
         return [INGEST, ZIPPING, SBS, INGEST+nn, ZIPPING+nn, SBS+nn]
@@ -142,7 +142,7 @@ class Worker(object):
         Args:
             mp (Mediapackage): the mediapackage.
         Returns:
-            List[Str]: not hidden jobs that are not in pending or precessing status.	
+            List[Str]: not hidden jobs that are not in pending or precessing status.
             List[Str]: not hidden nightly jobs that are not pending or processing status.
         """
         nn = ' Nightly'
@@ -158,7 +158,7 @@ class Worker(object):
                     jobs.append(key)
                 if value not in self.hide_nightly:
                     night = cc+key+nn if mp.getOpStatus(value) == mediapackage.OP_NIGHTLY else key+nn
-                    jobs_night.append(night)            
+                    jobs_night.append(night)
 
         return jobs, jobs_night
 
@@ -168,7 +168,7 @@ class Worker(object):
         Args:
             mp (Mediapackage): the mediapackage.
         Returns:
-            List[Str]: not hidden jobs that are not in pending or precessing status.	
+            List[Str]: not hidden jobs that are not in pending or precessing status.
             List[Str]: not hidden nightly jobs that are not pending or processing status.
         """
         nn = ' Nightly'
@@ -188,11 +188,11 @@ class Worker(object):
                     jobs.append(key)
                 if value not in self.hide_nightly:
                     night = cc+key+nn if mp.getOpStatus(value) == mediapackage.OP_NIGHTLY else key+nn
-                    jobs_night.append(night)            
+                    jobs_night.append(night)
 
         return jobs, jobs_night
 
-    
+
     def get_job_name(self, job=None):
         jobname = None
         if job:
@@ -220,9 +220,9 @@ class Worker(object):
             self.logger.error("Fail get MP with id {0} or operation with name {1}. Exception: {2}".format(mp_id, name, exc))
             return False
         f(mp, params)
-	return True
+        return True
 
-    
+
     def enqueue_job_by_name(self, name, mp_id, params={}):
         """Enqeues a particular mediapackage operation to be done.
         Args:
@@ -242,7 +242,7 @@ class Worker(object):
             self.logger.error("Fail get MP with id {0} or operation with name {1}. Exception: {2}".format(mp_id, name, exc))
             return False
         f(mp, params)
-	return True
+        return True
 
 
     def do_job(self, name, mp, params={}):
@@ -260,11 +260,11 @@ class Worker(object):
             return False
         return True
 
-    
+
     def do_job_nightly(self, name, mp, params={}):
         """Calls cancel_nightly or operation_nithly depending on the argument's value.
         Args:
-            name (str): the name of a nightly operation. It must contain the word "cancel" in order to cancel the operation. 
+            name (str): the name of a nightly operation. It must contain the word "cancel" in order to cancel the operation.
             mp (Mediapackage): the mediapackage.
         """
         name=name.replace('nightly','')
@@ -273,7 +273,7 @@ class Worker(object):
                 # getattr(self, name.replace('cancel',''))
                 if not name.replace('cancel','') in JOB_NAMES.keys():
                     raise Exception('Unknown operation named {}'.format(name))
-                
+
                 self.cancel_nightly(mp, name.replace('cancel',''))
             else:
                 # getattr(self, name)
@@ -285,7 +285,7 @@ class Worker(object):
             self.logger.error("Failure performing nightly job {0} for MP {1}. Exception: {2}".format(name, mp, exc))
             return False
         return True
-    
+
 
     def gen_location(self, extension):
         """Gets the path of a non existing file in the exports' directory.
@@ -327,7 +327,7 @@ class Worker(object):
         if not self.oc_client:
             self.operation_error(mp, INGEST, 'MH client is not enabled')
             return
-            
+
         workflow = None if not "workflow" in params else params["workflow"]
         workflow_parameters = None if not "workflow_parameters" in params else params["workflow_parameters"]
 
@@ -370,10 +370,10 @@ class Worker(object):
                 self.operation_success(mp, INGEST)
             except Exception as exc:
                 self.operation_error(mp, INGEST, exc)
-            
+
         ifile.close()
         self.repo.update(mp)
-            
+
         self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
 
 
@@ -396,7 +396,7 @@ class Worker(object):
         Args:
             mp (Mediapackage): the mediapackage to be exported as a zip.
             location (str): absolute path of the destination export file.
-            is_action (bool): true if the action was done by the user. False if is a subtask. 
+            is_action (bool): true if the action was done by the user. False if is a subtask.
         """
         location = self.gen_location('zip') if not "location" in params else params["location"]
         is_action = True if not "is_action" in params else params["is_action"]
@@ -411,7 +411,7 @@ class Worker(object):
         try:
             serializer.save_in_zip(mp, location, self.use_namespace, self.logger)
             if is_action:
-                self.operation_success(mp, ZIPPING)        
+                self.operation_success(mp, ZIPPING)
         except Exception as exc:
             if is_action:
                 self.operation_error(mp, ZIPPING, exc)
@@ -445,7 +445,7 @@ class Worker(object):
         sbs_layout    = self.sbs_layout if not "layout" in params else params["layout"]
 
         if audio_mode not in ["embedded", "external", "auto"]:
-            self.logger.warning("SideBySide for MP {}: unknown value {} for parameter 'audio', default to auto-mode".format(mp.getIdentifier(), audio))
+            self.logger.warning("SideBySide for MP {}: unknown value {} for parameter 'audio', default to auto-mode".format(mp.getIdentifier(), audio_mode))
             audio_mode = "auto"
 
         self.logger.info('Executing SideBySide for MP {0}'.format(mp.getIdentifier()))
@@ -466,11 +466,11 @@ class Worker(object):
             audio = mp.getTracksAudio()[0].getURI()
 
         try:
-            
+
             if not camera or not screen:
                 raise IOError, 'Error in SideBySide process: Two videos needed (with presenter and presentation flavors)'
 
-            if audio_mode == "auto":                
+            if audio_mode == "auto":
                 self.logger.debug('SideBySide for MP {0}: auto audio-mode'.format(mp.getIdentifier()))
 
                 # Look for embedded audio track, if this not exists use external audio
@@ -485,7 +485,7 @@ class Worker(object):
                 self.logger.debug('SideBySide for MP {0}: embedded audio-mode'.format(mp.getIdentifier()))
 
                 # Look for embedded audio track, if this not exists use external audio
-                info = get_info(camera)                
+                info = get_info(camera)
                 if 'audio-codec' in info.get_stream_info().get_streams()[0].get_tags().to_string():
                     self.logger.debug('SideBySide for MP {0}: embedded audio detected'.format(mp.getIdentifier()))
                     audio = None
@@ -540,9 +540,9 @@ class Worker(object):
         mp.setOpStatus(operation,mediapackage.OP_IDLE)
         self.repo.update(mp)
         self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
-    
 
-    def exec_nightly(self, sender=None): 
+
+    def exec_nightly(self, sender=None):
         """Executes immediately all the nightly operations of all the mediapackages in the repository.
         Args:
             sender (Dispatcher): instance of the class in charge of emitting signals.
@@ -556,5 +556,4 @@ class Worker(object):
                     elif op_name == ZIPPING_CODE:
                         self.export_to_zip(mp)
                     elif op_name == SBS_CODE:
-                        self.side_by_side(mp)                    
-        
+                        self.side_by_side(mp)

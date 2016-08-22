@@ -102,7 +102,7 @@ class Scheduler(object):
 
             self.logger.info('Start record %s, duration %s ms', mp.getIdentifier(), mp.getDuration())
 
-            timeout_id = GObject.timeout_add_seconds(mp.getDuration()/1000, self.__stop_record, mp.getIdentifier())
+            GObject.timeout_add_seconds(mp.getDuration()/1000, self.__stop_record, mp.getIdentifier())
             self.recorder.record(mp)
 
         del self.start_timers[mp.getIdentifier()]
