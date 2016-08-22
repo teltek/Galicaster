@@ -321,6 +321,8 @@ class Recorder(object):
                 if elem in self.bins.keys():
                     self.bins[elem].disable_input()
                     self.mute_status["input"][elem] = False
+                else:
+                    raise Exception("Bin: "+elem+" not loaded in this profile")
         else:
             for bin_nam,bin in self.bins.iteritems():
                 bin.disable_input()
@@ -333,6 +335,8 @@ class Recorder(object):
                 if elem in self.bins.keys():
                     self.bins[elem].enable_input()
                     self.mute_status["input"][elem] = True
+                else:
+                    raise Exception("Bin: "+elem+" not loaded in this profile")
         else:
             for bin_nam,bin in self.bins.iteritems():
                 bin.enable_input()
@@ -340,28 +344,37 @@ class Recorder(object):
 
 
     def disable_preview(self, bin_names=[]):
-        if bin_names:
-            for elem in bin_names:
-                if elem in self.bins.keys():
-                    self.bins[elem].disable_preview()
-                    self.mute_status["preview"][elem] = False
-        else:
-            for bin_nam,bin in self.bins.iteritems():
-                bin.disable_preview()
-                self.mute_status["preview"][bin_nam] = False
+        try:
+            if bin_names:
+                for elem in bin_names:
+                    if elem in self.bins.keys():
+                        self.bins[elem].disable_preview()
+                        self.mute_status["preview"][elem] = False
+                    else:
+                        raise Exception("Bin: "+elem+" not loaded in this profile")
+            else:
+                for bin_nam,bin in self.bins.iteritems():
+                    bin.disable_preview()
+                    self.mute_status["preview"][bin_nam] = False
+        except Exception as exc:
+            logger.debug(exc)
 
 
     def enable_preview(self, bin_names=[]):
-        if bin_names:
-            for elem in bin_names:
-                if elem in self.bins.keys():
-                    self.bins[elem].enable_preview()
-                    self.mute_status["preview"][elem] = True
-        else:
-            for bin_nam,bin in self.bins.iteritems():
-                bin.enable_preview()
-                self.mute_status["preview"][bin_nam] = True
-
+        try:
+            if bin_names:
+                for elem in bin_names:
+                    if elem in self.bins.keys():
+                        self.bins[elem].enable_preview()
+                        self.mute_status["preview"][elem] = True
+                    else:
+                        raise Exception("Bin: "+elem+" not loaded in this profile")
+            else:
+                for bin_nam,bin in self.bins.iteritems():
+                    bin.enable_preview()
+                    self.mute_status["preview"][bin_nam] = True
+        except Exception as exc:
+            logger.debug(exc)
 
     def set_drawing_areas(self, players):
         self.players = players
@@ -370,8 +383,11 @@ class Recorder(object):
         for name, element in self.players.iteritems():
             # TODO: check xid
             xid = element.get_property('window').get_xid()
-            self.pipeline.get_by_name(name).set_window_handle(xid)
-
+            try:
+                getattr(self.pipeline.get_by_name(name), 'set_window_handle')
+                self.pipeline.get_by_name(name).set_window_handle(xid)
+            except Exception:
+                logger.warning("Pipeline {} doesn't have set_window_handle".format(name))
 
     def get_display_areas_info(self):
         display_areas_info = []

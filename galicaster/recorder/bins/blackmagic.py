@@ -22,7 +22,7 @@ from galicaster.recorder.utils import get_videosink, get_audiosink
 videostr = ( ' decklinkvideosrc connection=gc-blackmagic-conn mode=gc-blackmagic-mode device-number=gc-blackmagic-subd name=gc-blackmagic-src ! videoconvert ! queue ! videobox name=gc-blackmagic-videobox top=0 bottom=0 ! '
              ' videorate ! gc-blackmagic-capsfilter !'
              ' queue ! videocrop name=gc-blackmagic-crop ! '
-             ' tee name=gc-blackmagic-tee  ! queue ! videoconvert ! gc-vsink '
+             ' tee name=gc-blackmagic-tee  ! queue ! videoconvert ! caps-preview ! gc-vsink '
              #REC VIDEO
              ' gc-blackmagic-tee. ! queue ! valve drop=false name=gc-blackmagic-valve ! videoconvert ! '
              ' gc-blackmagic-enc ! queue ! gc-blackmagic-muxer ! '
@@ -52,7 +52,7 @@ class GCblackmagic(Gst.Bin, base.Base):
   order = ["name","flavor","location","file",
            "input-mode","input","audio-input","subdevice",
            "vumeter", "player", "amplification",
-           "videoencoder", "audioencoder", "muxer"]
+           "videoencoder", "audioencoder", "muxer", "caps-preview"]
 
   gc_parameters = {
     "name": {
@@ -136,9 +136,9 @@ class GCblackmagic(Gst.Bin, base.Base):
       },
     "subdevice" : {
       "type": "select",
-      "default": "0",
+      "default": 0,
       "options": [
-        "0", "1", "2","3"
+        0,1,2,3
         ],
       "description": "Select a Blackmagic card from a maximum of 4 devices",
       },
@@ -186,6 +186,12 @@ class GCblackmagic(Gst.Bin, base.Base):
       "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
       "description": "Audio sink",
     },
+    "caps-preview" : {
+        "type": "text",
+        "default": None,
+        "description": "Caps-preview",
+    },
+
   }
 
 
@@ -214,7 +220,7 @@ class GCblackmagic(Gst.Bin, base.Base):
         aux = (pipestr.replace('gc-vsink', gcvideosink)
                .replace('gc-blackmagic-conn', self.options['input'])
                .replace('gc-blackmagic-mode', self.options['input-mode'])
-               .replace('gc-blackmagic-subd', self.options['subdevice'])
+               .replace('gc-blackmagic-subd', str(self.options['subdevice']))
                .replace('gc-blackmagic-enc', self.options['videoencoder'])
                .replace('gc-blackmagic-muxer', self.options['muxer']+" name=gc-blackmagic-muxer")
                .replace('gc-blackmagic-capsfilter', "video/x-raw,framerate={0}".format(self.options['framerate']))
@@ -228,7 +234,13 @@ class GCblackmagic(Gst.Bin, base.Base):
           aux = aux.replace('gc-asink', gcaudiosink)
           aux = aux.replace('gc-blackmagic-audioenc', self.options['audioencoder'])
           aux = aux.replace('gc-blackmagic-audioconn', self.options['audio-input'])
-          aux = aux.replace('gc-blackmagic-audiosubd', self.options['subdevice'])
+          aux = aux.replace('gc-blackmagic-audiosubd', str(self.options['subdevice']))
+
+        if self.options["caps-preview"]:
+          aux = aux.replace("caps-preview !","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
+        else:
+            aux = aux.replace("caps-preview !","")
+
 
         #bin = Gst.parse_bin_from_description(aux, False)
         bin = Gst.parse_launch("( {} )".format(aux))
@@ -288,30 +300,34 @@ class GCblackmagic(Gst.Bin, base.Base):
     if src2:
       src2.send_event(event)
 
-    def disable_input(self):
-        src1 = self.get_by_name('gc-blackmagic-videobox')
-        src1.set_properties(top = -10000, bottom = 10000)
-        element = self.get_by_name("gc-blackmagic-volumeinput")
-        element.set_property("mute", True)
+  def disable_input(self):
+    src1 = self.get_by_name('gc-blackmagic-videobox')
+    src1.set_properties(top = -10000, bottom = 10000)
+    if self.has_audio:
+      element = self.get_by_name("gc-blackmagic-volumeinput")
+      element.set_property("mute", True)
 
-    def enable_input(self):
-        src1 = self.get_by_name('gc-blackmagic-videobox')
-        src1.set_property('top',0)
-        src1.set_property('bottom',0)
-        element = self.get_by_name("gc-blackmagic-volumeinput")
-        element.set_property("mute", False)
+  def enable_input(self):
+    src1 = self.get_by_name('gc-blackmagic-videobox')
+    src1.set_property('top',0)
+    src1.set_property('bottom',0)
+    if self.has_audio:
+      element = self.get_by_name("gc-blackmagic-volumeinput")
+      element.set_property("mute", False)
 
-    def disable_preview(self):
-        src1 = self.get_by_name('sink-'+self.options['name'])
-        src1.set_property('saturation', -1000)
-        src1.set_property('contrast', -1000)
-        element = self.get_by_name("gc-blackmagic-volume")
-        element.set_property("mute", True)
+  def disable_preview(self):
+    src1 = self.get_by_name('sink-'+self.options['name'])
+    src1.set_property('saturation', -1000)
+    src1.set_property('contrast', -1000)
+    if self.has_audio:
+      element = self.get_by_name("gc-blackmagic-volume")
+      element.set_property("mute", True)
 
 
-    def enable_preview(self):
-        src1 = self.get_by_name('sink-'+self.options['name'])
-        src1.set_property('saturation',0)
-        src1.set_property('contrast',0)
-        element = self.get_by_name("gc-blackmagic-volume")
-        element.set_property("mute", False)
+  def enable_preview(self):
+    src1 = self.get_by_name('sink-'+self.options['name'])
+    src1.set_property('saturation',0)
+    src1.set_property('contrast',0)
+    if self.has_audio:
+      element = self.get_by_name("gc-blackmagic-volume")
+      element.set_property("mute", False)

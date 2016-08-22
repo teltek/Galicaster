@@ -89,10 +89,10 @@ def validate_track(options, gc_parameters=None, recursive=False):
 
         elif v['type'] == 'hexadecimal':
             try:
-                int(options[k], 16)
-            except:
-                current_error = 'INFO: Parameter "{}" with value {} must be {}'.format(
-                    k, options[k], v['type'])
+                int(options[k])
+            except Exception as exc:
+                current_error = 'INFO: Parameter "{}" with value {} must be {}: {}'.format(
+                    k, options[k], v['type'], exc)
 
 
         elif v['type'] == 'boolean':

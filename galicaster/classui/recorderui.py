@@ -39,7 +39,7 @@ from galicaster.classui.metadata import MetadataClass as Metadata
 from galicaster.classui import message
 from galicaster.classui import get_ui_path, get_image_path
 from galicaster.utils import readable
-from galicaster.utils.resize import relabel
+from galicaster.utils.resize import relabel, resize_button
 from galicaster.utils.i18n import _
 
 from galicaster.recorder.service import STATUSES
@@ -122,9 +122,9 @@ class RecorderClassUI(Gtk.Box):
         self.swap = False
 
         # STATUS
-        big_status = builder.get_object("bg_status")
         self.view = self.set_status_view()
-        big_status.add(self.view)
+        hbox1 = self.gui.get_object('hbox1')
+        hbox1.add(self.view)
         self.dispatcher.connect_ui("init", self.check_status_area)
         self.dispatcher.connect_ui("init", self.check_net, None)
         self.dispatcher.connect_ui("opencast-status", self.check_net)
@@ -136,6 +136,7 @@ class RecorderClassUI(Gtk.Box):
         self.dispatcher.connect_ui("recorder-vumeter", self.set_vumeter)
         self.dispatcher.connect_ui("view-changed", self.event_change_mode)
         self.dispatcher.connect_ui("recorder-status", self.handle_status)
+        self.dispatcher.connect_ui("recorder-ready", self.reset_mute)
 
         #nb=builder.get_object("data_panel")
         # pages = nb.get_n_pages()
@@ -217,7 +218,6 @@ class RecorderClassUI(Gtk.Box):
         self.swap = not self.swap
         self.dispatcher.emit("action-reload-profile")
         self.mute = False
-
 
     def on_rec(self,button=None):
         """GUI callback for manual recording"""
@@ -327,7 +327,7 @@ class RecorderClassUI(Gtk.Box):
         if self.recorder.status == RECORDING_STATUS:
             if rec_title.get_text() != self.recorder.current_mediapackage.getTitle():
                 rec_title.set_text(self.recorder.current_mediapackage.getTitle())
-            msec = datetime.timedelta(microseconds=(self.recorder.get_recorded_time()/1000))
+            msec = datetime.timedelta(microseconds=(round(self.recorder.get_recorded_time()/1000.0,-6)))
             rec_elapsed.set_text(_("Elapsed Time: ") + readable.long_time(msec))
             return True
         return False
@@ -543,18 +543,13 @@ class RecorderClassUI(Gtk.Box):
 
         v = Gtk.CellView()
         v.set_model(l)
-
+        v.get_style_context().add_class('label_extrabig')
 
         r = Gtk.CellRendererText()
         self.renderer=r
         r.set_alignment(0.5,0.5)
-        r.set_fixed_size(int(k2*400),-1)
-
 
         # k1 = size[0] / 1920.0
-        k2 = size[1] / 1080.0
-        font = Pango.FontDescription("bold "+ str(int(k2*48)))
-        r.set_property('font-desc', font)
         v.pack_start(r,True)
         v.add_attribute(r, "text", 0)
         v.add_attribute(r, "background", 1)
@@ -562,6 +557,8 @@ class RecorderClassUI(Gtk.Box):
 #        v.set_displayed_row(0)
         v.set_displayed_row(Gtk.TreePath(0))
         return v
+
+
 
     #TODO timeout
     def check_status_area(self, origin, signal=None, other=None):
@@ -639,9 +636,6 @@ class RecorderClassUI(Gtk.Box):
         l3 = self.gui.get_object("tab3")
 
         relabel(clock,k1*25,False)
-        font = Pango.FontDescription("bold "+str(int(k2*48)))
-        self.renderer.set_property('font-desc', font)
-        self.renderer.set_fixed_size(int(k2*400),-1)
         pixbuf = GdkPixbuf.Pixbuf.new_from_file(get_image_path('logo.svg'))
         pixbuf = pixbuf.scale_simple(
             int(pixbuf.get_width()*k1),
@@ -665,18 +659,12 @@ class RecorderClassUI(Gtk.Box):
         relabel(l2,k1*20,False)
         relabel(l3,k1*20,False)
 
+
         for name  in ["recbutton","pausebutton","stopbutton","editbutton","swapbutton","helpbutton"]:
             button = self.gui.get_object(name)
 
-            image = button.get_children()
-            if type(image[0]) == Gtk.Image:
-                image[0].set_pixel_size(int(k1*60))
-            elif type(image[0]) == Gtk.Box:
-                for element in image[0].get_children():
-                    if type(element) == Gtk.Image:
-                        element.set_pixel_size(int(k1*46))
-            else:
-                relabel(image[0],k1*28,False)
+            resize_button(button,size_image=k1*60,size_box=k1*46,size_label=k1*28)
+
         # change stop button
         for name in ["pause","stop"]:
             button = self.gui.get_object(name+"button")
@@ -700,6 +688,8 @@ class RecorderClassUI(Gtk.Box):
         vum = self.gui.get_object("vubox")
         vum.set_padding(int(k1*20),int(k1*10),0,0)
         pbox.set_property("width-request", int(k1*225) )
+        hbox1 = self.gui.get_object('hbox1')
+        hbox1.set_property('spacing', int(k1*325))
         return True
 
 
@@ -784,5 +774,7 @@ class RecorderClassUI(Gtk.Box):
         editbutton = self.gui.get_object("editbutton")
         editbutton.set_visible(False)
 
+    def reset_mute(self, element):
+        self.mute = False
 
 GObject.type_register(RecorderClassUI)

@@ -17,7 +17,7 @@ from galicaster.mediapackage import mediapackage
 from galicaster.recorder import Recorder
 from galicaster.utils.i18n import _
 from galicaster.utils.gstreamer import WeakMethod
-
+from galicaster.utils.miscellaneous import round_microseconds
 
 class Status(object):
     def __init__(self, name, description="", fg_color="#484848", bg_color=None):
@@ -29,7 +29,7 @@ class Status(object):
     def __repr__(self): return self.name
 
 
-INIT_STATUS      = Status('init', 'Initialization')
+INIT_STATUS      = Status('init', 'Init')
 PREVIEW_STATUS   = Status('preview', 'Waiting')
 RECORDING_STATUS = Status('recording', 'Recording', '#484848', '#FF0000')
 PAUSED_STATUS    = Status('paused', 'Paused')
@@ -149,7 +149,7 @@ class RecorderService(object):
 
         self.logger.info("Recording to MP {}".format(self.current_mediapackage.getIdentifier()))
         self.current_mediapackage.status = mediapackage.RECORDING
-        now = datetime.utcnow().replace(microsecond=0)
+        now = round_microseconds(datetime.utcnow())
         self.current_mediapackage.setDate(now)
         self.current_mediapackage.setProperty('origin', self.conf.get_hostname())
         self.__set_status(RECORDING_STATUS)
@@ -182,15 +182,15 @@ class RecorderService(object):
         self.logger.info("Adding new mediapackage ({}) to the repository".format(
                 self.current_mediapackage.getIdentifier()))
         self.repo.add_after_rec(self.current_mediapackage, self.recorder.get_bins_info(),
-                                close_duration, self.current_mediapackage.manual)
+                                close_duration, self.current_mediapackage.manual, True, self.conf.get_boolean('ingest', 'ignore_capture_devices'))
 
         self.dispatcher.emit("recorder-stopped", self.current_mediapackage.getIdentifier())
 
         code = 'manual' if self.current_mediapackage.manual else 'scheduled'
         if self.conf.get_lower('ingest', code) == 'immediately':
-            self.worker.ingest(self.current_mediapackage)
+            self.worker.enqueue_job_by_name('ingest', self.current_mediapackage)
         elif self.conf.get_lower('ingest', code) == 'nightly':
-            self.worker.ingest_nightly(self.current_mediapackage)
+            self.worker.enqueue_nightly_job_by_name('ingest', self.current_mediapackage)
         self.current_mediapackage = None
 
 
@@ -230,37 +230,37 @@ class RecorderService(object):
         self.mute = value
         self.recorder and self.recorder.mute_preview(value)
 
-    def disable_input(self, bin_name=None):
+    def disable_input(self, bin_names=[]):
         """Proxy function to disable input"""
         try:
-            self.recorder and self.recorder.disable_input(bin_name)
-            self.logger.info("Input disabled {}".format(bin_name))
+            self.recorder and self.recorder.disable_input(bin_names)
+            self.logger.info("Input disabled {}".format(bin_names))
         except Exception as exc:
-            self.logger.error("Error in bins {}: {}".format(bin_name,exc))
+            self.logger.error("Error in bins {}: {}".format(bin_names,exc))
 
-    def enable_input(self, bin_name=None):
+    def enable_input(self, bin_names=[]):
         """Proxy function to enable input"""
         try:
-            self.recorder and self.recorder.enable_input(bin_name)
-            self.logger.info("Input enabled {}".format(bin_name))
+            self.recorder and self.recorder.enable_input(bin_names)
+            self.logger.info("Input enabled {}".format(bin_names))
         except Exception as exc:
-            self.logger.error("Error in bins {}: {}".format(bin_name,exc))
+            self.logger.error("Error in bins {}: {}".format(bin_names,exc))
 
-    def disable_preview(self, bin_name=None):
+    def disable_preview(self, bin_names=[]):
         """Proxy function to disable input"""
         try:
-            self.recorder and self.recorder.disable_preview(bin_name)
-            self.logger.info("Preview disabled {}".format(bin_name))
+            self.recorder and self.recorder.disable_preview(bin_names)
+            self.logger.info("Preview disabled {}".format(bin_names))
         except Exception as exc:
-            self.logger.error("Error in bins {}: {}".format(bin_name,exc))
+            self.logger.error("Error in bins {}: {}".format(bin_names,exc))
 
-    def enable_preview(self, bin_name=None):
+    def enable_preview(self, bin_names=[]):
         """Proxy function to enable input"""
         try:
-            self.recorder and self.recorder.enable_preview(bin_name)
-            self.logger.info("Preview enabled {}".format(bin_name))
+            self.recorder and self.recorder.enable_preview(bin_names)
+            self.logger.info("Preview enabled {}".format(bin_names))
         except Exception as exc:
-            self.logger.error("Error in bins {}: {}".format(bin_name,exc))
+            self.logger.error("Error in bins {}: {}".format(bin_names,exc))
 
     def get_mute_status(self):
         return self.recorder.mute_status if self.recorder else {"input":{},"preview":{}}

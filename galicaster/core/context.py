@@ -178,7 +178,7 @@ def get_repository():
         template = conf.get('repository','foldertemplate')
         __galicaster_context['repository'] = Repository(
             conf.get('basic', 'repository'),
-            conf.hostname,
+            conf.get_hostname(),
             template,
             get_logger())
 
