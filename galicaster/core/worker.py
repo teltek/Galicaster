@@ -226,9 +226,6 @@ class Worker(object):
             return False
         f(mp, params)
         return True
-<<<<<<<< HEAD
-=======
-
 
     def enqueue_nightly_job_by_name(self, operation, mp, params={}):
         """Adds a mediapackage operation to be done at nightly configured time.
@@ -240,8 +237,6 @@ class Worker(object):
         mp.setOpStatus(operation,mediapackage.OP_NIGHTLY)
         self.repo.update(mp)
         self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
->>>>>>> 2.0.x
-
 
     def do_job(self, name, mp, params={}):
         """Calls a particular method of this class with a given argument.

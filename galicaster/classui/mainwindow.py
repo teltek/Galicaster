@@ -22,11 +22,9 @@ from galicaster.classui import get_image_path
 from galicaster.classui import get_ui_path
 from galicaster.utils.shutdown import shutdown as UtilsShutdown
 
-from galicaster.core import context
 
 from galicaster.utils.i18n import _
 
-from galicaster.utils.resize import resize_button
 
 class GCWindow(Gtk.Window):
     """
