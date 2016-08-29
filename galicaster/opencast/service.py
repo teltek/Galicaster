@@ -17,6 +17,9 @@ from os import path
 from galicaster.utils import ical
 from galicaster.opencast.series import get_series
 
+from galicaster.utils.queuethread import T
+import Queue
+
 """
 This class manages the timers and its respective signals in order to start and stop scheduled recordings.
 It also toggles capture agent status and communicates it to Opencast server.
@@ -79,6 +82,10 @@ class OCService(object):
 
         self.ical_data = None
 
+        self.jobs = Queue.Queue()
+        t = T(self.jobs)
+        t.setDaemon(True)
+        t.start()
 
     def __set_recording_state(self, mp, state):
         self.logger.info("Sending state {} for the scheduled MP {}".format(state, mp))
@@ -93,7 +100,7 @@ class OCService(object):
         #TODO: Improve the way of checking if it is a scheduled recording
         mp = self.repo.get(mp_id)
         if mp and mp.getOCCaptureAgentProperty('capture.device.names'):
-            self.__set_recording_state(mp, 'capturing')
+            self.jobs.put((self.__set_recording_state, (mp, 'capturing')))
 
 
     def __check_recording_stopped(self, element=None, mp_id=None):
@@ -107,13 +114,14 @@ class OCService(object):
         if not self.net or force:
             self.net = True
             self.dispatcher.emit('opencast-status', True)
+            self.jobs.queue.clear()
 
 
     def __set_opencast_down(self, force=False):
         if self.net or force:
             self.net = False
             self.dispatcher.emit('opencast-status', False)
-
+            self.jobs.queue.clear()
 
     def __set_opencast_connecting(self):
         self.dispatcher.emit('opencast-status', None)
@@ -140,9 +148,9 @@ class OCService(object):
             This method is invoked every short beat duration. (10 seconds by default)
         """
         if self.net:
-            self.set_state()
+            self.jobs.put((self.set_state, ()))
         else:
-            self.init_client()
+            self.jobs.put((self.init_client, ()))
 
 
     def do_timers_long(self, sender):
@@ -153,7 +161,7 @@ class OCService(object):
             This method is invoked every long beat duration (1 minute by default).
         """
         if self.net:
-            self.process_ical()
+            self.jobs.put((self.process_ical,()))
             self.dispatcher.emit('ical-processed')
             self.series = get_series()
 
@@ -170,7 +178,7 @@ class OCService(object):
             self.__set_opencast_up()
         except Exception as exc:
             self.logger.warning('Unable to connect to opencast server: {0}'.format(exc))
-            self.__set_opencast_down()
+            self.__set_opencast_down(True)
 
 
     def set_state(self):
