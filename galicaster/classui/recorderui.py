@@ -364,12 +364,11 @@ class RecorderClassUI(Gtk.Box):
                 return True
 
             if self.recorder.current_mediapackage.anticipated:
-                if event_type.get_text() != CURRENT_TEXT:
+                if event_type.get_text() != CURRENT_TEXT or title.get_text() != self.recorder.current_mediapackage.title:
                     status.set_text("")
                     event_type.set_text(CURRENT_TEXT)
                     title.set_text(self.recorder.current_mediapackage.title)
                 return True
-
             status.set_text(_("Stopping in {0}").format(readable.long_time(dif)))
             event_type.set_text(CURRENT_TEXT)
             title.set_text(self.recorder.current_mediapackage.title)
