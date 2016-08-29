@@ -90,7 +90,7 @@ class ListingClassUI(ManagerUI):
         """Appends the mediapackage data into the list"""
         lista.clear()
         for mp in mps:
-            duration = mp.getDuration()
+            duration = round(mp.getDuration(), -3)
             if duration in ["", None]:
                 duration = 0
 

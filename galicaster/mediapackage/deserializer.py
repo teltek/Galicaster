@@ -38,7 +38,7 @@ def fromXML(xml, logger=None):
     mp = mediapackage.Mediapackage(uri = mp_uri)
     manifest = minidom.parse(xml)
     principal = manifest.getElementsByTagName("mediapackage")
-    mp.setDuration(round(int(principal[0].getAttribute("duration")), -3) or 0) # FIXME check if empty and take out patch in listing.populatetreeview
+    mp.setDuration(principal[0].getAttribute("duration") or 0) # FIXME check if empty and take out patch in listing.populatetreeview
     mp.setIdentifier(principal[0].getAttribute("id"))
 
     if principal[0].hasAttribute("start"):
