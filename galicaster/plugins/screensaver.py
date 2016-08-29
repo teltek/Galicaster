@@ -6,9 +6,9 @@
 # Copyright (c) 2012, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 """
@@ -34,13 +34,13 @@ def init():
     dispatcher = context.get_dispatcher()
     logger = context.get_logger()
     conf = context.get_conf()
-    
+
     inactivity_val = conf.get('screensaver', 'inactivity')
     try:
         inactivity = int(inactivity_val)
     except Exception as exc:
         raise Exception("Error trying to convert inactivity value to integer: {}".format(exc))
-        
+
     dispatcher.connect('recorder-upcoming-event', deactivate_and_poke)
     dispatcher.connect('recorder-starting', deactivate_and_poke)
     dispatcher.connect('recorder-stopped', activate_and_poke)
@@ -50,18 +50,28 @@ def init():
     default_power_settings = conf.get_json('screensaver', 'defaultpowersettings')
     activate_screensaver()
 
-    
+
 def activate_and_poke(signal=None, mp=None):
+    global logger
     poke_screen()
-    activate_screensaver()
+#    activate_screensaver()
+
+    standby_time = inactivity
+    suspend_time = inactivity + 5
+    off_time = inactivity + 10
+    execute(["xset", "dpms", str(standby_time), str(suspend_time), str(off_time)], logger)
+    logger.debug("Activate screensaver")
 
 def deactivate_and_poke(signal=None, mp=None):
+    global logger
     deactivate_screensaver()
     poke_screen()
+    logger.debug("Deactivate screensaver")
 
 def deactivate_screensaver(signal=None):
     global logger
     execute(['xset', 'dpms', '0', '0', '0'], logger)
+#    execute(['xset', '-dpms'], logger)
 
 def activate_screensaver(signal=None, mp=None):
     global inactivity, logger, power_settings
@@ -84,7 +94,7 @@ def configure_quit(signal=None):
 
     write_dconf_settings(default_power_settings, logger, logaserror=False)
     execute(['xset', '-dpms'], logger)
-    
+
 def get_screensaver_method(method):
     dbus_loop = DBusGMainLoop()
     session = dbus.SessionBus(mainloop=dbus_loop)
@@ -101,8 +111,7 @@ def poke_screen(signal=None):
     poke(
         reply_handler=replying,
         error_handler=replying)
-    execute(['xset','dpms','force','on'], logger)    
+    execute(['xset','dpms','force','on'], logger)
 
 def replying(data=None):
     pass
-
