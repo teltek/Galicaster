@@ -327,20 +327,20 @@ class TestFunctions(TestCase):
 
 
     def test_get_hostname(self):
-#        conf = Conf()
-        self.conf.set('config', 'ingest', None)
-        self.conf.set('basic', 'admin', 'True')
-        self.conf.set('ingest', 'hostname', None)
-        self.assertEqual('GCMobile-' + socket.gethostname(), self.conf.get_hostname())
+        conf = Conf(self.conf_file)
+        conf.set('config', 'ingest', None)
+        conf.set('basic', 'admin', 'True')
+        conf.set('ingest', 'hostname', None)
+        self.assertEqual('GCMobile-' + socket.gethostname(), conf.get_hostname())
         self.assertEqual(1, len(conf.get_tracks_in_oc_dict()))
-        self.assertEqual({'capture.device.names': 'defaults'}, self.conf.get_tracks_in_oc_dict())
-        self.conf.set('basic', 'admin', 'False')
-        self.conf.set('ingest', 'hostname', None)
-        self.assertEqual('GC-' + socket.gethostname(), self.conf.get_hostname())
+        self.assertEqual({'capture.device.names': 'defaults'}, conf.get_tracks_in_oc_dict())
+        conf.set('basic', 'admin', 'False')
+        conf.set('ingest', 'hostname', None)
+        self.assertEqual('GC-' + socket.gethostname(), conf.get_hostname())
         name = "123456_654321"
-        self.conf.set('ingest', 'hostname', name)
-        self.assertEqual(name, self.conf.get_hostname())
-        a = self.conf.remove_option('ingest', 'hostname')
+        conf.set('ingest', 'hostname', name)
+        self.assertEqual(name, conf.get_hostname())
+        a = conf.remove_option('ingest', 'hostname')
 
 
     def test_get_ip_address(self):
