@@ -23,14 +23,14 @@ pipestr = ( ' dv1394src use-avc=false name=gc-firewire-src ! queue ! tee name=gc
             ' queue ! dvdemux name=gc-firewire-demuxer ! '
             ' level name=gc-firewire-level message=true interval=100000000 ! '
             ' volume name=gc-firewire-volume ! gc-asink '
-            ' gc-firewire-demuxer. ! queue ! avdec_dvvideo ! videoconvert ! gc-vsink '
+            ' gc-firewire-demuxer. ! queue ! avdec_dvvideo ! videoconvert ! caps-preview ! gc-vsink '
             ' gc-firewire-maintee. ! queue ! valve drop=false name=gc-firewire-valve ! filesink name=gc-firewire-sink async=false '
             )
 
 
 class GCfirewire(Gst.Bin, base.Base):
 
-    order = [ 'name', 'flavor', 'location', 'file', 'vumeter', 'player', 'format']
+    order = [ 'name', 'flavor', 'location', 'file', 'vumeter', 'player', 'format', "caps-preview"]
 
     gc_parameters = {
         "name": {
@@ -87,6 +87,12 @@ class GCfirewire(Gst.Bin, base.Base):
             "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
             "description": "Audio sink",
         },
+        "caps-preview" : {
+            "type": "text",
+            "default": None,
+            "description": "Caps-preview",
+        },
+
     }
 
     is_pausable = False
@@ -108,6 +114,12 @@ class GCfirewire(Gst.Bin, base.Base):
         gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-audio-'+self.options['name'])
         aux = (pipestr.replace('gc-vsink', gcvideosink)
                .replace('gc-asink', gcaudiosink))
+
+        if self.options["caps-preview"]:
+            aux = aux.replace("caps-preview !","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
+        else:
+            aux = aux.replace("caps-preview !","")
+
         #bin = Gst.parse_bin_from_description(aux, False)
         bin = Gst.parse_launch("( {} )".format(aux))
 

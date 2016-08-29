@@ -12,10 +12,10 @@
 # San Francisco, California, 94105, USA.
 
 from galicaster.core import context
-from gi.repository import Pango
-
-from gi.repository import Gtk
+from gi.repository import Pango, Gtk
 from galicaster.core.core import PAGES
+
+from galicaster.utils.resize import resize_button
 
 def init():
     global conf, logger, recorder, dispatcher
@@ -38,6 +38,9 @@ def manage_button(element=None):
     button.add(hbox)
     icon = Gtk.Image().new_from_icon_name("video-display",3)
     hbox.pack_start(icon,True,True,0)
+    size = context.get_mainwindow().get_size()
+    k1 = size[0] / 1920.0
+    resize_button(button,size_image=k1*44,size_box=k1*46)
 
     to_disable = conf.get_list("muteinputs","bins")
     mute_type = conf.get_choice("muteinputs","mute_type", ["input", "preview"], "input")

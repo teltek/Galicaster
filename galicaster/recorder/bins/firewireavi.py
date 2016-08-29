@@ -27,7 +27,7 @@ pipestr = (' dv1394src name=gc-firewireavi-src ! '
            ' tee name=gc-firewireavi-audiotee ! '
            ' queue ! volume name=gc-firewireavi-volume ! gc-asink '
            ' gc-firewireavi-demuxer. ! queue ! tee name=gc-firewireavi-videotee ! '
-           ' queue ! avdec_dvvideo ! videoconvert ! gc-vsink '
+           ' queue ! avdec_dvvideo ! videoconvert ! caps-preview ! gc-vsink '
            ' gc-firewireavi-audiotee. ! queue ! valve drop=false name=gc-firewireavi-audio-valve ! audio/x-raw ! avimux name=gc-firewireavi-mux ! '
            ' queue ! filesink name=gc-firewireavi-sink async=false '
            ' gc-firewireavi-videotee. ! queue ! valve drop=false name=gc-firewireavi-video-valve ! video/x-dv ! gc-firewireavi-mux.  '
@@ -89,6 +89,12 @@ class GCfirewireavi(Gst.Bin, base.Base):
             "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
             "description": "Audio sink",
         },
+        "caps-preview" : {
+            "type": "text",
+            "default": None,
+            "description": "Caps-preview",
+        },
+
     }
 
     is_pausable = False
@@ -110,6 +116,13 @@ class GCfirewireavi(Gst.Bin, base.Base):
         gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-audio-'+self.options['name'])
         aux = (pipestr.replace('gc-vsink', gcvideosink)
                .replace('gc-asink', gcaudiosink))
+
+        if self.options["caps-preview"]:
+            aux = aux.replace("caps-preview !","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
+        else:
+            aux = aux.replace("caps-preview !","")
+
+
         #bin = Gst.parse_bin_from_description(aux, False)
         bin = Gst.parse_launch("( {} )".format(aux))
 
