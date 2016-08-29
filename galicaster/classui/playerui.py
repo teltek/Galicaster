@@ -277,7 +277,7 @@ class PlayerClassUI(ManagerUI):
         """ Pops up a dialog.
         If response is positive the mediapackage is deleted and the focus goes to the previous area"""
         key = self.mediapackage.identifier
-        response=self.delete(key,self.create_delete_dialog_response(key)) # noqa: ignore=F841
+        self.delete(key,self.create_delete_dialog_response(key))
 
         return True
 
