@@ -14,7 +14,8 @@
 
 import sys
 
-from gi.repository import Gtk, Gst, Gdk, GObject, GdkX11
+from gi.repository import Gst
+from gi.repository import GdkX11 # noqa: ignore=F401
 Gst.init(None)
 
 from galicaster.core import context

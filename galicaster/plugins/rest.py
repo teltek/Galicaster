@@ -6,9 +6,9 @@
 # Copyright (c) 2012, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 import os
@@ -18,7 +18,7 @@ import math
 import threading
 import tempfile
 from bottle import route, run, response, abort, request, install
-from gi.repository import Gtk, Gdk, GObject
+from gi.repository import GObject
 
 from galicaster.core import context
 from galicaster.mediapackage.serializer import set_manifest
@@ -50,7 +50,7 @@ def init():
     port = conf.get_int('rest', 'port')
 
     install(error_handler)
-    
+
     restp = threading.Thread(target=run,kwargs={'host': host, 'port': port, 'quiet': True})
     restp.setDaemon(True)
     restp.start()
@@ -80,7 +80,7 @@ def index():
 
 @route('/state')
 def state():
-    response.content_type = 'application/json' 
+    response.content_type = 'application/json'
     #TODO: Complete!
     return json.dumps({"is-recording": context.get_recorder().is_recording()})
 
@@ -126,7 +126,7 @@ def start():
     else:
         recorder.record(None)
     return "Signal to start recording sent"
-    
+
 
 @route('/stop')
 def stop():
@@ -137,9 +137,9 @@ def stop():
         recorder.stop()
     else:
         abort(500, "failed to stop the capture, or no current active capture")
-        
+
     return "Signal to stop recording sent"
-    
+
 
 @route('/operation/:op/:mpid', method='GET')
 def operationt(op, mpid):
@@ -147,30 +147,30 @@ def operationt(op, mpid):
     worker = context.get_worker()
     worker.enqueue_job_by_name(op, mpid)
     return "{0} over {1}".format(op,mpid)
- 
+
 
 @route('/screen')
 def screen():
     response.content_type = 'image/png'
-    pb = get_screenshot_as_pixbuffer()    
+    pb = get_screenshot_as_pixbuffer()
     ifile = tempfile.NamedTemporaryFile(suffix='.png')
     pb.savev(ifile.name, "png", [], ["100"])
-    pb= open(ifile.name, 'r') 
+    pb= open(ifile.name, 'r')
     if pb:
         return pb
     else:
-        return "Error" 
+        return "Error"
 
 @route('/logstale')
 def logstale():
     conf = context.get_conf()
     logger = context.get_logger()
-    
+
     filename = logger.get_path()
     stale = conf.get('logger', 'stale') or 300 # 5 minutes
 
     info = {}
-    
+
     if not logger:
         abort(503, "The logger service is not available")
 
@@ -180,7 +180,7 @@ def logstale():
     info['age'] = age
 
     if age > stale:
-        info['stale'] = True        
+        info['stale'] = True
 
     return json.dumps(info)
 
@@ -193,7 +193,7 @@ def post_calendar():
     conf = context.get_conf()
     if conf.get_boolean('ingest', 'active'):
         abort(503, "The Opencast service is enabled, so ingoring this command to avoid inconsisten behaviour")
-    
+
     repo = context.get_repository()
     scheduler = context.get_scheduler()
     logger = context.get_logger()
@@ -204,15 +204,15 @@ def post_calendar():
 
     return "OK"
 
-    
+
 @route('/quit', method='POST')
-def quit():    
+def quit():
     logger = context.get_logger()
     recorder = context.get_recorder()
     main_window = context.get_mainwindow()
 
     force = request.forms.get('force')
-    
+
     if not recorder.is_recording() or readable.str2bool(force):
         logger.info("Quit Galicaster through API rest")
 

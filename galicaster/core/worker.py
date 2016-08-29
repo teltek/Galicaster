@@ -227,7 +227,6 @@ class Worker(object):
         f(mp, params)
         return True
 
-
     def enqueue_nightly_job_by_name(self, operation, mp, params={}):
         """Adds a mediapackage operation to be done at nightly configured time.
         Args:
@@ -238,7 +237,6 @@ class Worker(object):
         mp.setOpStatus(operation,mediapackage.OP_NIGHTLY)
         self.repo.update(mp)
         self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
-
 
     def do_job(self, name, mp, params={}):
         """Calls a particular method of this class with a given argument.
@@ -357,8 +355,6 @@ class Worker(object):
 
         serializer.save_in_zip(mp, location, self.use_namespace, self.logger)
 
-
-
     def add_operation(self, name, code, handler):
         """Sets an operation in the worker
         Args:
@@ -421,7 +417,7 @@ class Worker(object):
         sbs_layout    = self.sbs_layout if not "layout" in params else params["layout"]
 
         if audio_mode not in ["embedded", "external", "auto"]:
-            self.logger.warning("SideBySide for MP {}: unknown value {} for parameter 'audio', default to auto-mode".format(mp.getIdentifier(), audio))
+            self.logger.warning("SideBySide for MP {}: unknown value {} for parameter 'audio', default to auto-mode".format(mp.getIdentifier(), audio_mode))
             audio_mode = "auto"
 
         audio = None  #'camera'
@@ -441,7 +437,6 @@ class Worker(object):
 
         if audio_mode == "auto":
             self.logger.debug('SideBySide for MP {0}: auto audio-mode'.format(mp.getIdentifier()))
-
             # Look for embedded audio track, if this not exists use external audio
             info = get_info(camera)
             if 'audio-codec' in info.get_stream_info().get_streams()[0].get_tags().to_string():
@@ -452,7 +447,6 @@ class Worker(object):
 
         elif audio_mode == "embedded":
             self.logger.debug('SideBySide for MP {0}: embedded audio-mode'.format(mp.getIdentifier()))
-
             # Look for embedded audio track, if this not exists use external audio
             info = get_info(camera)
             if 'audio-codec' in info.get_stream_info().get_streams()[0].get_tags().to_string():

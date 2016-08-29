@@ -14,8 +14,12 @@
 from galicaster.core import context
 from gi.repository import Pango, Gtk
 from galicaster.core.core import PAGES
-
 from galicaster.utils.resize import resize_button
+
+conf = None
+logger = None
+recorder = None
+dispatcher = None
 
 def init():
     global conf, logger, recorder, dispatcher
@@ -26,8 +30,6 @@ def init():
     dispatcher.connect('init', manage_button)
 
 def manage_button(element=None):
-    global conf, recorder, dispatcher
-
     label = set_label(2,2,"Input status: ")
     label1 = set_label(0,1)
     context.get_mainwindow().insert_element(label,PAGES['REC'],"status_panel", "attach",left=0,top=4,width=1,height=1)

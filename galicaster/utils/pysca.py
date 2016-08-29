@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import serial
-import sys
+#import sys
 import os
 import select
 import threading
@@ -703,7 +703,7 @@ def __reader():
                         elif ord(p[1]) == VISCA_ADDR_CHANGE:
                                 #print "__READER: Received network change packet!!!"
                                 # Read responses in a new thread
-                                threading.Thread(target=cmd_address_set()).start()
+                                threading.Thread(target=cmd_address_set()).start() # noqa: ignore=F821
                         else:
                                 # Make the reception of the packet in the corresponding device
                                 # Responses with a sender of "0" are broadcast requests, but are duly handled by the device 0
@@ -750,7 +750,7 @@ def __bcast_reader():
                                         # TODO: Any other measures?
                                         print "WARNING: Received 'SET_ADDR' package for existing device {}".format(new_addr)
                                 # Signal the reception
-                                __init_addresses_rcvd = True
+                                __init_addresses_rcvd = True # noqa: ignore=F841
                                 __init_addresses_lock.notify()
                 else:
                         # TODO: Use logger
@@ -781,7 +781,7 @@ def __get_response(device, socket = 0):
                 # Read the response
                 return __devices[device].get_response(socket)
         except KeyError:
-                raise ViscaNoSuchDeviceError("Tried to receive a packet from the non-existant device {}".format(recipient))
+                raise ViscaNoSuchDeviceError("Tried to receive a packet from the non-existant device {}".format(recipient)) # noqa: ignore=F821
 
 
 def __send(recipient, *payload):
@@ -814,7 +814,7 @@ def __send(recipient, *payload):
                         response.parse_error()
 
                         # Reach this if the previous function didn't raise a "standard" exception
-                        raise ViscaUnexpectedResponseError("Received response {}. 'completed' expected".format(reply))
+                        raise ViscaUnexpectedResponseError("Received response {}. 'completed' expected".format(reply)) # noqa: ignore=F841
 
         except KeyError:
                 raise ViscaNoSuchDeviceError("Tried to send a packet to the non-existant device {}".format(recipient))
@@ -967,7 +967,7 @@ def clear_all():
                         __if_clear_rcvd = False
 
                 # Send command
-                resp = __write_to_serial(Packet.from_parts(0, VISCA_BCAST_ADDR, VISCA_IF_CLEAR_PAYLOAD))
+                resp = __write_to_serial(Packet.from_parts(0, VISCA_BCAST_ADDR, VISCA_IF_CLEAR_PAYLOAD)) # noqa: ignore=F841
 
                 # Wait for a response
                 # TODO: Use longer timeout?
@@ -1122,8 +1122,8 @@ def focus(device, action, speed=None, zoom=None):
 
         # Mechanism to convert the actions accepted by the 'zoom' command into Visca codes
         actions2codes = { FOCUS_ACTION_STOP: lambda speed: VISCA_FOCUS_STOP,
-                          FOCUS_ACTION_NEAR: lambda speed: VISCA_FOCUS_NEAR if speed is None else VISCA_FOCUS_NEAR_SPEED | speed,
-                          FOCUS_ACTION_FAR: lambda speed: VISCA_FOCUS_FAR if speed is None else VISCA_FOCUS_FAR_SPEED | speed }
+                          FOCUS_ACTION_NEAR: lambda speed: VISCA_FOCUS_NEAR if speed is None else VISCA_FOCUS_NEAR_SPEED | speed, # noqa: ignore=F821
+                          FOCUS_ACTION_FAR: lambda speed: VISCA_FOCUS_FAR if speed is None else VISCA_FOCUS_FAR_SPEED | speed } # noqa: ignore=F821
 
         if action == FOCUS_ACTION_NEAR or action == FOCUS_ACTION_FAR:
                 # Be flexible about the values that can be passed to 'speed',
@@ -1237,7 +1237,7 @@ def set_autofocus_active_interval(device, active, interval):
         These parameters are relevant for some autofocus modes.
         Both parameters have to be integers between 0x00 and 0xFF
         """
-        __cmd_cam(device, VISCA_FOCUS_AUTO_ACTIVE_INT, Packet.int_to_bytes(active,2), Packet.int_to_bytes(interval,2))
+        __cmd_cam(device, VISCA_FOCUS_AUTO_ACTIVE_INT, Packet.int_to_bytes(active,2), Packet.int_to_bytes(interval,2)) # noqa: ignore=F821
 
 
 def set_ir_correction(device, activate):

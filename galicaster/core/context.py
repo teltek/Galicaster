@@ -138,7 +138,7 @@ def get_ocservice():
 
     if 'ocservice' not in __galicaster_context:
         conf = get_conf()
-        if get_conf().get_boolean("ingest", "active"):
+        if conf.get_boolean("ingest", "active"):
             ocservice = OCService(get_repository(),
                                   get_occlient(),
                                   get_scheduler(),

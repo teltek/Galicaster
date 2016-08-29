@@ -38,7 +38,6 @@ from galicaster.core import context
 from galicaster.classui.metadata import MetadataClass as Metadata
 from galicaster.classui import message
 from galicaster.classui import get_ui_path, get_image_path
-from galicaster.opencast import series
 from galicaster.utils import readable
 from galicaster.utils.resize import relabel, resize_button
 from galicaster.utils.i18n import _
@@ -529,9 +528,9 @@ class RecorderClassUI(Gtk.Box):
     def set_status_view(self):
         """Set the message and color of the status pilot on the top bar"""
 
-        size = context.get_mainwindow().get_size()
+#        size = context.get_mainwindow().get_size()
         # k1 = size[0] / 1920.0
-        k2 = size[1] / 1080.0
+#        k2 = size[1] / 1080.0
 
         l = Gtk.ListStore(str,str,str)
 
@@ -613,11 +612,11 @@ class RecorderClassUI(Gtk.Box):
         """Adapts GUI elements to the screen size"""
         size = context.get_mainwindow().get_size()
 
-        altura = size[1]
+ #       altura = size[1]
         anchura = size[0]
 
         k1 = anchura / 1920.0
-        k2 = altura / 1080.0
+#        k2 = altura / 1080.0
         self.proportion = k1
 
         #Recorder

@@ -11,16 +11,16 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
-from os import path
-import re
+# from os import path
+# import re
 
-from gi.repository import Gst
+# from gi.repository import Gst
 
-import galicaster
+# import galicaster
 from galicaster.core import context
-from galicaster.recorder.utils import Switcher
-from galicaster.recorder import base
-from galicaster.recorder.utils import get_videosink
+# from galicaster.recorder.utils import Switcher
+# from galicaster.recorder import base
+# from galicaster.recorder.utils import get_videosink
 
 from galicaster.recorder.bins import v4l2
 

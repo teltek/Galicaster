@@ -11,7 +11,6 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
-import os
 
 from galicaster.core import context
 from galicaster.utils.systemcalls import execute

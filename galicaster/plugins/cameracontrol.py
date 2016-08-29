@@ -27,6 +27,8 @@ from galicaster.utils.queuethread import T
 dispatcher = None
 conf = None
 logger = None
+jobs = None
+event_handler = None
 
 def init():
     global conf, logger, event_handler, jobs
@@ -62,7 +64,7 @@ def init():
 def load_ui(element):
     try:
         builder = context.get_mainwindow().nbox.get_nth_page(PAGES["REC"]).gui
-    except Exception as error:
+    except Exception:
         logger.debug("The view not exist")
         return None
 

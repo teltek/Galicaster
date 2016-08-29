@@ -28,11 +28,11 @@ all:
 	@echo 'make test-functional         - Run functional tests'
 	@echo 'make test-all                - Run all the test (using nosetest)'
 	@echo 'make check                   - Check the python source code (using pychecker)'
-	@echo 'make dobleckeck              - Check the python source code (using pyflakes)'
+	@echo 'make doblecheck              - Check the python source code (using pyflakes)'
 	@echo 'make pep8                    - Run PEP8 compliance tests(using pep8)'
 test:
 	nosetests --all-modules -a '!nodefault'
-test-travis: doblecheck
+test-travis: check
 	nosetests --all-modules -a '!nodefault,!notravis' --with-coverage --cover-inclusive --cover-package=galicaster
 test-with-coverage:
 	nosetests --all-modules -a '!nodefault' --with-coverage --cover-inclusive --cover-package=galicaster
@@ -48,8 +48,7 @@ test-functional:
 test-all:
 	nosetests --all-modules --no-skip
 check:
-	pychecker `find galicaster -name '*.py'`
-	pychecker `find test -name '*.py'`
+	flake8 --ignore=E,W --builtins="int,long,unicode" --format pylint `find galicaster -name '*.py'`
 doblecheck:
 	pyflakes `find galicaster -name '*.py'`
 	pyflakes `find test -name '*.py'`
