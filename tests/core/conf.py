@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 
@@ -29,7 +29,7 @@ from galicaster.core.conf import Track
 
 
 class TestFunctions(TestCase):
-        
+
     def setUp(self):
         self.conf_file = get_resource('conf/conf.ini')
         self.backup_conf_file =get_resource('conf/conf.backup.ini')
@@ -38,18 +38,17 @@ class TestFunctions(TestCase):
         shutil.copyfile(self.conf_file,self.backup_conf_file)
         self.conf = Conf(self.conf_file,dist_file)
         self.conf.reload()
-        
 
     def tearDown(self):
         shutil.copyfile(self.backup_conf_file,self.conf_file)
         os.remove(self.backup_conf_file)
         del self.conf
 
-        
+
     def touch(self, fname, times=None):
         with open(fname, 'a'):
             os.utime(fname, times)
-                    
+
     def test_init_no_file(self):
         primary_conf = os.path.join('/etc/galicaster','conf.ini')
         secondary_conf = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'conf.ini'))
@@ -57,9 +56,9 @@ class TestFunctions(TestCase):
         # Conf loads default conf and conf-dist
         conf = Conf(conf_dist_file=secondary_dist)
         self.assertEqual( primary_conf if os.path.isfile(primary_conf) else secondary_conf,
-                          conf.conf_file) 
+                          conf.conf_file)
         self.assertEqual( secondary_dist,
-                          conf.conf_dist_file) 
+                          conf.conf_dist_file)
 
     def test_init_all_files(self):
         conf_file = get_resource('conf/conf.ini')
@@ -68,7 +67,7 @@ class TestFunctions(TestCase):
         self.assertEqual(conf_file, conf.conf_file)
         self.assertEqual(conf_dist_file, conf.conf_dist_file)
 
-        
+
     def test_invalid_ini(self):
         conf_file = get_resource('conf/conf.ini')
         conf_dist_file = get_resource('conf/conf_dist.ini')
@@ -80,12 +79,12 @@ class TestFunctions(TestCase):
         content = ''
         with open(get_resource('conf/conf.ini'), 'r') as content_file:
                 content = content_file.read()
-        
+
         # Override conf file
         f = open(get_resource('conf/conf.ini'),'w')
-        f.write('testing wrong config file') 
-        f.close() 
-        
+        f.write('testing wrong config file')
+        f.close()
+
         conf_dist_file = get_resource('conf/conf_dist.ini')
         profiles_dir = get_resource('conf/profiles')
         conf = Conf(conf_file, conf_dist_file, profiles_dir)
@@ -96,10 +95,10 @@ class TestFunctions(TestCase):
 
         # Override conf file
         f = open(get_resource('conf/conf.ini'),'w')
-        f.write(content) 
+        f.write(content)
         f.close()
-        
-    
+
+
     def test_active_tag_default_profile(self):
         conf_file = get_resource('conf/conf_active.ini')
         backup_conf_active = get_resource('conf/conf_active.backup.ini')
@@ -108,11 +107,11 @@ class TestFunctions(TestCase):
         shutil.copyfile(conf_file, backup_conf_active)
         conf = Conf(conf_file, dist_file)
         conf.reload()
-        profile = conf.get_current_profile()    
+        profile = conf.get_current_profile()
         self.assertEqual(1, len(profile.tracks))
         shutil.copyfile(backup_conf_active, conf_file)
         os.remove(backup_conf_active)
-        
+
     def test_profile_with_no_profiles_in_files(self):
         conf_file = get_resource('conf/conf.ini')
         conf_dist_file = get_resource('conf/conf_dist.ini')
@@ -136,7 +135,7 @@ class TestFunctions(TestCase):
         full = self.conf.get_all()
         user_conf = self.conf.get_all(False)
         self.assertTrue(len(full) > len(user_conf))
-        
+
 
     def test_reload(self):
         self.conf.set('basic', 'temp', 'temporal')
@@ -147,7 +146,7 @@ class TestFunctions(TestCase):
         self.assertEqual(None, self.conf.get('basic', 'temp'))
         self.conf.reload()
         self.assertEqual('newtemporal', self.conf.get('basic', 'temp'))
-        
+
 
     def test_get_tracks_in_oc_dict(self):
         conf = self.conf.get_tracks_in_oc_dict()
@@ -185,11 +184,11 @@ class TestFunctions(TestCase):
 
         self.assertEqual(track.keys(), ['name', 'device', 'flavor', 'location', 'file'])
         self.assertEqual(track.values(), ['v_name', 'v_device', 'v_flavor', 'v_location', 'v_file'])
-        self.assertEqual(track.basic(), {'name': 'v_name', 'device': 'v_device', 
-                                        'flavor': 'v_flavor', 'location': 'v_location', 
+        self.assertEqual(track.basic(), {'name': 'v_name', 'device': 'v_device',
+                                        'flavor': 'v_flavor', 'location': 'v_location',
                                         'file': 'v_file'})
         self.assertEqual(track.options(), {})
-        
+
 
     def test_add_and_del_value_in_track(self):
         track = Track()
@@ -198,7 +197,7 @@ class TestFunctions(TestCase):
         self.assertEqual(track['new_key'], 'new_value')
         self.assertEqual(track.keys(), ['name', 'device', 'flavor', 'location', 'file', 'new_key'])
         self.assertEqual(track.values(), ['', '', '', '', '', 'new_value'])
-        self.assertEqual(track.basic(), {'name': '', 'device': '', 'flavor': '', 
+        self.assertEqual(track.basic(), {'name': '', 'device': '', 'flavor': '',
                                         'location': '', 'file': ''})
         self.assertEqual(track.options(), {'new_key': 'new_value'})
 
@@ -206,10 +205,10 @@ class TestFunctions(TestCase):
         self.assertEqual(len(track), 5)
         self.assertEqual(track.keys(), ['name', 'device', 'flavor', 'location', 'file'])
         self.assertEqual(track.values(), ['', '', '', '', ''])
-        self.assertEqual(track.basic(), {'name': '', 'device': '', 'flavor': '', 
+        self.assertEqual(track.basic(), {'name': '', 'device': '', 'flavor': '',
                                          'location': '', 'file': ''})
         self.assertEqual(track.options(), {})
-                
+
 
     def test_init_profile(self):
         profile = Profile()
@@ -222,17 +221,17 @@ class TestFunctions(TestCase):
     def test_add_track_to_profile(self):
         profile = Profile()
         self.assertEqual(0, len(profile.tracks))
-        
+
         t1 = profile.new_track({})
         self.assertEqual(1, len(profile.tracks))
-        
+
         t2 = Track()
         profile.add_track(t2)
         self.assertEqual(2, len(profile.tracks))
 
         profile.remove_track(t2)
         self.assertEqual(1, len(profile.tracks))
-                
+
 
     def test_get_boolean(self):
         for yes in ['True', 'true', 'yes', 'si', 'y', 'OK', 'Y', 'TRUE']:
@@ -245,7 +244,7 @@ class TestFunctions(TestCase):
 
         self.conf.set('s', 'k', 1)
         self.assertFalse(self.conf.get_boolean('s', 'k', False))
-        
+
     def test_get_lower(self):
         for lower in ['RUBENRUA', 'RubenRua', 'RubenruA', 'rubenrua']:
             self.conf.set('s', 'k', lower)
@@ -267,7 +266,7 @@ class TestFunctions(TestCase):
         self.conf.set('s', 'k2', 'test')
         self.assertEqual(self.conf.get_int('s', 'k2', 20), 20)
 
-        
+
     def test_get_hour(self):
         self.conf.set('s', 'k', '12:34')
         self.assertEqual(self.conf.get_hour('s', 'k'), '12:34')
@@ -275,13 +274,13 @@ class TestFunctions(TestCase):
         self.conf.set('s', 'k2', 'test')
         self.assertEqual(self.conf.get_hour('s', 'k2', '11:11'), '11:11')
 
-                
+
     def test_get_list(self):
         self.assertEqual(self.conf.get_list('s', 'k'), [])
 
         self.conf.set('s', 'k', '1 2 3 4 5 6')
         self.assertEqual(self.conf.get_list('s', 'k'), ['1', '2', '3', '4', '5', '6'])
-        
+
         self.conf.set('s', 'k', 'one two three')
         self.assertEqual(self.conf.get_list('s', 'k'), ['one', 'two', 'three'])
 
@@ -295,7 +294,7 @@ class TestFunctions(TestCase):
         self.conf.set('s', 'k', 'TEST')
         self.assertEqual(self.conf.get_choice('s', 'k', ['1','2','3', 'test']), 'test')
 
-        
+
     def test_get_choice_uppercase(self):
         self.assertEqual(self.conf.get_choice_uppercase('s', 'k', ['1','2','3'], '2'), '2')
 
@@ -328,22 +327,22 @@ class TestFunctions(TestCase):
 
 
     def test_get_hostname(self):
-        conf = Conf()
-        conf.set('config', 'ingest', None)
-        conf.set('basic', 'admin', 'True')
-        conf.set('ingest', 'hostname', None)
-        self.assertEqual('GCMobile-' + socket.gethostname(), conf.get_hostname())
+#        conf = Conf()
+        self.conf.set('config', 'ingest', None)
+        self.conf.set('basic', 'admin', 'True')
+        self.conf.set('ingest', 'hostname', None)
+        self.assertEqual('GCMobile-' + socket.gethostname(), self.conf.get_hostname())
         self.assertEqual(1, len(conf.get_tracks_in_oc_dict()))
-        self.assertEqual({'capture.device.names': 'defaults'}, conf.get_tracks_in_oc_dict())
-        conf.set('basic', 'admin', 'False')
-        conf.set('ingest', 'hostname', None)
-        self.assertEqual('GC-' + socket.gethostname(), conf.get_hostname())
+        self.assertEqual({'capture.device.names': 'defaults'}, self.conf.get_tracks_in_oc_dict())
+        self.conf.set('basic', 'admin', 'False')
+        self.conf.set('ingest', 'hostname', None)
+        self.assertEqual('GC-' + socket.gethostname(), self.conf.get_hostname())
         name = "123456_654321"
-        conf.set('ingest', 'hostname', name)
-        self.assertEqual(name, conf.get_hostname())
-        a = conf.remove_option('ingest', 'hostname')
+        self.conf.set('ingest', 'hostname', name)
+        self.assertEqual(name, self.conf.get_hostname())
+        a = self.conf.remove_option('ingest', 'hostname')
 
-        
+
     def test_get_ip_address(self):
         valid = True
         try:
@@ -388,12 +387,12 @@ class TestFunctions(TestCase):
 
     def test_get_free_profile(self):
         profile_name = self.conf.get_free_profile()
-        self.assertEqual(profile_name, self.conf.get_free_profile())        
+        self.assertEqual(profile_name, self.conf.get_free_profile())
         self.touch(profile_name)
         self.assertNotEqual(profile_name, self.conf.get_free_profile())
         os.remove(profile_name)
 
-        
+
     def test_get_palette(self):
         self.conf.set('color', 'none', None)
         self.conf.set('color','nightly', None)
@@ -402,7 +401,7 @@ class TestFunctions(TestCase):
         self.conf.set('color','done', None)
         self.conf.set('color','failed', None)
         self.assertEqual(self.conf.get_palette(), [None, None, None, None, None, None])
-        
+
         self.conf.set('color', 'none', "#FFFFF0")
         self.conf.set('color','nightly', "#FFFFF1")
         self.conf.set('color','pending', "#FFFFF2")
@@ -419,4 +418,3 @@ class TestFunctions(TestCase):
         p.export_to_file()
         self.assertTrue(os.path.exists(p.path))
         os.remove(p.path)
-        

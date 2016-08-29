@@ -18,9 +18,16 @@ Unit tests for `galicaster.core.context` module.
 import socket
 from unittest import TestCase
 from nose.plugins.attrib import attr
+import os
+import shutil
+from shutil import rmtree
 
+from galicaster.core.conf import Conf
 from galicaster.core import context
+
 import galicaster
+
+from tests import get_resource
 
 class TestFunctions(TestCase):
 
@@ -30,6 +37,19 @@ class TestFunctions(TestCase):
             if context.has(service_name):
                 context.delete(service_name)
 
+        self.conf_file = get_resource('conf/conf.ini')
+        self.backup_conf_file =get_resource('conf/conf.backup.ini')
+        dist_file = get_resource('conf/conf-dist.ini')
+
+        shutil.copyfile(self.conf_file,self.backup_conf_file)
+        self.conf = Conf(self.conf_file,dist_file)
+        context.set('conf',self.conf)
+        self.conf.reload()
+
+    def tearDown(self):
+        shutil.copyfile(self.backup_conf_file,self.conf_file)
+        os.remove(self.backup_conf_file)
+        del self.conf
 
     def test_twice(self):
         conf1 = context.get_conf()
