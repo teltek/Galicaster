@@ -620,8 +620,6 @@ class Conf(object): # TODO list get and other ops arround profile
         if not self.tracks_visible_to_opencast():
             return {'capture.device.names': 'defaults'}
         # Tracks configurable by opencast
-        if self.logger:
-            self.logger.info('Be careful using profiles and opencast scheduler')
         default  = self.get_current_profile()
         names = []
         tracks = {}
