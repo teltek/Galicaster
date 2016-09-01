@@ -24,13 +24,17 @@ def init():
     list_plugins = conf.get_section('plugins')
     for plugin, v in list_plugins.iteritems():
         if v.lower() == 'true':
-            try:
-                name = 'galicaster.plugins.' + plugin
-                __import__(name)
-                sys.modules[name].init()
-                logger.info('Plugin {0} started'.format(plugin))
-                loaded.append(name)
-            except Exception as exc:
+            for prefix in ['galicaster.plugins.', 'galicaster_plugin_']:
+                try:
+                    name = prefix + plugin
+                    __import__(name)
+                    sys.modules[name].init()
+                    logger.info('Plugin {0} started'.format(plugin))
+                    loaded.append(name)
+                    break
+                except Exception as exc:
+                    logger.debug('Warning starting plugin {}: {}'.format(plugin, exc))
+            else:
                 logger.error('Error starting plugin {}: {}'.format(plugin, exc))
         else:
             logger.debug('Plugin {0} not enabled in conf'.format(plugin))
