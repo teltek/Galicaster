@@ -56,16 +56,26 @@ def init():
 
 
 def activate_and_poke(signal=None, mp=None):
+    global logger
     poke_screen()
-    activate_screensaver()
+#    activate_screensaver()
+
+    standby_time = inactivity
+    suspend_time = inactivity + 5
+    off_time = inactivity + 10
+    execute(["xset", "dpms", str(standby_time), str(suspend_time), str(off_time)], logger)
+    logger.debug("Activate screensaver")
 
 def deactivate_and_poke(signal=None, mp=None):
+    global logger
     deactivate_screensaver()
     poke_screen()
+    logger.debug("Deactivate screensaver")
 
 def deactivate_screensaver(signal=None):
     global logger
     execute(['xset', 'dpms', '0', '0', '0'], logger)
+#    execute(['xset', '-dpms'], logger)
 
 def activate_screensaver(signal=None, mp=None):
     global inactivity, logger, power_settings
