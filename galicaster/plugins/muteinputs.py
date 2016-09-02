@@ -30,6 +30,7 @@ def init():
     dispatcher.connect('init', manage_button)
 
 def manage_button(element=None):
+    recorder.enable_input()
     label = set_label(2,2,"Input status: ")
     label1 = set_label(0,1)
     context.get_mainwindow().insert_element(label,PAGES['REC'],"status_panel", "attach",left=0,top=4,width=1,height=1)
