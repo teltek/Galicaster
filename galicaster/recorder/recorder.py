@@ -83,7 +83,7 @@ class Recorder(object):
                 self.pipeline.add(self.bins[name])
                 self.bins[name].prepare(self.bus)
 
-            self.enable_input()
+#            self.enable_input()
             self.enable_preview()
 
         except Exception as exc:
