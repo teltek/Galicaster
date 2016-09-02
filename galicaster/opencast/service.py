@@ -176,7 +176,7 @@ class OCService(object):
         try:
             self.client.welcome()
             self.__set_opencast_up()
-            if self.tracks_visible_to_opencast():
+            if self.conf.tracks_visible_to_opencast():
                 self.logger.info('Be careful using profiles and opencast scheduler')
         except Exception as exc:
             self.logger.warning('Unable to connect to opencast server: {0}'.format(exc))
