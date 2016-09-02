@@ -152,6 +152,7 @@ class RecorderService(object):
         now = round_microseconds(datetime.utcnow())
         self.current_mediapackage.setDate(now)
         self.current_mediapackage.setProperty('origin', self.conf.get_hostname())
+        self.current_mediapackage.setSpatial(self.conf.get_hostname())
         self.__set_status(RECORDING_STATUS)
         self.dispatcher.emit("recorder-started", self.current_mediapackage.getIdentifier())
 
