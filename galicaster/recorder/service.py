@@ -291,11 +291,14 @@ class RecorderService(object):
         # self.current_mediapackage = None
         if self.recorder:
             self.recorder.stop(True)
+            if self.status == RECORDING_STATUS:
+                self.repo.recover_recording()
+                self.current_mediapackage = None
+
         self.error_msg = error_msg
         self.__set_status(ERROR_STATUS)
 
         if self.autorecover and not self.__handle_recover_id:
-            self.repo.save_crash_recordings()
             self.logger.debug("Connecting recover recorder callback")
             self.__handle_recover_id = self.dispatcher.connect("timer-long",
                                                              WeakMethod(self, '_handle_recover'))
