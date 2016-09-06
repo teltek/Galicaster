@@ -100,7 +100,7 @@ class Scheduler(object):
             self.mp_rec = key
             mp = self.repo.get(key)
 
-            self.logger.info('Start record %s, duration %s ms', mp.getIdentifier(), mp.getDuration())
+            self.logger.info('Timeout to start record %s, duration %s ms', mp.getIdentifier(), mp.getDuration())
 
             GObject.timeout_add_seconds(mp.getDuration()/1000, self.__stop_record, mp.getIdentifier())
             self.recorder.record(mp)
@@ -115,7 +115,7 @@ class Scheduler(object):
             key (str): the mediapackage identifier.
         """
         self.mp_rec = None
-        self.logger.info('Stop record %s', key)
+        self.logger.info('Timeout to stop record %s', key)
 
         mp = self.repo.get(key)
         if mp.status == mediapackage.RECORDING:
