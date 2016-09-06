@@ -122,27 +122,37 @@ class RecorderService(object):
         self.dispatcher.emit("recorder-starting")
 
         self.logger.info("Recording (current status: {})".format(self.status))
-        if self.status in (INIT_STATUS, ERROR_STATUS):
-            self.logger.warning("Cancel recording: status error (in {})".format(self.status))
-            return False
-        if self.status != PREVIEW_STATUS and not self.overlap:
-            self.logger.info("Cancel recording: it is already recording and not allow overlap")
-            return False
 
-        if self.status == PAUSED_STATUS:
-            self.resume()
-
-        if self.status == RECORDING_STATUS:
-            self.recorder.stop()
-            self.__close_mp()
+        if self.status == ERROR_STATUS:
             try:
                 self.__prepare()
                 self.recorder.preview_and_record()
             except Exception as exc:
                 self.dispatcher.emit("recorder-error", str(exc))
                 return False
+
         else:
-            self.recorder and self.recorder.record()
+            if self.status == INIT_STATUS:
+                self.logger.warning("Cancel recording: status error (in {})".format(self.status))
+                return False
+            if self.status != PREVIEW_STATUS and not self.overlap:
+                self.logger.info("Cancel recording: it is already recording and not allow overlap")
+                return False
+
+            if self.status == PAUSED_STATUS:
+                self.resume()
+
+            if self.status == RECORDING_STATUS:
+                self.recorder.stop()
+                self.__close_mp()
+                try:
+                    self.__prepare()
+                    self.recorder.preview_and_record()
+                except Exception as exc:
+                    self.dispatcher.emit("recorder-error", str(exc))
+                    return False
+            else:
+                self.recorder and self.recorder.record()
 
         if not self.current_mediapackage:
             self.current_mediapackage = mp or self.create_mp()
