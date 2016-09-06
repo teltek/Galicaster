@@ -520,6 +520,9 @@ class Mediapackage(object):
             self.setCreator(info['creator'])
         if 'uri' in info.keys():
             self.setURI(info['uri'])
+            for elem in self.getElements():
+                bname = os.path.basename(elem.getURI())
+                elem.setURI(os.path.join(info['uri'], bname))
         return True
 
 
