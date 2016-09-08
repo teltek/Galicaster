@@ -554,8 +554,9 @@ class Repository(object):
             Str: the URI of the mediapackage
         """
         if not self.has(mp):
-            mp.setURI(self.__get_folder_name(mp))
-            os.mkdir(mp.getURI())
+            if not mp.getURI():
+                mp.setURI(self.__get_folder_name(mp))
+                os.mkdir(mp.getURI())
 
         for bin in bins:
             # TODO rec all and ingest
