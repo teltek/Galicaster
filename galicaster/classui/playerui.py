@@ -128,7 +128,7 @@ class PlayerClassUI(ManagerUI):
                 if not t.getFlavor().count('other'):
                     tracks[t.getIdentifier()] = t.getURI()
 
-                    if (t.getMimeType().count("video") and not t.getFlavor().count('other')):
+                    if t.getMimeType().count("video") and t.getFlavor().count("source"):
                         index+=1
                         videos[t.getIdentifier()] = index
 
