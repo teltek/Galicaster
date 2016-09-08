@@ -238,7 +238,10 @@ class ListingClassUI(ManagerUI):
 
             mp = self.repository.get(identifier)
             if i:
-                self._refresh(mp,i)
+                if mp:
+                    self._refresh(mp,i)
+                else:
+                    self.lista.remove(i)
 
     def refresh_operation(self, origin, operation, package, success = None, extra=None):
         """Refresh the status of an operation in a given row"""
