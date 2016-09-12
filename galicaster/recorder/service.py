@@ -181,9 +181,10 @@ class RecorderService(object):
             return False
 
         self.recorder.stop(force)
-        self.__close_mp()
-        self.__set_status(INIT_STATUS)
-        self.preview()
+        if not  self.is_error():
+            self.__close_mp()
+            self.__set_status(INIT_STATUS)
+            self.preview()
         return True
 
 
