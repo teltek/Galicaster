@@ -445,7 +445,7 @@ class RecorderClassUI(Gtk.Box):
         """GUI callback Pops up the Event Manager"""
         self.dispatcher.emit("action-audio-disable-msg")
         text = {
-                'title' : 'Next Recordings',
+                'title' : _('Next Recordings'),
                 'next_recs' : self.get_next_recs(),
                 }
         message.PopUp(message.NEXT_REC, text, context.get_mainwindow())
@@ -590,21 +590,21 @@ class RecorderClassUI(Gtk.Box):
         }
         s3 = self.gui.get_object("status3")
         if not self.net_activity:
-            s3.set_text("Disabled")
+            s3.set_text(_("Disabled"))
             s3.set_name(network_css_ids['Disabled'])
         else:
             try:
                 if status == True:
-                    s3.set_text("Up")
+                    s3.set_text(_("Up"))
                     s3.set_name(network_css_ids['Up'])
                 elif status == False:
-                    s3.set_text("Down")
+                    s3.set_text(_("Down"))
                     s3.set_name(network_css_ids['Down'])
                 else:
-                    s3.set_text("Connecting...")
+                    s3.set_text(_("Connecting..."))
                     s3.set_name(network_css_ids['Connecting'])
             except KeyError:
-                s3.set_text("Connecting")
+                s3.set_text(_("Connecting"))
                 s3.set_name(network_css_ids['Connecting'])
 
 
