@@ -658,20 +658,14 @@ class RecorderClassUI(Gtk.Box):
         relabel(l2,k1*20,False)
         relabel(l3,k1*20,False)
 
-
-        for name  in ["recbutton","pausebutton","stopbutton","editbutton","swapbutton","helpbutton"]:
-            button = self.gui.get_object(name)
-
-            resize_button(button,size_image=k1*60,size_box=k1*46,size_label=k1*28)
-
         # change stop button
         for name in ["pause","stop"]:
             button = self.gui.get_object(name+"button")
             image = button.get_children()[0]
             pixbuf = GdkPixbuf.Pixbuf.new_from_file(get_image_path('gc-'+name+'.svg'))
             pixbuf = pixbuf.scale_simple(
-                int(80*k1),
-                int(80*k1),
+                int(60*k1),
+                int(60*k1),
                 GdkPixbuf.InterpType.BILINEAR)
             image.set_from_pixbuf(pixbuf)
 
@@ -689,6 +683,11 @@ class RecorderClassUI(Gtk.Box):
         pbox.set_property("width-request", int(k1*225) )
         hbox1 = self.gui.get_object('hbox1')
         hbox1.set_property('spacing', int(k1*325))
+
+        for name  in ["recbutton","pausebutton","stopbutton","helpbutton","editbutton","swapbutton"]:
+            button = self.gui.get_object(name)
+            resize_button(button,size_image=k1*60,size_box=k1*46,size_label=k1*16)
+
         return True
 
 

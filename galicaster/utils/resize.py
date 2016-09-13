@@ -41,6 +41,8 @@ def resize_button(button,**kwargs):
             for element in image[0].get_children():
                 if type(element) == Gtk.Image:
                     element.set_pixel_size(int(kwargs.get('size_box',None)))
+                if type(element) == Gtk.Label:
+                    relabel(image[0],kwargs.get('size_label',None),False)
         elif type(image[0]) == Gtk.VBox:
             for element in image[0].get_children():
                 if type(element) == Gtk.Image:
