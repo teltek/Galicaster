@@ -25,6 +25,7 @@ from galicaster.mediapackage.serializer import set_manifest
 from galicaster.utils import readable
 from galicaster.utils import ical
 from galicaster.utils.miscellaneous import get_screenshot_as_pixbuffer
+from galicaster.core.core import PAGES
 
 """
 Description: Galicaster REST endpoint using bottle micro web-framework.
@@ -82,7 +83,14 @@ def index():
 def state():
     response.content_type = 'application/json'
     #TODO: Complete!
-    return json.dumps({"is-recording": context.get_recorder().is_recording()})
+    builder = context.get_mainwindow().nbox.get_nth_page(PAGES['REC']).gui
+    return json.dumps({"is-recording" : context.get_recorder().is_recording(),
+                       "hostname" : context.get_conf().get_hostname(),
+                       "net" : context.get_ocservice().net if context.get_ocservice() else None,
+                       "recorder-status" : str(context.get_recorder().status),
+                       "current-profile" : context.get_conf().get_current_profile().name,
+                       "current-mediapackage" : context.get_recorder().current_mediapackage.getIdentifier() if context.get_recorder().current_mediapackage else None
+})
 
 
 @route('/repository')

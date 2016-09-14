@@ -125,7 +125,7 @@ class OCService(object):
 
     def __set_opencast_connecting(self):
         self.dispatcher.emit('opencast-status', None)
-
+        self.net = None
 
     def init_last_events(self):
         """Initializes the last_events parameter with the events represented in calendar.ical (attach directory).
