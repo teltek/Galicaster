@@ -82,3 +82,21 @@ class StripUI(Gtk.Box):
             button.set_property("height-request", int(k*70) )
 
             resize_button(button,size_image=k*56)
+
+    def set_logo(self):
+        size = context.get_mainwindow().get_size()
+        anchura = size[0]
+        k = anchura / 1920.0
+
+        lcompany = Gtk.Image()
+        icompany=GdkPixbuf.Pixbuf.new_from_file(get_image_path("teltek.svg"))
+        icompany = icompany.scale_simple(
+            int(icompany.get_width()*k),
+            int(icompany.get_height()*k),
+            GdkPixbuf.InterpType.BILINEAR)
+        lcompany.set_from_pixbuf(icompany)
+
+        buttonbox = self.builder.get_object("hbuttonbox1")
+        buttonbox.pack_start(lcompany,True,True,0)
+        self.builder.get_object("previousbutton").destroy()
+        buttonbox.reorder_child(lcompany,0)
