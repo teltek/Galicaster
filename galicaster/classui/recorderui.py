@@ -528,8 +528,8 @@ class RecorderClassUI(Gtk.Box):
     def set_status_view(self):
         """Set the message and color of the status pilot on the top bar"""
 
-#        size = context.get_mainwindow().get_size()
-        # k1 = size[0] / 1920.0
+        size = context.get_mainwindow().get_size()
+        k1 = size[0] / 1920.0
 #        k2 = size[1] / 1080.0
 
         l = Gtk.ListStore(str,str,str)
@@ -555,6 +555,7 @@ class RecorderClassUI(Gtk.Box):
         v.add_attribute(r, "foreground", 2)
 #        v.set_displayed_row(0)
         v.set_displayed_row(Gtk.TreePath(0))
+        relabel(v,k1*52,True)
         return v
 
 
