@@ -637,8 +637,8 @@ class RecorderClassUI(Gtk.Box):
         relabel(clock,k1*25,False)
         pixbuf = GdkPixbuf.Pixbuf.new_from_file(get_image_path('logo.svg'))
         pixbuf = pixbuf.scale_simple(
-            int(pixbuf.get_width()*k1),
-            int(pixbuf.get_height()*k1),
+            int(pixbuf.get_width()*k1*0.5),
+            int(pixbuf.get_height()*k1*0.5),
             GdkPixbuf.InterpType.BILINEAR)
         logo.set_from_pixbuf(pixbuf)
 
@@ -671,7 +671,7 @@ class RecorderClassUI(Gtk.Box):
 
         for name  in ["previousbutton", "morebutton"]:
             button = self.gui.get_object(name)
-            button.set_property("width-request", int(k1*70) )
+            button.set_property("width-request", int(k1*250) )
             button.set_property("height-request", int(k1*70) )
 
             image = button.get_children()
