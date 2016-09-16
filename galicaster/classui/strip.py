@@ -66,8 +66,8 @@ class StripUI(Gtk.Box):
 
         pixbuf = GdkPixbuf.Pixbuf.new_from_file(get_image_path('logo.svg'))
         pixbuf = pixbuf.scale_simple(
-            int(pixbuf.get_width()*k),
-            int(pixbuf.get_height()*k),
+            int(pixbuf.get_width()*k*0.5),
+            int(pixbuf.get_height()*k*0.5),
             GdkPixbuf.InterpType.BILINEAR)
         align2 = self.builder.get_object("top_align")
 
