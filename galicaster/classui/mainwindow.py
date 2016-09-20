@@ -149,6 +149,11 @@ class GCWindow(Gtk.Window):
         else:
             return self.custom_size
 
+    def get_k1_k2(self):
+        k1 = self.get_size()[0] / 1920.0
+        k2 = self.get_size()[0] / 1080.0
+        return k1, k2
+        
     def discover_size(self):
         """Retrieves the current size of the window where the application will be shown"""
         size = (1920, 1080)
