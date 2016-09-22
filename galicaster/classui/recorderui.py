@@ -770,8 +770,10 @@ class RecorderClassUI(Gtk.Box):
         # Show Help or Edit_meta
         helpbutton = self.gui.get_object("helpbutton")
         helpbutton.set_visible(True)
+
         editbutton = self.gui.get_object("editbutton")
-        editbutton.set_visible(False)
+        parent = editbutton.get_parent()
+        parent.remove(editbutton)
 
     def reset_mute(self, element):
         self.mute = False
