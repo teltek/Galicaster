@@ -162,9 +162,14 @@ class OCService(object):
         """
         if self.net:
             self.jobs.put((self.process_ical,()))
-            self.series = get_series()
+            self.jobs.put((self.update_series,()))
 
+            
+    def update_series(self):
+        self.logger.debug('Updating series from server')
+        self.series = get_series()
 
+        
     def init_client(self):
         """Tries to initialize opencast's client and set net's state.
         If it's unable to connecto to opencast server, logger prints ir properly and net is set True.
@@ -175,6 +180,7 @@ class OCService(object):
         try:
             self.client.welcome()
             self.__set_opencast_up()
+            self.jobs.put((self.update_series,()))
             if self.conf.tracks_visible_to_opencast():
                 self.logger.info('Be careful using profiles and opencast scheduler')
         except Exception as exc:
