@@ -207,7 +207,14 @@ GtkNotebook tab:active{
     margin: 0;
     border: 0px;
     border-radius: 0px;
+
+    background-image: -gtk-gradient (linear,
+				     left top,
+				     left bottom,
+				     from (shade (@base_color, 0.88)),
+				     to (shade (@base_color, 0.88)));
 }
+
 /* Footer*/
 .corner{
 	border-bottom: 21em solid transparent;
