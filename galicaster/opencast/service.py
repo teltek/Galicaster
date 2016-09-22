@@ -162,7 +162,6 @@ class OCService(object):
         """
         if self.net:
             self.jobs.put((self.process_ical,()))
-            self.dispatcher.emit('ical-processed')
             self.series = get_series()
 
 
@@ -227,6 +226,7 @@ class OCService(object):
         self.last_events = ical.handle_ical(self.ical_data, self.last_events, self.repo,
                                              self.scheduler, self.logger)
 
+        self.dispatcher.emit('ical-processed')
 
 
     def on_recorder_error(self, origin=None, error_message=None):
