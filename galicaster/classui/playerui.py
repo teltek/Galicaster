@@ -70,7 +70,6 @@ class PlayerClassUI(ManagerUI):
         self.seeking = False
         self.jump=0 # seek value
         self.jump_id=0 # seek signal id
-        self.correct=False # To correct SCROLL_JUMP, after release it
         self.seek_bar=self.gui.get_object("seekbar")
         self.seek_bar.add_events(Gdk.EventMask.SCROLL_MASK)
         self.seek_bar.connect("change-value", self.on_seek)
@@ -213,7 +212,7 @@ class PlayerClassUI(ManagerUI):
             new_value=100;
         temp=new_value*self.duration*Gst.SECOND/100 # FIXME get_duration propertly
 
-        if scroll_type == Gtk.ScrollType.JUMP and not self.correct:
+        if scroll_type == Gtk.ScrollType.JUMP:
             self.seeking = True
             if self.player.is_playing():
                 self.player.pause()
@@ -223,8 +222,6 @@ class PlayerClassUI(ManagerUI):
             if not self.jump_id:
                 log.warning("Handling Seek Jump")
                 self.jump_id=self.seek_bar.connect("button-release-event",self.on_seek,0)# FIXME ensure real release, not click
-        if self.correct:
-            self.correct=False
 
         if scroll_type != Gtk.ScrollType.JUMP: # handel regular scroll
             if scroll_type ==  Gtk.ScrollType.PAGE_FORWARD or scroll_type ==  Gtk.ScrollType.PAGE_BACKWARD:
@@ -234,7 +231,6 @@ class PlayerClassUI(ManagerUI):
                 self.player.seek(self.jump, True) # jump to the position where the cursor was released
                 self.seek_bar.disconnect(self.jump_id)
                 self.jump_id=0 # jump finished and disconnected
-                self.correct=True # correction rutine activated
                 self.seeking= False
 
 
