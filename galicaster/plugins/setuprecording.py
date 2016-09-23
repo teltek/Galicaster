@@ -92,7 +92,7 @@ def on_rec(button):
         pass
 
     arguments = { 'package': mp,
-                  'series_list': series_list,
+                  #'series_list': series_list,
                   'title': _("New Recording"),
                   'subtitle': _("New Recording"),
                   'ok_label': _("Start"),
