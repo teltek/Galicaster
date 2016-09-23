@@ -108,11 +108,13 @@ def filterSeriesbyId(list_series, seriesid):
     """
     Generate a list with the series value name, shortname and id
     """
-    try:
-        match = {"id": seriesid, "name": list_series[seriesid]['title'], "list": list_series[seriesid]}
-        return match
-    except Exception:
-        return None
+    for element in list_series:
+        if seriesid and seriesid in element[1]["identifier"].encode('utf8'):
+            try:
+                match = {"id": seriesid, "name": element[1]["title"], "list": element[1]}
+                return match
+            except Exception:
+                return None
 
 
 def getSeriesbyId(seriesid):
