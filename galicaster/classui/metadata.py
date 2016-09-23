@@ -16,6 +16,7 @@ UI for a Metadata Editor Pop UP
 
 from gi.repository import Gtk, Gdk
 from gi.repository import GObject
+from gi.repository import Pango
 
 import datetime
 import os
@@ -178,6 +179,9 @@ class MetadataClass(Gtk.Widget):
 
                 d = ComboBoxEntryExt(self.par, self.series_list, default=default_series, empty_label = self.empty_series_label)
                 d.set_name(meta)
+                cell = d.get_cells()[0]
+                cell.props.ellipsize = Pango.EllipsizeMode.END
+                cell.props.max_width_chars = 2
             else:
                 d=Gtk.Entry()
                 d.set_name(meta)
