@@ -1087,6 +1087,17 @@ class Mediapackage(object):
         return result
 
 
+    def getTracksDelivery(self):
+        """Gets the delivery tracks of the mediapackage.
+        If no master tracks are found, return an empty list.
+        Returns:
+            List[Track]: a list of delivery tracks.	
+        """
+        result = filter(lambda elem: "delivery" in elem.getFlavor(),
+                        self.getElements(etype=TYPE_TRACK))
+
+        return result
+
     #TODO Remove this method an use getTracksByTags instead (string and lists allowed)
     def getTracksByTag(self, tag):
         """Gets the tracks with a particular tag.
