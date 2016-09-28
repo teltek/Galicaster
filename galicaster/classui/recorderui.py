@@ -154,6 +154,9 @@ class RecorderClassUI(Gtk.Box):
         self.allow_manual = self.conf.get_permission("manual")
         self.allow_overlap = self.conf.get_permission("overlap")
 
+        self.help_main_str = self.conf.get('help', 'main')
+        self.help_text_str = self.conf.get('help', 'text')
+        
         # OTHER
         builder.connect_signals(self)
         self.net_activity = self.conf.get_boolean('ingest', 'active')
@@ -288,8 +291,8 @@ class RecorderClassUI(Gtk.Box):
         logger.info("Help requested")
 
         text = {"title" : _("Help"),
-                "main" : _(" Visit galicaster.teltek.es"),
-                "text" : _(" ...or contact us on our community list.")
+                "main" : _(self.help_main_str),
+                "text" : _(self.help_text_str)
                 }
         buttons = None
         self.dispatcher.emit("action-audio-disable-msg")
