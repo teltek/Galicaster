@@ -180,7 +180,7 @@ class Repository(object):
         for temp_file in os.listdir(self.get_rectemp_path()):
             full_path = os.path.join(self.get_rectemp_path(), temp_file)
 
-            if os.path.isfile(full_path) and os.path.getsize(full_path):
+            if os.path.isfile(full_path) and os.path.getsize(full_path) and not "screenshot.jpg" in temp_file:
                 self.crash_file_creator()
 
                 if not os.path.isdir(backup_dir):
