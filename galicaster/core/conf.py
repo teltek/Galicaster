@@ -96,11 +96,11 @@ class Conf(object): # TODO list get and other ops arround profile
         """
         for section in self.__user_conf.sections():
             if section not in self.__conf_dist.sections():
-                self.logger and self.logger.warning('No section "{0}". Please check the file {1}'.format(section, self.conf_file))
+                self.logger and self.logger.debug('No section "{0}". Please check the file {1}'.format(section, self.conf_file))
             else:
                 for option in self.__user_conf.options(section):
                     if option not in self.__conf_dist.options(section):
-                        self.logger and self.logger.warning('No option "{0}" in section "{1}". Please check the file {2}'.format(option, section, self.conf_file))
+                        self.logger and self.logger.debug('No option "{0}" in section "{1}". Please check the file {2}'.format(option, section, self.conf_file))
 
 
     def get(self, sect, opt, default=None): # TODO overload ConfigParser?
