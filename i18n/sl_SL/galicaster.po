@@ -737,20 +737,20 @@ msgid "Recording"
 msgstr "Snemanje"
 
 #: resources/ui/recorder.glade:406
-msgid "Storage space left:  "
-msgstr "Preostanek prostora:  "
+msgid "Storage space left: "
+msgstr "Preostanek prostora: "
 
 #: resources/ui/recorder.glade:420
-msgid "Agent name:  "
-msgstr "Ime agenta:  "
+msgid "Agent name: "
+msgstr "Ime agenta: "
 
 #: resources/ui/recorder.glade:435
-msgid "Recording space:  "
-msgstr "Prostor za snemanje:  "
+msgid "Recording space: "
+msgstr "Prostor za snemanje: "
 
 #: resources/ui/recorder.glade:450
-msgid "Core connectivity:  "
-msgstr "Povezljivost s strežnikom:  "
+msgid "Core connectivity: "
+msgstr "Povezljivost s strežnikom: "
 
 #: resources/ui/recorder.glade:472
 msgid "Status"

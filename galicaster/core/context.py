@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 
@@ -48,7 +48,7 @@ def set(service_name, service):
     """Sets service by name in the App Context.
     Args:
         service_name (str): the name of the service that is going to be set.
-        service (Obj): the service that is going to be set. 
+        service (Obj): the service that is going to be set.
     """
     __galicaster_context[service_name] = service
 
@@ -59,7 +59,7 @@ def delete(service_name):
         service_name (str): the name of the service that is going to be deleted.
     """
     del __galicaster_context[service_name]
-    
+
 
 def get_conf():
     """Creates if necessary and retrieves the Conf class from the App Context.
@@ -107,12 +107,12 @@ def get_occlient():
         connect_timeout = conf.get_int('ingest', 'connect_timeout') or 2
         timeout = conf.get_int('ingest', 'timeout') or 2
         if get_conf().get_boolean("ingest", "active"):
-            occlient = OCHTTPClient(conf.get('ingest', 'host'), 
-                                    conf.get('ingest', 'username'), 
-                                    conf.get('ingest', 'password'), 
-                                    conf.get_hostname(), 
+            occlient = OCHTTPClient(conf.get('ingest', 'host'),
+                                    conf.get('ingest', 'username'),
+                                    conf.get('ingest', 'password'),
+                                    conf.get_hostname(),
                                     conf.get('ingest', 'address'),
-                                    multiple_ingest, 
+                                    multiple_ingest,
                                     connect_timeout,
                                     timeout,
                                     conf.get('ingest', 'workflow'),
@@ -129,10 +129,34 @@ def get_occlient():
     return __galicaster_context['occlient']
 
 
+def get_ocservice():
+    """Creates if necessary and retrieves the Ocservice class from the App Context.
+    Returns:
+        OCService: the opencast service of galicaster context.
+    """
+    from galicaster.opencast.service import OCService
+
+    if 'ocservice' not in __galicaster_context:
+        conf = get_conf()
+        if conf.get_boolean("ingest", "active"):
+            ocservice = OCService(get_repository(),
+                                  get_occlient(),
+                                  get_scheduler(),
+                                  get_conf(),
+                                  get_dispatcher(),
+                                  get_logger(),
+                                  get_recorder())
+        else:
+            ocservice = None
+        __galicaster_context['ocservice'] = ocservice
+
+    return __galicaster_context['ocservice']
+
+
 def get_dispatcher():
     """Creates if necessary and retrieves the Dispatcher class from the App Context.
     Returns:
-      Dispatcher: the dispatcher instance in galicaster context. 
+      Dispatcher: the dispatcher instance in galicaster context.
     """
     from galicaster.core.dispatcher import Dispatcher
 
@@ -153,8 +177,8 @@ def get_repository():
         conf = get_conf()
         template = conf.get('repository','foldertemplate')
         __galicaster_context['repository'] = Repository(
-            conf.get('basic', 'repository'), 
-            conf.hostname,
+            conf.get('basic', 'repository'),
+            conf.get_hostname(),
             template,
             get_logger())
 
@@ -187,13 +211,13 @@ def get_worker():
 def get_mainwindow():
     """Creates if necessary and retrieves Galicaster Mainwindow from the App Context.
     Returns:
-        GCWindow: the galicaster main window instance in galicaster context. 
+        GCWindow: the galicaster main window instance in galicaster context.
     """
     from galicaster.classui.mainwindow import GCWindow
 
     if 'mainwindow' not in __galicaster_context:
-        __galicaster_context['mainwindow'] = GCWindow(get_dispatcher(), 
-                                                      get_conf().get_size(), 
+        __galicaster_context['mainwindow'] = GCWindow(get_dispatcher(),
+                                                      get_conf().get_size(),
                                                       get_logger())
 
     return __galicaster_context['mainwindow']
@@ -208,15 +232,15 @@ def get_heartbeat():
 
     # TODO Review
     if 'heartbeat' not in __galicaster_context:
-        heartbeat = Heartbeat(get_dispatcher(), 
+        heartbeat = Heartbeat(get_dispatcher(),
                       get_conf().get_int('heartbeat', 'short', 10),
-                      get_conf().get_int('heartbeat', 'long', 60),                      
+                      get_conf().get_int('heartbeat', 'long', 60),
                       get_conf().get_hour('heartbeat', 'night', '00:00'),
                       get_logger())
         __galicaster_context['heartbeat'] = heartbeat
 
     return __galicaster_context['heartbeat']
-    
+
 
 def get_scheduler():
     """Creates if necessary and retrieves Galicaster Scheduler from the App Context.
@@ -224,17 +248,14 @@ def get_scheduler():
         Scheduler: the scheduler instance in galicaster context.
     """
     from galicaster.scheduler.scheduler import Scheduler
-    
+
     if 'scheduler' not in __galicaster_context:
-        if get_conf().get_boolean("ingest", "active"):
-            sch = Scheduler(get_repository(), get_conf(), get_dispatcher(), 
-                            get_occlient(), get_logger(), get_recorder())
-        else:
-            sch = None
+        sch = Scheduler(get_repository(), get_conf(), get_dispatcher(),
+                        get_logger(), get_recorder())
         __galicaster_context['scheduler'] = sch
 
     return __galicaster_context['scheduler']
-    
+
 
 def get_recorder():
     """Creates if necessary and retrives Galicaster Recorder from the App Context.

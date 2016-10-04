@@ -74,18 +74,18 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
     if not layout in layouts:
         if logger:
             logger.error('Layout not exists')
-        raise IOError, 'Error in SideBySide proccess'
+        raise IOError, 'Error in SideBySide process'
 
     if not camera or not screen:
         if logger:
             logger.error('SideBySide Error: Two videos needed')
-        raise IOError, 'Error in SideBySide proccess'
+        raise IOError, 'Error in SideBySide process'
 
     for track in [camera, screen, audio]:    
         if track and not path.isfile(camera):
             if logger:
                 logger.error('SideBySide Error: Not  a valid file %s', track)
-            raise IOError, 'Error in SideBySide proccess'
+            raise IOError, 'Error in SideBySide process'
 
     embeded = False
     if audio:
@@ -120,7 +120,7 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
         err, debug = msg.parse_error()
         if logger:
             logger.error('SideBySide Error: %s', err)
-        raise IOError, 'Error in SideBySide proccess'
+        raise IOError, 'Error in SideBySide process'
 
     return True
     

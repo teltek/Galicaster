@@ -6,6 +6,9 @@ sudo apt-get install gstreamer1.0-alsa gstreamer1.0-plugins-bad gstreamer1.0-plu
 sudo apt-get install --yes python-pip python-setuptools
 # iCalendar
 sudo pip install icalendar
+# LDAP
+sudo apt-get install libsasl2-dev python-dev libldap2-dev libssl-dev
+sudo pip install python-ldap
 # pyCurl
 sudo apt-get install --yes python-pycurl
 # Herramientas de configuración de tarjetas capturadoras
@@ -18,3 +21,5 @@ sudo apt-get install python-gi
 sudo apt-get install python-dbus
 # Libav
 sudo apt-get install gstreamer1.0-libav
+# Serial com
+sudo pip install pyserial

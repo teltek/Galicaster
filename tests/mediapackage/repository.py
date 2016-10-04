@@ -15,8 +15,9 @@
 Unit tests for `galicaster.repository` module.
 """
 import os
+import json
 import datetime
-from shutil import rmtree
+from shutil import rmtree, copy
 from tempfile import mkdtemp, mkstemp
 from unittest import TestCase
 
@@ -46,7 +47,15 @@ class TestFunctions(TestCase):
     def tearDown(self):
         rmtree(self.tmppath)
 
-
+        
+    def get_folders_in_repository(self, d):
+        folders_list = [os.path.join(d,o) for o in os.listdir(d)
+                        if (os.path.isdir(os.path.join(d,o))
+                            and not 'attach' in (os.path.join(d,o))
+                            and not 'rectemp' in (os.path.join(d,o)))]
+        return folders_list
+    
+        
     def test_create_repository(self):
         repo = repository.Repository()
         self.assertTrue(repo.root, os.path.expanduser('~/Repository'))
@@ -326,7 +335,52 @@ class TestFunctions(TestCase):
         self.assertEqual(num_files, 0)
         self.assertEqual(num_backup_files, 2)
 
-        
 
+    def test_recover_recording(self):
+        repo_folder = get_resource('repository')
+        rectemp_aux = get_resource('utils/temporal_recording')
+        rectemp = get_resource('repository/rectemp')
+
+        # Read info.json
+        info = {}
+        info_filename = os.path.join(rectemp_aux, 'info.json')
+        with open(info_filename, 'r') as handle:
+            info = json.load(handle)
+
+        # Modify path of tracks
+        for indx, track in enumerate(info['tracks']):
+            info['tracks'][indx]['path'] = rectemp
+
+        # Copy temporal files
+        for temp_file in os.listdir(rectemp_aux):
+            full_path = os.path.join(rectemp_aux, temp_file)
+            copy(full_path, os.path.join(rectemp, temp_file))
+
+        # Overwrite info.json with new paths
+        f = open(os.path.join(rectemp, 'info.json'), 'w')
+        f.write(json.dumps(info, indent=4, sort_keys=True))
+        f.close()    
+
+        # Get old length
+        old_length = len(self.get_folders_in_repository(repo_folder))
+
+        # Create the repository
+        from galicaster.core import context
+        logger = context.get_logger()
+        repo = repository.Repository(repo_folder, '', 'gc_{hostname}_{year}-{month}-{day}T{hour}h{minute}m{second}', logger)
+
+        # Check 1
+        self.assertEqual(old_length +1 , len(self.get_folders_in_repository(repo_folder)))
+
+        # Check 2
+        mp = repo.get('4ea1049f-c946-4d36-95d4-b8d01223bd73')
+        self.assertNotEqual(mp, None)
+        mp_info = mp.getAsDict()
+        self.assertEqual(mp_info['status'], 4)
+        self.assertTrue('Recovered' in mp_info['title'])
+        self.assertEqual(len(mp_info['tracks']), 2)
         
-        
+        # Clean
+        for temp_file in os.listdir(rectemp):
+            os.remove(os.path.join(rectemp, temp_file))
+        repo.delete(mp)

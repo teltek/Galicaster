@@ -45,11 +45,16 @@
             </child>
             <child>
               <object class="GtkButton" id="button2">
-                <property name="label">gtk-open</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
+                <child>
+                  <object class="GtkLabel" id="label1">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Open folder</property>
+                  </object>
+                </child>
                 <style>
                   <class name="dialog_button"/>
                   <class name="ok_button"/>
@@ -615,7 +620,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkFrame" id="frame3">
+                      <object class="GtkFrame" id="series_frame">
                         <property name="can_focus">False</property>
                         <property name="margin_left">20</property>
                         <property name="margin_right">20</property>

@@ -16,11 +16,10 @@
 Unit tests for `galicaster.core.context` module.
 """
 
-import threading
-
 from unittest import TestCase
 from galicaster.core.dispatcher import Dispatcher
 from gi.repository import Gtk
+from gi.repository import GObject
 
 called = False
 
@@ -56,7 +55,7 @@ class TestFunctions(TestCase):
         dispatcher.connect_ui('pr', self.callback_ui)
         obj = {'called': False}
 
-        threading.Timer(1.0, self.emit_signal, [dispatcher, 'pr', obj]).start()
+        timeout_id = GObject.timeout_add_seconds(1, self.emit_signal, dispatcher, 'pr', obj)
         Gtk.main()
         self.assertTrue(called)
 

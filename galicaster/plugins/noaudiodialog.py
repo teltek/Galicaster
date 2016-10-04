@@ -6,9 +6,9 @@
 # Copyright (c) 2012, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 """
@@ -43,7 +43,7 @@ def init():
     dispatcher = context.get_dispatcher()
     conf = context.get_conf()
     no_audio_dialog = create_ui()
-    
+
     focus_is_active = not conf.get_boolean('basic','admin')
 
     dispatcher.connect('audio-mute', warning_audio_show)
@@ -56,7 +56,7 @@ def init():
     dispatcher.connect('action-audio-enable-msg', disable_force_hide)
 
 def force_hide(element=None):
-    global no_audio_dialog    
+    global no_audio_dialog
     global was_shown
     global keep_hidden
     global old_keep_hidden
@@ -76,7 +76,7 @@ def disable_force_hide(element=None):
         keep_hidden = old_keep_hidden
         if was_shown:
             __check_dialog()
-    
+
 def __check_dialog():
 
     global no_audio_dialog
@@ -109,14 +109,14 @@ def deactivate_hidden_and_check(element=None):
     with lock:
         keep_hidden = False
         __check_dialog()
-    
+
     return True
 
 
 def clear_data_and_check(element=None):
 
     global no_audio
-
+    no_audio = False
     with lock:
         __check_dialog()
 
@@ -146,7 +146,7 @@ def warning_audio_hide(element=None):
         no_audio = False
         __check_dialog()
 
-    return True           
+    return True
 
 
 def event_change_mode(orig, old_state, new_state):
@@ -156,7 +156,7 @@ def event_change_mode(orig, old_state, new_state):
 
     global focus_is_active
 
-    if new_state == 0: 
+    if new_state == 0:
         with lock:
             focus_is_active = True
             __check_dialog()
@@ -169,7 +169,7 @@ def event_change_mode(orig, old_state, new_state):
 
 def refuse_focus(signal, data):
     data.grab_focus()
-    
+
 
 def create_ui():
     """
@@ -185,11 +185,11 @@ def create_ui():
     ui.set_accept_focus(False)
     ui.set_destroy_with_parent(True)
 
-   
+
     size = parent.get_size()
-    ui.set_property('width-request',int(size[0]/3)) 
+    ui.set_property('width-request',int(size[0]/3))
     if size[0] < 1300:
-        ui.set_property('width-request',int(size[0]/2.3)) 
+        ui.set_property('width-request',int(size[0]/2.3))
     wprop = size[0]/1920.0
     hprop = size[1]/1080.0
     ui.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
@@ -230,7 +230,7 @@ def create_ui():
     image.set_from_icon_name(Gtk.STOCK_DIALOG_WARNING, Gtk.IconSize.DIALOG)
     image.set_pixel_size(int(wprop*80))
     box.pack_start(image,True,True,0)
-    box.pack_start(label1,True,True,0)  
+    box.pack_start(label1,True,True,0)
     image.show()
     box.show()
     #ui.vbox.pack_start(box, True, False, int(hprop*5))
@@ -244,12 +244,12 @@ def create_ui():
     #ui.vbox.pack_start(label2, True, False, 0)
     resize_buttons(ui.action_area,int(wprop*25),True)
     ui.vbox.set_child_packing(ui.action_area, True, True, int(hprop*25), Gtk.PackType.END)
-    
+
     label1.show()
     label2.show()
     return ui
 
-def resize_buttons(area, fsize, equal = False):    
+def resize_buttons(area, fsize, equal = False):
         """Adapts buttons to the dialog size"""
         font = Pango.FontDescription("bold "+str(fsize)+"px")
         for button in area.get_children():

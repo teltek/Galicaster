@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 
@@ -18,11 +18,38 @@ Unit tests for `galicaster.core.context` module.
 import socket
 from unittest import TestCase
 from nose.plugins.attrib import attr
+import os
+import shutil
+from shutil import rmtree
 
+from galicaster.core.conf import Conf
 from galicaster.core import context
+
 import galicaster
 
+from tests import get_resource
+
 class TestFunctions(TestCase):
+
+    def setUp(self):
+        for service_name in ['conf', 'dispatcher', 'mainwindow', 'heartbeat',
+                             'repository', 'occlient', 'scheduler']:
+            if context.has(service_name):
+                context.delete(service_name)
+
+        self.conf_file = get_resource('conf/conf.ini')
+        self.backup_conf_file =get_resource('conf/conf.backup.ini')
+        dist_file = get_resource('conf/conf-dist.ini')
+
+        shutil.copyfile(self.conf_file,self.backup_conf_file)
+        self.conf = Conf(self.conf_file,dist_file)
+        context.set('conf',self.conf)
+        self.conf.reload()
+
+    def tearDown(self):
+        shutil.copyfile(self.backup_conf_file,self.conf_file)
+        os.remove(self.backup_conf_file)
+        del self.conf
 
     def test_twice(self):
         conf1 = context.get_conf()
@@ -41,7 +68,7 @@ class TestFunctions(TestCase):
         self.assertEqual(other_service, context.get(service_name))
         context.delete(service_name)
         self.assertRaises(KeyError, context.get, service_name)
-    
+
     def test_context(self):
         self.assertNotEqual(type(context.get_conf()), galicaster.core.conf)
         self.assertEqual(type(context.get_conf()), galicaster.core.conf.Conf)
@@ -51,10 +78,10 @@ class TestFunctions(TestCase):
 
     def test_get_scheduler_and_occlient_none(self):
         conf = context.get_conf()
-
         conf.set('ingest', 'active', 'False')
+
         self.assertEqual(context.get_occlient(), None)
-        self.assertEqual(context.get_scheduler(), None)
+        self.assertTrue(context.get_scheduler() != None)
 
         context.delete('occlient')
         context.delete('scheduler')
@@ -66,7 +93,7 @@ class TestFunctions(TestCase):
     def test_get_occlient_with_config(self):
         # Context init in other test
         if context.has('occlient'):
-            context.delete('occlient') 
+            context.delete('occlient')
 
         host = "http://servertest.www.es"
         conf = context.get_conf()
@@ -104,11 +131,7 @@ class TestFunctions(TestCase):
     def test_get_mainwindow(self):
         mwindow = context.get_mainwindow()
         self.assertEqual(mwindow, context.get_mainwindow())
-        
+
     def test_get_heartbeat(self):
         hbeat = context.get_heartbeat()
         self.assertEqual(hbeat, context.get_heartbeat())
-        
-
-
-

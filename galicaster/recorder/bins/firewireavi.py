@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 """
@@ -27,7 +27,7 @@ pipestr = (' dv1394src name=gc-firewireavi-src ! '
            ' tee name=gc-firewireavi-audiotee ! '
            ' queue ! volume name=gc-firewireavi-volume ! gc-asink '
            ' gc-firewireavi-demuxer. ! queue ! tee name=gc-firewireavi-videotee ! '
-           ' queue ! avdec_dvvideo ! videoconvert ! gc-vsink '
+           ' queue ! avdec_dvvideo ! videoconvert ! caps-preview ! gc-vsink '
            ' gc-firewireavi-audiotee. ! queue ! valve drop=false name=gc-firewireavi-audio-valve ! audio/x-raw ! avimux name=gc-firewireavi-mux ! '
            ' queue ! filesink name=gc-firewireavi-sink async=false '
            ' gc-firewireavi-videotee. ! queue ! valve drop=false name=gc-firewireavi-video-valve ! video/x-dv ! gc-firewireavi-mux.  '
@@ -50,7 +50,7 @@ class GCfirewireavi(Gst.Bin, base.Base):
             "default": "/dev/fw1",
             "description": "Device's mount point of the firewire module",
             },
-            
+
         "file": {
             "type": "text",
             "default": "CAMERA.dv",
@@ -82,19 +82,25 @@ class GCfirewireavi(Gst.Bin, base.Base):
             "default": "xvimagesink",
             "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
             "description": "Video sink",
-        },    
+        },
         "audiosink" : {
             "type": "select",
             "default": "alsasink",
             "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
             "description": "Audio sink",
         },
+        "caps-preview" : {
+            "type": "text",
+            "default": None,
+            "description": "Caps-preview",
+        },
+
     }
-    
+
     is_pausable = False
     has_audio   = True
     has_video   = True
-    
+
     __gstdetails__ = (
         "Galicaster Firewireavi BIN",
         "Generic/Video",
@@ -102,7 +108,7 @@ class GCfirewireavi(Gst.Bin, base.Base):
         "Teltek Video Research"
         )
 
-    def __init__(self, options={}): 
+    def __init__(self, options={}):
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
@@ -110,6 +116,13 @@ class GCfirewireavi(Gst.Bin, base.Base):
         gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-audio-'+self.options['name'])
         aux = (pipestr.replace('gc-vsink', gcvideosink)
                .replace('gc-asink', gcaudiosink))
+
+        if self.options["caps-preview"]:
+            aux = aux.replace("caps-preview !","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
+        else:
+            aux = aux.replace("caps-preview !","")
+
+
         #bin = Gst.parse_bin_from_description(aux, False)
         bin = Gst.parse_launch("( {} )".format(aux))
 
@@ -120,12 +133,12 @@ class GCfirewireavi(Gst.Bin, base.Base):
 
         if self.options["vumeter"] == False:
             level = self.get_by_name("gc-firewireavi-level")
-            level.set_property("message", False) 
+            level.set_property("message", False)
 
         if self.options["player"] == False:
             self.mute = True
             element = self.get_by_name("gc-firewireavi-volume")
-            element.set_property("mute", True)        
+            element.set_property("mute", True)
         else:
             self.mute = False
 
@@ -143,7 +156,7 @@ class GCfirewireavi(Gst.Bin, base.Base):
 
     def getSource(self):
         return self.get_by_name("gc-firewireavi-src")
-  
+
     def send_event_to_src(self,event):
         src1 = self.get_by_name("gc-firewireavi-src")
         src1.send_event(event)
@@ -154,8 +167,7 @@ class GCfirewireavi(Gst.Bin, base.Base):
             element.set_property("mute", value)
 
     def configure(self):
-        ## 
+        ##
         # v4l2-ctl -d self.options["location"] -s self.options["standard"]
         # v4l2-ctl -d self.options["location"] -i self.options["input"]
         pass
-     

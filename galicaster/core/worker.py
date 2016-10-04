@@ -6,13 +6,12 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 import os
-import threading
 import tempfile
 import Queue
 
@@ -23,6 +22,8 @@ from galicaster.mediapackage import mediapackage
 from galicaster.utils import sidebyside
 from galicaster.utils.mediainfo import get_info
 
+from galicaster.utils.queuethread import T
+
 INGEST = 'Ingest'
 ZIPPING = 'Export to Zip'
 SBS = 'Side by Side'
@@ -31,14 +32,16 @@ INGEST_CODE = 'ingest'
 ZIPPING_CODE = 'exporttozip'
 SBS_CODE = 'sidebyside'
 
-JOBS = { INGEST: INGEST_CODE, 
-         ZIPPING: ZIPPING_CODE, 
+JOBS = { INGEST: INGEST_CODE,
+         ZIPPING: ZIPPING_CODE,
          SBS:  SBS_CODE}
 
-JOB_NAMES = { INGEST_CODE: INGEST, 
-              ZIPPING_CODE: ZIPPING, 
+JOB_NAMES = { INGEST_CODE: INGEST,
+              ZIPPING_CODE: ZIPPING,
               SBS_CODE:  SBS}
 
+F_OPERATION = {}
+F_OPERATION_QUEUED = {}
 """
 This class manages the long operations to be done with a mediapackage:
     Ingest it into opencast server.
@@ -48,34 +51,11 @@ This operations are threads concurrently done with the rest of galicaster tasks 
 """
 class Worker(object):
 
-    class T(threading.Thread):
-
-        def __init__(self, queue):
-            """
-            Initializes a Thread with a queue of jobs to be done concurrently with other Galicaster tasks.
-            Args:
-            	queue (Queue): queue of jobs.
-            Attributes:
-                queue (Queue): queue of jobs.
-            """
-            threading.Thread.__init__(self)
-            self.queue = queue
-
-        def run(self):
-            """Runs and removes a job from the queue.
-            Marks the job as done. 
-            """
-            while True: 
-                job, params = self.queue.get()
-                job(*params)
-                self.queue.task_done()
-    
-
-    def __init__(self, dispatcher, repo, logger, oc_client=None, export_path=None, tmp_path=None, 
+    def __init__(self, dispatcher, repo, logger, oc_client=None, export_path=None, tmp_path=None,
                  use_namespace=True, sbs_layout='sbs', hide_ops=[], hide_nightly=[]):
         """Initializes a worker that manages the mediapackages of the repository in order to do long operations concurrently by throwing Threads when necessay.
         Args:
-            dispacher (Dispatcher): the galicaster event-dispatcher to emit signals. 
+            dispacher (Dispatcher): the galicaster event-dispatcher to emit signals.
             repo (Repository): the galicaster mediapackage repository.
             logger (Logger): the object that prints all the information, warning and error messages.
             oc_client (OCHTTPClient): the opencast HTTP client.
@@ -90,7 +70,7 @@ class Worker(object):
             t (Thread)
         Note:
             sbs_layouts possible values:
-                'sbs': screen and camera have the same size. 
+                'sbs': screen and camera have the same size.
                 'pip_screen': screen smaller than camera.
                 'pip_camera:': camera smaller than screen.
             """
@@ -111,9 +91,13 @@ class Worker(object):
             if not os.path.isdir(dir_path):
                 os.makedirs(dir_path)
 
+        self.add_operation(SBS, SBS_CODE, self._side_by_side)
+        self.add_operation(INGEST, INGEST_CODE, self._ingest)
+        self.add_operation(ZIPPING, ZIPPING_CODE, self._export_to_zip)
+
         self.jobs = Queue.Queue()
-        
-        self.t = self.T(self.jobs)
+
+        self.t = T(self.jobs)
         self.t.setDaemon(True)
         self.t.start()
 
@@ -122,16 +106,21 @@ class Worker(object):
     def get_all_job_types(self):
         """Gets all the possible mediapackage operations.
         Returns:
-            List[str]: List of the possible operations (including nightly mode) 
+            List[str]: List of the possible operations (including nightly mode)
         """
         nn = ' Nightly'
-        return [INGEST, ZIPPING, SBS, INGEST+nn, ZIPPING+nn, SBS+nn]
+
+        operation_list = []
+        for k in JOBS.keys():
+            operation_list.extend([k, k+nn])
+
+        return operation_list
 
 
     def get_ui_job_types(self):
         """Gets the mediapackage operations that are going to be showed in the user's interface.
         Returns:
-            List[str]: List of the possible operations (including nightly mode) in user's interface. 
+            List[str]: List of the possible operations (including nightly mode) in user's interface.
         """
         nn = ' Nightly'
         return [INGEST, ZIPPING, SBS, INGEST+nn, ZIPPING+nn, SBS+nn]
@@ -142,7 +131,7 @@ class Worker(object):
         Args:
             mp (Mediapackage): the mediapackage.
         Returns:
-            List[Str]: not hidden jobs that are not in pending or precessing status.	
+            List[Str]: not hidden jobs that are not in pending or precessing status.
             List[Str]: not hidden nightly jobs that are not pending or processing status.
         """
         nn = ' Nightly'
@@ -158,7 +147,7 @@ class Worker(object):
                     jobs.append(key)
                 if value not in self.hide_nightly:
                     night = cc+key+nn if mp.getOpStatus(value) == mediapackage.OP_NIGHTLY else key+nn
-                    jobs_night.append(night)            
+                    jobs_night.append(night)
 
         return jobs, jobs_night
 
@@ -168,7 +157,7 @@ class Worker(object):
         Args:
             mp (Mediapackage): the mediapackage.
         Returns:
-            List[Str]: not hidden jobs that are not in pending or precessing status.	
+            List[Str]: not hidden jobs that are not in pending or precessing status.
             List[Str]: not hidden nightly jobs that are not pending or processing status.
         """
         nn = ' Nightly'
@@ -188,11 +177,11 @@ class Worker(object):
                     jobs.append(key)
                 if value not in self.hide_nightly:
                     night = cc+key+nn if mp.getOpStatus(value) == mediapackage.OP_NIGHTLY else key+nn
-                    jobs_night.append(night)            
+                    jobs_night.append(night)
 
         return jobs, jobs_night
 
-    
+
     def get_job_name(self, job=None):
         jobname = None
         if job:
@@ -201,7 +190,7 @@ class Worker(object):
         return jobname
 
 
-    def do_job_by_name(self, name, mp_id, params={}):
+    def do_job_by_name(self, name, mp, params={}):
         """Does a particular operation for a particular mediapackage.
         Args:
             name (str): the name of the operation (code).
@@ -209,21 +198,18 @@ class Worker(object):
         Returns:
             Bool: True if success. False otherwise.
         """
-        f_operation = {
-            INGEST_CODE: self._ingest,
-            ZIPPING_CODE: self._export_to_zip,
-            SBS_CODE: self._side_by_side}
         try:
-            mp = self.repo[mp_id]
-            f = f_operation[name]
+            if isinstance(mp, basestring):
+                mp = self.repo[mp]
+            f = F_OPERATION[name]
         except Exception as exc:
-            self.logger.error("Fail get MP with id {0} or operation with name {1}. Exception: {2}".format(mp_id, name, exc))
+            self.logger.error("Fail get MP {0} or operation with name {1}. Exception: {2}".format(mp, name, exc))
             return False
         f(mp, params)
-	return True
+        return True
 
-    
-    def enqueue_job_by_name(self, name, mp_id, params={}):
+
+    def enqueue_job_by_name(self, name, mp, params={}):
         """Enqeues a particular mediapackage operation to be done.
         Args:
             name (str): the name of the operation (code).
@@ -231,19 +217,26 @@ class Worker(object):
         Returns:
             Bool: True if success. False otherwise.
         """
-        f_operation = {
-            INGEST_CODE: self.ingest,
-            ZIPPING_CODE: self.export_to_zip,
-            SBS_CODE: self.side_by_side}
         try:
-            mp = self.repo[mp_id]
-            f = f_operation[name]
+            if isinstance(mp, basestring):
+                mp = self.repo[mp]
+            f = F_OPERATION_QUEUED[name]
         except Exception as exc:
-            self.logger.error("Fail get MP with id {0} or operation with name {1}. Exception: {2}".format(mp_id, name, exc))
+            self.logger.error("Fail get MP {0} or operation with name {1}. Exception: {2}".format(mp, name, exc))
             return False
         f(mp, params)
-	return True
+        return True
 
+    def enqueue_nightly_job_by_name(self, operation, mp, params={}):
+        """Adds a mediapackage operation to be done at nightly configured time.
+        Args:
+            mp (Mediapackage): the mediapackage with a operation to be processed.
+            operation (str): name of the nighly operation to be done.
+        """
+        self.logger.debug("Set nightly operation {} for MP {}".format(operation, mp.getIdentifier()))
+        mp.setOpStatus(operation,mediapackage.OP_NIGHTLY)
+        self.repo.update(mp)
+        self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
 
     def do_job(self, name, mp, params={}):
         """Calls a particular method of this class with a given argument.
@@ -253,33 +246,40 @@ class Worker(object):
             mp (Mediapackage): the mediapackage.
         """
         try:
-            f = getattr(self, name)
+            # Do not perform immediately operations (it blocks)
+            f = F_OPERATION_QUEUED[name]
             f(mp, params)
         except Exception as exc:
             self.logger.error("Failure performing job {0} for MP {1}. Exception: {2}".format(name, mp, exc))
             return False
         return True
 
-    
+
     def do_job_nightly(self, name, mp, params={}):
         """Calls cancel_nightly or operation_nithly depending on the argument's value.
         Args:
-            name (str): the name of a nightly operation. It must contain the word "cancel" in order to cancel the operation. 
+            name (str): the name of a nightly operation. It must contain the word "cancel" in order to cancel the operation.
             mp (Mediapackage): the mediapackage.
         """
         name=name.replace('nightly','')
         try:
             if name.count('cancel'):
-                getattr(self, name.replace('cancel',''))
-                self.cancel_nightly(mp, name.replace('cancel',''))
+                # getattr(self, name.replace('cancel',''))
+                if not name.replace('cancel','') in JOB_NAMES.keys():
+                    raise Exception('Unknown operation named {}'.format(name))
+
+                self.cancel_nightly(name.replace('cancel',''), mp)
             else:
-                getattr(self, name)
-                self.operation_nightly(mp, name, params)
+                # getattr(self, name)
+                if not name in JOB_NAMES.keys():
+                    raise Exception('Unknown operation named {}'.format(name))
+
+                self.enqueue_nightly_job_by_name(name, mp, params)
         except Exception as exc:
             self.logger.error("Failure performing nightly job {0} for MP {1}. Exception: {2}".format(name, mp, exc))
             return False
         return True
-    
+
 
     def gen_location(self, extension):
         """Gets the path of a non existing file in the exports' directory.
@@ -294,23 +294,6 @@ class Worker(object):
             name += '_2'
         return os.path.join(self.export_path, name + '.' + extension)
 
-    def ingest_nightly(self, mp):
-        """Ingests nigthly a mediapackage into opencast.
-        Args:
-            mp (Mediapackage): the mediapackage to be nightly ingested.
-        """
-        self.operation_nightly(mp, INGEST_CODE)
-
-    def ingest(self, mp, params={}):
-        """Sets mediapackage status to be ingested.
-        Adds the ingest operation to the threads queue.
-        Args:
-            mp (Mediapackage): the mediapackage to be immediately ingested.
-        """
-        self.logger.info('Creating Ingest Job for MP {0}'.format(mp.getIdentifier()))
-        mp.setOpStatus('ingest',mediapackage.OP_PENDING)
-        self.repo.update(mp)
-        self.jobs.put((self._ingest, (mp, params)))
 
     def _ingest(self, mp, params={}):
         """Tries to immediately ingest the mediapackage into opencast.
@@ -319,17 +302,11 @@ class Worker(object):
             mp(Mediapackage): the mediapackage to be immediately ingested.
         """
         if not self.oc_client:
-            self.operation_error(mp, INGEST, 'MH client is not enabled')
-            return
-            
+            raise Exception('Opencast client is not enabled')
+
         workflow = None if not "workflow" in params else params["workflow"]
         workflow_parameters = None if not "workflow_parameters" in params else params["workflow_parameters"]
 
-        self.logger.info('Executing Ingest for MP {0}'.format(mp.getIdentifier()))
-        mp.setOpStatus('ingest',mediapackage.OP_PROCESSING)
-        self.repo.update(mp)
-
-        self.dispatcher.emit('operation-started', 'ingest', mp)
         self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
 
         if workflow or workflow_parameters:
@@ -339,11 +316,7 @@ class Worker(object):
         self._export_to_zip(mp, params={"location" : ifile, "is_action": False})
 
         if mp.manual:
-            try:
-                self.oc_client.ingest(ifile.name, mp.getIdentifier(), workflow=workflow, workflow_instance=None, workflow_parameters=workflow_parameters)
-                self.operation_success(mp, INGEST)
-            except Exception as exc:
-                self.operation_error(mp, INGEST, exc)
+            self.oc_client.ingest(ifile.name, mp.getIdentifier(), workflow=workflow, workflow_instance=None, workflow_parameters=workflow_parameters)
         else:
             if not workflow:
                 properties = mp.getOCCaptureAgentProperties()
@@ -359,29 +332,11 @@ class Worker(object):
                     if k[0:36] == 'org.opencastproject.workflow.config.':
                         workflow_parameters[k[36:]] = v
 
-            try:
-                self.oc_client.ingest(ifile.name, mp.getIdentifier(), workflow, mp.getIdentifier(), workflow_parameters)
-                self.operation_success(mp, INGEST)
-            except Exception as exc:
-                self.operation_error(mp, INGEST, exc)
-            
+            self.oc_client.ingest(ifile.name, mp.getIdentifier(), workflow, mp.getIdentifier(), workflow_parameters)
+
         ifile.close()
-        self.repo.update(mp)
-            
+
         self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
-
-
-    def export_to_zip(self, mp, params={}):
-        """Sets mediapackage status to be exported as a zip.
-        Adds the export operation to the threads queue.
-        Args:
-            mp (Mediapackage): the mediapackage to be exported as a zip.
-            location (str): absolute path of the destination export file.
-        """
-        self.logger.info('Creating ExportToZIP Job for MP {0}'.format(mp.getIdentifier()))
-        mp.setOpStatus('exporttozip',mediapackage.OP_PENDING)
-        self.repo.update(mp)
-        self.jobs.put((self._export_to_zip, (mp, params)))
 
 
     def _export_to_zip(self, mp, params={}):
@@ -390,41 +345,64 @@ class Worker(object):
         Args:
             mp (Mediapackage): the mediapackage to be exported as a zip.
             location (str): absolute path of the destination export file.
-            is_action (bool): true if the action was done by the user. False if is a subtask. 
+            is_action (bool): true if the action was done by the user. False if is a subtask.
         """
         location = self.gen_location('zip') if not "location" in params else params["location"]
         is_action = True if not "is_action" in params else params["is_action"]
 
-        if is_action:
-            self.logger.info("Executing ExportToZIP for MP {} to {}".format(mp.getIdentifier(), location if type(location) in [str,unicode] else location.name))
-            mp.setOpStatus('exporttozip',mediapackage.OP_PROCESSING)
-            self.dispatcher.emit('operation-started', 'exporttozip', mp)
-            self.repo.update(mp)
-        else:
+        if not is_action:
             self.logger.info("Zipping MP {} to {}".format(mp.getIdentifier(), location if type(location) in [str,unicode] else location.name))
-        try:
-            serializer.save_in_zip(mp, location, self.use_namespace, self.logger)
-            if is_action:
-                self.operation_success(mp, ZIPPING)        
-        except Exception as exc:
-            if is_action:
-                self.operation_error(mp, ZIPPING, exc)
-            else:
-                pass
-        self.repo.update(mp)
 
+        serializer.save_in_zip(mp, location, self.use_namespace, self.logger)
 
-    def side_by_side(self, mp, params={}):
-        """Sets the mediapackage status in order to do side by side operation.
-            Adds the side by side operation to the threads queue.
+    def add_operation(self, name, code, handler):
+        """Sets an operation in the worker
         Args:
-            mp (Mediapackage): the mediapackage.
-            location (str): the location for the new video file.
+            name (str): operation name.
+            code (str): operation identifier.
+            handler (function): function to be executed
         """
-        self.logger.info('Creating SideBySide Job for MP {0}'.format(mp.getIdentifier()))
-        mp.setOpStatus('sidebyside',mediapackage.OP_PENDING)
-        self.repo.update(mp)
-        self.jobs.put((self._side_by_side, (mp, params)))
+
+        JOBS.update({name: code})
+        JOB_NAMES.update({code: name})
+
+        operation = self.__create_operation(name, code, handler)
+        F_OPERATION.update({code : operation})
+
+        operation_queued = self.__create_operation_queued(name, code, operation)
+        F_OPERATION_QUEUED.update({code: operation_queued})
+
+
+    def __create_operation(self, name, code, handler):
+
+        def handler_template(mp, params={}):
+            self.logger.info('Executing {} for MP {}'.format(name, mp.getIdentifier()))
+            mp.setOpStatus(code,mediapackage.OP_PROCESSING)
+            self.repo.update(mp)
+            self.dispatcher.emit('operation-started', code, mp)
+
+            try:
+                pending_process = handler(mp, params)
+                if not pending_process:
+                    self.operation_success(mp, code)
+                else:
+                    self.logger.info('Completed first part of {} for MP {} (It is not marked as completed until the whole process is done)'.format(name, mp.getIdentifier()))
+            except Exception as exc:
+                self.operation_error(mp, code, exc)
+
+        return handler_template
+
+
+    def __create_operation_queued(self, name, code, handler):
+
+        def queued_handler_template(mp, params={}):
+            self.logger.info('Creating {} Job for MP {}'.format(name, mp.getIdentifier()))
+            mp.setOpStatus(code,mediapackage.OP_PENDING)
+            self.repo.update(mp)
+            self.jobs.put((handler, (mp, params)))
+
+        return queued_handler_template
+
 
 
     def _side_by_side(self, mp, params={}):
@@ -439,13 +417,8 @@ class Worker(object):
         sbs_layout    = self.sbs_layout if not "layout" in params else params["layout"]
 
         if audio_mode not in ["embedded", "external", "auto"]:
-            self.logger.warning("SideBySide for MP {}: unknown value {} for parameter 'audio', default to auto-mode".format(mp.getIdentifier(), audio))
+            self.logger.warning("SideBySide for MP {}: unknown value {} for parameter 'audio', default to auto-mode".format(mp.getIdentifier(), audio_mode))
             audio_mode = "auto"
-
-        self.logger.info('Executing SideBySide for MP {0}'.format(mp.getIdentifier()))
-        mp.setOpStatus('sidebyside',mediapackage.OP_PROCESSING)
-        self.repo.update(mp)
-        self.dispatcher.emit('operation-started', 'sidebyside', mp)
 
         audio = None  #'camera'
         camera = screen = None
@@ -459,72 +432,53 @@ class Worker(object):
         if mp.getTracksAudio():
             audio = mp.getTracksAudio()[0].getURI()
 
-        try:
-            
-            if not camera or not screen:
-                raise IOError, 'Error in SideBySide proccess: Two videos needed (with presenter and presentation flavors)'
+        if not camera or not screen:
+            raise IOError, 'Error in SideBySide process: Two videos needed (with presenter and presentation flavors)'
 
-            if audio_mode == "auto":                
-                self.logger.debug('SideBySide for MP {0}: auto audio-mode'.format(mp.getIdentifier()))
-
-                # Look for embedded audio track, if this not exists use external audio
-                info = get_info(camera)
-                if 'audio-codec' in info.get_stream_info().get_streams()[0].get_tags().to_string():
-                    self.logger.debug('SideBySide for MP {0}: embedded audio detected'.format(mp.getIdentifier()))
-                    audio = None
-                else:
-                    self.logger.debug('SideBySide for MP {0}: embedded audio NOT detected, trying to use external audio...'.format(mp.getIdentifier()))
-
-            elif audio_mode == "embedded":
-                self.logger.debug('SideBySide for MP {0}: embedded audio-mode'.format(mp.getIdentifier()))
-
-                # Look for embedded audio track, if this not exists use external audio
-                info = get_info(camera)                
-                if 'audio-codec' in info.get_stream_info().get_streams()[0].get_tags().to_string():
-                    self.logger.debug('SideBySide for MP {0}: embedded audio detected'.format(mp.getIdentifier()))
-                    audio = None
-                else:
-                    self.logger.debug('SideBySide for MP {0}: embedded audio NOT detected, trying to use external audio...'.format(mp.getIdentifier()))
-
+        if audio_mode == "auto":
+            self.logger.debug('SideBySide for MP {0}: auto audio-mode'.format(mp.getIdentifier()))
+            # Look for embedded audio track, if this not exists use external audio
+            info = get_info(camera)
+            if 'audio-codec' in info.get_stream_info().get_streams()[0].get_tags().to_string():
+                self.logger.debug('SideBySide for MP {0}: embedded audio detected'.format(mp.getIdentifier()))
+                audio = None
             else:
-                self.logger.debug('SideBySide for MP {0}: external audio-mode'.format(mp.getIdentifier()))
-                if not audio:
-                    self.logger.debug('SideBySide for MP {0}: external audio NOT detected, trying to use embedded audio...'.format(mp.getIdentifier()))
+                self.logger.debug('SideBySide for MP {0}: embedded audio NOT detected, trying to use external audio...'.format(mp.getIdentifier()))
 
-            sidebyside.create_sbs(location, camera, screen, audio, sbs_layout, self.logger)
-            self.operation_success(mp, SBS)
-        except Exception as exc:
-            self.operation_error(mp, SBS, exc)
+        elif audio_mode == "embedded":
+            self.logger.debug('SideBySide for MP {0}: embedded audio-mode'.format(mp.getIdentifier()))
+            # Look for embedded audio track, if this not exists use external audio
+            info = get_info(camera)
+            if 'audio-codec' in info.get_stream_info().get_streams()[0].get_tags().to_string():
+                self.logger.debug('SideBySide for MP {0}: embedded audio detected'.format(mp.getIdentifier()))
+                audio = None
+            else:
+                self.logger.debug('SideBySide for MP {0}: embedded audio NOT detected, trying to use external audio...'.format(mp.getIdentifier()))
 
+        else:
+            self.logger.debug('SideBySide for MP {0}: external audio-mode'.format(mp.getIdentifier()))
+            if not audio:
+                self.logger.debug('SideBySide for MP {0}: external audio NOT detected, trying to use embedded audio...'.format(mp.getIdentifier()))
+
+        sidebyside.create_sbs(location, camera, screen, audio, sbs_layout, self.logger)
+
+
+
+    def operation_error(self, mp, OP_CODE, exc):
+        self.logger.error("Failed {} for MP {}. Exception: {}".format(JOB_NAMES[OP_CODE], mp.getIdentifier(), exc))
+        mp.setOpStatus(OP_CODE, mediapackage.OP_FAILED)
+        self.dispatcher.emit('operation-stopped', OP_CODE, mp, False, None)
         self.repo.update(mp)
 
 
-    def operation_error(self, mp, OP_NAME, exc):
-        self.logger.error("Failed {} for MP {}. Exception: {}".format(OP_NAME, mp.getIdentifier(), exc))
-        mp.setOpStatus(JOBS[OP_NAME], mediapackage.OP_FAILED)
-        self.dispatcher.emit('operation-stopped', JOBS[OP_NAME], mp, False, None)
-        self.repo.update(mp)
-
-    def operation_success(self, mp, OP_NAME):
-        self.logger.info("Finalized {} for MP {}".format(OP_NAME, mp.getIdentifier()))
-        mp.setOpStatus(JOBS[OP_NAME], mediapackage.OP_DONE)
-        self.dispatcher.emit('operation-stopped', JOBS[OP_NAME], mp, True, None)
+    def operation_success(self, mp, OP_CODE):
+        self.logger.info("Finalized {} for MP {}".format(JOB_NAMES[OP_CODE], mp.getIdentifier()))
+        mp.setOpStatus(OP_CODE, mediapackage.OP_DONE)
+        self.dispatcher.emit('operation-stopped', OP_CODE, mp, True, None)
         self.repo.update(mp)
 
 
-    def operation_nightly(self, mp, operation, params={}):
-        """Adds a mediapackage operation to be done at nightly configured time.
-        Args:
-            mp (Mediapackage): the mediapackage with a operation to be processed.
-            operation (str): name of the nighly operation to be done.
-        """
-        self.logger.debug("Set nightly operation {} for MP {}".format(operation, mp.getIdentifier()))
-        mp.setOpStatus(operation,mediapackage.OP_NIGHTLY)
-        self.repo.update(mp)
-        self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
-
-
-    def cancel_nightly(self, mp, operation):
+    def cancel_nightly(self, operation, mp):
         """Removes a mediapackage operation to be done at nightly configured time.
         Args:
             mp (Mediapackage): the mediapackage with a operation to be processed.
@@ -534,9 +488,9 @@ class Worker(object):
         mp.setOpStatus(operation,mediapackage.OP_IDLE)
         self.repo.update(mp)
         self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
-    
 
-    def exec_nightly(self, sender=None): 
+
+    def exec_nightly(self, sender=None):
         """Executes immediately all the nightly operations of all the mediapackages in the repository.
         Args:
             sender (Dispatcher): instance of the class in charge of emitting signals.
@@ -545,10 +499,4 @@ class Worker(object):
         for mp in self.repo.values():
             for (op_name, op_status) in mp.operation.iteritems():
                 if op_status == mediapackage.OP_NIGHTLY:
-                    if op_name == INGEST_CODE:
-                        self.ingest(mp)
-                    elif op_name == ZIPPING_CODE:
-                        self.export_to_zip(mp)
-                    elif op_name == SBS_CODE:
-                        self.side_by_side(mp)                    
-        
+                    self.enqueue_job_by_name(op_name, mp)

@@ -732,20 +732,20 @@ msgid "Recording"
 msgstr "Enregistrement"
 
 #: resources/ui/recorder.glade:406
-msgid "Storage space left:  "
-msgstr "Espace disponible:  "
+msgid "Storage space left: "
+msgstr "Espace disponible: "
 
 #: resources/ui/recorder.glade:420
-msgid "Agent name:  "
-msgstr "Nom de l'agent:  "
+msgid "Agent name: "
+msgstr "Nom de l'agent: "
 
 #: resources/ui/recorder.glade:435
-msgid "Recording space:  "
-msgstr "Espace d'enregistrement:  "
+msgid "Recording space: "
+msgstr "Espace d'enregistrement: "
 
 #: resources/ui/recorder.glade:450
-msgid "Core connectivity:  "
-msgstr "Connectivité:  "
+msgid "Core connectivity: "
+msgstr "Connectivité: "
 
 #: resources/ui/recorder.glade:472
 msgid "Status"

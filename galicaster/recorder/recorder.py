@@ -14,7 +14,8 @@
 
 import sys
 
-from gi.repository import Gtk, Gst, Gdk
+from gi.repository import Gst
+from gi.repository import GdkX11 # noqa: ignore=F401
 Gst.init(None)
 
 from galicaster.core import context
@@ -43,10 +44,11 @@ class Recorder(object):
                 '{}: need a {}; got a {}: {}'.format('players', dict,
                                                      type(players), players))
 
-        self.dispatcher = context.get_dispatcher() 
+        self.dispatcher = context.get_dispatcher()
         self.players = players
         self.restart = False
-        self.mute = False
+#        self.mute = False
+        self.mute_status = {"input":{},"preview":{}}
         self.error = False
         self.is_recording = False
         self.__start_record_time = -1
@@ -62,31 +64,34 @@ class Recorder(object):
         self.callback = None
 
         self.bus.add_signal_watch()
-        self.bus.enable_sync_message_emission()
 #        self.bus.connect('message', WeakMethod(self, '_debug')) # TO DEBUG
-        self.bus.connect('message::error', WeakMethod(self, '_on_error'))        
+        self.bus.connect('message::error', WeakMethod(self, '_on_error'))
         self.bus.connect('message::element', WeakMethod(self, '_on_message_element'))
 
 
-        try:            
+        try:
             for bin in bins:
                 name = bin['name']
-                
+
                 mod_name = 'galicaster.recorder.bins.' + bin['device']
                 __import__(mod_name)
                 mod = sys.modules[mod_name]
                 Klass = getattr(mod, "GC" + bin['device'])
-                
+
                 logger.debug("Init bin {} {}".format(name, mod_name))
                 self.bins[name] = Klass(bin)
                 self.pipeline.add(self.bins[name])
-                
+                self.bins[name].prepare(self.bus)
+
+#            self.enable_input()
+            self.enable_preview()
+
         except Exception as exc:
             logger.info("Removing loaded bins due to an error...")
             for bin_name in self.bins:
                 self.pipeline.remove(self.bins[bin_name])
             self.bins.clear()
-            
+
             self.error = str(exc)
             name = name if 'name' in locals() else 'Unknown'
             message = 'Invalid track type "{}" for "{}" track: {}'.format(bin.get('device'), name, exc)
@@ -94,12 +99,12 @@ class Recorder(object):
 
 
 
-    def get_status(self, timeout=GST_TIMEOUT):        
-        status = self.pipeline.get_state(timeout)        
+    def get_status(self, timeout=GST_TIMEOUT):
+        status = self.pipeline.get_state(timeout)
 
         if status[0] == Gst.StateChangeReturn.ASYNC:
             self.__emit_error('Timeout getting recorder status, current status: {}'.format(status), '', stop=False)
-        
+
         return status
 
     def get_time(self):
@@ -112,6 +117,7 @@ class Recorder(object):
             return 0
 
         status = self.get_status()[1]
+
         if status == Gst.State.NULL:
             return self.__duration
         elif status == Gst.State.PAUSED:
@@ -148,7 +154,7 @@ class Recorder(object):
 
     def __set_state(self, new_state=Gst.State.PAUSED):
         change = self.pipeline.set_state(new_state)
-            
+
         if change == Gst.StateChangeReturn.FAILURE:
             # text = None
             random_bin = None
@@ -165,7 +171,7 @@ class Recorder(object):
             # error = Glib.GError(Gst.ResourceError, Gst.ResourceError.FAILED, text)
 
             a = Gst.Structure.new_from_string('letpass')
-            message = Gst.Message.new_custom(Gst.MessageType.ERROR,src, a)   
+            message = Gst.Message.new_custom(Gst.MessageType.ERROR,src, a)
             # message = Gst.Message.new_error(src, error, str(random_bin)+"\nunknown system_error")
             self.bus.post(message)
             self.dispatcher.emit("recorder-error","Driver error")
@@ -180,7 +186,7 @@ class Recorder(object):
             for bin in self.bins.values():
                 bin.changeValve(False)
             self.__valves_status = False
-        
+
         self.__start_record_time = self.__query_position()
         self.is_recording = True
 
@@ -197,7 +203,7 @@ class Recorder(object):
             logger.debug("recording paused (warning: this doesn't pause pipeline, just stops recording)")
             self.__pause_timestamp = self.__query_position()
             for bin in self.bins.values():
-                bin.changeValve(True)                
+                bin.changeValve(True)
             self.__valves_status = True
 
 
@@ -226,9 +232,9 @@ class Recorder(object):
         if self.is_recording and not force:
             if self.__valves_status == True:
                 self.resume_recording()
-                
+
             logger.debug("Stopping recorder, sending EOS event to sources")
-                
+
             self.is_recording = False
             self.__duration = self.__query_position() - self.__start_record_time - self.__paused_time
             a = Gst.Structure.new_from_string('letpass')
@@ -236,7 +242,7 @@ class Recorder(object):
             for bin_name, bin in self.bins.iteritems():
                 bin.send_event_to_src(event)
 
-            msg = self.bus.timed_pop_filtered(GST_TIMEOUT, Gst.MessageType.EOS)            
+            msg = self.bus.timed_pop_filtered(GST_TIMEOUT, Gst.MessageType.EOS)
             if not msg:
                 self.__emit_error('Timeout trying to receive EOS message', '', stop=False)
             else:
@@ -245,7 +251,7 @@ class Recorder(object):
         self.pipeline.set_state(Gst.State.NULL)
 
 
-    def _debug(self, bus, msg):       
+    def _debug(self, bus, msg):
         if msg.type != Gst.MessageType.ELEMENT or msg.get_structure().get_name() != 'level':
             print "DEBUG ", msg
 
@@ -255,7 +261,7 @@ class Recorder(object):
         error_info = "{} ({})".format(error, debug)
         return self.__emit_error(error_info, debug)
 
-    
+
     def __emit_error(self, error_info, debug, stop=True):
         if not self.error:
             logger.error(error_info)
@@ -265,43 +271,12 @@ class Recorder(object):
                 self.error = error_info
                 self.dispatcher.emit("recorder-error", error_info)
                 # return True
-        
+
 
     def _on_sync_message(self, bus, message):
         if message.get_structure() is None:
             return
-        if message.get_structure().get_name() == 'prepare-window-handle':
-            name = message.src.get_property('name')
-            logger.debug("on sync message 'prepare-window-handle' %r", name)
 
-            # Workaround for autovideosink (it name contains the sink that is being used)
-            sep_autovideosink = "-actual-sink"
-            if sep_autovideosink in name:
-                name = name.split(sep_autovideosink, 1)[0]
-            
-            try:
-                gtk_player = self.players[name]
-                if not isinstance(gtk_player, Gtk.DrawingArea):
-                    raise TypeError()
-                Gdk.threads_enter()
-                Gdk.Display.get_default().sync()            
-                message.src.set_property('force-aspect-ratio', True)
-#                message.src.set_xwindow_id(gtk_player.get_property(window).get_xid())
-                message.src.set_window_handle(gtk_player.get_property('window').get_xid())
-                Gdk.threads_leave()
-                
-                # Disconnect from on_sync_message (From now on it's not needed)
-                del self.players[name]
-                if not self.players:
-                    #self.bus.disable_sync_message_emission()
-                    self.bus.handler_disconnect(self.__sync_handle)
-                
-            except KeyError:
-                pass
-            except TypeError:
-                logger.error('players[{}]: need a {}; got a {}: {}'.format(
-                        name, Gtk.DrawingArea, type(gtk_player), gtk_player))
-        
 
     def _on_message_element(self, bus, message):
         if message.get_structure().get_name() == 'level':
@@ -317,13 +292,13 @@ class Recorder(object):
 
         if float(rms_values[0]) == float("-inf"):
             valor = "Inf"
-        else:            
+        else:
             valor = float(rms_values[0])
 
         if len(rms_values) > 1:
             if float(rms_values[1]) == float("-inf"):
                 valor2 = "Inf"
-            else:            
+            else:
                 valor2 = float(rms_values[1])
         else:
             stereo = False
@@ -340,13 +315,81 @@ class Recorder(object):
         for bin_name, bin in self.bins.iteritems():
             if bin.has_audio:
                 bin.mute_preview(value)
-                
+
+
+    def disable_input(self, bin_names=[]):
+        if bin_names:
+            for elem in bin_names:
+                if elem in self.bins.keys():
+                    self.bins[elem].disable_input()
+                    self.mute_status["input"][elem] = False
+                else:
+                    raise Exception("Bin: "+elem+" not loaded in this profile")
+        else:
+            for bin_nam,bin in self.bins.iteritems():
+                bin.disable_input()
+                self.mute_status["input"][bin_nam] = False
+
+
+    def enable_input(self, bin_names=[]):
+        if bin_names:
+            for elem in bin_names:
+                if elem in self.bins.keys():
+                    self.bins[elem].enable_input()
+                    self.mute_status["input"][elem] = True
+                else:
+                    raise Exception("Bin: "+elem+" not loaded in this profile")
+        else:
+            for bin_nam,bin in self.bins.iteritems():
+                bin.enable_input()
+                self.mute_status["input"][bin_nam] = True
+
+
+    def disable_preview(self, bin_names=[]):
+        try:
+            if bin_names:
+                for elem in bin_names:
+                    if elem in self.bins.keys():
+                        self.bins[elem].disable_preview()
+                        self.mute_status["preview"][elem] = False
+                    else:
+                        raise Exception("Bin: "+elem+" not loaded in this profile")
+            else:
+                for bin_nam,bin in self.bins.iteritems():
+                    bin.disable_preview()
+                    self.mute_status["preview"][bin_nam] = False
+        except Exception as exc:
+            logger.debug(exc)
+
+
+    def enable_preview(self, bin_names=[]):
+        try:
+            if bin_names:
+                for elem in bin_names:
+                    if elem in self.bins.keys():
+                        self.bins[elem].enable_preview()
+                        self.mute_status["preview"][elem] = True
+                    else:
+                        raise Exception("Bin: "+elem+" not loaded in this profile")
+            else:
+                for bin_nam,bin in self.bins.iteritems():
+                    bin.enable_preview()
+                    self.mute_status["preview"][bin_nam] = True
+        except Exception as exc:
+            logger.debug(exc)
 
     def set_drawing_areas(self, players):
-        self.players = players        
-        if self.players:
-            self.__sync_handle = self.bus.connect('sync-message::element', WeakMethod(self, '_on_sync_message'))
+        self.players = players
 
+        # Link videoareas with sinks
+        for name, element in self.players.iteritems():
+            # TODO: check xid
+            xid = element.get_property('window').get_xid()
+            try:
+                getattr(self.pipeline.get_by_name(name), 'set_window_handle')
+                self.pipeline.get_by_name(name).set_window_handle(xid)
+            except Exception:
+                logger.warning("Pipeline {} doesn't have set_window_handle".format(name))
 
     def get_display_areas_info(self):
         display_areas_info = []
@@ -360,4 +403,3 @@ class Recorder(object):
         for bin_name, bin in self.bins.iteritems():
             bins_info.extend(bin.get_bins_info())
         return bins_info
-

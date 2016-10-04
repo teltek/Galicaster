@@ -64,9 +64,10 @@
               <object class="GtkBox" id="hbox1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="spacing">200</property>
+                <property name="homogeneous">True</property>
                 <child>
                   <object class="GtkBox" id="prebox">
-                    <property name="width_request">225</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
@@ -102,20 +103,6 @@
                     <property name="expand">False</property>
                     <property name="fill">False</property>
                     <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkEventBox" id="bg_status">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <child>
-                      <placeholder/>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">False</property>
-                    <property name="position">1</property>
                   </packing>
                 </child>
                 <child>
@@ -201,7 +188,7 @@
                           <object class="GtkLabel" id="nextlabel">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Next REC</property>
+                            <property name="label" translatable="yes"> </property>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -249,7 +236,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="ypad">1</property>
-                        <property name="label" translatable="yes">Very long title, this is always for sure</property>
+                        <property name="label" translatable="yes">No upcoming events</property>
                         <property name="justify">center</property>
                         <property name="wrap">True</property>
                       </object>
@@ -264,11 +251,12 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">scheduled</property>
+                        <property name="label" translatable="yes"> </property>
                         <property name="justify">center</property>
                         <property name="ellipsize">end</property>
                         <style>
                           <class name="status_text"/>
+                          <class name="label_big"/>
                         </style>
                       </object>
                       <packing>
@@ -501,6 +489,9 @@
                     <property name="tab_fill">False</property>
                   </packing>
                 </child>
+                <style>
+                  <class name="notebook_horizontal"/>
+                </style>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -770,8 +761,15 @@
                               <packing>
                                 <property name="left_attach">11</property>
                                 <property name="top_attach">2</property>
+                                <property name="width">2</property>
                                 <property name="height">2</property>
                               </packing>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
                             </child>
                             <child>
                               <placeholder/>
@@ -802,10 +800,14 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButtonBox" id="buttonbox">
+                      <object class="GtkGrid" id="buttonbox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="layout_style">spread</property>
+                        <property name="margin_left">20</property>
+                        <property name="margin_right">20</property>
+                        <property name="margin_bottom">5</property>
+                        <property name="column_spacing">10</property>
+                        <property name="column_homogeneous">True</property>
                         <child>
                           <object class="GtkButton" id="recbutton">
                             <property name="use_action_appearance">False</property>
@@ -814,10 +816,11 @@
                             <property name="receives_default">True</property>
                             <signal name="clicked" handler="on_rec" swapped="no"/>
                             <child>
-                              <object class="GtkImage" id="image2">
+                              <object class="GtkImage" id="image1">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="icon_name">media-record</property>
+                                <property name="icon_size">1</property>
                               </object>
                             </child>
                             <child internal-child="accessible">
@@ -827,9 +830,8 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">0</property>
+                            <property name="left_attach">0</property>
+                            <property name="top_attach">0</property>
                           </packing>
                         </child>
                         <child>
@@ -839,10 +841,11 @@
                             <property name="receives_default">True</property>
                             <signal name="clicked" handler="on_pause" swapped="no"/>
                             <child>
-                              <object class="GtkImage" id="image4">
+                              <object class="GtkImage" id="image3">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="icon_name">media-playback-pause</property>
+                                <property name="icon_size">1</property>
                               </object>
                             </child>
                             <child internal-child="accessible">
@@ -852,9 +855,8 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">1</property>
+                            <property name="left_attach">1</property>
+                            <property name="top_attach">0</property>
                           </packing>
                         </child>
                         <child>
@@ -865,7 +867,7 @@
                             <property name="receives_default">True</property>
                             <signal name="clicked" handler="on_ask_stop" swapped="no"/>
                             <child>
-                              <object class="GtkImage" id="image5">
+                              <object class="GtkImage" id="image6">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="icon_name">media-playback-stop</property>
@@ -878,9 +880,8 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">2</property>
+                            <property name="left_attach">2</property>
+                            <property name="top_attach">0</property>
                           </packing>
                         </child>
                         <child>
@@ -890,16 +891,15 @@
                             <property name="receives_default">True</property>
                             <signal name="clicked" handler="on_edit_meta" swapped="no"/>
                             <child>
-                              <object class="GtkBox" id="vboxedit">
+                              <object class="GtkBox" id="vboxedit1">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="orientation">vertical</property>
                                 <child>
-                                  <object class="GtkImage" id="image22">
+                                  <object class="GtkImage" id="image7">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="icon_name">edit-copy</property>
-                                    <property name="icon_size">5</property>
                                   </object>
                                   <packing>
                                     <property name="expand">True</property>
@@ -908,7 +908,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="labeledit">
+                                  <object class="GtkLabel" id="labeledit1">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="label" translatable="yes">Edit</property>
@@ -923,9 +923,8 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">3</property>
+                            <property name="left_attach">3</property>
+                            <property name="top_attach">0</property>
                           </packing>
                         </child>
                         <child>
@@ -936,7 +935,7 @@
                             <property name="focus_on_click">False</property>
                             <signal name="clicked" handler="on_help" swapped="no"/>
                             <child>
-                              <object class="GtkLabel" id="label11">
+                              <object class="GtkLabel" id="label1">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">HELP</property>
@@ -944,9 +943,8 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">4</property>
+                            <property name="left_attach">4</property>
+                            <property name="top_attach">0</property>
                           </packing>
                         </child>
                         <child>
@@ -957,25 +955,24 @@
                             <property name="receives_default">True</property>
                             <signal name="toggled" handler="swap_videos" swapped="no"/>
                             <child>
-                              <object class="GtkImage" id="image2b">
+                              <object class="GtkImage" id="image2b1">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="icon_name">object-rotate-left</property>
+                                <property name="icon_size">1</property>
                               </object>
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">5</property>
+                            <property name="left_attach">5</property>
+                            <property name="top_attach">0</property>
                           </packing>
                         </child>
                       </object>
                       <packing>
-                        <property name="expand">True</property>
+                        <property name="expand">False</property>
                         <property name="fill">True</property>
-                        <property name="padding">10</property>
-                        <property name="position">1</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                   </object>

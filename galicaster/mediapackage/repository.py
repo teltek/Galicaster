@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 import os
@@ -32,7 +32,7 @@ class Repository(object):
     rectemp_dir = 'rectemp'
     repo_dirs = (attach_dir, rectemp_dir)
 
-    def __init__(self, root=None, hostname='', 
+    def __init__(self, root=None, hostname='',
                  folder_template='gc_{hostname}_{year}-{month}-{day}T{hour}h{minute}m{second}',
                  logger=None):
         """Initializes a repository that will contain a set of mediapackage.
@@ -56,19 +56,19 @@ class Repository(object):
         self.hostname = hostname
         self.folder_template = folder_template
 
-        self.create_repo(hostname)        
+        self.create_repo(hostname)
 
         self.__list = dict()
         self.check_for_recover_recordings()
-        
+
         if self.logger:
             self.logger.info("Creating repository from {}".format(self.root))
         self.__list.clear()
-        self.__refresh(True)
+        self.refresh(True)
 
 
     def create_repo(self, hostname):
-        """Creates the directories root and repository if necessary.      
+        """Creates the directories root and repository if necessary.
         Configures the information repository file.
         Sets version and hostname information.
         Args:
@@ -76,7 +76,7 @@ class Repository(object):
         """
         if not os.path.isdir(self.root):
             os.mkdir(self.root)
-           
+
         for repo_dir in self.repo_dirs:
             if not os.path.isdir(os.path.join(self.root, repo_dir)):
                 os.mkdir(os.path.join(self.root, repo_dir))
@@ -84,7 +84,7 @@ class Repository(object):
         info_repo_file = os.path.join(self.root, self.attach_dir, 'info.ini')
         if not os.path.isfile(info_repo_file):
             with open(info_repo_file, 'wb') as configfile:
-                conf = ConfigParser.ConfigParser() 
+                conf = ConfigParser.ConfigParser()
                 conf.add_section('repository')
                 conf.set('repository', 'version', __version__)
                 conf.set('repository', 'hostname', hostname)
@@ -93,7 +93,7 @@ class Repository(object):
 
     def check_for_recover_recordings(self):
         """If a manifest.xml file exists, calls the recover_recoding method.
-        If else, calls the save_crash_recordings method. 
+        If else, calls the save_crash_recordings method.
         """
         if os.path.exists(os.path.join(self.get_rectemp_path(), "manifest.xml")):
             self.logger and self.logger.info("Found a recording that has crashed")
@@ -118,8 +118,8 @@ class Repository(object):
                 info = json.load(handle)
 
             # Copy the capture agent properties from the original mediapackage folder (for scheduled recordings)
-            if info['mp_path']:
-                ca_prop = os.path.join(info['mp_path'], "org.opencastproject.capture.agent.properties")
+            if info['uri']:
+                ca_prop = os.path.join(info['uri'], "org.opencastproject.capture.agent.properties")
                 if os.path.exists(ca_prop):
                     with open(ca_prop, 'rb') as fsrc:
                         dst = os.path.join(self.get_rectemp_path(), "org.opencastproject.capture.agent.properties")
@@ -128,16 +128,23 @@ class Repository(object):
                             shutil.copyfileobj(fsrc, fdst)
                             os.fsync(fdst)
 
+            # Create MP
             mp = deserializer.fromXML(os.path.join(self.get_rectemp_path(), "manifest.xml"), self.logger)
 
-            # Status to RECORDED
+            # Set saved data
+            mp.setFromDict(info)
+            # Overwrite some data
             mp.status = 4
-            mp.setTitle("Recovered recording of date {}".format(mp.getStartDateAsString()))
-            mp.setNewIdentifier()
-            info['mp_id'] = mp.getIdentifier()
+            mp.setTitle("Recovered - " + mp.getTitle())
+            if not mp.getIdentifier():
+                mp.setNewIdentifier()
 
-            # Change the filenames 
+            # Change the filenames
             folder = self.add_after_rec(mp, info['tracks'], mp.getDuration(), add_catalogs=True, remove_tmp_files=False)
+            try:
+                mp.discoverDuration()
+            except Exception as exc:
+                self.logger and self.logger.debug("Error trying to get duration of MP {}: {}".format(mp.getIdentifier(), exc))
             serializer.save_in_dir(mp, self.logger, folder)
             self.logger and self.logger.info("Crashed recording added to the repository")
 
@@ -150,32 +157,34 @@ class Repository(object):
                         shutil.copyfileobj(fsrc, fdst)
                         os.fsync(fdst)
 
-            # Check if there is some extra files (slides) and move the the mediapackage folder
+
+            # Check if there is some extra files and move it to the mediapackage folder
             mp_dir = mp.getURI()
             for temp_file in os.listdir(self.get_rectemp_path()):
                 full_path = os.path.join(self.get_rectemp_path(), temp_file)
                 if os.path.isfile(full_path) and os.path.getsize(full_path) and not "screenshot.jpg" in temp_file:
                     os.rename(full_path, os.path.join(mp_dir, temp_file))
 
+
         except Exception as exc:
             self.logger and self.logger.error("There was an error trying to recover a recording: {}. Saving crashed recording to a rectemp folder...".format(exc))
             self.save_crash_recordings()
 
         return
-        
-            
+
+
     def save_crash_recordings(self):
-        """Saves the files with the crashed recordings in a directory named with its timestamp. 
+        """Saves the files with the crashed recordings in a directory named with its timestamp.
         """
         backup_dir = self.get_rectemp_path(datetime.datetime.now().replace(microsecond=0).isoformat())
         for temp_file in os.listdir(self.get_rectemp_path()):
             full_path = os.path.join(self.get_rectemp_path(), temp_file)
 
-            if os.path.isfile(full_path) and os.path.getsize(full_path):
+            if os.path.isfile(full_path) and os.path.getsize(full_path) and not "screenshot.jpg" in temp_file:
                 self.crash_file_creator()
 
                 if not os.path.isdir(backup_dir):
-                    os.mkdir(backup_dir)                    
+                    os.mkdir(backup_dir)
                 os.rename(full_path, os.path.join(backup_dir, temp_file))
 
 
@@ -189,7 +198,7 @@ class Repository(object):
             return True
         else:
             return False
-    
+
 
     def crash_file_creator(self):
         """Creates a empty file named .recording_crash in the temporary recordings directory"""
@@ -206,19 +215,15 @@ class Repository(object):
         return
 
 
-    
+
     def save_current_mp_data(self, mp, bins_info):
         # Save the current mediapackage
         serializer.save_in_dir(mp, self.logger, self.get_rectemp_path())
 
         try:
-            info = {}
-            info['scheduled'] = True if mp.status == mediapackage.SCHEDULED else False
-            info['mp_id']     = mp.getIdentifier()
-            info['mp_path']   = mp.getURI()
-            info['start']     = mp.getDate().isoformat()
-            info['tracks']    = bins_info
-            
+            info           = mp.getAsDict()
+            info['tracks'] = bins_info
+
             filename = os.path.join(self.get_rectemp_path(), 'info.json')
             f = open(filename, 'w')
             f.write(json.dumps(info, indent=4, sort_keys=True))
@@ -229,9 +234,9 @@ class Repository(object):
             self.logger and self.logger.error("Problem on save temporal data: {}".format(exc))
 
 
-    
 
-    def __refresh(self, check_inconsistencies=False, first_time=True):
+
+    def refresh(self, check_inconsistencies=False, first_time=True):
         """Tries to check if it's been done a new recording. If true, it updates the repository with the new recordings.
         If error, logs it appropriately.
         Args:
@@ -252,7 +257,7 @@ class Repository(object):
 
                         if not self.__contains__(new_mp.getIdentifier()):
                             self.__list[new_mp.getIdentifier()] = new_mp
-                            if check_inconsistencies: 
+                            if check_inconsistencies:
                                 self.repair_inconsistencies(new_mp)
                             self.logger and not first_time and self.logger.info("Added new MP {} of folder {}".format(new_mp.getIdentifier(), new_mp.getURI()))
                         else:
@@ -264,7 +269,7 @@ class Repository(object):
 
     def repair_inconsistencies(self, mp):
         """Checks if any operations were being processed before the previous running.
-        If true, update the mediapackage.    
+        If true, update the mediapackage.
         Args:
             mp (Mediapackage): the mediapackage whose inconsistencies are going to be repaired.
         """
@@ -355,7 +360,7 @@ class Repository(object):
     def iteritems(self):
         """Gets a generator of a list with all the mediapackages from the repository and its identifiers as a list of pairs.
         Returns:
-            List[(str,Mediapackage)]: a generator of the complete list of pairs (mediapackage ID, mediapackage) in the repository. 
+            List[(str,Mediapackage)]: a generator of the complete list of pairs (mediapackage ID, mediapackage) in the repository.
         """
         # Avoid error: dictionary changed size during iteration
         to_return = self.__list.copy()
@@ -380,12 +385,12 @@ class Repository(object):
         Args:
             v (str): mediapackage ID
         Returns:
-            Bool: True if the set of keys from __list contains v. False otherwise.    
+            Bool: True if the set of keys from __list contains v. False otherwise.
         """
         return v in self.__list
 
     def __getitem__(self, k):
-        """Gets the mediapackage with the given identifier.    
+        """Gets the mediapackage with the given identifier.
         Args:
             k: ID of a mediapackage
         Returns:
@@ -397,8 +402,11 @@ class Repository(object):
         # TODO filter by certain parameters
         return self.__list
 
-    def get_next_mediapackages(self):
+
+    def get_next_mediapackages(self, limit=0):
         """Gets the mediapackage that are going to be recorded in the future.
+        Args:
+            limit (Int): limit the maximum number of future recordings to be returned.
         Returns:
             List[Mediapackage]: list of mediapackages to be recorded in the future, sorted by the start time.
         """
@@ -412,7 +420,9 @@ class Repository(object):
             return mp.getDate() > datetime.datetime.utcnow()
 
         next = filter(is_future, self.__list.values())
-        next = sorted(next, key=lambda mp: mp.startTime) 
+        next = sorted(next, key=lambda mp: mp.startTime)
+        if limit > 0:
+            next = next[0:limit]
         return next
 
 
@@ -434,7 +444,7 @@ class Repository(object):
 
 
     def get_last_mediapackage(self):
-        """Gets the last mediapackage added to the repository.
+        """Gets the last mediapackage added to the repository (sorted by date).
         Returns:
             Mediapackage: the last mediapackage added.
         """
@@ -476,7 +486,7 @@ class Repository(object):
             return mp.getDate() < (datetime.datetime.utcnow() - datetime.timedelta(days=days))
 
         next = filter(is_stale, self.__list.values())
-        next = sorted(next, key=lambda mp: mp.startTime) 
+        next = sorted(next, key=lambda mp: mp.startTime)
         return next
 
 
@@ -495,7 +505,7 @@ class Repository(object):
         Args:
             mp (Mediapackage): mediapackage.
         Returns:
-            Bool: True if the mediapackage mp is in the repository. False otherwise. 
+            Bool: True if the mediapackage mp is in the repository. False otherwise.
         """
         return self.__list.has_key(mp.getIdentifier())
 
@@ -508,9 +518,9 @@ class Repository(object):
             Bool: True if the repository has a mediapackage with the ID key. False otherwise.
         """
         return self.__list.has_key(key)
-    
 
-    def add(self, mp): 
+
+    def add(self, mp):
         """Checks if the mediapackage already exists and the URI is correct.
         If it hasn't have URI, calls the __get_folder_name method.
         Then calls the private method __add.
@@ -526,45 +536,46 @@ class Repository(object):
         if mp.getURI() == None:
             mp.setURI(self.__get_folder_name(mp))
         else:
-            assert mp.getURI().startswith(self.root + os.sep)            
+            assert mp.getURI().startswith(self.root + os.sep)
         os.mkdir(mp.getURI())
 
         return self.__add(mp)
 
 
-    def add_after_rec(self, mp, bins, duration, add_catalogs=True, remove_tmp_files=True): 
+    def add_after_rec(self, mp, bins, duration, add_catalogs=True, remove_tmp_files=True, ignore_capture_devices=False):
         """Adds information to the mediapackage when a recording ends and adds it to the repository.
         Args:
             mp (Mediapackage): the mediapackage whose recordings are going to be updated.
             bins (Dict{str,str}): the information about mediapackage recordings.
             duration (str): duration of the mediapackage.
             add_catalogs (bool): true if the mediapackage belongs to a catalog, false otherwise.
-            remove_tmp_files (bool): true if the temporary file are going to be removed. 
+            remove_tmp_files (bool): true if the temporary file are going to be removed.
         Returns:
             Str: the URI of the mediapackage
         """
         if not self.has(mp):
-            mp.setURI(self.__get_folder_name(mp))
-            os.mkdir(mp.getURI())
+            if not mp.getURI():
+                mp.setURI(self.__get_folder_name(mp))
+                os.mkdir(mp.getURI())
 
         for bin in bins:
-            # TODO rec all and ingest 
+            # TODO rec all and ingest
             capture_dev_names = mp.getOCCaptureAgentProperty('capture.device.names')
-            if mp.manual or not capture_dev_names or len(capture_dev_names) == 0 or capture_dev_names == 'defaults' or bin['name'] in capture_dev_names:
+            if mp.manual or not capture_dev_names or len(capture_dev_names) == 0 or capture_dev_names == 'defaults' or bin['name'].lower() in capture_dev_names or ignore_capture_devices:
                 filename = os.path.join(bin['path'], bin['file'])
                 dest = os.path.join(mp.getURI(), os.path.basename(filename))
                 os.rename(filename, dest)
-                etype = 'audio/mp3' if bin['device'] in ['pulse', 'autoaudio', 'audiotest'] else 'video/' + dest.split('.')[1].lower()
-                
-                flavour = bin['flavor'] + '/source'
 
+                etype   = bin['mimetype']
+                flavour = bin['flavor'] + '/source'
                 mp.add(dest, mediapackage.TYPE_TRACK, flavour, etype, duration) # FIXME MIMETYPE
             else:
-                self.logger and self.logger.debug("Not adding {} to MP {}").format(bin['file'],mp.getIdentifier())
+                self.logger and self.logger.debug("Not adding {} to MP {}".format(bin['file'],mp.getIdentifier()))
+
 
         mp.forceDuration(duration)
 
-    
+
         if add_catalogs:
             if not mp.getElementByBasename('episode.xml'):
                 mp.add(os.path.join(mp.getURI(), 'episode.xml'), mediapackage.TYPE_CATALOG, 'dublincore/episode', 'text/xml')
@@ -573,7 +584,7 @@ class Repository(object):
                     mp.add(os.path.join(mp.getURI(), 'series.xml'), mediapackage.TYPE_CATALOG, 'dublincore/series', 'text/xml')
 
         # ADD MP to repo
-        self.__add(mp) 
+        self.__add(mp)
 
         # Remove temporal files
         self._manage_tmp_files(remove_tmp_files, mp.getURI())
@@ -589,7 +600,7 @@ class Repository(object):
     """
         temporal_files = ['{}/*.json'.format(self.get_rectemp_path()),
                           '{}/*.xml'.format(self.get_rectemp_path())]
-        
+
         for expr in temporal_files:
             files = glob.glob(expr)
             if files:
@@ -623,7 +634,33 @@ class Repository(object):
         shutil.rmtree(mp.getURI())
         return mp
 
-        
+
+    def delete_next_mediapackages(self, limit=0):
+        """Deletes future mediapackages
+        Args:
+            limit (Int): limit the maximum number of future recordings to be deleted.
+        Returns:
+            List[Mediapackage]: list of mediapackages to be recorded in the future, should be [] if limit=0.
+        """
+        def is_future(mp):
+            """Checks if the date of a mediapackage is later than now.
+            Args:
+                mp: the mediapackage whose recording date is going to be checked.
+            Returns:
+                Bool: True if the date is later than now. False otherwise.
+            """
+            return mp.getDate() > datetime.datetime.utcnow()
+
+        next = filter(is_future, self.__list.values())
+        next = sorted(next, key=lambda mp: mp.startTime)
+        if limit > 0:
+            next = next[0:limit]
+
+        for item in next:
+            self.delete(item)
+        return self.get_next_mediapackages()
+
+
     def update(self, mp):
         """If a mediapackage is in the repository, calls the private method __add in order to add it to the repository.
         Args:
@@ -646,8 +683,8 @@ class Repository(object):
             data (str): data to be written in the file.
         """
         with open(os.path.join(self.root, self.attach_dir, name), 'w') as m:
-            m.write(data)  
-        
+            m.write(data)
+
 
     def get_attach(self, name):
         """Opens a file of the attached directory.
@@ -656,7 +693,7 @@ class Repository(object):
         Returns:
             Bool: True if not errors. False otherwise.
         """
-        return open(os.path.join(self.root, self.attach_dir, name))  
+        return open(os.path.join(self.root, self.attach_dir, name))
 
 
     def get_attach_path(self, name=None):
@@ -704,9 +741,9 @@ class Repository(object):
 
         mappings = {
             'id'          : mp.identifier,
-            'title'       : mp.getTitle(), 
+            'title'       : mp.getTitle(),
             'series'      : mp.getSeriesTitle(),
-            'hostname'    : self.hostname, 
+            'hostname'    : self.hostname,
             'type'        : 'M' if mp.manual else 'S',
             'longtype'    : 'manual' if mp.manual else 'scheduled',
             'year'        : date.strftime('%Y'),
@@ -721,19 +758,19 @@ class Repository(object):
             'utchour'     : utcdate.strftime('%H'),
             'utcminute'   : utcdate.strftime('%M'),
             'utcsecond'   : utcdate.strftime('%S')}
-        
+
         base = folder_name = re.sub(r'\W+', '', self.folder_template.format(**mappings))
-        
+
         # Check if folder_name exists
         count = itertools.count(2)
         while os.path.exists(os.path.join(self.root, folder_name)):
             folder_name = (base + "_" + str(next(count)))
 
         return os.path.join(self.root, folder_name)
-        
-    
+
+
     def __add(self, mp):
-        """Adds a mediapackage in the repository. 
+        """Adds a mediapackage in the repository.
         Then checks if the mediapackage serie identifier and serie title are consistent.
         If not, updates appropriately.
         Args:
@@ -743,15 +780,15 @@ class Repository(object):
         """
         self.__list[mp.getIdentifier()] = mp
 
-        # This makes sure the series gets properly included/removed from the manifest                                                                                                                              
-        # FIXME: Probably shouldn't go here                                                                                                                                                                        
+        # This makes sure the series gets properly included/removed from the manifest
+        # FIXME: Probably shouldn't go here
         catalogs = mp.getCatalogs("dublincore/series")
         if mp.getSeriesIdentifier() and not catalogs:
             mp.add(os.path.join(mp.getURI(), 'series.xml'), mediapackage.TYPE_CATALOG, 'dublincore/series', 'text/xml')
         elif not mp.getSeriesIdentifier() and catalogs:
             mp.remove(catalogs[0])
-            # FIXME: Remove the file from disk?                                                                                                                                                                     
+            # FIXME: Remove the file from disk?
         # Save the mediapackage in the repo
         serializer.save_in_dir(mp, self.logger)
-        #FIXME write new XML metadata, episode, series                                                                                                                                                              
+        #FIXME write new XML metadata, episode, series
         return mp
