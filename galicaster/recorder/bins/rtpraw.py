@@ -10,7 +10,7 @@
 # this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
-# 
+#
 
 from gi.repository import Gst
 
@@ -22,21 +22,21 @@ from galicaster.recorder.utils import get_videosink
 pipe_config = {'mpeg4':
                    {'depay': 'rtpmp4vdepay', 'parse': 'mpeg4videoparse', 'dec': 'avdec_mpeg4'},
                'h264':
-                   {'depay': 'rtph264depay', 'parse': 'h264parse', 'dec': 'avdec_h264'}} 
+                   {'depay': 'rtph264depay', 'parse': 'h264parse', 'dec': 'avdec_h264'}}
 
 
 pipestr = (' rtspsrc name=gc-rtpraw-src ! gc-rtpraw-depay ! gc-rtpraw-videoparse ! queue ! '
-           ' gc-rtpraw-dec ! videoscale ! capsfilter name=gc-rtpraw-filter ! '
-           ' tee name=gc-rtpraw-tee  ! queue ! gc-vsink '
+           ' gc-rtpraw-dec ! videoscale ! capsfilter name=gc-rtpraw-filter ! videobox name=gc-rtpraw-videobox top=0 bottom=0 ! '
+           ' tee name=gc-rtpraw-tee  ! queue ! caps-preview ! gc-vsink '
            ' gc-rtpraw-tee. ! queue ! valve drop=false name=gc-rtpraw-valve ! videoconvert ! '
            ' queue ! gc-rtpraw-enc ! queue ! gc-rtpraw-muxer name=gc-rtpraw-mux ! queue ! filesink name=gc-rtpraw-sink async=false')
- 
+
 
 
 class GCrtpraw(Gst.Bin, base.Base):
 
 
-    order = ["name", "flavor", "location", "file", "videoencoder", "muxer", "cameratype"]
+    order = ["name", "flavor", "location", "file", "videoencoder", "muxer", "cameratype", "caps-preview"]
     gc_parameters = {
         "name": {
             "type": "text",
@@ -55,7 +55,7 @@ class GCrtpraw(Gst.Bin, base.Base):
             },
         "caps": {
             "type": "caps",
-            "default": "video/x-raw-yuv,framerate=25/1", 
+            "default": "video/x-raw-yuv,framerate=25/1",
             "description": "Forced capabilities",
             },
         "file": {
@@ -88,9 +88,15 @@ class GCrtpraw(Gst.Bin, base.Base):
             "default": "xvimagesink",
             "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
             "description": "Video sink",
-        },    
+        },
+        "caps-preview" : {
+            "type": "text",
+            "default": None,
+            "description": "Caps-preview",
+        },
+
     }
-    
+
     is_pausable = False
     has_audio   = False
     has_video   = True
@@ -114,6 +120,12 @@ class GCrtpraw(Gst.Bin, base.Base):
                .replace('gc-rtpraw-enc', self.options['videoencoder'])
                .replace('gc-rtpraw-muxer', self.options['muxer']))
 
+        if self.options["caps-preview"]:
+            aux = aux.replace("caps-preview !","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
+        else:
+            aux = aux.replace("caps-preview !","")
+
+
         bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
@@ -121,18 +133,35 @@ class GCrtpraw(Gst.Bin, base.Base):
         self.set_option_in_pipeline('location', 'gc-rtpraw-src', 'location')
         self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-rtpraw-sink', 'location')
 
-
     def changeValve(self, value):
         valve1=self.get_by_name('gc-rtpraw-valve')
         valve1.set_property('drop', value)
 
     def getVideoSink(self):
         return self.get_by_name('sink-' + self.options['name'])
-    
+
     def getSource(self):
-        return self.get_by_name('gc-rtpraw-src') 
+        return self.get_by_name('gc-rtpraw-src')
 
     def send_event_to_src(self, event):
         src1 = self.get_by_name('gc-rtpraw-src')
         src1.send_event(event)
 
+    def disable_input(self):
+        src1 = self.get_by_name('gc-rtpraw-videobox')
+        src1.set_properties(top = -10000, bottom = 10000)
+
+    def enable_input(self):
+        src1 = self.get_by_name('gc-rtpraw-videobox')
+        src1.set_property('top',0)
+        src1.set_property('bottom',0)
+
+    def disable_preview(self):
+        src1 = self.get_by_name('sink-'+self.options['name'])
+        src1.set_property('saturation', -1000)
+        src1.set_property('contrast', -1000)
+
+    def enable_preview(self):
+        src1 = self.get_by_name('sink-'+self.options['name'])
+        src1.set_property('saturation',0)
+        src1.set_property('contrast',0)

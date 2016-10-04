@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 """
@@ -22,18 +22,18 @@ from gi.repository import Gst
 from galicaster.recorder import base
 from galicaster.recorder.utils import get_videosink, get_audiosink
 
-pipestr = (' dv1394src name=gc-firewire_renc-src ! '
-           ' queue ! dvdemux name=gc-firewire_renc-demuxer ! '
-           ' level name=gc-firewire_renc-level message=true interval=100000000 ! '
-           ' tee name=gc-firewire_renc-audiotee ! '
-           ' queue ! volume name=gc-firewire_renc-volume ! gc-asink '
-           ' gc-firewire_renc-demuxer. ! queue ! avdec_dvvideo ! videoconvert ! queue ! tee name=gc-firewire_renc-videotee ! '
-           ' gc-vsink '
-           ' gc-firewire_renc-audiotee. ! queue ! valve drop=false name=gc-firewire_renc-audio-valve ! audio/x-raw ! ' 
-           ' gc-firewire_renc-audioenc ! gc-firewire_renc-muxer ! '
-           ' queue ! filesink name=gc-firewire_renc-sink async=false '
-           ' gc-firewire_renc-videotee. ! queue ! valve drop=false name=gc-firewire_renc-video-valve ! '
-           ' videorate skip-to-first=true ! videoscale ! gc-firewire_renc-capsfilter ! gc-firewire_renc-videoenc ! gc-firewire_renc-mux. '
+pipestr = (' dv1394src name=gc-firewire_renc-src ! queue ! '
+           ' dvdemux name=gc-firewire_renc-demuxer ! '
+           '    level name=gc-firewire_renc-level message=true interval=100000000 ! volume name=gc-firewire_renc-volumeinput !'
+           '    tee name=gc-firewire_renc-audiotee ! '
+           '       queue ! volume name=gc-firewire_renc-volume ! gc-asink '
+           '    gc-firewire_renc-audiotee. ! queue ! valve drop=false name=gc-firewire_renc-audio-valve ! audio/x-raw ! '
+           '       gc-firewire_renc-audioenc ! gc-firewire_renc-muxer ! '
+           '       queue ! filesink name=gc-firewire_renc-sink async=false '
+           ' gc-firewire_renc-demuxer. ! queue ! avdec_dvvideo ! videoconvert ! queue ! videobox name=gc-firewire_renc-videobox top=0 bottom=0 ! '
+           '    tee name=gc-firewire_renc-videotee ! caps-preview ! gc-vsink '
+           '    gc-firewire_renc-videotee. ! queue ! valve drop=false name=gc-firewire_renc-video-valve ! '
+           '       videorate skip-to-first=true ! videoscale ! gc-firewire_renc-capsfilter ! gc-firewire_renc-videoenc ! gc-firewire_renc-mux. '
            )
 
 class GCfirewire_renc(Gst.Bin, base.Base):
@@ -53,7 +53,7 @@ class GCfirewire_renc(Gst.Bin, base.Base):
             "default": "/dev/fw1",
             "description": "Device's mount point of the firewire module",
             },
-            
+
         "file": {
             "type": "text",
             "default": "CAMERA.avi",
@@ -105,19 +105,25 @@ class GCfirewire_renc(Gst.Bin, base.Base):
             "default": "xvimagesink",
             "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
             "description": "Video sink",
-        },        
+        },
         "audiosink" : {
             "type": "select",
             "default": "alsasink",
             "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
             "description": "Audio sink",
         },
+        "caps-preview" : {
+            "type": "text",
+            "default": None,
+            "description": "Caps-preview",
+        },
+
     }
-    
+
     is_pausable = False
     has_audio   = True
     has_video   = True
-    
+
     __gstdetails__ = (
         "Galicaster Firewire_renc BIN",
         "Generic/Video",
@@ -125,7 +131,7 @@ class GCfirewire_renc(Gst.Bin, base.Base):
         "Teltek Video Research"
         )
 
-    def __init__(self, options={}): 
+    def __init__(self, options={}):
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
@@ -138,6 +144,12 @@ class GCfirewire_renc(Gst.Bin, base.Base):
                .replace('gc-firewire_renc-audioenc', self.options['audioencoder'])
                .replace('gc-firewire_renc-capsfilter', self.options['caps'])
               )
+
+        if self.options["caps-preview"]:
+            aux = aux.replace("caps-preview !","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
+        else:
+            aux = aux.replace("caps-preview !","")
+
         #bin = Gst.parse_bin_from_description(aux, False)
         bin = Gst.parse_launch("( {} )".format(aux))
 
@@ -148,12 +160,12 @@ class GCfirewire_renc(Gst.Bin, base.Base):
 
         if self.options["vumeter"] == False:
             level = self.get_by_name("gc-firewire_renc-level")
-            level.set_property("message", False) 
+            level.set_property("message", False)
 
         if self.options["player"] == False:
             self.mute = True
             element = self.get_by_name("gc-firewire_renc-volume")
-            element.set_property("mute", True)        
+            element.set_property("mute", True)
         else:
             self.mute = False
 
@@ -171,7 +183,7 @@ class GCfirewire_renc(Gst.Bin, base.Base):
 
     def getSource(self):
         return self.get_by_name("gc-firewire_renc-src")
-  
+
     def send_event_to_src(self,event):
         src1 = self.get_by_name("gc-firewire_renc-src")
         src1.send_event(event)
@@ -182,9 +194,34 @@ class GCfirewire_renc(Gst.Bin, base.Base):
             element.set_property("mute", value)
 
     def configure(self):
-        ## 
+        ##
         # v4l2-ctl -d self.options["location"] -s self.options["standard"]
         # v4l2-ctl -d self.options["location"] -i self.options["input"]
         pass
-     
 
+    def disable_input(self):
+        src1 = self.get_by_name('gc-firewire_renc-videobox')
+        src1.set_properties(top = -10000, bottom = 10000)
+        element = self.get_by_name("gc-firewire_renc-volumeinput")
+        element.set_property("mute", True)
+
+    def enable_input(self):
+        src1 = self.get_by_name('gc-firewire_renc-videobox')
+        src1.set_property('top',0)
+        src1.set_property('bottom',0)
+        element = self.get_by_name("gc-firewire_renc-volumeinput")
+        element.set_property("mute", False)
+
+    def disable_preview(self):
+        src1 = self.get_by_name('sink-'+self.options['name'])
+        src1.set_property('saturation', -1000)
+        src1.set_property('contrast', -1000)
+        element = self.get_by_name("gc-firewire_renc-volume")
+        element.set_property("mute", True)
+
+    def enable_preview(self):
+        src1 = self.get_by_name('sink-'+self.options['name'])
+        src1.set_property('saturation',0)
+        src1.set_property('contrast',0)
+        element = self.get_by_name("gc-firewire_renc-volume")
+        element.set_property("mute", False)

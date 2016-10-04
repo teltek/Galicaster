@@ -6,21 +6,23 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
-from os import path
-import re
+# from os import path
+# import re
 
-from gi.repository import Gst
+# from gi.repository import Gst
 
-import galicaster
+# import galicaster
 from galicaster.core import context
-from galicaster.recorder.utils import Switcher
-from galicaster.recorder import base
-from galicaster.recorder.utils import get_videosink
+# from galicaster.recorder.utils import Switcher
+# from galicaster.recorder import base
+# from galicaster.recorder.utils import get_videosink
+
+from galicaster.recorder.bins import v4l2
 
 logger = context.get_logger()
 
@@ -31,7 +33,7 @@ pipestr = (" identity name=\"joint\" ! tee name=gc-epiphan-tee ! queue ! "
            " gc-epiphan-tee. ! queue ! videoconvert ! identity single-segment=true ! "
            " gc-vsink " )
 
-class GCepiphan(Gst.Bin, base.Base):
+class GCepiphan(v4l2.GCv4l2):
 
     order = ["name","flavor","location","file",
              "videoencoder", "muxer", "resolution", "framerate"]
@@ -95,9 +97,9 @@ class GCepiphan(Gst.Bin, base.Base):
             "default": "xvimagesink",
             "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
             "description": "Video sink",
-        },    
+        },
     }
-    
+
     is_pausable = True
     has_audio   = False
     has_video   = True
@@ -109,54 +111,55 @@ class GCepiphan(Gst.Bin, base.Base):
         "Teltek Video Research"
         )
 
-    def __init__(self, options={}): 
-        raise Exception("Not implemented. Using gst 0.10")
+    def __init__(self, options={}):
+        logger.warning("Epiphan module not implemented, using v4l2")
+        v4l2.GCv4l2.__init__(self, options)
 
-        base.Base.__init__(self, options)
-        Gst.Bin.__init__(self)
+    #     raise Exception("Not implemented. Using gst 0.10")
 
-        # FIXME check route in conf/recorderui and define options
-        if "background" not in self.options:
-            background= (path.join(path.dirname(path.abspath(galicaster.__file__)), "..", "resources", "bg.png") )
-        else:
-            background = (path.join(path.dirname(path.abspath(galicaster.__file__)), "..", self.options["background"]))
+    #     base.Base.__init__(self, options)
+    #     Gst.Bin.__init__(self)
 
-        if self.options["drivertype"] == "v4l":
-            driver_type = "v4lsrc"
-        else:
-            driver_type = "v4l2src"
+    #     # FIXME check route in conf/recorderui and define options
+    #     if "background" not in self.options:
+    #         background= (path.join(path.dirname(path.abspath(galicaster.__file__)), "..", "resources", "bg.png") )
+    #     else:
+    #         background = (path.join(path.dirname(path.abspath(galicaster.__file__)), "..", self.options["background"]))
 
-        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
-        aux = (pipestr.replace('gc-vsink', gcvideosink)
-                      .replace('gc-epiphan-enc', self.options['videoencoder'])
-                      .replace('gc-epiphan-mux', self.options['muxer']))
-        size = self.options['resolution']
-        width, height =  [int(a) for a in size.split(re.search('[,x:]',size).group())]
-        bin_end = Gst.parse_bin_from_description(aux, True)
-        logger.info("Setting background for Epiphan: %s", background)
-        bin_start = Switcher("canguro", self.options['location'], background, 
-                             driver_type, [width,height], self.options['framerate'])
-        self.bin_start=bin_start            
-        self.add(bin_start, bin_end)
-        bin_start.link(bin_end)
+    #     if self.options["drivertype"] == "v4l":
+    #         driver_type = "v4lsrc"
+    #     else:
+    #         driver_type = "v4l2src"
 
-        sink = self.get_by_name("gc-epiphan-sink")
-        sink.set_property('location', path.join(self.options['path'], self.options['file']))
+    #     gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+    #     aux = (pipestr.replace('gc-vsink', gcvideosink)
+    #                   .replace('gc-epiphan-enc', self.options['videoencoder'])
+    #                   .replace('gc-epiphan-mux', self.options['muxer']))
+    #     size = self.options['resolution']
+    #     width, height =  [int(a) for a in size.split(re.search('[,x:]',size).group())]
+    #     bin_end = Gst.parse_bin_from_description(aux, True)
+    #     logger.info("Setting background for Epiphan: %s", background)
+    #     bin_start = Switcher("canguro", self.options['location'], background,
+    #                          driver_type, [width,height], self.options['framerate'])
+    #     self.bin_start=bin_start
+    #     self.add(bin_start, bin_end)
+    #     bin_start.link(bin_end)
 
-    def changeValve(self, value):
-        valve1=self.get_by_name('gc-epiphan-valve')
-        valve1.set_property('drop', value)
+    #     sink = self.get_by_name("gc-epiphan-sink")
+    #     sink.set_property('location', path.join(self.options['path'], self.options['file']))
 
-    def getVideoSink(self):
-        return self.get_by_name('sink-' + self.options['name'])
+    # def changeValve(self, value):
+    #     valve1=self.get_by_name('gc-epiphan-valve')
+    #     valve1.set_property('drop', value)
 
-    def getSource(self):
-        return self.get_by_name("gc-epiphan-tee")
+    # def getVideoSink(self):
+    #     return self.get_by_name('sink-' + self.options['name'])
 
-    def send_event_to_src(self,event):
-        self.bin_start.send_event_to_src(event)
+    # def getSource(self):
+    #     return self.get_by_name("gc-epiphan-tee")
 
-    def switch(self):
-        self.bin_start.switch2()
-        
-        
+    # def send_event_to_src(self,event):
+    #     self.bin_start.send_event_to_src(event)
+
+    # def switch(self):
+    #     self.bin_start.switch2()

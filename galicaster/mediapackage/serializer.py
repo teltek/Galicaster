@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 
@@ -22,7 +22,7 @@ from os import path
 from xml.dom import minidom
 import subprocess
 
-DCTERMS = ['title', 'creator', 'isPartOf', 'description', 'subject', 
+DCTERMS = ['title', 'creator', 'isPartOf', 'description', 'subject',
            'language', 'contributor', 'created', 'temporal']
 
 SERIES_FILE="series.xml"
@@ -65,10 +65,10 @@ def save_in_dir(mp, logger=None, directory=None):
         # Create or modify file
         m3 = open(path.join(directory or mp.getURI(), SERIES_FILE), 'w')
         m3.write(set_series(mp,logger)) #FIXME
-        m3.close()        
+        m3.close()
 
     # Manifest
-    m = open(path.join(directory or mp.getURI(), 'manifest.xml'), 'w')  
+    m = open(path.join(directory or mp.getURI(), 'manifest.xml'), 'w')
     m.write(set_manifest(mp))  ##FIXME
     m.close()
 
@@ -84,7 +84,7 @@ def save_native_zip(mp, loc, use_namespace=True, logger=None):
     if logger:
         logger.debug("Using Native Zip")
     z= zipfile.ZipFile(loc,'w',zipfile.ZIP_STORED,True)
-    # store only (DEFAULT)        
+    # store only (DEFAULT)
 
     # manifest
     z.writestr('manifest.xml', set_manifest(mp, use_namespace))
@@ -93,7 +93,7 @@ def save_native_zip(mp, loc, use_namespace=True, logger=None):
     m2 = open(path.join(mp.getURI(), 'episode.xml'), 'w')
     m2.write(set_episode(mp))
     m2.close()
-        
+
     for catalog in mp.getCatalogs():
         if path.isfile(catalog.getURI()):
             z.write(catalog.getURI(), path.basename(catalog.getURI()))
@@ -124,7 +124,7 @@ def save_system_zip(mp, loc, use_namespace=True, logger=None):
     tmp_file = 'manifest.xml'
     m = open(tmp_file,'w')
     m.write(set_manifest(mp, use_namespace))
-    m.close()    
+    m.close()
 
     # episode (fist persist episode)
     m2 = open(path.join(mp.getURI(), 'episode.xml'), 'w')
@@ -138,7 +138,7 @@ def save_system_zip(mp, loc, use_namespace=True, logger=None):
         if path.isfile(catalog.getURI()):
             files += [catalog.getURI()]
 
-    # tracks    
+    # tracks
     for track in mp.getTracks():
         if path.isfile(track.getURI()):
             files += [track.getURI()]
@@ -146,15 +146,15 @@ def save_system_zip(mp, loc, use_namespace=True, logger=None):
     for attach in mp.getAttachments():
         if path.isfile(attach.getURI()):
             files += [attach.getURI()]
-    
+
     # FIXME other elements
-    
+
     loc = loc if type(loc) in [str,unicode] else loc.name
     command = 'zip -j0 "'+loc + '" "'+'" "'.join(files) + '"'
     # system('zip -j0 "'+loc + '" "'+'" "'.join(files) + '" >/dev/null')
     # if os.path.isfile(loc+".zip"): # WORKARROUND to eliminate automatic extension .zip
     #     os.rename(loc+".zip",loc)
-        
+
     try:
         # FIXME: Use execute from galicaster.utils.systemcalls
         subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
@@ -171,7 +171,7 @@ def save_system_zip(mp, loc, use_namespace=True, logger=None):
 
 if ziptype == "system":
     save_in_zip = save_system_zip
-else: 
+else:
     save_in_zip = save_native_zip
 
 
@@ -183,7 +183,7 @@ def set_properties(mp):
         Str: serialized galicaster properties.
     """
     doc = minidom.Document()
-    galicaster = doc.createElement("galicaster") 
+    galicaster = doc.createElement("galicaster")
     doc.appendChild(galicaster)
     status = doc.createElement("status")
     stext = doc.createTextNode(unicode(mp.status))
@@ -194,18 +194,18 @@ def set_properties(mp):
     galicaster.appendChild(operations)
     for (op_name, op_value) in mp.operation.iteritems():
         operation = doc.createElement("operation")
-        operation.setAttribute("key", op_name) 
+        operation.setAttribute("key", op_name)
         status = doc.createElement("status")
         text = doc.createTextNode(unicode(op_value))
         status.appendChild(text)
         operation.appendChild(status)
-        operations.appendChild(operation)        
+        operations.appendChild(operation)
 
     properties = doc.createElement("properties")
     galicaster.appendChild(properties)
     for (prop_name, prop_value) in mp.properties.iteritems():
         prop = doc.createElement("property")
-        prop.setAttribute("name", prop_name) 
+        prop.setAttribute("name", prop_name)
         text = doc.createTextNode(unicode(prop_value))
         prop.appendChild(text)
         properties.appendChild(prop)
@@ -221,24 +221,24 @@ def set_manifest(mp, use_namespace=True):
         Str: content of the manifest.xml .
     """
     doc = minidom.Document()
-    xml = doc.createElement("mediapackage") 
+    xml = doc.createElement("mediapackage")
     if use_namespace:
-        xml.setAttribute("xmlns", "http://mediapackage.opencastproject.org")  
-    xml.setAttribute("id", mp.getIdentifier()) 
+        xml.setAttribute("xmlns", "http://mediapackage.opencastproject.org")
+    xml.setAttribute("id", mp.getIdentifier())
     xml.setAttribute("start", mp.getDate().isoformat())
     if mp.getDuration() != None:
-        xml.setAttribute("duration", unicode(mp.getDuration())) 
-    
+        xml.setAttribute("duration", unicode(mp.getDuration()))
+
     doc.appendChild(xml)
-    media = doc.createElement("media")          
+    media = doc.createElement("media")
     xml.appendChild(media)
     metadata = doc.createElement("metadata")
     xml.appendChild(metadata)
-    attachments = doc.createElement("attachments")          
+    attachments = doc.createElement("attachments")
     xml.appendChild(attachments)
     # FIXME attachement and others
-    
-    for t in mp.getTracks(): 
+
+    for t in mp.getTracks():
         track = doc.createElement("track")
         track.setAttribute("id", t.getIdentifier())
         track.setAttribute("type", t.getFlavor())
@@ -255,13 +255,13 @@ def set_manifest(mp, use_namespace=True):
         ## --    --
 
         mime = doc.createElement("mimetype")
-        mtext = doc.createTextNode(t.getMimeType()) 
+        mtext = doc.createTextNode(t.getMimeType())
         mime.appendChild(mtext)
         url = doc.createElement("url")
 
         utext = doc.createTextNode(path.basename(t.getURI()))
         url.appendChild(utext)
-        duration = doc.createElement("duration")               
+        duration = doc.createElement("duration")
         dtext = doc.createTextNode(unicode(t.getDuration()))
         duration.appendChild(dtext)
         track.appendChild(mime)
@@ -293,7 +293,7 @@ def set_manifest(mp, use_namespace=True):
         cat.appendChild(tags)
         # --     --
 
-        metadata.appendChild(cat)   
+        metadata.appendChild(cat)
 
     for a in mp.getAttachments():
         attachment = doc.createElement("attachment")
@@ -325,11 +325,11 @@ def set_manifest(mp, use_namespace=True):
         attachment.appendChild(tags)
         # --     --
 
-        attachments.appendChild(attachment)   
-        
+        attachments.appendChild(attachment)
+
     # FIXME ADD checksum
-    # return doc.toprettyxml(indent="   ", newl="\n",encoding="utf-8")    
-    return doc.toprettyxml(indent="   ", newl="\n", encoding="utf-8")          
+    # return doc.toprettyxml(indent="   ", newl="\n",encoding="utf-8")
+    return doc.toprettyxml(indent="   ", newl="\n", encoding="utf-8")
 
 
 def set_manifest_json(mp):
@@ -344,7 +344,7 @@ def set_manifest_json(mp):
     mp_json["title"] = mp.title
     mp_json["status"] = mp.status
     mp_json["start"] = mp.getDate().isoformat()
-    mp_json["creator"] = mp.getCreator() if mp.getCreator() else "" 
+    mp_json["creator"] = mp.getCreator() if mp.getCreator() else ""
 
     if mp.metadata_episode.has_key("description"):
         mp_json["description"] = mp.getDescription()
@@ -360,7 +360,7 @@ def set_manifest_json(mp):
 
         for data in series_data:
             if data in mp.metadata_series:
-                mp_json['series{}'.format(data)] = mp.series_episode[data]
+                mp_json['series{}'.format(data)] = mp.metadata_series[data]
 
     if mp.getDuration() != None:
         mp_json["duration"] = int(mp.getDuration())
@@ -387,8 +387,8 @@ def set_manifest_json(mp):
     # MEDIA - TRACKS
     mp_json['media'] = {}
     tracks_json = []
-    
-    for t in mp.getTracks(): 
+
+    for t in mp.getTracks():
         track_json = {}
         track_json["id"] = t.getIdentifier()
         track_json["type"] = t.getFlavor()
@@ -402,7 +402,7 @@ def set_manifest_json(mp):
     # METADATA - CATALOGS
     mp_json['metadata'] = {}
     catalogs_json = []
-    
+
     for c in mp.getCatalogs():
         catalog_json = {}
         catalog_json["id"] = c.getIdentifier()
@@ -416,19 +416,19 @@ def set_manifest_json(mp):
     # ATTACHMENTS
     mp_json['attachments'] = {}
     attachments_json = []
-    
+
     for a in mp.getAttachments():
         attachment_json = {}
         attachment_json["id"] = a.getIdentifier()
         attachment_json["type"] = a.getFlavor()
-        attachment_json["ref"] = a.getRef()        
+        attachment_json["ref"] = a.getRef()
         attachment_json["url"] = a.getURI()
         attachment_json["mimetype"] = str(a.getMimeType())
         attachments_json.append(attachment_json)
     mp_json['attachments']['attachment'] = attachments_json
-        
+
     return mp_json
-         
+
 
 def set_episode(mp):
     """Creates a XML episode.
@@ -445,7 +445,7 @@ def set_episode(mp):
     doc.appendChild(xml)
     for name in mp.metadata_episode.iterkeys():
         try:
-            if name == "isPartOf" and mp.getSeriesIdentifier() !=None: 
+            if name == "isPartOf" and mp.getSeriesIdentifier() !=None:
                 created = doc.createElement("dcterms:" + name)
                 text = doc.createTextNode(unicode(mp.getSeriesIdentifier()))
                 created.appendChild(text)
@@ -462,7 +462,7 @@ def set_episode(mp):
                 text = doc.createTextNode(unicode(mp.metadata_episode[name]))
                 created.appendChild(text)
                 xml.appendChild(created)
-                    
+
         except KeyError:
             continue
     return doc.toprettyxml(indent="   ", newl="\n", encoding="utf-8") #without encoding

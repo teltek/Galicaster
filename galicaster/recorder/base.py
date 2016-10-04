@@ -49,7 +49,6 @@ class Base(object):
         self.logger = logger
         # Init gc_parameters add Base and Object class
         self.gc_parameters = self.get_gc_parameters()
-
         path = 'Unknown'
         current_profile = context.get_conf().get_current_profile()
         if current_profile:
@@ -65,17 +64,20 @@ class Base(object):
         # Init options with default gc_parameters values and options
         self.options = dict([(k,v['default']) for k,v in self.gc_parameters.iteritems()])
         # TODO parsear
-        self.options.update(options)
+
+        for k, v in options.iteritems():
+            if v:
+                self.options[k] = validator.parse_automatic(v)
 
         # Validate option values
         try:
-            validator.validate_track(self.options)
+            global_error, self.options = validator.validate_track(self.options)
         except Exception as exc:
             error_msg = 'Profile error in {0}, track {1}. {2}'.format(
                 path, self.options['name'], exc)
 
             logger.error(error_msg)
-            raise SystemError(error_msg)        
+            raise SystemError(error_msg)
 
         # Sanitaze values
         self.options["name"] = re.sub(r'\W+', '', self.options["name"])
@@ -99,7 +101,7 @@ class Base(object):
             self.logger.error("There isn't an element named {}".format(element_name))
         else:
             element.set_property(prop, parse(value))
-            
+
 
     def get_display_areas_info(self):
         if self.has_video:
@@ -112,6 +114,21 @@ class Base(object):
             self.options['mimetype'] = 'audio/' + ext if self.has_audio and not self.has_video else 'video/' + ext
         return [self.options]
 
+    def prepare(self, bus=None):
+        pass
+
+    def disable_input(self):
+        self.logger.warning("disable_input not implemented")
+
+    def enable_input(self):
+        self.logger.warning("enable_input not implemented")
+
+    def disable_preview(self):
+        self.logger.warning("disable_preview not implemented")
+
+    def enable_preview(self):
+        self.logger.warning("enable_preview not implemented")
+
     @classmethod
     def get_gc_parameters(klass):
         ps = {}
@@ -123,4 +140,3 @@ class Base(object):
     def get_conf_form(self):
         ##TODO necesito GLADE
         pass
-

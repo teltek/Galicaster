@@ -10,7 +10,7 @@
 # this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
-# 
+#
 # TODO:
 #  - Change mux. Dont use flvmux
 #  - In cameratype mpeg4 dont use decodebin2
@@ -26,15 +26,15 @@ from galicaster.recorder.utils import get_videosink, get_audiosink
 pipe_config = {'mpeg4':
                    {'depay': 'rtpmp4vdepay', 'parse': 'mpeg4videoparse', 'dec': 'avdec_mpeg4'},
                'h264':
-                   {'depay': 'rtph264depay', 'parse': 'h264parse', 'dec': 'avdec_h264'}} 
+                   {'depay': 'rtph264depay', 'parse': 'h264parse', 'dec': 'avdec_h264'}}
 
 pipe_config_audio = {'mp3':
-                         {'depay': 'rtpmpadepay', 'parse': 'mpegaudioparse', 'dec': 'flump3dec'},
+                         {'depay': 'rtpmpadepay', 'parse': 'mpegaudioparse', 'dec': 'avdec_mp3'},
                      'aac':
                          {'depay': 'rtpmp4gdepay', 'parse': 'aacparse', 'dec': 'faad'}}
 
 pipestr = (' rtspsrc name=gc-rtp-src ! gc-rtp-depay ! gc-rtp-videoparse ! queue !'
-           ' tee name=gc-rtp-tee  ! queue ! gc-rtp-dec  ! gc-vsink '
+           ' tee name=gc-rtp-tee  ! queue ! gc-rtp-dec  ! caps-preview ! gc-vsink '
            ' gc-rtp-tee. ! queue ! valve drop=false name=gc-rtp-valve ! '
            ' queue ! gc-rtp-muxer name=gc-rtp-mux ! queue ! filesink name=gc-rtp-sink async=false')
 
@@ -44,14 +44,14 @@ audiostr = (' gc-rtp-src. ! gc-rtp-audio-depay ! gc-rtp-audioparse ! queue !'
            ' gc-rtp-audio-tee. ! queue ! gc-rtp-audio-dec ! '
            ' level name=gc-rtp-level message=true interval=100000000 ! '
            ' volume name=gc-rtp-volume ! gc-asink ')
- 
+
 
 
 class GCrtp(Gst.Bin, base.Base):
 
 
-    order = ["name", "flavor", "location", "file", "muxer", 
-             "cameratype", "audio", "audiotype", "vumeter", "player"]
+    order = ["name", "flavor", "location", "file", "muxer",
+             "cameratype", "audio", "audiotype", "vumeter", "player", "caps-preview"]
     gc_parameters = {
         "name": {
             "type": "text",
@@ -114,15 +114,20 @@ class GCrtp(Gst.Bin, base.Base):
             "default": "xvimagesink",
             "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
             "description": "Video sink",
-        },    
+        },
         "audiosink" : {
             "type": "select",
             "default": "alsasink",
             "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
             "description": "Audio sink",
         },
+        "caps-preview" : {
+            "type": "text",
+            "default": None,
+            "description": "Caps-preview",
+        },
     }
-    
+
     is_pausable = False
     has_audio   = True
     has_video   = True
@@ -154,6 +159,12 @@ class GCrtp(Gst.Bin, base.Base):
                     .replace("gc-rtp-audio-dec", pipe_config_audio[self.options['audiotype']]['dec']))
         else:
             self.has_audio = False
+
+        if self.options["caps-preview"]:
+            aux = aux.replace("caps-preview !","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
+        else:
+            aux = aux.replace("caps-preview !","")
+
 
         bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)
@@ -188,7 +199,7 @@ class GCrtp(Gst.Bin, base.Base):
         return self.get_by_name('sink-audio-'+self.options['name'])
 
     def getSource(self):
-        return self.get_by_name('gc-rtp-src') 
+        return self.get_by_name('gc-rtp-src')
 
     def mute_preview(self, value):
         if not self.mute:
@@ -199,3 +210,17 @@ class GCrtp(Gst.Bin, base.Base):
         src1 = self.get_by_name('gc-rtp-src')
         src1.send_event(event)
 
+    def disable_preview(self):
+        src1 = self.get_by_name('sink-'+self.options['name'])
+        src1.set_property('saturation', -1000)
+        src1.set_property('contrast', -1000)
+        element = self.get_by_name("gc-rtp-volume")
+        element.set_property("mute", True)
+
+
+    def enable_preview(self):
+        src1 = self.get_by_name('sink-'+self.options['name'])
+        src1.set_property('saturation',0)
+        src1.set_property('contrast',0)
+        element = self.get_by_name("gc-rtp-volume")
+        element.set_property("mute", False)

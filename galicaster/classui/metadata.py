@@ -16,6 +16,7 @@ UI for a Metadata Editor Pop UP
 
 from gi.repository import Gtk, Gdk
 from gi.repository import GObject
+from gi.repository import Pango
 
 import datetime
 import os
@@ -73,7 +74,7 @@ class MetadataClass(Gtk.Widget):
         self.series_list = []
         if ocservice:
             self.series_list = context.get_ocservice().series
-            
+
         self.empty_series_label = empty_series_label
 
         gui = Gtk.Builder()
@@ -173,11 +174,14 @@ class MetadataClass(Gtk.Widget):
             if meta in ["ispartof", "isPartOf"]:
                 try:
                     default_series = utils_series.filterSeriesbyId(self.series_list, mp.metadata_series['identifier'])['id']
-                except Exception as exc:
+                except Exception:
                     default_series = None
 
                 d = ComboBoxEntryExt(self.par, self.series_list, default=default_series, empty_label = self.empty_series_label)
                 d.set_name(meta)
+                cell = d.get_cells()[0]
+                cell.props.ellipsize = Pango.EllipsizeMode.END
+                cell.props.max_width_chars = 2
             else:
                 d=Gtk.Entry()
                 d.set_name(meta)

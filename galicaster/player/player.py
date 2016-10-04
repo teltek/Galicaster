@@ -6,13 +6,13 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 #
 #   pipestr = ( ' filesrc location=video1 ! decodebin name=audio ! queue ! xvimagesink name=play1 '
-#               ' filesrc location=video2 ! decodebin ! queue ! xvimagesink name=play2 ' 
+#               ' filesrc location=video2 ! decodebin ! queue ! xvimagesink name=play2 '
 #               ' audio. ! queue ! level name=VUMETER message=true interval=interval ! autoaudiosink name=play3 ')
 #
 #
@@ -23,6 +23,7 @@ gi.require_version("Gtk", "3.0")
 gi.require_version("Gst", "1.0")
 
 from gi.repository import Gtk, Gst, Gdk, GObject
+from gi.repository import GdkX11 # noqa: ignore=F401
 # Needed for window.get_xid(), xvimagesink.set_window_handle(), respectively:
 
 import os
@@ -108,14 +109,14 @@ class Player(object):
         """
         Get the player status
         """
-        status = self.pipeline.get_state(timeout)        
-                
+        status = self.pipeline.get_state(timeout)
+
         if status[0] == Gst.StateChangeReturn.ASYNC:
             logger.error('Timeout getting recorder status, current status: {}'.format(status))
-        
+
         return status
 
-    
+
     def is_playing(self):
         """
         Get True if is playing else False
@@ -133,7 +134,7 @@ class Player(object):
         except Exception:
             # logger.debug("Exception trying to get current time: {}".format(exc))
             pass
-        
+
         return 0
 
     def play(self):
@@ -218,7 +219,7 @@ class Player(object):
                     (old, new) == (Gst.State.READY, Gst.State.PAUSED)):
             self.pipeline.set_state(Gst.State.PLAYING)
 
-    def _on_new_decoded_pad(self, element, pad):        
+    def _on_new_decoded_pad(self, element, pad):
         name = pad.query_caps(None).to_string()
         element_name = element.get_name()[7:]
         logger.debug('new decoded pad: %r in %r', name, element_name)
@@ -269,7 +270,7 @@ class Player(object):
         logger.error(self.error)
         self.dispatcher.emit("player-status", ERRORED)
         self.quit()
-        
+
     def _prepare_window_handler(self, gtk_player, message):
         Gdk.Display.get_default().sync()
         message.src.set_window_handle(gtk_player.get_property('window').get_xid())
@@ -313,7 +314,7 @@ class Player(object):
         if len(rms_values) > 1:
             if float(rms_values[1]) == float("-inf"):
                 valor2 = "Inf"
-            else:            
+            else:
                 valor2 = float(rms_values[1])
         else:
             stereo = False
@@ -328,7 +329,7 @@ class Player(object):
             logger.info("Duration ON_DISCOVERED: " + str(self.duration))
         except Exception as exc:
             logger.debug("Error trying to get duration of {}: {}".format(filepath, exc))
-        
+
         self.create_pipeline()
         return True
 

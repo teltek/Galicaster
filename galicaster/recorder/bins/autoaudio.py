@@ -6,9 +6,9 @@
 # Copyright (c) 2014, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 from os import path
@@ -18,7 +18,7 @@ from gi.repository import Gst
 from galicaster.recorder import base
 from galicaster.recorder.utils import get_audiosink
 
-pipestr = (" autoaudiosrc name=gc-autoaudio-src  ! queue ! audioamplify name=gc-autoaudio-amplify amplification=1 ! "
+pipestr = (" autoaudiosrc name=gc-autoaudio-src  ! queue ! volume name=gc-autoaudio-volumeinput ! audioamplify name=gc-autoaudio-amplify amplification=1 ! "
            " audioconvert ! audio/x-raw,channels=gc-audio-channels ! "
            " tee name=tee-aud  ! queue ! level name=gc-autoaudio-level message=true interval=100000000 ! "
            " volume name=gc-autoaudio-volume ! gc-asink "
@@ -28,8 +28,8 @@ pipestr = (" autoaudiosrc name=gc-autoaudio-src  ! queue ! audioamplify name=gc-
 
 
 class GCautoaudio(Gst.Bin, base.Base):
-    
-    order = ["name", "flavor", "location", "file", 
+
+    order = ["name", "flavor", "location", "file",
              "vumeter", "player", "amplification", "audioencoder"]
 
     gc_parameters = {
@@ -77,21 +77,21 @@ class GCautoaudio(Gst.Bin, base.Base):
         "channels": {
             "type": "integer",
             "default": 2,
-            "range": (1,16),
+            "range": (1,2),
             "description": "Number of audio channels",
-        },        
+        },
         "audiosink" : {
             "type": "select",
             "default": "alsasink",
             "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
             "description": "Audio sink",
-        },    
+        },
     }
 
     is_pausable = True
     has_audio   = True
     has_video   = False
-    
+
     __gstdetails__ = (
         "Galicaster Audio BIN",
         "Generic/Audio",
@@ -99,7 +99,7 @@ class GCautoaudio(Gst.Bin, base.Base):
         "Teltek Video Research"
         )
 
-    def __init__(self, options={}): 
+    def __init__(self, options={}):
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
@@ -130,11 +130,10 @@ class GCautoaudio(Gst.Bin, base.Base):
         if "vumeter" in self.options:
             level = self.get_by_name("gc-autoaudio-level")
             if self.options["vumeter"] == False:
-                level.set_property("message", False) 
+                level.set_property("message", False)
         if "amplification" in self.options:
             ampli = self.get_by_name("gc-autoaudio-amplify")
             ampli.set_property("amplification", float(self.options["amplification"]))
-
 
     def changeValve(self, value):
         valve1=self.get_by_name('gc-autoaudio-valve')
@@ -151,10 +150,25 @@ class GCautoaudio(Gst.Bin, base.Base):
 
     def send_event_to_src(self, event):
         src1 = self.get_by_name("gc-autoaudio-src")
-        src1.send_event(event)        
+        src1.send_event(event)
 
     def mute_preview(self, value):
         if not self.mute:
             element = self.get_by_name("gc-autoaudio-volume")
             element.set_property("mute", value)
 
+    def disable_input(self):
+        element = self.get_by_name("gc-autoaudio-volumeinput")
+        element.set_property("mute", True)
+
+    def enable_input(self):
+        element = self.get_by_name("gc-autoaudio-volumeinput")
+        element.set_property("mute", False)
+
+    def disable_preview(self):
+        element = self.get_by_name("gc-autoaudio-volume")
+        element.set_property("mute", True)
+
+    def enable_preview(self):
+        element = self.get_by_name("gc-autoaudio-volume")
+        element.set_property("mute", False)

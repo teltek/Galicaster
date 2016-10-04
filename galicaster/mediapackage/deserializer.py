@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 
@@ -18,7 +18,7 @@ from xml.dom import minidom
 from galicaster.mediapackage import mediapackage
 from galicaster.mediapackage.utils import _checknget, _checkget
 from galicaster.mediapackage.utils import _getElementAbsPath
-                    
+
 """
 This module allow to obtain a mediapackage object from manifest and other files in a mediapackage directory and the information of a recorded presentation from a mpeg7 file.
 """
@@ -36,14 +36,14 @@ def fromXML(xml, logger=None):
     """
     mp_uri = path.dirname(path.abspath(xml))
     mp = mediapackage.Mediapackage(uri = mp_uri)
-    manifest = minidom.parse(xml)          
+    manifest = minidom.parse(xml)
     principal = manifest.getElementsByTagName("mediapackage")
-    mp.setDuration(principal[0].getAttribute("duration") or 0) # FIXME check if empty and take out patch in listing.populatetreeview   
+    mp.setDuration(principal[0].getAttribute("duration") or 0) # FIXME check if empty and take out patch in listing.populatetreeview
     mp.setIdentifier(principal[0].getAttribute("id"))
 
     if principal[0].hasAttribute("start"):
         mp.setDate(datetime.strptime(principal[0].getAttribute("start"), '%Y-%m-%dT%H:%M:%S'))
-   
+
     without_galicaster = False
 
     try:
@@ -57,14 +57,14 @@ def fromXML(xml, logger=None):
             op = unicode(i.getAttribute("name"))
             value = _checkget(i)
             mp.properties[op] = unicode(value)
-                
+
     except IOError:
         if logger:
             logger.debug("Mediapackage "+mp.identifier+" without galicaster.xml")
         without_galicaster = True
 
-    
-    for etype, tag in mediapackage.MANIFEST_TAGS.items(): 
+
+    for etype, tag in mediapackage.MANIFEST_TAGS.items():
         for i in manifest.getElementsByTagName(tag):
             if i.hasAttribute("id"):
                 identifier = unicode(i.getAttribute("id"))
@@ -76,14 +76,14 @@ def fromXML(xml, logger=None):
             duration = _checknget(i, "duration")
             element_path = _getElementAbsPath(uri, mp.getURI())
             ref = unicode(i.getAttribute("ref"))
-            
+
             tags = []
             for tag_elem in i.getElementsByTagName("tags"):
                 tag_text = unicode(_checknget(tag_elem, "tag"))
                 tags.append(tag_text)
 
             if i.hasAttribute("ref"):
-            	ref = unicode(i.getAttribute("ref"))
+                ref = unicode(i.getAttribute("ref"))
             else:
                 ref = None
             if not path.exists(element_path):
@@ -92,11 +92,9 @@ def fromXML(xml, logger=None):
 
             if uri == 'org.opencastproject.capture.agent.properties' and etype == mediapackage.TYPE_ATTACHMENT:
                 mp.manual = False
-                
+
             if etype == mediapackage.TYPE_TRACK and mp.status == mediapackage.NEW and without_galicaster:
                 mp.status = mediapackage.RECORDED
 
     mp.marshalDublincore()
-    return mp        
-
-
+    return mp

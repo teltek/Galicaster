@@ -6,13 +6,12 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 import datetime
-from os import path
 from gi.repository import GObject
 
 from galicaster.mediapackage import mediapackage
@@ -34,7 +33,7 @@ class Scheduler(object):
             logger (Logger): the object that prints all the information, warning and error messages. See core/logger.py
             recorder (Recorder)
         Attributes:
-            conf (Conf): galicaster users and default configuration given as an argument. 
+            conf (Conf): galicaster users and default configuration given as an argument.
             repo (Repository): the galicaster mediapackage repository given as an argument.
             dispatcher (Dispatcher): the galicaster event-dispatcher to emit signals given by the argument disp.
             logger (Logger): the object that prints all the information, warning and error messages.
@@ -55,13 +54,13 @@ class Scheduler(object):
 
         self.dispatcher.connect("timer-long", self._check_next_recording)
 
-        
+
     def _check_next_recording(self, origin):
         next_mp = self.repo.get_next_mediapackage()
         if next_mp and not self.start_timers.has_key(next_mp.getIdentifier()):
             self.create_timer(next_mp)
 
-            
+
     def create_timer(self, mp):
         """Creates a timer for a future mediapackage recording if there are less than 30 minutes to the scheduled event.
         Args:
@@ -88,7 +87,7 @@ class Scheduler(object):
             del self.start_timers[mp.getIdentifier()]
             self.create_timer(mp)
 
-        
+
     def __start_record(self, key):
         """Sets the timer for the duration of the scheduled recording that is about to start.
         If any connectivity errors occur, logger prints it properly.
@@ -97,13 +96,13 @@ class Scheduler(object):
         """
         mp = self.repo.get(key) # FIXME what if the mp doesnt exist?
         if mp.status == mediapackage.SCHEDULED:
-            
-            self.mp_rec = key
-            mp = self.repo.get(key)      
-            
-            self.logger.info('Start record %s, duration %s ms', mp.getIdentifier(), mp.getDuration())
 
-            timeout_id = GObject.timeout_add_seconds(mp.getDuration()/1000, self.__stop_record, mp.getIdentifier())
+            self.mp_rec = key
+            mp = self.repo.get(key)
+
+            self.logger.info('Timeout to start record %s, duration %s ms', mp.getIdentifier(), mp.getDuration())
+
+            GObject.timeout_add_seconds(mp.getDuration()/1000, self.__stop_record, mp.getIdentifier())
             self.recorder.record(mp)
 
         del self.start_timers[mp.getIdentifier()]
@@ -116,11 +115,8 @@ class Scheduler(object):
             key (str): the mediapackage identifier.
         """
         self.mp_rec = None
-        self.logger.info('Stop record %s', key)
+        self.logger.info('Timeout to stop record %s', key)
 
         mp = self.repo.get(key)
         if mp.status == mediapackage.RECORDING:
             self.recorder.stop()
-            
-
-        

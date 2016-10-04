@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 from os import path
@@ -19,18 +19,18 @@ from galicaster.recorder import base
 #from galicaster.recorder import module_register
 from galicaster.recorder.utils import get_audiosink
 
-pipestr = (" pulsesrc name=gc-audio-src  ! queue ! audioamplify name=gc-audio-amplify amplification=1 ! "
-           " audioconvert ! audio/x-raw,channels=gc-audio-channels ! "
+pipestr = (" pulsesrc name=gc-audio-src  ! queue name=gc-min-threshold-time gc-max-size-time gc-max-size-buffers gc-max-size-bytes gc-leaky ! "
+           " audioamplify name=gc-audio-amplify amplification=1 ! audioconvert ! audio/x-raw,channels=gc-audio-channels ! "
            " tee name=tee-aud  ! queue ! level name=gc-audio-level message=true interval=100000000 ! "
-           " volume name=gc-audio-volume ! gc-asink "
+           " volume name=gc-audio-volumemaster ! volume name=gc-audio-volume ! gc-asink "
            " tee-aud. ! queue ! valve drop=false name=gc-audio-valve ! "
            " audioconvert ! gc-audio-enc ! gc-audio-mux ! "
            " queue ! filesink name=gc-audio-sink async=false " )
 
 
 class GCpulse(Gst.Bin, base.Base):
-    
-    order = ["name", "flavor", "location", "file", 
+
+    order = ["name", "flavor", "location", "file",
              "vumeter", "player", "amplification", "audioencoder"]
 
     gc_parameters = {
@@ -75,6 +75,12 @@ class GCpulse(Gst.Bin, base.Base):
             "default": "lamemp3enc target=1 bitrate=192 cbr=true",
             "description": "Gstreamer audio encoder element used in the bin",
             },
+        "delay": {
+            "type": "float",
+            "default": 0.0,
+            "range": (0,10),
+            "description": "Audio delay",
+            },
         "audiomuxer": {
             "type": "text",
             "default": "",
@@ -83,7 +89,7 @@ class GCpulse(Gst.Bin, base.Base):
         "channels": {
             "type": "integer",
             "default": 2,
-            "range": (1,16),
+            "range": (1,2),
             "description": "Number of audio channels",
             },
         "audiosink" : {
@@ -92,13 +98,13 @@ class GCpulse(Gst.Bin, base.Base):
             "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
             "description": "Audio sink",
         },
-        
+
     }
 
     is_pausable = True
     has_audio   = True
     has_video   = False
-    
+
     __gstdetails__ = (
         "Galicaster Audio BIN",
         "Generic/Audio",
@@ -106,7 +112,7 @@ class GCpulse(Gst.Bin, base.Base):
         "Teltek Video Research"
         )
 
-    def __init__(self, options={}): 
+    def __init__(self, options={}):
         base.Base.__init__(self, options)
         Gst.Bin.__init__(self)
 
@@ -114,11 +120,23 @@ class GCpulse(Gst.Bin, base.Base):
         aux = (pipestr.replace('gc-asink', gcaudiosink)
                .replace("gc-audio-enc", self.options["audioencoder"])
                .replace("gc-audio-channels", str(self.options["channels"])))
-        
+
         if self.options["audiomuxer"]:
             aux = aux.replace("gc-audio-mux", self.options["audiomuxer"])
         else:
             aux = aux.replace("gc-audio-mux !", "")
+
+
+        if self.options["delay"] > 0.0:
+            aux = aux.replace('gc-max-size-time', 'max-size-time=0')
+            aux = aux.replace('gc-max-size-buffers', 'max-size-buffers=0')
+            aux = aux.replace('gc-max-size-bytes', 'max-size-bytes=0')
+            aux = aux.replace('gc-leaky', 'leaky=0')
+        else:
+            aux = aux.replace('gc-max-size-time', '')
+            aux = aux.replace('gc-max-size-buffers', '')
+            aux = aux.replace('gc-max-size-bytes', '')
+            aux = aux.replace('gc-leaky', '')
 
         #bin = Gst.parse_bin_from_description(aux, True)
         bin = Gst.parse_launch("( {} )".format(aux))
@@ -134,7 +152,7 @@ class GCpulse(Gst.Bin, base.Base):
 
         if "player" in self.options and self.options["player"] == False:
             self.mute = True
-            element = self.get_by_name("gc-audio-volume")
+            element = self.get_by_name("gc-audio-volumemaster")
             element.set_property("mute", True)
         else:
             self.mute = False
@@ -142,10 +160,15 @@ class GCpulse(Gst.Bin, base.Base):
         if "vumeter" in self.options:
             level = self.get_by_name("gc-audio-level")
             if self.options["vumeter"] == False:
-                level.set_property("message", False) 
+                level.set_property("message", False)
         if "amplification" in self.options:
             ampli = self.get_by_name("gc-audio-amplify")
             ampli.set_property("amplification", float(self.options["amplification"]))
+
+        if self.options["delay"] > 0.0:
+            delay = float(self.options["delay"])
+            minttime = self.get_by_name('gc-min-threshold-time')
+            minttime.set_property('min-threshold-time', long(delay * 1000000000))
 
 
     def changeValve(self, value):
@@ -163,11 +186,25 @@ class GCpulse(Gst.Bin, base.Base):
 
     def send_event_to_src(self, event):
         src1 = self.get_by_name("gc-audio-src")
-        src1.send_event(event)        
+        src1.send_event(event)
 
     def mute_preview(self, value):
         if not self.mute:
-            element = self.get_by_name("gc-audio-volume")
+            element = self.get_by_name("gc-audio-volumemaster")
             element.set_property("mute", value)
 
-    
+    def disable_input(self):
+        element = self.get_by_name("gc-audio-src")
+        element.set_property("volume", 0)
+
+    def enable_input(self):
+        element = self.get_by_name("gc-audio-src")
+        element.set_property("volume", 1)
+
+    def disable_preview(self):
+        element = self.get_by_name("gc-audio-volume")
+        element.set_property("mute", True)
+
+    def enable_preview(self):
+        element = self.get_by_name("gc-audio-volume")
+        element.set_property("mute", False)

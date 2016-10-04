@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 """
 UI for the welcoming page
@@ -21,6 +21,7 @@ from galicaster.classui import message
 from galicaster.classui import get_image_path
 from galicaster.classui import get_ui_path
 from galicaster.utils.shutdown import shutdown as UtilsShutdown
+
 
 from galicaster.utils.i18n import _
 
@@ -78,6 +79,9 @@ class GCWindow(Gtk.Window):
         self.nbox = Gtk.Notebook()
         self.nbox.set_show_tabs(False)
         self.add(self.nbox)
+
+        self.connect('key-press-event', self.on_key_press)
+        self.connect('key-release-event', self.on_key_release)
 
     def on_visibility_event(self, *args):
         self.dispatcher.emit('gc-shown')
@@ -145,6 +149,11 @@ class GCWindow(Gtk.Window):
         else:
             return self.custom_size
 
+    def get_k1_k2(self):
+        k1 = self.get_size()[0] / 1920.0
+        k2 = self.get_size()[0] / 1080.0
+        return k1, k2
+        
     def discover_size(self):
         """Retrieves the current size of the window where the application will be shown"""
         size = (1920, 1080)
@@ -163,6 +172,52 @@ class GCWindow(Gtk.Window):
     def insert_page(self, page, label, cod):
         """Insert an area on the main window notebook widget"""
         self.nbox.insert_page(page, Gtk.Label(label=label), cod)
+
+
+    def insert_element(self, element, ui, box_id, method="add",  **kwargs):
+        """Insert an element in the container named box_id
+           in the notebook page with number ui"""
+        try:
+            box = self.get_element(box_id, ui)
+            if box:
+                try:
+                    m = getattr(box,method)
+                except AttributeError:
+                    self.logger.error("Error trying to add the element {} to the box {}, tried the method: {}".format(element, box, method))
+                    return None
+                else:
+                    m(element,**kwargs)
+                    box.show_all()
+                    self.logger.debug("Element inserted in id: {}".format(box_id))
+                    return element
+        except Exception as error:
+            self.logger.error("Error trying to add the element: {}".format(error))
+            return None
+
+
+    def insert_element_with_position(self, element, ui, box_id, method="add", position=0, **kwargs):
+        """Insert an element in the container named box_id
+           in the notebook page with number ui"""
+        element = self.insert_element(element, ui, box_id, method, **kwargs)
+        if element:
+            try:
+                builder = self.nbox.get_nth_page(ui).gui
+                box = builder.get_object(box_id)
+                box.reorder_child(element,position)
+                return element
+            except Exception as exc:
+                self.logger.error("Error trying to reorcer element {}: {}".format(element, exc))
+
+
+
+    def get_element(self, element_name, ui):
+        try:
+            builder = self.nbox.get_nth_page(ui).gui
+            box = builder.get_object(element_name)
+            return box
+        except Exception as exc:
+            self.logger.error("Error trying to get element with name {} from {}: {}".format(element_name, ui, exc))
+
 
     def set_current_page(self, cod):
         """Changes active area"""
@@ -226,3 +281,9 @@ class GCWindow(Gtk.Window):
         else:
             if self.logger:
                 self.logger.info("Cancel Shutdown")
+
+    def on_key_press(self, source, event):
+        self.dispatcher.emit("action-key-press", source, event)
+
+    def on_key_release(self, source, event):
+        self.dispatcher.emit("action-key-release", source, event)

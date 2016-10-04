@@ -732,20 +732,20 @@ msgid "Recording"
 msgstr "Opnemen"
 
 #: resources/ui/recorder.glade:406
-msgid "Storage space left:  "
-msgstr "Opslagruimte resterend:"
+msgid "Storage space left: "
+msgstr "Opslagruimte resterend: "
 
 #: resources/ui/recorder.glade:420
-msgid "Agent name:  "
-msgstr "Opnametoestel:"
+msgid "Agent name: "
+msgstr "Opnametoestel: "
 
 #: resources/ui/recorder.glade:435
-msgid "Recording space:  "
-msgstr "Opslagruimte:"
+msgid "Recording space: "
+msgstr "Opslagruimte: "
 
 #: resources/ui/recorder.glade:450
-msgid "Core connectivity:  "
-msgstr "Verbinding server:"
+msgid "Core connectivity: "
+msgstr "Verbinding server: "
 
 #: resources/ui/recorder.glade:472
 msgid "Status"

@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 
@@ -33,20 +33,20 @@ The Track class gets all the configurable parameters of the synchronized tracks 
 """
 class Conf(object): # TODO list get and other ops arround profile
 
-    def __init__(self, conf_file='/etc/galicaster/conf.ini', 
-                conf_dist_file=None, 
+    def __init__(self, conf_file='/etc/galicaster/conf.ini',
+                conf_dist_file=None,
                 profile_folder='/etc/galicaster/profiles'):
         """Initializes conf with all the necessary in order to parser and process users configuration, default configuration and the profiles set.
         Args:
             conf_file (str): absolute path of the user's configuration file (config.ini).
             conf_dist_file (str): absolute path of the distribution's configuration file (config-dist.ini).
-            profile_folder (str): absolute path of the profile folder. 
+            profile_folder (str): absolute path of the profile folder.
         Attributes:
-            __conf (ConfigParser): parser of user's and distribution's configuration file. 
+            __conf (ConfigParser): parser of user's and distribution's configuration file.
             __user_conf (ConfigParser): parser of user's configuration file.
             __conf_dist (ConfigParser): parser of distribution's configuration file.
             __profiles (Dict{str,Profile}): a set of all the profiles in profile's folder and the default one identified by its name (key of the dictionary)
-            __default_profile (Profile): profile set in configuration file. 
+            __default_profile (Profile): profile set in configuration file.
             __current_profile (Profile): active profile.
             __parser_error (bool): True if any error have been catched while parsing. False otherwise.
             conf_file (str): the given absolute path of the user's configuration file.
@@ -54,22 +54,22 @@ class Conf(object): # TODO list get and other ops arround profile
             profile_folder (str): the given path of the profile folder.
             logger (Logger): the object that prints all the information, warning and error messages. See galicaster/context/logger
         """
-        self.__conf = ConfigParser.ConfigParser() 
-        self.__user_conf = ConfigParser.ConfigParser() 
-        self.__conf_dist = ConfigParser.ConfigParser() 
+        self.__conf = ConfigParser.ConfigParser()
+        self.__user_conf = ConfigParser.ConfigParser()
+        self.__conf_dist = ConfigParser.ConfigParser()
         self.__profiles = OrderedDict()
         self.__default_profile = None
         self.__current_profile = None
         self.__parser_error = False
 
         # FIXME when using 2.7 dict_type=collections.OrderedDict)
-        self.conf_file = (conf_file if os.path.isfile(conf_file) else 
+        self.conf_file = (conf_file if os.path.isfile(conf_file) else
                         os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'conf.ini')))
-        self.conf_dist_file = (conf_dist_file or 
+        self.conf_dist_file = (conf_dist_file or
                              os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','conf-dist.ini')))
-        self.profile_folder = (profile_folder if os.path.isdir(profile_folder) else 
+        self.profile_folder = (profile_folder if os.path.isdir(profile_folder) else
                              os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'profiles')))
-        self.logger = None         
+        self.logger = None
 
     def reload(self):
         """Reloads the configurations
@@ -80,7 +80,7 @@ class Conf(object): # TODO list get and other ops arround profile
             self.__conf_dist.read(self.conf_dist_file)
             self._check_conf_user()
             self.__parser_error = False
-         
+
         except Exception as exc:
             self.logger and self.logger.error("Error parsing the conf file: {}".format(exc))
             self.__parser_error = True
@@ -89,7 +89,6 @@ class Conf(object): # TODO list get and other ops arround profile
             self.__conf_dist.read(self.conf_dist_file)
 
         self.__profiles = self.__get_profiles(self.profile_folder)
-        self.hostname = self.get_hostname()
 
 
     def _check_conf_user(self):
@@ -97,12 +96,12 @@ class Conf(object): # TODO list get and other ops arround profile
         """
         for section in self.__user_conf.sections():
             if section not in self.__conf_dist.sections():
-                self.logger and self.logger.warning('No section "{0}". Please check the file {1}'.format(section, self.conf_file))
+                self.logger and self.logger.debug('No section "{0}". Please check the file {1}'.format(section, self.conf_file))
             else:
                 for option in self.__user_conf.options(section):
                     if option not in self.__conf_dist.options(section):
-                        self.logger and self.logger.warning('No option "{0}" in section "{1}". Please check the file {2}'.format(option, section, self.conf_file))
-      
+                        self.logger and self.logger.debug('No option "{0}" in section "{1}". Please check the file {2}'.format(option, section, self.conf_file))
+
 
     def get(self, sect, opt, default=None): # TODO overload ConfigParser?
         """Tries to return the value of a specific option in a specific section.
@@ -136,7 +135,7 @@ class Conf(object): # TODO list get and other ops arround profile
             sections = self.get_sections()
         else:
             sections = self.get_user_sections()
-            
+
         for section in sections:
             if full:
                 conf[section]=self.get_section(section)
@@ -144,9 +143,9 @@ class Conf(object): # TODO list get and other ops arround profile
                 conf[section]=self.get_user_section(section)
         return conf
 
-    
+
     def get_int(self, sect, opt, default=None):
-        """Tries to return the value of an option in a section as an int. 
+        """Tries to return the value of an option in a section as an int.
         If else, returns the given default value.
         Args:
             sect (str): section of configuration file.
@@ -165,7 +164,7 @@ class Conf(object): # TODO list get and other ops arround profile
 
 
     def get_float(self, sect, opt, default=None):
-        """Tries to return the value of an option in a section as a float. 
+        """Tries to return the value of an option in a section as a float.
         If else, returns the given default value.
         Args:
             sect (str): section of configuration file.
@@ -206,7 +205,7 @@ class Conf(object): # TODO list get and other ops arround profile
 
 
     def get_lower(self, sect, opt, default=""):
-        """Tries to return the value of an option in a section converted to lowercase. 
+        """Tries to return the value of an option in a section converted to lowercase.
         If else returns the given default value.
         Args:
             sect (str): section of configuration file.
@@ -244,7 +243,7 @@ class Conf(object): # TODO list get and other ops arround profile
 
         return default
 
-         
+
 
     def get_list(self, sect, opt, default=[]):
         """Tries to return a set of values of an option in a section as a list.
@@ -268,7 +267,7 @@ class Conf(object): # TODO list get and other ops arround profile
 
 
     def get_choice(self, sect, opt, options, default=None):
-        """Tries to return a value of an option in a section if it is in the options list. 
+        """Tries to return a value of an option in a section if it is in the options list.
         If else returns the given default value.
         Args:
             sect (str): section of configuration file.
@@ -277,7 +276,7 @@ class Conf(object): # TODO list get and other ops arround profile
             default (str): default output if there is no value.
         Returns:
             Str: the value of option opt in section sect if it is in the options list and there are no errors. Default otherwise.
-        """ 
+        """
         try:
             data = self.get(sect, opt).lower()
             if data in options:
@@ -292,7 +291,7 @@ class Conf(object): # TODO list get and other ops arround profile
 
 
     def get_choice_uppercase(self, sect, opt, options, default=None):
-        """Tries to return a value of an option in a section if it is in the options list. 
+        """Tries to return a value of an option in a section if it is in the options list.
         If else returns the given default value.
         Args:
             sect (str): section of configuration file.
@@ -301,7 +300,7 @@ class Conf(object): # TODO list get and other ops arround profile
             default (str): default output if there is no value.
         Returns:
             Str: the value of option opt in section sect if it is in the options list and there are no errors. Default otherwise.
-        """ 
+        """
         try:
             data = self.get(sect, opt).upper()
             if data in options:
@@ -338,7 +337,7 @@ class Conf(object): # TODO list get and other ops arround profile
                 self.logger and self.logger.warning('Error obtaining a dictionary from "{0}" in section "{1}", FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
         return dictionary if dictionary else default
 
-    
+
     def get_json(self, sect, opt, default={}):
         """Tries to return a set of values of an option in a section as a dictionary.
         If else returns the given default value.
@@ -395,7 +394,7 @@ class Conf(object): # TODO list get and other ops arround profile
 
     def get_sections(self, default={}):
         """Tries to return all sections.
-        If else returns the given default value. 
+        If else returns the given default value.
         Args:
             default (str): default output if there is no value.
         Returns:
@@ -411,7 +410,7 @@ class Conf(object): # TODO list get and other ops arround profile
 
     def get_user_sections(self, default={}):
         """Tries to return all the user sections.
-        If else returns the given default value. 
+        If else returns the given default value.
         Args:
             default (str): default output if there is no value.
         Returns:
@@ -425,7 +424,7 @@ class Conf(object): # TODO list get and other ops arround profile
 
 
     def set(self, sect, opt, value):
-        """Sets the specified option from the specified section. 
+        """Sets the specified option from the specified section.
         Args:
             sect (str): the section to be modified.
             opt (str): the option of the specified section to be modified.
@@ -448,17 +447,17 @@ class Conf(object): # TODO list get and other ops arround profile
             for opt,value in sect.iteritems():
                 self.__force_set(self.__user_conf, sect_name, opt, value)
                 self.__force_set(self.__conf, sect_name, opt, value)
-                
+
             return True
         except Exception as exc:
             self.logger and self.logger.warning('Error trying to set section with name {}: Exception {}'.format(sect_name , exc))
-            
+
         return False
 
     def get_hostname(self):
         """Gets the hostname in configfile or de default one.
         Returns:
-		    Str: hostname in the configfile if exists (ingest section). Otherwise: Prefix + socket hostname.
+                    Str: hostname in the configfile if exists (ingest section). Otherwise: Prefix + socket hostname.
         """
 
         hostname = self.get('ingest', 'hostname')
@@ -472,37 +471,37 @@ class Conf(object): # TODO list get and other ops arround profile
 
     def get_ip_address(self):
         address = '127.0.0.1'
-        
+
         try:
             address = socket.gethostbyname(socket.gethostname())
         except Exception as exc:
             self.logger and self.logger.error('Problem on obtaining the IP of "{}", forced to "127.0.0.1". Exception: {}'.format(socket.gethostname(),exc))
-            
+
         return address
-    
+
     def get_size(self):
         """Gets the resolution in the configfile if exists.
         If not exists gets value 'auto'.
         Returns:
-		    Str: resolution in the configfile if exists (basic section). Default value "auto" otherwise.
+                    Str: resolution in the configfile if exists (basic section). Default value "auto" otherwise.
         """
         return self.get('basic', 'resolution') or "auto"
 
     def is_admin_blocked(self):
         """Checks if admin is bloqued.
         Returns:
-		    Bool: True if admin is bloqued (section basic, option admin from configfile). False otherwise.
+                    Bool: True if admin is bloqued (section basic, option admin from configfile). False otherwise.
         """
         return self.get_boolean('basic', 'admin') or False
-    
+
     def tracks_visible_to_opencast(self):
         """Checks if the tracks are visible to opencast.
         Returns:
-		    Bool: True if the tracks are visible to opencast (section ingest, option visible_tracks from configfile). False otherwise.
+                    Bool: True if the tracks are visible to opencast (section ingest, option visible_tracks from configfile). False otherwise.
         """
         return self.get_boolean('ingest', 'visible_tracks') or False
-        
-    
+
+
     def get_modules(self):
         """Checks if the admin is bloqued and if the ingest is active. According to this, it returns a list of modules.
         Returns:
@@ -511,7 +510,7 @@ class Conf(object): # TODO list get and other ops arround profile
         modules = []
         modules.append('recorder')
         modules.append('scheduler')
-                 
+
         if self.get_boolean('basic', 'admin'):
             modules.append('media_manager')
             modules.append('player')
@@ -528,20 +527,20 @@ class Conf(object): # TODO list get and other ops arround profile
             conf (ConfigParser): parser of the config file that is going to be modified.
             section (str): The section to be created.
             option (str): The option of a section to be created.
-            value (str): The value of the option. 
+            value (str): The value of the option.
         """
         if not conf.has_section(section):
             conf.add_section(section)
         conf.set(section, option, value)
 
-         
+
     def remove_option(self, sect, opt):
-        """Removes the specified option from the specified section. 
+        """Removes the specified option from the specified section.
         Args:
             sect (str): the particular section.
             opt (str): the option of the sect to be removed.
         Returns:
-        	Bool: True If the option existed to be removed. False otherwise.
+                Bool: True If the option existed to be removed. False otherwise.
         """
         if self.__user_conf.has_section(sect):
             self.__user_conf.remove_option(sect, opt)
@@ -549,18 +548,18 @@ class Conf(object): # TODO list get and other ops arround profile
             return self.__conf.remove_option(sect, opt)
         return False
 
-        
+
     def remove_section(self, sect):
-        """Removes the specified section. 
+        """Removes the specified section.
         Args:
             sect (str): the particular section.
         Returns:
-        	Bool: True If the option existed to be removed. False otherwise.
+                Bool: True If the option existed to be removed. False otherwise.
         """
 
         if self.__user_conf.remove_section(sect):
             return self.__conf.remove_section(sect)
-        return False   
+        return False
 
     def remove_sections(self):
         """Removes ecery section of the user configuration.
@@ -596,7 +595,7 @@ class Conf(object): # TODO list get and other ops arround profile
             configfile.close()
         except Exception as exc:
             self.logger and self.logger.error('Erros saving configuration: {}'.format(exc))
- 
+
 
     def update_profiles(self):
         """Write on disk profile modifications, delete file if neccesary.
@@ -610,31 +609,29 @@ class Conf(object): # TODO list get and other ops arround profile
                 #profile.export_to_file() #Uncomment if profiles are editable
                 if profile == self.__current_profile:
                     self.set('basic','profile',profile.name)
-                
+
 
     def get_tracks_in_oc_dict(self):
-        """Returns the tracks names and information if they are configurable by opencast. 
+        """Returns the tracks names and information if they are configurable by opencast.
         Returns:
             Dict {Str,str}: If the tracks are configurable by opencast, returns its flavor, outputfile and source. Also it returns the names of all tracks. Otherwise returns defaults as names.
         """
         # Tracks blocked by Galicaster
-        if not self.tracks_visible_to_opencast(): 
+        if not self.tracks_visible_to_opencast():
             return {'capture.device.names': 'defaults'}
         # Tracks configurable by opencast
-        if self.logger:
-            self.logger.info('Be careful using profiles and opencast scheduler')
         default  = self.get_current_profile()
         names = []
         tracks = {}
         for track in default.tracks:
                     names.append(track.name)
-                    tracks['capture.device.' + track.name + '.flavor']      = track.flavor + '/source' 
+                    tracks['capture.device.' + track.name + '.flavor']      = track.flavor + '/source'
                     tracks['capture.device.' + track.name + '.outputfile'] = track.file
                     tracks['capture.device.' + track.name + '.src']          = track.location or '/dev/null'
         if names:
             tracks['capture.device.names'] = ','.join(names)
 
-        return tracks  
+        return tracks
 
 
     def create_profile_from_conf(self, activated=True):
@@ -672,7 +669,7 @@ class Conf(object): # TODO list get and other ops arround profile
         Returns:
             Bool: True if it is allowed a permission. False otherwise.
         """
-        try: 
+        try:
             return self.__conf.getboolean('allows',permit)
         except Exception as exc:
             if self.logger:
@@ -709,7 +706,7 @@ class Conf(object): # TODO list get and other ops arround profile
 
                     if error_msg:
                         self.logger and self.logger.warning(error_msg)
-                                            
+
                     # Add the profile to the profile list
                     profile_list[profile.name] = profile_clean
 
@@ -717,8 +714,8 @@ class Conf(object): # TODO list get and other ops arround profile
                     if self.logger:
                         self.logger.warning("Invalid profile {0}".format(filepath))
                     profile = None
-        
-        current = self.get("basic","profile")        
+
+        current = self.get("basic","profile")
         try:
             self.__current_profile = profile_list[current]
         except Exception as exc:
@@ -752,7 +749,7 @@ class Conf(object): # TODO list get and other ops arround profile
                         if k in aux.keys() and v == aux[k]:
 
                             # Compose error message
-                            if error_msg:                            
+                            if error_msg:
                                 error_msg = '{}. Repeated value "{}" for tracks "{}" and "{}", forced to BIS{}'.format(
                                     error_msg, v, track.name, aux.name, v)
                             else:
@@ -763,10 +760,10 @@ class Conf(object): # TODO list get and other ops arround profile
             count +=1
 
 
-        
+
         # 2. Validate profile
         for ind, track in enumerate(profile.tracks):
-            track_clean = track 
+            track_clean = track
             try:
                 error, track_clean = validator.validate_track(track)
                 track_clean = Track(track_clean)
@@ -780,7 +777,7 @@ class Conf(object): # TODO list get and other ops arround profile
 
             profile.tracks[ind] = track_clean
             profile.original_tracks[ind] = track
-            
+
         return error_msg, profile
 
 
@@ -793,7 +790,7 @@ class Conf(object): # TODO list get and other ops arround profile
         #return filter(,self.__
         for name,profile in self.__profiles.iteritems():
             if not profile.to_delete:
-                profiles[name]=profile              
+                profiles[name]=profile
         return profiles
 
 
@@ -807,9 +804,9 @@ class Conf(object): # TODO list get and other ops arround profile
         if old_key:
             if self.__profiles.has_key(old_key):
                 del self.__profiles[old_key]
-        
 
-    def get_current_profile(self):        
+
+    def get_current_profile(self):
         """Gets the current profile.
         Returns:
             Profile: current profile.
@@ -836,7 +833,7 @@ class Conf(object): # TODO list get and other ops arround profile
         Args:
             name (str): the name of the new current profile.
         """
-        self.set("basic","profile",name)    
+        self.set("basic","profile",name)
 
 
     def set_default_profile_as_current(self):
@@ -894,7 +891,7 @@ class Conf(object): # TODO list get and other ops arround profile
         failed = self.get('color','failed')
 
         if not old_style:
-            return [undefined, undefined, undefined, undefined, undefined, undefined] 
+            return [undefined, undefined, undefined, undefined, undefined, undefined]
         else:
             return [undefined, nightly, pending,processing, done, failed]
 
@@ -914,7 +911,7 @@ class Profile(object):
             path (str): the given path of the file containing the information of the profile.
             execute (str): the value in the option execute from section data in the profile file.
             template (str): the value in the option template from section data in the profile file.
-            to_delete (bool): True if the profile is going to be deleted when profiles are updated in Conf. 
+            to_delete (bool): True if the profile is going to be deleted when profiles are updated in Conf.
         """
         self.name = name
         self.tracks = []
@@ -923,7 +920,7 @@ class Profile(object):
         self.execute = None
         self.template = None
         self.to_delete = False
-        
+
     def new_track(self, options):
         """Creates a new track with the options given.
         Args:
@@ -954,7 +951,7 @@ class Profile(object):
         self.tracks.remove(track)
         return track
 
-    
+
     # TODO: This is a WORKAROUND for https://github.com/teltek/Galicaster/issues/317
     # FIXME
     def get_tracks_audio_at_end(self):
@@ -966,7 +963,7 @@ class Profile(object):
 
         return self.tracks
 
-    
+
     #TODO error, be careful with self.tracks(. It's not a method
     def reorder_tracks(self, order=[]):
         """Reorders the tracks following the order set by the argument order.
@@ -979,7 +976,7 @@ class Profile(object):
             new_order.append(self.tracks(order[index]).copy())
         for track in self.tracks:
             if self.tracks.index(track) not in order:
-                new_order.append(track.copy())          
+                new_order.append(track.copy())
         self.tracks = new_order
 
     #TODO same as profile.path
@@ -1003,7 +1000,7 @@ class Profile(object):
     def import_from_file(self, filepath):
         """Imports a profile from a file.
         Args:
-            filepath (str): the absolute path of a file. 
+            filepath (str): the absolute path of a file.
         Returns:
             Bool: True if there were no errors. False otherwise.
         """
@@ -1014,7 +1011,7 @@ class Profile(object):
             return False
         if not parser.has_section("data"):
             return False
-        
+
         self.name = parser.get('data', 'name')
         if parser.has_option('data', 'execute'):
             self.execute = parser.get('data', 'execute')
@@ -1034,7 +1031,7 @@ class Profile(object):
         """
         if not filepath:
             filepath = self.path
-                    
+
         parser = ConfigParser.ConfigParser()
         parser.add_section('data')
         parser.set('data','name', self.name)
@@ -1105,7 +1102,7 @@ class Track(OrderedDict):
             value (str): the new device of the track.
         """
         self['device'] = value
-        
+
     device = property(_get_device, _set_device)
 
     def _get_flavor(self):
@@ -1167,7 +1164,7 @@ class Track(OrderedDict):
                 sequence.append(key)
         return sequence
 
-    def basic(self):        
+    def basic(self):
         """Gets the basic parameters set of the track.
         Returns:
             Dict {Str,str}: the set of the basic track parameters with the parameter name as key.

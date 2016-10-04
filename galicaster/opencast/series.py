@@ -6,13 +6,14 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 from os import path
 from galicaster.core import context
+from galicaster.mediapackage.mediapackage import Catalog
 import json
 import getpass
 
@@ -24,7 +25,7 @@ MAPPINGS = { 'user': getpass.getuser() }
 
 
 def get_series():
-    repo = context.get_repository() 
+    repo = context.get_repository()
     ocservice = context.get_ocservice()
 
     # Import the 'series' section as a dictionary
@@ -44,14 +45,14 @@ def get_series():
                 # If the placeholder does not exist, log the issue but ignore it
                 # TODO Log the exception
                 pass
-            
+
     try:
         series_list = []
         check_default = True
         while True:
             if not ocservice.net:
                 break
-                
+
             series_json = json.loads(ocservice.client.getseries(**queries))
             for catalog in series_json['catalogs']:
                 try:
@@ -81,7 +82,7 @@ def get_series():
 
     return series_list
 
-    
+
 def parse_json_series(json_series):
     series = {}
     for term in json_series[NAMESP].iterkeys():
@@ -91,7 +92,7 @@ def parse_json_series(json_series):
             # Ignore non-existant items
             # TODO Log the exception
             pass
-    
+
     return (series['identifier'], series )
 
 
@@ -107,12 +108,14 @@ def filterSeriesbyId(list_series, seriesid):
     """
     Generate a list with the series value name, shortname and id
     """
-    try:
-        match = {"id": seriesid, "name": list_series[seriesid]['title'], "list": list_series[seriesid]}
-        return match
-    except Exception:
-        return None
-    
+    for element in list_series:
+        if seriesid and seriesid in element[1]["identifier"].encode('utf8'):
+            try:
+                match = {"id": seriesid, "name": element[1]["title"], "list": element[1]}
+                return match
+            except Exception:
+                return None
+
 
 def getSeriesbyId(seriesid):
     #TODO
@@ -126,7 +129,7 @@ def getSeriesbyId(seriesid):
     except Exception:
         return None
 
-    
+
 def getSeriesbyName(seriesname):
     """
     Generate a list with the series value name, shortname and id
@@ -144,8 +147,36 @@ def serialize_series(series_list, series_path):
     if path.isfile(series_path):
         with open(series_path, 'w') as f:
             f.write(in_json)
-            f.close()    
+            f.close()
 
 def deserialize_series(series_path):
     in_json = json.loads(series_path)
     return in_json
+
+
+def setSeriebyName(mp, seriesname):
+    """
+    Put the serie by the name in the mediapackage
+    """
+    setSerie(mp, getSeriesbyName(seriesname))
+
+def setSeriebyId(mp, seriesname):
+    """
+    Put the serie by the id in the mediapackage
+    """
+    setSerie(mp, getSeriesbyId(seriesname))
+
+def setSerie(mp, series_list):
+    """
+    Put the serie received in the mediapackage
+    """
+    if series_list:
+        mp.setSeries(series_list['list'])
+        if not mp.getCatalogs("dublincore/series") and mp.getURI():
+            new_series = Catalog(path.join(mp.getURI(),"series.xml"),mimetype="text/xml",flavor="dublincore/series")
+            mp.add(new_series)
+    else:
+        mp.setSeries(None)
+        catalog= mp.getCatalogs("dublincore/series")
+        if catalog:
+            mp.remove(catalog[0])

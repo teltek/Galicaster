@@ -6,15 +6,17 @@
 # Copyright (c) 2012, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 """
 
 """
 from os import path
+import os
+import shutil
 from shutil import rmtree
 from tempfile import mkdtemp, mkstemp
 import datetime
@@ -29,6 +31,7 @@ from galicaster.plugins import cleanstale
 
 from galicaster.core import context
 
+from tests import get_resource
 
 
 class TestFunctions(TestCase):
@@ -39,12 +42,25 @@ class TestFunctions(TestCase):
         repo = repository.Repository(self.tmppath)
         context.set('repository', repo)
 
-        conf = Conf()
-        context.set('conf', conf)
-        
+        # conf = Conf()
+        # context.set('conf', conf)
+
+        self.conf_file = get_resource('conf/conf.ini')
+        self.backup_conf_file =get_resource('conf/conf.backup.ini')
+        dist_file = get_resource('conf/conf-dist.ini')
+
+        shutil.copyfile(self.conf_file,self.backup_conf_file)
+        self.conf = Conf(self.conf_file,dist_file)
+        self.conf.reload()
+
+
 
     def tearDown(self):
         rmtree(self.tmppath)
+        shutil.copyfile(self.backup_conf_file,self.conf_file)
+        os.remove(self.backup_conf_file)
+        del self.conf
+
 
     def test_cleanstale_plugin(self):
         dispatcher = context.get_dispatcher()
@@ -63,11 +79,11 @@ class TestFunctions(TestCase):
         mp = mediapackage.Mediapackage(identifier="5", title='MP#5', date=(now + datetime.timedelta(days=30)))
         repo.add(mp)
 
-        
+
         conf.set('cleanstale','maxarchivaldays', '70')
-        cleanstale.init()        
+        cleanstale.init()
         self.assertEqual(len(repo), 5)
-        
+
         conf.set('cleanstale','maxarchivaldays', '50')
         cleanstale.init()
         dispatcher.emit('timer-nightly')

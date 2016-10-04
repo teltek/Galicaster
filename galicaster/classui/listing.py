@@ -90,7 +90,7 @@ class ListingClassUI(ManagerUI):
         """Appends the mediapackage data into the list"""
         lista.clear()
         for mp in mps:
-            duration = mp.getDuration()
+            duration = round(mp.getDuration(), -3)
             if duration in ["", None]:
                 duration = 0
 
@@ -225,7 +225,6 @@ class ListingClassUI(ManagerUI):
         logger.info("Refreshing TreeView")
         model, selected = self.vista.get_selection().get_selected_rows()
         self.insert_data_in_list(self.lista, self.repository.list().values())
-
         s = 0 if len(selected) == 0 else selected[0][0]
         self.vista.get_selection().select_path(s)
 
@@ -239,7 +238,10 @@ class ListingClassUI(ManagerUI):
 
             mp = self.repository.get(identifier)
             if i:
-                self._refresh(mp,i)
+                if mp:
+                    self._refresh(mp,i)
+                else:
+                    self.lista.remove(i)
 
     def refresh_operation(self, origin, operation, package, success = None, extra=None):
         """Refresh the status of an operation in a given row"""
@@ -413,16 +415,17 @@ class ListingClassUI(ManagerUI):
     def operation_readable(self, column, cell, model, iterator, operation):
         """Sets text equivalent for numeric operation status of mediapackages."""
         mp=self.repository.get((model[iterator])[0])
-        status=mp.getOpStatus(operation)
-        out = _(mediapackage.op_status[status])
-        cell.set_property('text', out)
-        old_style = context.get_conf().get_color_style()
-        if old_style:
-            color = model[iterator][8]
-        else:
-            palette = context.get_conf().get_palette()
-            color = palette[status]
-        cell.set_property('background', color)
+        if mp:
+            status=mp.getOpStatus(operation)
+            out = _(mediapackage.op_status[status])
+            cell.set_property('text', out)
+            old_style = context.get_conf().get_color_style()
+            if old_style:
+                color = model[iterator][8]
+            else:
+                palette = context.get_conf().get_palette()
+                color = palette[status]
+            cell.set_property('background', color)
 
 #--------------------------------------- Edit METADATA -----------------------------
 
@@ -481,4 +484,3 @@ class ListingClassUI(ManagerUI):
 
 
 GObject.type_register(ListingClassUI)
-
