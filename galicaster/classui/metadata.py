@@ -253,7 +253,10 @@ class MetadataClass(Gtk.Widget):
                         mp.metadata_episode[name] = child.get_text().strip()
 
                 elif name in [ "ispartof", "isPartOf" ]:
-                    identifier = child.get_model()[child.get_active_iter()][1]
+                    if child.get_active_iter():
+                        identifier = child.get_model()[child.get_active_iter()][1]
+                    else:
+                        identifier = None
                     series = utils_series.filterSeriesbyId(self.series_list, identifier)
                     if series:
                         mp.setSeries(series["list"])
