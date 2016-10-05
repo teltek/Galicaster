@@ -20,13 +20,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from galicaster.core import context
+
 import re
 from threading import Timer
 from os import path, utime, remove
 from gi.repository import Gst
 Gst.init(None)
 
-from galicaster.core import context
+__author__ = "James Perrin"
+__copyright__ = "Copyright 2014, The University of Manchester"
+__license__ = "MIT"
+__maintainer__ = "James Perrin"
+__email__ = "James.S.Perrin@manchester.ac.uk"
 
 # options:
 # pause_mode = [hold|start_stop] (hold)
