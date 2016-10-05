@@ -65,7 +65,8 @@ def init():
         drop_frames = conf.get_boolean('qrcode', 'drop_frames') or False
         buffers = conf.get_int('qrcode', 'buffers') or 200
         hold_timeout = conf.get_int('qrcode', 'hold_timeout') or 1  # secs
-        qr = QRCodeScanner(mode, symbols, hold_timeout, rescale, drop_frames, buffers, context.get_logger())
+        ignore_bins = conf.get('qrcode', 'ignore_track_name') or None
+        qr = QRCodeScanner(mode, symbols, hold_timeout, rescale, drop_frames, buffers, ignore_bins, context.get_logger())
 
         dispatcher = context.get_dispatcher()
         dispatcher.connect('recorder-ready', qr.qrcode_add_pipeline)
@@ -82,7 +83,7 @@ def init():
 
 
 class QRCodeScanner():
-    def __init__(self, mode, symbols, hold_timeout, rescale, drop_frames, buffers, logger=None):
+    def __init__(self, mode, symbols, hold_timeout, rescale, drop_frames, buffers, ignore_bins, logger=None):
         self.symbol_start = symbols['start']
         self.symbol_stop = symbols['stop']
         self.symbol_hold = symbols['hold']
@@ -90,6 +91,10 @@ class QRCodeScanner():
         self.rescale = rescale
         self.drop_frames = drop_frames
         self.queue_buffers = buffers
+        if ignore_bins:
+            self.ignore_bins_list = ignore_bins.split(',')
+        else:
+            self.ignore_bins_list = []
         self.hold_timeout = hold_timeout  # secs
         self.hold_timeout_ns = hold_timeout * SEC2NANO  # nano secs
         self.hold_timestamp = 0
@@ -237,12 +242,8 @@ class QRCodeScanner():
         pipeline = self.recorder.recorder.pipeline
         bins = self.recorder.recorder.bins
         for name, bin in bins.iteritems():
-            try:
-                qrcode_bin_option = bin.options['qrcode']
-            except KeyError:
-                qrcode_bin_option = 'True'
-            if qrcode_bin_option == 'False':
-                self.logger.info('qrcode disabled on bin: {}'.format(name))
+            if name in self.ignore_bins_list:
+                self.logger.info('qrcode disabled on track with name: {}'.format(name))
                 pass
             else:
                 if bin.has_video:
