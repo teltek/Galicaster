@@ -237,46 +237,54 @@ class QRCodeScanner():
         pipeline = self.recorder.recorder.pipeline
         bins = self.recorder.recorder.bins
         for name, bin in bins.iteritems():
-            if bin.has_video:
-                device = bin.options['device']
+            try:
+                qrcode_bin_option = bin.options['qrcode']
+            except KeyError:
+                qrcode_bin_option = 'True'
+            if qrcode_bin_option == 'False':
+                self.logger.info('qrcode disabled on bin: {}'.format(name))
+                pass
+            else:
+                if bin.has_video:
+                    device = bin.options['device']
 
-                zbar_queue = Gst.ElementFactory.make("queue", "zbar-{}-queue".format(device))
-                zbar_valve = Gst.ElementFactory.make("valve", "zbar-{}-valve".format(device))
-                zbar_videoscale = Gst.ElementFactory.make("videoscale")
-                zbar_filter = Gst.ElementFactory.make("capsfilter", "zbar-{}-filter".format(device))
-                zbar_zbar = Gst.ElementFactory.make("zbar", "zbar-{}-zbar".format(device))
-                zbar_fakesink = Gst.ElementFactory.make("fakesink")
+                    zbar_queue = Gst.ElementFactory.make("queue", "zbar-{}-queue".format(device))
+                    zbar_valve = Gst.ElementFactory.make("valve", "zbar-{}-valve".format(device))
+                    zbar_videoscale = Gst.ElementFactory.make("videoscale")
+                    zbar_filter = Gst.ElementFactory.make("capsfilter", "zbar-{}-filter".format(device))
+                    zbar_zbar = Gst.ElementFactory.make("zbar", "zbar-{}-zbar".format(device))
+                    zbar_fakesink = Gst.ElementFactory.make("fakesink")
 
-                if self.drop_frames:
-                    zbar_queue.set_property('leaky', 2)
-                zbar_queue.set_property('max-size-buffers', self.queue_buffers)
+                    if self.drop_frames:
+                        zbar_queue.set_property('leaky', 2)
+                    zbar_queue.set_property('max-size-buffers', self.queue_buffers)
 
-                expr = '[0-9]+[\,x\:][0-9]+'  # Parse custom size
-                if self.rescale != 'source' and re.match(expr, self.rescale):
-                    wh = [int(a) for a in self.rescale.split(re.search('[,x:]', self.rescale).group())]
-                    zbar_caps = Gst.caps_from_string("video/x-raw, format=YUV width={}, height={}".format(wh[0], wh[1]))
+                    expr = '[0-9]+[\,x\:][0-9]+'  # Parse custom size
+                    if self.rescale != 'source' and re.match(expr, self.rescale):
+                        wh = [int(a) for a in self.rescale.split(re.search('[,x:]', self.rescale).group())]
+                        zbar_caps = Gst.caps_from_string("video/x-raw, format=YUV width={}, height={}".format(wh[0], wh[1]))
+                        zbar_filter.set_property("caps", zbar_caps)
+                    else:
+                        zbar_caps = Gst.caps_from_string("video/x-raw, format=YUV")
+
                     zbar_filter.set_property("caps", zbar_caps)
-                else:
-                    zbar_caps = Gst.caps_from_string("video/x-raw, format=YUV")
 
-                zbar_filter.set_property("caps", zbar_caps)
+                    tee_name = 'gc-' + device + '-tee'
+                    tee = bin.get_by_name(tee_name)
 
-                tee_name = 'gc-' + device + '-tee'
-                tee = bin.get_by_name(tee_name)
+                    bin.add(zbar_queue)
+                    bin.add(zbar_valve)
+                    bin.add(zbar_videoscale)
+                    bin.add(zbar_filter)
+                    bin.add(zbar_zbar)
+                    bin.add(zbar_fakesink)
 
-                bin.add(zbar_queue)
-                bin.add(zbar_valve)
-                bin.add(zbar_videoscale)
-                bin.add(zbar_filter)
-                bin.add(zbar_zbar)
-                bin.add(zbar_fakesink)
-
-                tee.link(zbar_queue)
-                zbar_queue.link(zbar_valve)
-                zbar_valve.link(zbar_videoscale)
-                zbar_videoscale.link(zbar_filter)
-                zbar_filter.link(zbar_zbar)
-                zbar_zbar.link(zbar_fakesink)
+                    tee.link(zbar_queue)
+                    zbar_queue.link(zbar_valve)
+                    zbar_valve.link(zbar_videoscale)
+                    zbar_videoscale.link(zbar_filter)
+                    zbar_filter.link(zbar_zbar)
+                    zbar_zbar.link(zbar_fakesink)
 
         self.pipeline = pipeline
         self.bins = bins
