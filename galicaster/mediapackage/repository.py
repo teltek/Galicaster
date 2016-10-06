@@ -567,7 +567,10 @@ class Repository(object):
                 os.rename(filename, dest)
 
                 etype   = bin['mimetype']
-                flavour = bin['flavor'] + '/source'
+                if not '/' in bin['flavor']:
+                    flavour = bin['flavor'] + '/source'
+                else:
+                    flavour = bin['flavor']
                 mp.add(dest, mediapackage.TYPE_TRACK, flavour, etype, duration) # FIXME MIMETYPE
             else:
                 self.logger and self.logger.debug("Not adding {} to MP {}".format(bin['file'],mp.getIdentifier()))
