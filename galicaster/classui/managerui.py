@@ -192,9 +192,9 @@ class ManagerUI(Gtk.Box):
         for job in day:
             op_state = package.operation[job.lower().replace(" ", "")]
             if op_state == mediapackage.OP_DONE:
-                text['text']=text['text'] + "\n" + _("{0} already performed").format(OPERATION_NAMES[job])
+                text['text']=text['text'] + "\n" + _("{0} already performed").format(OPERATION_NAMES.get(job, job))
             elif op_state == mediapackage.OP_NIGHTLY:
-                text['text']=text['text'] + "\n" + _("{0} will be performed tonight").format(OPERATION_NAMES[job])
+                text['text']=text['text'] + "\n" + _("{0} will be performed tonight").format(OPERATION_NAMES.get(job, job))
 
 
         response_list = ['Ingest', # Resp 1
