@@ -331,7 +331,6 @@ class QRCodeScanner():
 
             mp.addAttachmentAsString(prpts_str, 'org.opencastproject.capture.agent.properties', False,
                                      'org.opencastproject.capture.agent.properties')
-            # FIXME: add to WF props for manual recordings too
 
     def create_smil(self, mp, occap):
         # TODO: call smil service
