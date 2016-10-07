@@ -105,7 +105,7 @@ class OCHTTPClient(object):
         b = StringIO()
 
         url = list(urlparse.urlparse(theServer, 'http'))
-        url[2] = urlparse.urljoin(url[2], endpoint.format(**path_params))
+        url[2] = urlparse.urljoin(url[2], endpoint.format(**path_params)[1:])
         url[4] = urllib.urlencode(query_params)
         c.setopt(pycurl.URL, urlparse.urlunparse(url))
 
