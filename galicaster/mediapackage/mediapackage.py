@@ -1091,7 +1091,7 @@ class Mediapackage(object):
         """Gets the delivery tracks of the mediapackage.
         If no master tracks are found, return an empty list.
         Returns:
-            List[Track]: a list of delivery tracks.	
+            List[Track]: a list of delivery tracks.
         """
         result = filter(lambda elem: "delivery" in elem.getFlavor(),
                         self.getElements(etype=TYPE_TRACK))
@@ -1431,10 +1431,10 @@ class Mediapackage(object):
         assert path.isdir(self.getURI())
 
         f_path = path.join(self.getURI(), name if name != None else 'series.xml' ) #FIXME
-
         f = open(f_path, 'w')
         f.write(content)
         f.close()
+        f = open(f_path)
 
         if not rewrite:
             self.add(f_path, TYPE_CATALOG, 'dublincore/series', 'text/xml')
@@ -1468,6 +1468,8 @@ class Mediapackage(object):
                                     self.setDate(datetime.strptime(creat, "%Y-%m-%d %H:%M:%S"))
 
                                 # parse erroneous format too
+                    elif name in ['creator']:
+                        self.setCreator(_checknget(dom, "dcterms:"+name))
                     elif name in ['isPartOf', 'ispartof']:
                         new = _checknget(dom, "dcterms:"+name)
                         old = _checknget(dom, "dcterms:"+name.lower() )
