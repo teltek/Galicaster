@@ -76,12 +76,30 @@ def get_updated_events(old_events, new_events):
                     append = True
                 elif 'ORGANIZER' in new_event and 'ORGANIZER' in old_event and old_event['ORGANIZER'] != new_event['ORGANIZER']:
                     append = True
+                for attach_enc in new_event['ATTACH']:
+                    attach =  base64.b64decode(attach_enc)
+                    if not attach_enc.params['X-APPLE-FILENAME'] == 'episode.xml' and not attach_enc.params['X-APPLE-FILENAME'] == 'series.xml':
+                        break
+                for attach_enc in old_event['ATTACH']:
+                    attach1 =  base64.b64decode(attach_enc)
+                    if not attach_enc.params['X-APPLE-FILENAME'] == 'episode.xml' and not attach_enc.params['X-APPLE-FILENAME'] == 'series.xml':
+                        break
+
+                attach_split = attach.split("\n",2)
+                attach = attach_split[0] + attach_split[2]
+
+                attach_split = attach1.split("\n",2)
+                attach1 = attach_split[0] + attach_split[2]
+
+                if attach != attach1:
+                    append = True
+
                 if append:
                     out.append(new_event)
     return out
 
 
-def create_mp(repo, event):
+def create_mp(repo, event, rewrite1=None):
     if repo.has_key(event['UID']):
         mp = repo.get(event['UID'])
         if mp.status != mediapackage.SCHEDULED:
@@ -98,24 +116,34 @@ def create_mp(repo, event):
     mp.setTitle(event['SUMMARY'])
     mp.setDate(event['DTSTART'].dt.replace(tzinfo=None))
 
+    catalog= mp.getCatalogs("dublincore/series")
+    if catalog:
+        mp.remove(catalog[0])
+
+    if 'identifier' in mp.metadata_series:
+        mp.metadata_series["identifier"] = None
+        mp.metadata_series['title'] = None
+    if "isPartOf" in mp.metadata_episode:
+        del mp.metadata_episode['isPartOf']
+    if 'creator' in mp.metadata_episode:
+        mp.metadata_episode['creator'] = None
+
+
 
     # ca_properties_name = 'org.opencastproject.capture.agent.properties'
     for attach_enc in event['ATTACH']:
         attach =  base64.b64decode(attach_enc)
         if attach_enc.params['X-APPLE-FILENAME'] == 'episode.xml':
+            if not rewrite1:
+                rewrite = rewrite1
             mp.addDublincoreAsString(attach, 'episode.xml', rewrite)
         elif attach_enc.params['X-APPLE-FILENAME'] == 'series.xml':
-            if mp.getSeriesIdentifier != None:
-                rewrite = False
+            if not rewrite1:
+                rewrite = rewrite1
             mp.addSeriesDublincoreAsString(attach, 'series.xml', rewrite)
         else:
             mp.addAttachmentAsString(attach, attach_enc.params['X-APPLE-FILENAME'],
                                      rewrite, attach_enc.params['X-APPLE-FILENAME'])
-    if 'identifier' in mp.metadata_series:
-        mp.metadata_series["identifier"] = None
-        mp.metadata_series['title'] = None
-    if 'creator' in mp.metadata_episode:
-        del mp.metadata_episode['creator']
     mp.marshalDublincore()
     repo.update(mp)
 
@@ -148,7 +176,7 @@ def handle_ical(ical_data, last_events, repo, scheduler, logger):
 
             for event in update_events:
                 logger and logger.info('Updating MP with UID {0} from ical'.format(event['UID']))
-                create_mp(repo, event)
+                create_mp(repo, event, False)
                 mp = repo.get(event['UID'])
                 scheduler.update_timer(mp)
 
