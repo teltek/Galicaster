@@ -12,14 +12,13 @@
 # San Francisco, California, 94105, USA.
 
 
-from gi.repository import Gtk, GdkPixbuf
+from gi.repository import Gtk
 
 from galicaster.core import context
-from galicaster.classui import get_ui_path, get_image_path
+from galicaster.classui import get_ui_path
 from galicaster.utils.miscellaneous import get_footer
 from galicaster.classui.profile import ProfileUI as ListProfile
 from galicaster.utils.resize import relabel
-from galicaster.classui import message
 from galicaster.classui.strip import StripUI
 
 from galicaster.utils.i18n import _
