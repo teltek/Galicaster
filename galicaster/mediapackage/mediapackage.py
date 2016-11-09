@@ -1434,7 +1434,6 @@ class Mediapackage(object):
         f = open(f_path, 'w')
         f.write(content)
         f.close()
-        f = open(f_path)
 
         if not rewrite:
             self.add(f_path, TYPE_CATALOG, 'dublincore/series', 'text/xml')
