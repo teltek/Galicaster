@@ -17,6 +17,7 @@ To get the diff between two versions, go to https://github.com/teltek/galicaster
  * Added a dual-channel coloured VU-Meter (Mono or Stereo)
  * Added a virtual keyboard
  * Unified the naming scheme for the signals and made them available in a page from Galicaster's github wiki (https://github.com/teltek/Galicaster/wiki/Galicaster-2.0-signals-schema)
+ * Loads galicaster plugins installed from pip
 
 * 1.4.2 (2015-06-19)
  * Add compatibility to use Opencast 1.6 and 2.1.x
