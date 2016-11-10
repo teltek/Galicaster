@@ -1,7 +1,7 @@
 # retryingest galicaster plugin
 #
 # Copyright 2014 University of Sussex
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
 # "Software"), to deal in the Software without restriction, including
@@ -9,10 +9,10 @@
 # distribute, sublicense, and/or sell copies of the Software, and to
 # permit persons to whom the Software is furnished to do so, subject to
 # the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be
 # included in all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 # EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 # MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -38,14 +38,14 @@ last_checked = time.time()
 
 
 
-def init():        
+def init():
     logger.debug('check_published set to {}'.format(check_published))
     logger.debug('check_after set to {}'.format(str(check_after)))
     logger.debug('check_nightly set to {}'.format(check_nightly))
-    
+
     try:
         dispatcher = context.get_dispatcher()
-        dispatcher.connect('timer-short', reingest)        
+        dispatcher.connect('timer-short', reingest)
     except ValueError:
         pass
 
@@ -87,6 +87,5 @@ def reingest(sender=None):
                         repo.update(mp)
                     else:
                         logger.info('Starting reingest of failed mediapackage: {}'.format(mp_id))
-                        worker.ingest(mp)
+                        worker._ingest(mp)
     last_checked = time.time()
-
