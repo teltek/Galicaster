@@ -223,6 +223,27 @@ class TestFunctions(TestCase):
         rmtree('/tmp/repo_night')
 
 
+    def test_ingest_nightly_with_params(self):
+        workflow_name = 'GC-fast_workflow'
+        workflow_parameters = 'trimHold:true;'
+        repo = Repository('/tmp/repo_night')
+        dispatcher = Dispatcher()
+        logger = Logger(None)
+        w = worker.Worker(dispatcher, repo, logger, self.client)
+
+        mp = mediapackage.Mediapackage()
+        repo.add(mp)
+        w.enqueue_nightly_job_by_name(worker.INGEST_CODE, mp, {'workflow': workflow_name, 'workflow_parameters' : workflow_parameters})
+
+        dispatcher.emit('timer-nightly')
+        time.sleep(1) # Need time to create zip
+        self.assertEqual(len(self.client.calls), 1)
+        self.assertEqual(self.client.calls[0]['workflow'], workflow_name)
+        self.assertEqual(self.client.calls[0]['workflow_parameters'], workflow_parameters)
+        self.assertEqual(mp.getOpStatus(worker.INGEST_CODE), mediapackage.OP_DONE)
+        rmtree('/tmp/repo_night')
+
+
     def test_export_to_zip(self):
         w = worker.Worker(self.dispatcher, self.repo1, self.logger, self.client)
 
