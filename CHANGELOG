@@ -17,7 +17,16 @@ To get the diff between two versions, go to https://github.com/teltek/galicaster
  * Added a dual-channel coloured VU-Meter (Mono or Stereo)
  * Added a virtual keyboard
  * Unified the naming scheme for the signals and made them available in a page from Galicaster's github wiki (https://github.com/teltek/Galicaster/wiki/Galicaster-2.0-signals-schema)
- * Loads galicaster plugins installed from pip
+ * Improved plugin lockscreen with LDAP authentication
+ * Removed plugin notifycrash
+ * Added a way to insert new elements in GUI
+ * Added a new plugin to enable/disable inputs from a button or rest
+ * Added a new plugin to control remote camera Sony EVI-H100S/H100V
+ * Improved worker to dynamically create new operations
+ * Allow to record all tracks regardless of capture.device.names (Stephen Marquard)
+ * Fixed bug: Load translations
+ * Added the option to customize the HELP message
+ * Loads galicaster plugins installed from pip or .deb packages
 
 * 1.4.2 (2015-06-19)
  * Add compatibility to use Opencast 1.6 and 2.1.x
@@ -73,7 +82,7 @@ To get the diff between two versions, go to https://github.com/teltek/galicaster
  * First version of "hide operations" feature (still in development).
  * A button in the recorder UI to swap the video streams, so that the user can customize where are they shown in the preview.
  * Fixed bug: Galicaster doesn't crash anymore when a webcam is unplugged. Now you can go back and reload the profile.
- * Fixed bug on forced users to click twice in pop-ups when using distributions like Xubuntu. 
+ * Fixed bug on forced users to click twice in pop-ups when using distributions like Xubuntu.
  * Corrected some bad interactions between the no-audio dialog and other popups.
 
 * 1.3.2 (2014-03-25)
