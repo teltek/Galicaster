@@ -22,7 +22,7 @@ To get the diff between two versions, go to https://github.com/teltek/galicaster
  * Added a way to insert new elements in GUI
  * Added a new plugin to enable/disable inputs from a button or rest
  * Added a new plugin to control remote camera Sony EVI-H100S/H100V
- * Improved worker to dynamically creater new operations
+ * Improved worker to dynamically create new operations
  * Allow to record all tracks regardless of capture.device.names (Stephen Marquard)
  * Fixed bug: Load translations
  * Added the option to customize the HELP message
