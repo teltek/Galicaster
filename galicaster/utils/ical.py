@@ -64,18 +64,7 @@ def get_updated_events(old_events, new_events):
         for new_event in new_events:
             append = False
             if old_event['UID'] == new_event['UID']:
-                if (old_event['DTSTART'].dt.replace(tzinfo=None) != new_event['DTSTART'].dt.replace(tzinfo=None) or
-                    old_event['DTEND'].dt.replace(tzinfo=None) != new_event['DTEND'].dt.replace(tzinfo=None) or
-                    old_event['SUMMARY'] != new_event['SUMMARY']):
-                    append = True
-                if 'RELATED-TO' in new_event and not 'RELATED-TO' in old_event or not 'RELATED-TO' in new_event and 'RELATED-TO' in old_event:
-                    append = True
-                elif 'RELATED-TO' in new_event and 'RELATED-TO' in old_event and old_event['RELATED-TO'] != new_event['RELATED-TO']:
-                    append = True
-                if 'ORGANIZER' in new_event and not 'ORGANIZER' in old_event or not 'ORGANIZER' in new_event and 'ORGANIZER' in old_event:
-                    append = True
-                elif 'ORGANIZER' in new_event and 'ORGANIZER' in old_event and old_event['ORGANIZER'] != new_event['ORGANIZER']:
-                    append = True
+                append = is_event_changed(new_event, old_event)
                 for attach_enc in new_event['ATTACH']:
                     attach =  base64.b64decode(attach_enc)
                     if not attach_enc.params['X-APPLE-FILENAME'] == 'episode.xml' and not attach_enc.params['X-APPLE-FILENAME'] == 'series.xml':
@@ -98,20 +87,38 @@ def get_updated_events(old_events, new_events):
                     out.append(new_event)
     return out
 
+def is_event_changed(new_event, old_event):
+    if (old_event['DTSTART'].dt.replace(tzinfo=None) != new_event['DTSTART'].dt.replace(tzinfo=None) or
+        old_event['DTEND'].dt.replace(tzinfo=None) != new_event['DTEND'].dt.replace(tzinfo=None) or
+        old_event['SUMMARY'] != new_event['SUMMARY']):
+        append = True
+    elif 'RELATED-TO' in new_event and not 'RELATED-TO' in old_event or not 'RELATED-TO' in new_event and 'RELATED-TO' in old_event:
+        append = True
+    elif 'RELATED-TO' in new_event and 'RELATED-TO' in old_event and old_event['RELATED-TO'] != new_event['RELATED-TO']:
+        append = True
+    elif 'ORGANIZER' in new_event and not 'ORGANIZER' in old_event or not 'ORGANIZER' in new_event and 'ORGANIZER' in old_event:
+        append = True
+    elif 'ORGANIZER' in new_event and 'ORGANIZER' in old_event and old_event['ORGANIZER'] != new_event['ORGANIZER']:
+        append = True
+    else:
+        append = False
 
-def create_mp(repo, event, rewrite1=None):
+    return append
+
+
+
+def create_mp(repo, event):
     if repo.has_key(event['UID']):
         mp = repo.get(event['UID'])
         if mp.status != mediapackage.SCHEDULED:
             return False
-        rewrite = True
     else:
         mp = mediapackage.Mediapackage()
         mp.status = mediapackage.SCHEDULED
         mp.manual = False
         mp.setIdentifier(event['UID'])
         repo.add(mp)
-        rewrite = False
+
 
     mp.setTitle(event['SUMMARY'])
     mp.setDate(event['DTSTART'].dt.replace(tzinfo=None))
@@ -134,16 +141,12 @@ def create_mp(repo, event, rewrite1=None):
     for attach_enc in event['ATTACH']:
         attach =  base64.b64decode(attach_enc)
         if attach_enc.params['X-APPLE-FILENAME'] == 'episode.xml':
-            if not rewrite1:
-                rewrite = rewrite1
-            mp.addDublincoreAsString(attach, 'episode.xml', rewrite)
+            mp.addDublincoreAsString(attach, 'episode.xml')
         elif attach_enc.params['X-APPLE-FILENAME'] == 'series.xml':
-            if not rewrite1:
-                rewrite = rewrite1
-            mp.addSeriesDublincoreAsString(attach, 'series.xml', rewrite)
+            mp.addSeriesDublincoreAsString(attach, 'series.xml')
         else:
             mp.addAttachmentAsString(attach, attach_enc.params['X-APPLE-FILENAME'],
-                                     rewrite, attach_enc.params['X-APPLE-FILENAME'])
+                                     attach_enc.params['X-APPLE-FILENAME'])
     mp.marshalDublincore()
     repo.update(mp)
 
@@ -176,7 +179,7 @@ def handle_ical(ical_data, last_events, repo, scheduler, logger):
 
             for event in update_events:
                 logger and logger.info('Updating MP with UID {0} from ical'.format(event['UID']))
-                create_mp(repo, event, False)
+                create_mp(repo, event)
                 mp = repo.get(event['UID'])
                 scheduler.update_timer(mp)
 

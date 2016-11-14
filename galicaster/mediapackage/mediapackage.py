@@ -1398,13 +1398,12 @@ class Mediapackage(object):
 
 
     #FIXME merge with add
-    def addDublincoreAsString(self, content, name=None, rewrite=False):
+    def addDublincoreAsString(self, content, name=None):
         """Writes information abaout an episode in a xml file.
         If name is not specified, the file is episode.xml.
         Args:
             content (str): content to be written in the xml file.
             name (str): name of the file.
-            rewrite (bool): true if the file is going to be rewritten. False otherwise.
         """
         assert path.isdir(self.getURI())
 
@@ -1414,17 +1413,15 @@ class Mediapackage(object):
         f.write(content)
         f.close()
 
-        if not rewrite:
-            self.add(f_path, TYPE_CATALOG, 'dublincore/episode', 'text/xml')
+        self.add(f_path, TYPE_CATALOG, 'dublincore/episode', 'text/xml')
 
 
-    def addSeriesDublincoreAsString(self, content, name=None, rewrite=False):
+    def addSeriesDublincoreAsString(self, content, name=None):
         """Writes information about a serie in a xml file.
         If name is not specified, the file is serie.xml
         Args:
             content (str): content to be written in the xml file.
             name (str): name of the file.
-            rewrite (bool): true if the file is going to be rewritten. False otherwise.
         Note:
             From XML (series)  to galicaster.Mediapackage
         """
@@ -1435,8 +1432,7 @@ class Mediapackage(object):
         f.write(content)
         f.close()
 
-        if not rewrite:
-            self.add(f_path, TYPE_CATALOG, 'dublincore/series', 'text/xml')
+        self.add(f_path, TYPE_CATALOG, 'dublincore/series', 'text/xml')
 
 
     def marshalDublincore(self):
@@ -1499,13 +1495,12 @@ class Mediapackage(object):
                 pass
 
     #FIXME merge with add
-    def addAttachmentAsString(self, content, name=None, rewrite=False, identifier=None):
+    def addAttachmentAsString(self, content, name=None, identifier=None):
         """Adds the information of an attachment in a file.
         If no name is specified, file is going to be named as data.
         Args:
             content (str): the information about the attachment element to be written.
             name (str): the name of the file.
-            rewrite (bool): true if the file is going to be rewritten. False otherwise.
             identifier (str): the identifier of the attachment element.
         """
         assert path.isdir(self.getURI())
@@ -1516,8 +1511,7 @@ class Mediapackage(object):
         f.write(content)
         f.close()
 
-        if not rewrite:
-            self.add(f_path, etype=TYPE_ATTACHMENT, identifier=identifier)
+        self.add(f_path, etype=TYPE_ATTACHMENT, identifier=identifier)
 
 
     def getOCCaptureAgentProperty(self, name):
