@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 
@@ -26,7 +26,7 @@ from galicaster.mediapackage import repository
 from galicaster.utils import ical
 
 class TestFunctions(TestCase):
-    
+
     base_dir = get_resource('ical')
 
     def setUp(self):
@@ -34,15 +34,15 @@ class TestFunctions(TestCase):
 
     def tearDown(self):
         rmtree(self.tmppath)
-    
-    def test_ical_create_mp(self):   
+
+    def test_ical_create_mp(self):
         repo = repository.Repository(self.tmppath)
-        
+
         events = ical.get_events_from_file_ical(path.join(self.base_dir, 'test.ical'))
-        
+
         for event in events:
             ical.create_mp(repo, event)
-        
+
         next = repo.get_next_mediapackage()
         self.assertEqual(next.getDate(), datetime.strptime('2019-04-05 11:00:00', '%Y-%m-%d %H:%M:%S'))
         self.assertEqual(len(next.getElements()), 2)
@@ -52,23 +52,29 @@ class TestFunctions(TestCase):
 
         nexts = repo.get_next_mediapackages()
         self.assertEqual(nexts[0].getDate(), datetime.strptime('2019-04-05 11:00:00', '%Y-%m-%d %H:%M:%S'))
-            
+
 
     def test_ical_get_deleted_events(self):
         old_events = ical.get_events_from_file_ical(path.join(self.base_dir, 'test.ical'))
         new_events = ical.get_events_from_file_ical(path.join(self.base_dir, 'none.ical'))
-        
+
         delete_events = ical.get_deleted_events(old_events, new_events)
 
         self.assertEqual(len(delete_events), 1)
-        
-        
+
+
     def test_ical_get_updated_events(self):
         old_events = ical.get_events_from_file_ical(path.join(self.base_dir, 'test.ical'))
         new_events = ical.get_events_from_file_ical(path.join(self.base_dir, 'test_update.ical'))
-        
+
         update_events = ical.get_updated_events(old_events, new_events)
 
         self.assertEqual(len(update_events), 0)
 
+    def test_ical_get_updated_events_updates(self):
+        old_events = ical.get_events_from_file_ical(path.join(self.base_dir, 'testv2.ical'))
+        new_events = ical.get_events_from_file_ical(path.join(self.base_dir, 'testv2_update.ical'))
 
+        update_events = ical.get_updated_events(old_events, new_events)
+
+        self.assertEqual(len(update_events), 6)
