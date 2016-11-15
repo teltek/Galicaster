@@ -70,7 +70,7 @@ class RecorderService(object):
         self.logger.debug("Autorecover mode: {}".format(self.autorecover))
 
         self.dispatcher.connect("init", WeakMethod(self, '_handle_init'))
-        self.dispatcher.connect("action-reload-profile", WeakMethod(self, '_handle_reload_profile'))
+        self.dispatcher.connect_ui("action-reload-profile", WeakMethod(self, '_handle_reload_profile'))
         self.dispatcher.connect("recorder-error", WeakMethod(self, '_handle_error'))
 
 
