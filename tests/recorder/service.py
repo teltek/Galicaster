@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 
@@ -91,7 +91,7 @@ class TestFunctions(TestCase):
         def get_bins_info(self):
             for bin in self.bins:
                 bin['mimetype'] = 'video/avi'
-            return self.bins 
+            return self.bins
 
 
     def setUp(self):
@@ -109,15 +109,15 @@ class TestFunctions(TestCase):
 
     def test_init(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
-        
+
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         self.assertEqual(recorder_service.status, INIT_STATUS)
         self.assertEqual(recorder_service.get_recorded_time(), 0)
-        
+
 
     def test_preview(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
-        
+
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         self.assertEqual(recorder_service.status, INIT_STATUS)
         recorder_service.preview()
@@ -135,7 +135,7 @@ class TestFunctions(TestCase):
     @attr('notravis')
     def test_recording(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
-        
+
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         self.assertEqual(recorder_service.status, INIT_STATUS)
         recorder_service.preview()
@@ -155,7 +155,7 @@ class TestFunctions(TestCase):
     @attr('notravis')
     def test_stop_recoding_on_pause(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
-        
+
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         self.assertEqual(recorder_service.status, INIT_STATUS)
         recorder_service.preview()
@@ -179,7 +179,7 @@ class TestFunctions(TestCase):
     @attr('notravis')
     def test_error_and_recover(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
-        
+
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         self.assertEqual(recorder_service.status, INIT_STATUS)
         recorder_service.preview()
@@ -200,11 +200,12 @@ class TestFunctions(TestCase):
         dispatcher.emit("timer-long")
         self.assertEqual(recorder_service.status, RECORDING_STATUS)
         self.assertNotEqual(recorder_service.current_mediapackage, None)
-        
+
 
     def test_handle_reload_profile(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
-        
+        #Necessary for execute test without Glib loop
+        dispatcher.connect_ui = dispatcher.connect
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         self.assertEqual(recorder_service.status, INIT_STATUS)
         recorder_service.preview()
@@ -227,7 +228,7 @@ class TestFunctions(TestCase):
     def test_new_recording_when_recording(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         conf.set("allows", "overlap", "True")
-        
+
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         recorder_service.preview()
         self.__sleep()
@@ -245,7 +246,7 @@ class TestFunctions(TestCase):
     @attr('notravis')
     def test_new_recording_when_recording_not_allow(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
-        
+
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         recorder_service.preview()
         self.__sleep()
@@ -264,7 +265,7 @@ class TestFunctions(TestCase):
     def test_new_recording_when_paused(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         conf.set("allows", "overlap", "True")
-        
+
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
         recorder_service.preview()
         self.__sleep()
@@ -277,13 +278,13 @@ class TestFunctions(TestCase):
         self.assertEqual(len(repo), 1)
         self.__sleep()
         self.assertEqual(recorder_service.status, RECORDING_STATUS)
-        recorder_service.stop()        
+        recorder_service.stop()
         self.assertEqual(len(repo), 2)
 
 
     @attr('notravis')
     def test_record_scheduled_mp(self):
-        dispatcher, repo, worker, conf, logger = self.__get_dependencies()        
+        dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
 
         self.assertEqual(len(repo), 0)
@@ -320,7 +321,7 @@ class TestFunctions(TestCase):
 
         for mp in repo.values():
             self.assertEqual(mp.status, mediapackage.RECORDED)
-            
+
 
 
 
