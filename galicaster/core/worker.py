@@ -469,7 +469,7 @@ class Worker(object):
     def operation_error(self, mp, OP_CODE, exc):
         self.logger.error("Failed {} for MP {}. Exception: {}".format(JOB_NAMES[OP_CODE], mp.getIdentifier(), exc))
         mp.setOpStatus(OP_CODE, mediapackage.OP_FAILED)
-        self.dispatcher.emit('operation-stopped', OP_CODE, mp, False, None)
+        self.dispatcher.emit('operation-stopped', OP_CODE, mp, False, exc)
         self.repo.update(mp)
 
 
