@@ -87,5 +87,5 @@ def reingest(sender=None):
                         repo.update(mp)
                     else:
                         logger.info('Starting reingest of failed mediapackage: {}'.format(mp_id))
-                        worker._ingest(mp)
+                        worker.enqueue_job_by_name('ingest',mp)
     last_checked = time.time()
