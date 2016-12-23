@@ -21,10 +21,12 @@ gi.require_version('Gst', '1.0')
 gi.require_version('GstPbutils', '1.0')
 gi.require_version('Gtk', '3.0')
 
-from gi.repository import Gtk, GLib
-from gi.repository import Gst
+from gi.repository import Gtk     # noqa: ignore=E402
+from gi.repository import GLib    # noqa: ignore=E402
+from gi.repository import Gst     # noqa: ignore=E402
 
-from galicaster.core import core
+from galicaster.core import core  # noqa: ignore=E402
+
 
 def main(args):
     def usage():
@@ -50,13 +52,13 @@ def main(args):
         Gtk.main()
     except KeyboardInterrupt:
         gc.emit_quit()
-        print "Interrupted by user!"
+        print("Interrupted by user!")
     except Exception as exc:
         # debug
         # print traceback.format_exc()
 
         msg = "Error starting Galicaster: {0}".format(exc)
-        print msg
+        print(msg)
 
         from galicaster.core import context
         logger = context.get_logger()
@@ -65,7 +67,6 @@ def main(args):
         d = context.get_dispatcher()
         d.emit("quit")
         return -1
-
 
     return 0
 
