@@ -100,7 +100,15 @@ class MetadataClass(Gtk.Widget):
         dialog.vbox.reorder_child(strip,0)
 
         if parent != None:
-            dialog.set_transient_for(parent.get_toplevel())
+            # FIXME: The keyboard plugin uses Ubuntu Onboard.
+            # https://bugs.launchpad.net/onboard/+bug/1627819
+            # There is a bug with this plugin where the "dock to edges"
+            # option does not work with the "force to top" one, causing
+            # Onboard to appear behind when Galicaster is on fullscreen.
+            # THIS affects #321. A better solution should be implemented.
+            from galicaster import plugins
+            if not parent.is_fullscreen or 'galicaster.plugins.keyboard' not in plugins.loaded:
+                dialog.set_transient_for(parent.get_toplevel())
             dialog.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
             dialog_style_context = dialog.get_style_context()
             window_classes = parent.get_style_context().list_classes()
