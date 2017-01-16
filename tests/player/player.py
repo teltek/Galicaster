@@ -6,9 +6,9 @@
 # Copyright (c) 2014, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 
@@ -28,54 +28,54 @@ from galicaster.player import Player
 
 
 class TestFunctions(TestCase):
-    
+
     base_dir = get_resource('sbs')
 
-    def test_play_with_audio(self):   
+    def test_play_with_audio(self):
         screen = path.join(self.base_dir, 'SCREEN.mp4')
-        
+
         files = {"SCREEN": screen}
-        players = {"Player": "playertest"}
+        players = {}
         player = Player(files, players)
         player.play()
         player.stop()
 
-    def test_play_without_audio(self):   
+    def test_play_without_audio(self):
         screen = path.join(self.base_dir, 'SCREEN_NO_AUDIO.mp4')
-        
+
         files = {"SCREEN": screen}
-        players = {"Player": "playertest"}
+        players = {}
         player = Player(files, players)
         player.play()
         player.stop()
 
-    def test_play_two_videos_without_audio(self):   
+    def test_play_two_videos_without_audio(self):
         screen = path.join(self.base_dir, 'SCREEN_NO_AUDIO.mp4')
         camera = path.join(self.base_dir, 'CAMERA_NO_AUDIO.mp4')
-        
+
         files = {"SCREEN": screen, "CAMERA": camera}
-        players = {"Player": "playertest"}
+        players = {}
         player = Player(files, players)
         player.play()
         player.stop()
 
-    def test_play_two_videos_and_audio(self):   
+    def test_play_two_videos_and_audio(self):
         screen = path.join(self.base_dir, 'SCREEN_NO_AUDIO.mp4')
         camera = path.join(self.base_dir, 'CAMERA_NO_AUDIO.mp4')
         audio = path.join(self.base_dir, 'AUDIO.mp3')
-        
+
         files = {"SCREEN": screen, "CAMERA": camera, "AUDIO": audio}
-        players = {"Player": "playertest"}
+        players = {}
         player = Player(files, players)
         player.play()
         player.stop()
 
-    def test_play_two_videos_audio_embedded(self):   
+    def test_play_two_videos_audio_embedded(self):
         screen = path.join(self.base_dir, 'SCREEN.mp4')
         camera = path.join(self.base_dir, 'CAMERA.mp4')
-        
+
         files = {"SCREEN": screen, "CAMERA": camera}
-        players = {"Player": "playertest"}
+        players = {}
         player = Player(files, players)
         player.play()
         player.stop()
