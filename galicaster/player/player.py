@@ -176,6 +176,9 @@ class Player(object):
         self.seek(0)
         self.dispatcher.emit("player-status", STOPPED)
         self.get_status()
+        # TODO: This is a WORKAROUND for https://github.com/teltek/Galicaster/issues/456
+        for player in self.players.values():
+            player.set_double_buffered(False)
         return None
 
     def quit(self):
