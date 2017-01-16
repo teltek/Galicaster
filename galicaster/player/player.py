@@ -148,6 +148,9 @@ class Player(object):
         else:
             self.dispatcher.emit("player-status", PLAYING)
             self.pipeline.set_state(Gst.State.PLAYING)
+        # TODO: This is a WORKAROUND for https://github.com/teltek/Galicaster/issues/456
+        for player in self.players.values():
+            player.set_double_buffered(True)
         return None
 
     def pause(self):
@@ -158,6 +161,9 @@ class Player(object):
         self.pipeline.set_state(Gst.State.PAUSED)
         self.dispatcher.emit("player-status", PAUSED)
         self.get_status()
+        # TODO: This is a WORKAROUND for https://github.com/teltek/Galicaster/issues/456
+        for player in self.players.values():
+            player.set_double_buffered(False)
 
     def stop(self):
         """
