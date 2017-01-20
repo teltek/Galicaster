@@ -26,17 +26,17 @@ try:
 except:
     version = ""
 
-INIT_ENDPOINT = '/info/me.json'
-ME_ENDPOINT = '/info/me.json'
-SETRECORDINGSTATE_ENDPOINT = '/capture-admin/recordings/{id}'
-SETSTATE_ENDPOINT = '/capture-admin/agents/{hostname}'
-SETCONF_ENDPOINT = '/capture-admin/agents/{hostname}/configuration'
-INGEST_ENDPOINT = '/ingest/addZippedMediaPackage'
-ICAL_ENDPOINT = '/recordings/calendars'
-SERIES_ENDPOINT = '/series/series.json'
-SERVICE_REGISTRY_ENDPOINT = '/services/available.json'
-SEARCH_ENDPOINT = '/search/episode.json'
-WORKFLOWS_ENDPOINT = '/workflow/definitions.json'
+INIT_ENDPOINT = 'info/me.json'
+ME_ENDPOINT = 'info/me.json'
+SETRECORDINGSTATE_ENDPOINT = 'capture-admin/recordings/{id}'
+SETSTATE_ENDPOINT = 'capture-admin/agents/{hostname}'
+SETCONF_ENDPOINT = 'capture-admin/agents/{hostname}/configuration'
+INGEST_ENDPOINT = 'ingest/addZippedMediaPackage'
+ICAL_ENDPOINT = 'recordings/calendars'
+SERIES_ENDPOINT = 'series/series.json'
+SERVICE_REGISTRY_ENDPOINT = 'services/available.json'
+SEARCH_ENDPOINT = 'search/episode.json'
+WORKFLOWS_ENDPOINT = 'workflow/definitions.json'
 
 SEARCH_SERVICE_TYPE = 'org.opencastproject.search'
 INGEST_SERVICE_TYPE = 'org.opencastproject.ingest'
