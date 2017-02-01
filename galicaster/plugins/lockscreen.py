@@ -43,7 +43,7 @@ def show_msg(element=None):
 
     show = []
     auth_method = conf.get_choice('lockscreen', 'authentication', ['basic', 'ldap'], 'basic')
-    quit_button = conf.get_boolean('lockscreen','quit')
+    quit_button = conf.get_boolean('lockscreen','enable_quit_button')
 
     if auth_method == "ldap":
         show = ["username_label","username_entry"]
