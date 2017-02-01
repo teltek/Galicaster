@@ -73,6 +73,10 @@ def index():
             "/screen" : "get a screenshoot of the active",
             "/logstale" : "check if log is stale (threads crashed)",
             "/quit" : "Quit Galicaster",
+            "/enable_input" : "enable inputs",
+            "/disable_input" : "disable inputs",
+            "/enable_preview" : "enable preview",
+            "/disable_preview" : "disable preview",
         }
     endpoints.update(text)
     return json.dumps(endpoints)
