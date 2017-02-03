@@ -153,7 +153,7 @@ class GCWindow(Gtk.Window):
         k1 = self.get_size()[0] / 1920.0
         k2 = self.get_size()[0] / 1080.0
         return k1, k2
-        
+
     def discover_size(self):
         """Retrieves the current size of the window where the application will be shown"""
         size = (1920, 1080)
@@ -254,7 +254,6 @@ class GCWindow(Gtk.Window):
             if self.logger:
                 self.logger.info("Cancel Quit")
 
-
     def do_quit(self,element=None):
         if self.logger:
             self.logger.info("Quit Galicaster")
@@ -270,17 +269,22 @@ class GCWindow(Gtk.Window):
 
         buttons = (Gtk.STOCK_QUIT, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
         warning = message.PopUp(message.WARN_QUIT, text,
-                                self, buttons)
+                                self, buttons, self.on_shutdown_dialog_response)
 
-        if warning.response in message.POSITIVE:
-            if self.logger:
-                self.logger.info("Shutdown Galicaster")
-            if self.dispatcher:
-                self.dispatcher.emit('quit')
-            UtilsShutdown()
+    def on_shutdown_dialog_response(self, response_id, **kwargs):
+        if response_id in message.POSITIVE:
+            self.do_shutdown()
         else:
             if self.logger:
                 self.logger.info("Cancel Shutdown")
+
+    def do_shutdown(self, element=None):
+        if self.logger:
+            self.logger.info("Shutdown Galicaster")
+        if self.dispatcher:
+            self.dispatcher.emit('quit')
+        UtilsShutdown()
+
 
     def on_key_press(self, source, event):
         self.dispatcher.emit("action-key-press", source, event)
