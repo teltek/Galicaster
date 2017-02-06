@@ -152,6 +152,8 @@ class GCvideotest(Gst.Bin, base.Base):
         #if self.options["color2"]:
         #    source.set_property('background-color', int(self.options['color2']))
 
+        self.set_option_in_pipeline('caps', 'gc-videotest-filter', 'caps', None)
+
     def changeValve(self, value):
         valve1=self.get_by_name('gc-videotest-valve')
         valve1.set_property('drop', value)
