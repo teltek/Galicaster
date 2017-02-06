@@ -166,7 +166,7 @@ def handle_ical(ical_data, last_events, repo, scheduler, logger):
 
         for event in events:
             if not repo.get(event['UID']):
-                logger and logger.debug('Creating MP with UID {0} from ical'.format(event['UID']))
+                logger and logger.info('Creating MP with UID {0} from ical'.format(event['UID']))
                 create_mp(repo, event)
 
         if last_events:

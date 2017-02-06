@@ -86,7 +86,7 @@ def set_status_label(label1, mute_type):
         if recorder.get_mute_status()[mute_type][elem]:
             status+=" "+elem
     label1.set_text(status)
-    logger.debug("Status label changed to: {}".format(status))
+    logger.info("Status label changed to: {}".format(status))
 
 def mute_inputs(element, mute_type, label1, to_disable=[], button_status=None):
     global logger, recorder

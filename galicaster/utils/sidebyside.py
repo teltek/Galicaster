@@ -91,13 +91,13 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
     if audio:
         pipestr = "".join((pipestr, pipestr_audio_file.format(AUDIO=audio)))
         if logger:
-            logger.debug('Audio track detected: %s', audio)
+            logger.info('Audio track detected: %s', audio)
     else:
         if logger:
-            logger.debug('Audio embeded')
+            logger.info('Audio embeded')
         embeded = True
 
-    logger and logger.debug("Output file {} and layout {}".format(out, layout))
+    logger and logger.info("Output file {} and layout {}".format(out, layout))
     parameters = {'OUT': out, 'SCREEN': screen, 'CAMERA': camera}
     parameters.update(layouts[layout])
     pipeline = Gst.parse_launch(pipestr.format(**parameters))

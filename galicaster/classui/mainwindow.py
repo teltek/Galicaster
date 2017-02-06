@@ -188,7 +188,7 @@ class GCWindow(Gtk.Window):
                 else:
                     m(element,**kwargs)
                     box.show_all()
-                    self.logger.debug("Element inserted in id: {}".format(box_id))
+                    self.logger.info("Element inserted in id: {}".format(box_id))
                     return element
         except Exception as error:
             self.logger.error("Error trying to add the element: {}".format(error))
@@ -230,7 +230,7 @@ class GCWindow(Gtk.Window):
     def __on_delete_event(self):
         """Emits the quit signal to its childs"""
         if self.logger:
-            self.logger.debug("Delete Event Received")
+            self.logger.info("Delete Event Received")
         if self.dispatcher:
             self.dispatcher.emit('action-quit')
         return True
