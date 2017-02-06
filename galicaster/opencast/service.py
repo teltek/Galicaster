@@ -166,7 +166,7 @@ class OCService(object):
 
             
     def update_series(self):
-        self.logger.debug('Updating series from server')
+        self.logger.info('Updating series from server')
         self.series = get_series()
 
         

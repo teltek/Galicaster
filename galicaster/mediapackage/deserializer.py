@@ -60,7 +60,7 @@ def fromXML(xml, logger=None):
 
     except IOError:
         if logger:
-            logger.debug("Mediapackage "+mp.identifier+" without galicaster.xml")
+            logger.error("The Mediapackage: "+mp.identifier+" : has no galicaster.xml file")
         without_galicaster = True
 
 

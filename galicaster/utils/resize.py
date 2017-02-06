@@ -51,6 +51,6 @@ def resize_button(button,**kwargs):
             relabel(image[0],kwargs.get('size_label',None),False)
     except Exception as exc:
         logger = context.get_logger()
-        logger.debug(exc)
+        logger.error(exc)
 
     return button

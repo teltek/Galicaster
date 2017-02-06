@@ -146,7 +146,7 @@ class OCHTTPClient(object):
         c.close()
         if status_code != 200 and status_code != 302 and status_code != 304:
             if (status_code > 200) and (status_code < 300):
-                self.logger and self.logger.debug("Opencast client ({}) sent a response with status code {}".format(urlparse.urlunparse(url), status_code))
+                self.logger and self.logger.warning("Opencast client ({}) sent a response with status code {}".format(urlparse.urlunparse(url), status_code))
             else:
                 title = self.find_between(b.getvalue(), "<title>", "</title>")
                 self.logger and self.logger.error('call error in %s, status code {%r}: %s', 
@@ -263,7 +263,7 @@ class OCHTTPClient(object):
 
     def _get_endpoints(self, service_type):
         if self.logger:
-            self.logger.debug('Looking up Opencast endpoint for %s', service_type)
+            self.logger.info('Looking up Opencast endpoint for %s', service_type)
         services = self.__call('GET', SERVICE_REGISTRY_ENDPOINT, {}, {'serviceType': service_type})
         services = json.loads(services)
         return services['services']['service']
@@ -306,7 +306,7 @@ class OCHTTPClient(object):
                 return True
             else:
                 if adminHost != host:
-                    self.logger and self.logger.debug("Shared IP address ({}) between {} and {}, it will be used {}".format(adminIP, adminHost, host, server['host']))
+                    self.logger and self.logger.info("Shared IP address ({}) between {} and {}, it will be used {}".format(adminIP, adminHost, host, server['host']))
                     return True
         except Exception as exc:
             self.logger and self.logger.error("Problem on verifying the ingest server {} (on getting the IP of adminHost={} and host={}), exception {}".format(server['host'], adminHost, host, exc))
