@@ -268,7 +268,7 @@ class GCWindow(Gtk.Window):
                 }
 
         buttons = (Gtk.STOCK_QUIT, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
-        warning = message.PopUp(message.WARN_QUIT, text,
+        warning = message.PopUp(message.WARN_QUIT, text, # noqa ; This is a GTK.PopUp. The result IS used at `self.on_shutdown_dialog_response`
                                 self, buttons, self.on_shutdown_dialog_response)
 
     def on_shutdown_dialog_response(self, response_id, **kwargs):
