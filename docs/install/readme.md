@@ -17,7 +17,7 @@ $ sudo apt-get install libfaac0
 $ sudo apt-get install python-pip python-setuptools
 
 #### iCalendar
-$ sudo pip install icalendar=
+$ sudo pip install icalendar
 
 #### Capture card configuration tools
 $ sudo apt-get install v4l-conf v4l-utils guvcview
