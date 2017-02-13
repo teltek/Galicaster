@@ -4,33 +4,33 @@ INSTALL
 Dependencies
 ------------
 
-# Python, Glib, Gobject and GTK2 in Linux
+#### Python, Glib, Gobject and GTK2 in Linux
 
-# Gstreamer
+#### Gstreamer
 $ sudo apt-get install \
     gstreamer0.10-ffmpeg gstreamer0.10-alsa gstreamer0.10-plugins-bad gstreamer0.10-plugins-bad-multiverse \
     gstreamer0.10-plugins-base gstreamer0.10-plugins-base-apps gstreamer0.10-plugins-good \
     gstreamer0.10-plugins-ugly 
 $ sudo apt-get install libfaac0 
 
-# python-setuptools and pip
+#### python-setuptools and pip
 $ sudo apt-get install python-pip python-setuptools
 
-# iCalendar
+#### iCalendar
 $ sudo pip install icalendar=
 
-# Capture card configuration tools
+#### Capture card configuration tools
 $ sudo apt-get install v4l-conf v4l-utils guvcview
 
-# Glade package to use it on Python
+#### Glade package to use it on Python
 $ sudo apt-get install phyton-glade2
 
   * N.B.: Until Ubuntu 10.10 (included), "ivtv-utils" must be used instead of "v4l-utils".
 
-# (optional)pyGst
+#### (optional)pyGst
 $ sudo pip install pygst
 
-# (optional) python-bottle for the REST plugin
+#### (optional) python-bottle for the REST plugin
 $ sudo apt-get install python-bottle
 
 Configuration
