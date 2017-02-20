@@ -15,10 +15,6 @@ Recording Area GUI
 
 TODO:
  * check_status_area timeout???
- * Si se quita de pausado (termina una grabacion agendada mientras está pausado) quita el pause
-        elif state == GC_STOP:
-            if self.previous == GC_PAUSED:
-                self.pause_dialog.destroy()
  * Waiting vs Iddle en status
      if self.next == None and state == GC_PREVIEW:
             self.view.set_displayed_row(GC_PRE2)
@@ -156,7 +152,7 @@ class RecorderClassUI(Gtk.Box):
 
         self.help_main_str = self.conf.get('help', 'main')
         self.help_text_str = self.conf.get('help', 'text')
-        
+
         # OTHER
         builder.connect_signals(self)
         self.net_activity = self.conf.get_boolean('ingest', 'active')
@@ -707,6 +703,7 @@ class RecorderClassUI(Gtk.Box):
         swapb = self.gui.get_object("swapbutton")
 
         if status == INIT_STATUS:
+            self.pause_dialog.destroy()
             record.set_sensitive(False)
             pause.set_sensitive(False)
             stop.set_sensitive(False)
