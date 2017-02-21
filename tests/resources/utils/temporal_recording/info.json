@@ -1,0 +1,45 @@
+{
+    "creator": "", 
+    "id": "4ea1049f-c946-4d36-95d4-b8d01223bd73", 
+    "scheduled": false, 
+    "start": "2016-06-10T09:41:07", 
+    "status": 3, 
+    "title": "Recording started at 2016-06-10T11:41:07", 
+    "tracks": [
+        {
+            "active": "True", 
+            "caps": "video/x-raw-yuv,framerate=25/1,width=640,height=480", 
+            "color1": 4294967295, 
+            "color2": 4278190080, 
+            "device": "videotest", 
+            "file": "CAMERA.mpeg", 
+            "flavor": "presenter", 
+            "location": "default_bars", 
+            "mimetype": "video/avi", 
+            "muxer": "avimux", 
+            "name": "Bars", 
+            "path": "/home/hcaloto/Repository/rectemp", 
+            "pattern": 0, 
+            "videoencoder": "x264enc pass=5 quantizer=22 speed-preset=4", 
+            "videosink": "xvimagesink"
+        }, 
+        {
+            "active": "True", 
+            "caps": "video/x-raw-yuv,framerate=25/1,width=640,height=480", 
+            "color1": 4294967295, 
+            "color2": 4278190080, 
+            "device": "videotest", 
+            "file": "SCREEN.mpeg", 
+            "flavor": "presentation", 
+            "location": "default_static", 
+            "mimetype": "video/avi", 
+            "muxer": "avimux", 
+            "name": "Static", 
+            "path": "/home/hcaloto/Repository/rectemp", 
+            "pattern": 1, 
+            "videoencoder": "x264enc pass=5 quantizer=22 speed-preset=4", 
+            "videosink": "xvimagesink"
+        }
+    ], 
+    "uri": null
+}
