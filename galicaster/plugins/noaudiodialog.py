@@ -6,9 +6,9 @@
 # Copyright (c) 2012, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 """
@@ -18,10 +18,9 @@ In case the focus is recovered the dialog may be shown again.
 The dialog blockade is cancelled when the profile is reloaded or changed and when a recording starts.
 """
 
-import gtk
-import pango
+from gi.repository import Gtk, Gdk
+from gi.repository import Pango
 from galicaster.core import context
-from galicaster.classui import get_ui_path, get_image_path
 from galicaster.classui.elements.message_header import Header
 from threading import Lock
 
@@ -44,21 +43,20 @@ def init():
     dispatcher = context.get_dispatcher()
     conf = context.get_conf()
     no_audio_dialog = create_ui()
-    
+
     focus_is_active = not conf.get_boolean('basic','admin')
 
     dispatcher.connect('audio-mute', warning_audio_show)
     dispatcher.connect('audio-recovered', warning_audio_hide)
-    dispatcher.connect('galicaster-status', event_change_mode)
-    dispatcher.connect('reload-profile', clear_data_and_check)
-    dispatcher.connect('restart_preview', deactivate_hidden_and_check)
-    dispatcher.connect('starting-record', deactivate_hidden_and_check)
-    dispatcher.connect('upcoming-recording', deactivate_hidden_and_check)
-    dispatcher.connect('disable-no-audio', force_hide)
-    dispatcher.connect('enable-no-audio', disable_force_hide)
+    dispatcher.connect('view-changed', event_change_mode)
+    dispatcher.connect('action-reload-profile', clear_data_and_check)
+    dispatcher.connect('recorder-starting', deactivate_hidden_and_check)
+    dispatcher.connect('recorder-upcoming-event', deactivate_hidden_and_check)
+    dispatcher.connect('action-audio-disable-msg', force_hide)
+    dispatcher.connect('action-audio-enable-msg', disable_force_hide)
 
 def force_hide(element=None):
-    global no_audio_dialog    
+    global no_audio_dialog
     global was_shown
     global keep_hidden
     global old_keep_hidden
@@ -78,7 +76,7 @@ def disable_force_hide(element=None):
         keep_hidden = old_keep_hidden
         if was_shown:
             __check_dialog()
-    
+
 def __check_dialog():
 
     global no_audio_dialog
@@ -111,14 +109,14 @@ def deactivate_hidden_and_check(element=None):
     with lock:
         keep_hidden = False
         __check_dialog()
-    
+
     return True
 
 
 def clear_data_and_check(element=None):
 
     global no_audio
-
+    no_audio = False
     with lock:
         __check_dialog()
 
@@ -148,7 +146,7 @@ def warning_audio_hide(element=None):
         no_audio = False
         __check_dialog()
 
-    return True           
+    return True
 
 
 def event_change_mode(orig, old_state, new_state):
@@ -158,7 +156,7 @@ def event_change_mode(orig, old_state, new_state):
 
     global focus_is_active
 
-    if new_state == 0: 
+    if new_state == 0:
         with lock:
             focus_is_active = True
             __check_dialog()
@@ -171,31 +169,31 @@ def event_change_mode(orig, old_state, new_state):
 
 def refuse_focus(signal, data):
     data.grab_focus()
-    
+
 
 def create_ui():
     """
     Creates the No Audio Dialog interface
     """
     parent =  context.get_mainwindow().get_toplevel()
-    ui = gtk.Dialog("Warning", parent)
+    ui = Gtk.Dialog("Warning", parent)
 
     #Properties
-    ui.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLBAR)
+    ui.set_type_hint(Gdk.WindowTypeHint.TOOLBAR)
     ui.set_skip_taskbar_hint(True)
     ui.set_modal(False)
     ui.set_accept_focus(False)
     ui.set_destroy_with_parent(True)
 
-   
+
     size = parent.get_size()
-    ui.set_property('width-request',int(size[0]/3)) 
+    ui.set_property('width-request',int(size[0]/3))
     if size[0] < 1300:
-        ui.set_property('width-request',int(size[0]/2.3)) 
+        ui.set_property('width-request',int(size[0]/2.3))
     wprop = size[0]/1920.0
     hprop = size[1]/1080.0
-    ui.set_position(gtk.WIN_POS_CENTER_ON_PARENT)
-    ui.action_area.set_layout(gtk.BUTTONBOX_SPREAD)
+    ui.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
+    ui.action_area.set_layout(Gtk.ButtonBoxStyle.SPREAD)
 
     #Buttons
     conf = context.get_conf()
@@ -216,27 +214,27 @@ def create_ui():
     strip.show()
 
     #Labels
-    label1 = gtk.Label(_("No Audio!!"))
-    label2 = gtk.Label(_("Pick up the microphone\nPress the mute button"))
+    label1 = Gtk.Label(label=_("No Audio!!"))
+    label2 = Gtk.Label(label=_("Pick up the microphone\nPress the mute button"))
     desc1 = "bold " + str(int(hprop*64))+"px"
     desc2 = "bold " + str(int(hprop*24))+"px"
-    font1=pango.FontDescription(desc1)
-    font2=pango.FontDescription(desc2)
+    font1=Pango.FontDescription(desc1)
+    font2=Pango.FontDescription(desc2)
     label1.modify_font(font1)
     label2.modify_font(font2)
     label1.set_alignment(0.5,0.5)
     label2.set_alignment(0.5,0.5)
     # Warning icon
-    box = gtk.HBox(spacing=0) # between image and text
-    image = gtk.Image()
-    image.set_from_icon_name(gtk.STOCK_DIALOG_WARNING, gtk.ICON_SIZE_DIALOG)
+    box = Gtk.HBox(spacing=0) # between image and text
+    image = Gtk.Image()
+    image.set_from_icon_name(Gtk.STOCK_DIALOG_WARNING, Gtk.IconSize.DIALOG)
     image.set_pixel_size(int(wprop*80))
     box.pack_start(image,True,True,0)
-    box.pack_start(label1,True,True,0)  
+    box.pack_start(label1,True,True,0)
     image.show()
     box.show()
     #ui.vbox.pack_start(box, True, False, int(hprop*5))
-    another_box = gtk.VBox(spacing=int(hprop*20))
+    another_box = Gtk.VBox(spacing=int(hprop*20))
     another_box.pack_start(box, True, False, 0)
     another_box.pack_start(label2, True, False, 0)
     another_box.show()
@@ -245,26 +243,18 @@ def create_ui():
     #ui.vbox.pack_start(box, True, False, 0)
     #ui.vbox.pack_start(label2, True, False, 0)
     resize_buttons(ui.action_area,int(wprop*25),True)
-    ui.vbox.set_child_packing(ui.action_area, True, True, int(hprop*25), gtk.PACK_END)
-    
+    ui.vbox.set_child_packing(ui.action_area, True, True, int(hprop*25), Gtk.PackType.END)
+
     label1.show()
     label2.show()
     return ui
 
-def set_font(description):
-        """Asign a font description to a text"""
-        alist = pango.AttrList()
-        font=pango.FontDescription(description)
-        attr=pango.AttrFontDesc(font,0,-1)
-        alist.insert(attr)
-        return alist
-
-def resize_buttons(area, fsize, equal = False):    
+def resize_buttons(area, fsize, equal = False):
         """Adapts buttons to the dialog size"""
-        font = set_font("bold "+str(fsize)+"px")
+        font = Pango.FontDescription("bold "+str(fsize)+"px")
         for button in area.get_children():
             for element in button.get_children():
-                if type(element) == gtk.Label:
-                    element.set_attributes(font)
+                if type(element) == Gtk.Label:
+                    element.modify_font(font)
                     if equal:
                         element.set_padding(-1,int(fsize/2.6))

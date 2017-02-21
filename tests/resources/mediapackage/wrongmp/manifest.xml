@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mediapackage duration="2106" id="dae91194-2114-481b-8908-8a8962baf8dc" start="2011-05-06T17:54:04" xmlns:oc="http://mediapackage.opencastporject.org">
+<media>
+<track ref="track:8f0424b9-37ca-477e-bb95-739a2cdefb46" id="track-1" type="presenter/source">
+<mimetype>video/mpeg</mimetype>
+<url>CAMERA.mpeg</url>
+<duration>2160</duration>
+</track>
+<track ref="track:6ee673db-ad05-41de-b58d-8afc6500f485" id="track-2" type="presentation/source">
+<mimetype>video/mpeg</mimetype>
+<url>SCREEN.mpeg</url>
+<duration>2106</duration>
+</track>
+</media>
+<metadata>
+<catalog ref="catalog:catalog-1" id="catalog-1" type="dublincore/episode">
+<mimetype>text/xml</mimetype>
+<url>episode.xml</url>
+</catalog>
+</metadata>
+</mediapackage>

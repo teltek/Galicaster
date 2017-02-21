@@ -16,8 +16,6 @@ The 'datapath' bin is preserved to keep backwards compatibility. The 'datapath' 
 """
 
 from galicaster.recorder.bins import v4l2
-from galicaster.recorder import module_register
-
 
 class GCdatapath(v4l2.GCv4l2):
 
@@ -30,7 +28,7 @@ class GCdatapath(v4l2.GCv4l2):
         "flavor": {
             "type": "flavor",
             "default": "presentation",
-            "description": "Matterhorn flavor associated to the track",
+            "description": "Opencast flavor associated to the track",
             },
         "location": {
             "type": "device",
@@ -44,7 +42,7 @@ class GCdatapath(v4l2.GCv4l2):
             },
         "caps": {
             "type": "caps",
-            "default": "video/x-raw-yuv,width=1024,height=768,framerate=30/1",
+            "default": "video/x-raw,width=1024,height=768,framerate=30/1",
             "description": "Forced capabilities",
             },
         "videocrop-right": {
@@ -73,9 +71,7 @@ class GCdatapath(v4l2.GCv4l2):
             },
         "videoencoder": {
             "type": "text",
-            "default": "x264enc pass=5 quantizer=22 speed-preset=4 profile=1",
-            # "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000",
-            # "xvidenc bitrate=5000000"
+            "default": "x264enc pass=5 quantizer=22 speed-preset=4",
             "description": "Gstreamer encoder element used in the bin",
             },
         "muxer": {
@@ -87,5 +83,3 @@ class GCdatapath(v4l2.GCv4l2):
 
     def __init__(self, options={}):
         v4l2.GCv4l2.__init__(self, options)
-
-module_register(GCdatapath, 'datapath')

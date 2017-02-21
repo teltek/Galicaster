@@ -6,31 +6,31 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
-
-
-import gobject
-import gst
 
 from os import path
 
+from gi.repository import Gst
+
 from galicaster.recorder import base
+from galicaster.recorder.utils import get_videosink, get_audiosink
+
 
 pipestr = ( ' dv1394src use-avc=false name=gc-firewire-src ! queue ! tee name=gc-firewire-maintee ! '
             ' queue ! dvdemux name=gc-firewire-demuxer ! '
             ' level name=gc-firewire-level message=true interval=100000000 ! '
-            ' volume name=gc-firewire-volume ! alsasink sync=false name=gc-firewire-audio-sink '
-            ' gc-firewire-demuxer. ! queue ! ffdec_dvvideo ! ffmpegcolorspace ! xvimagesink qos=false async=false sync=false name=gc-firewire-preview '
+            ' volume name=gc-firewire-volume ! gc-asink '
+            ' gc-firewire-demuxer. ! queue ! avdec_dvvideo ! videoconvert ! caps-preview ! gc-vsink '
             ' gc-firewire-maintee. ! queue ! valve drop=false name=gc-firewire-valve ! filesink name=gc-firewire-sink async=false '
             )
 
 
-class GCfirewire(gst.Bin, base.Base):
+class GCfirewire(Gst.Bin, base.Base):
 
-    order = [ 'name', 'flavor', 'location', 'file', 'vumeter', 'player', 'format']
+    order = [ 'name', 'flavor', 'location', 'file', 'vumeter', 'player', 'format', "caps-preview"]
 
     gc_parameters = {
         "name": {
@@ -41,14 +41,14 @@ class GCfirewire(gst.Bin, base.Base):
         "flavor": {
             "type": "flavor",
             "default": "presenter",
-            "description": "Matterhorn flavor associated to the track",
+            "description": "Opencast flavor associated to the track",
             },
         "location": {
             "type": "device",
             "default": "/dev/fw1",
             "description": "Device's mount point of the firewire module",
             },
-            
+
         "file": {
             "type": "text",
             "default": "CAMERA.dv",
@@ -75,12 +75,30 @@ class GCfirewire(gst.Bin, base.Base):
                 },
             "description": "Select video format",
             },
-        
-        }
+        "videosink" : {
+            "type": "select",
+            "default": "xvimagesink",
+            "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
+            "description": "Video sink",
+        },
+        "audiosink" : {
+            "type": "select",
+            "default": "alsasink",
+            "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
+            "description": "Audio sink",
+        },
+        "caps-preview" : {
+            "type": "text",
+            "default": None,
+            "description": "Caps-preview",
+        },
+
+    }
+
     is_pausable = False
     has_audio   = True
     has_video   = True
-    
+
     __gstdetails__ = (
         "Galicaster Firewire BIN",
         "Generic/Video",
@@ -88,13 +106,22 @@ class GCfirewire(gst.Bin, base.Base):
         "Teltek Video Research"
         )
 
-    def __init__(self, options={}): 
+    def __init__(self, options={}):
         base.Base.__init__(self, options)
-        gst.Bin.__init__(self, self.options["name"])
+        Gst.Bin.__init__(self)
 
-        aux = pipestr.replace("gc-firewire-preview", "sink-" + self.options["name"])
-        #bin = gst.parse_bin_from_description(aux, False)
-        bin = gst.parse_launch("( {} )".format(aux))
+        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+        gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-audio-'+self.options['name'])
+        aux = (pipestr.replace('gc-vsink', gcvideosink)
+               .replace('gc-asink', gcaudiosink))
+
+        if self.options["caps-preview"]:
+            aux = aux.replace("caps-preview !","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
+        else:
+            aux = aux.replace("caps-preview !","")
+
+        #bin = Gst.parse_bin_from_description(aux, False)
+        bin = Gst.parse_launch("( {} )".format(aux))
 
         self.add(bin)
 
@@ -103,12 +130,12 @@ class GCfirewire(gst.Bin, base.Base):
 
         if self.options["vumeter"] == False:
             level = self.get_by_name("gc-firewire-level")
-            level.set_property("message", False) 
+            level.set_property("message", False)
 
         if self.options["player"] == False:
             self.mute = True
             element = self.get_by_name("gc-firewire-volume")
-            element.set_property("mute", True)        
+            element.set_property("mute", True)
         else:
             self.mute = False
 
@@ -117,11 +144,14 @@ class GCfirewire(gst.Bin, base.Base):
         valve1.set_property('drop', value)
 
     def getVideoSink(self):
-        return self.get_by_name("gc-firewire-preview")
+        return self.get_by_name('sink-' + self.options['name'])
+
+    def getAudioSink(self):
+        return self.get_by_name('sink-audio-' + self.options['name'])
 
     def getSource(self):
         return self.get_by_name("gc-firewire-src")
-  
+
     def send_event_to_src(self,event):
         src1 = self.get_by_name("gc-firewire-src")
         src1.send_event(event)
@@ -132,11 +162,7 @@ class GCfirewire(gst.Bin, base.Base):
             element.set_property("mute", value)
 
     def configure(self):
-        ## 
+        ##
         # v4l2-ctl -d self.options["location"] -s self.options["standard"]
         # v4l2-ctl -d self.options["location"] -i self.options["input"]
         pass
-     
-
-gobject.type_register(GCfirewire)
-gst.element_register(GCfirewire, "gc-firewire-bin")
