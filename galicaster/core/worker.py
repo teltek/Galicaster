@@ -234,7 +234,7 @@ class Worker(object):
             mp (Mediapackage): the mediapackage with a operation to be processed.
             operation (str): name of the nighly operation to be done.
         """
-        self.logger.debug("Set nightly operation {} for MP {}".format(operation, mp.getIdentifier()))
+        self.logger.info("Set nightly operation {} for MP {}".format(operation, mp.getIdentifier()))
         mp.setOpStatus(operation,mediapackage.OP_NIGHTLY)
         mp.setProperty("enqueue_params", json.dumps(params))
         self.repo.update(mp)
@@ -438,29 +438,29 @@ class Worker(object):
             raise IOError, 'Error in SideBySide process: Two videos needed (with presenter and presentation flavors)'
 
         if audio_mode == "auto":
-            self.logger.debug('SideBySide for MP {0}: auto audio-mode'.format(mp.getIdentifier()))
+            self.logger.info('SideBySide for MP {0}: auto audio-mode'.format(mp.getIdentifier()))
             # Look for embedded audio track, if this not exists use external audio
             info = get_info(camera)
             if 'audio-codec' in info.get_stream_info().get_streams()[0].get_tags().to_string():
-                self.logger.debug('SideBySide for MP {0}: embedded audio detected'.format(mp.getIdentifier()))
+                self.logger.info('SideBySide for MP {0}: embedded audio detected'.format(mp.getIdentifier()))
                 audio = None
             else:
-                self.logger.debug('SideBySide for MP {0}: embedded audio NOT detected, trying to use external audio...'.format(mp.getIdentifier()))
+                self.logger.info('SideBySide for MP {0}: embedded audio NOT detected, trying to use external audio...'.format(mp.getIdentifier()))
 
         elif audio_mode == "embedded":
-            self.logger.debug('SideBySide for MP {0}: embedded audio-mode'.format(mp.getIdentifier()))
+            self.logger.info('SideBySide for MP {0}: embedded audio-mode'.format(mp.getIdentifier()))
             # Look for embedded audio track, if this not exists use external audio
             info = get_info(camera)
             if 'audio-codec' in info.get_stream_info().get_streams()[0].get_tags().to_string():
-                self.logger.debug('SideBySide for MP {0}: embedded audio detected'.format(mp.getIdentifier()))
+                self.logger.info('SideBySide for MP {0}: embedded audio detected'.format(mp.getIdentifier()))
                 audio = None
             else:
-                self.logger.debug('SideBySide for MP {0}: embedded audio NOT detected, trying to use external audio...'.format(mp.getIdentifier()))
+                self.logger.info('SideBySide for MP {0}: embedded audio NOT detected, trying to use external audio...'.format(mp.getIdentifier()))
 
         else:
-            self.logger.debug('SideBySide for MP {0}: external audio-mode'.format(mp.getIdentifier()))
+            self.logger.info('SideBySide for MP {0}: external audio-mode'.format(mp.getIdentifier()))
             if not audio:
-                self.logger.debug('SideBySide for MP {0}: external audio NOT detected, trying to use embedded audio...'.format(mp.getIdentifier()))
+                self.logger.info('SideBySide for MP {0}: external audio NOT detected, trying to use embedded audio...'.format(mp.getIdentifier()))
 
         sidebyside.create_sbs(location, camera, screen, audio, sbs_layout, self.logger)
 
@@ -486,7 +486,7 @@ class Worker(object):
             mp (Mediapackage): the mediapackage with a operation to be processed.
             operation (str): name of the nightly operation to be canceled.
         """
-        self.logger.debug("Cancel nightly operation {} for MP {}".format(operation, mp.getIdentifier()))
+        self.logger.info("Cancel nightly operation {} for MP {}".format(operation, mp.getIdentifier()))
         mp.setOpStatus(operation,mediapackage.OP_IDLE)
         self.repo.update(mp)
         self.dispatcher.emit('action-mm-refresh-row', mp.identifier)

@@ -33,8 +33,8 @@ def init():
                     loaded.append(name)
                     break
                 except Exception as exc:
-                    logger.debug('Warning starting plugin {}: {}'.format(plugin, exc))
+                    logger.error('Exception thrown when starting plugin {}: {}'.format(plugin, exc))
             else:
                 logger.error('Error starting plugin {}: {}'.format(plugin, exc))
         else:
-            logger.debug('Plugin {0} not enabled in conf'.format(plugin))
+            logger.info('Plugin {0} not enabled in conf'.format(plugin))

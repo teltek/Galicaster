@@ -144,7 +144,7 @@ class Repository(object):
             try:
                 mp.discoverDuration()
             except Exception as exc:
-                self.logger and self.logger.debug("Error trying to get duration of MP {}: {}".format(mp.getIdentifier(), exc))
+                self.logger and self.logger.error("Error trying to get duration of MP {}: {}".format(mp.getIdentifier(), exc))
             serializer.save_in_dir(mp, self.logger, folder)
             self.logger and self.logger.info("Crashed recording added to the repository")
 
@@ -229,7 +229,7 @@ class Repository(object):
             f.write(json.dumps(info, indent=4, sort_keys=True))
             f.close()
 
-            self.logger and self.logger.debug("Temporal data saved to {}".format(filename))
+            self.logger and self.logger.info("Temporal data saved to {}".format(filename))
         except Exception as exc:
             self.logger and self.logger.error("Problem on save temporal data: {}".format(exc))
 
@@ -573,7 +573,7 @@ class Repository(object):
                     flavour = bin['flavor']
                 mp.add(dest, mediapackage.TYPE_TRACK, flavour, etype, duration) # FIXME MIMETYPE
             else:
-                self.logger and self.logger.debug("Not adding {} to MP {}".format(bin['file'],mp.getIdentifier()))
+                self.logger and self.logger.info("Not adding {} to MP {}".format(bin['file'],mp.getIdentifier()))
 
 
         mp.forceDuration(duration)
