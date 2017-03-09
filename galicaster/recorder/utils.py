@@ -154,7 +154,7 @@ class Switcher(Gst.Bin):
             pipe.set_state(Gst.State.PLAYING)
             state = pipe.get_state()
             if state[0] != Gst.StateChangeReturn.FAILURE:
-                logger.debug("VGA active again")
+                logger.info("VGA active again")
                 pipe.set_state(Gst.State.NULL)
                 self.thread_id = None
                 self.reset_vga()
@@ -167,25 +167,25 @@ class Switcher(Gst.Bin):
     def probe(self, pad, event):        
         if not self.let_pass:
             if event.type == Gst.EVENT_EOS and not self.eph_error:
-                logger.debug("EOS Received")
+                logger.info("EOS Received")
                 self.switch("sink0")
                 self.eph_error = True
                 # self.device.set_state(Gst.State.NULL)
                 self.thread_id = thread.start_new_thread(self.polling_thread,())
-                logger.debug("Epiphan BROKEN: Switching Epiphan to Background")
+                logger.warning("Epiphan BROKEN: Switching Epiphan to Background")
                 return False
             if event.type == Gst.EVENT_NEWSEGMENT and self.eph_error:
-                logger.debug("NEW SEGMENT Received")
+                logger.info("NEW SEGMENT Received")
                 
                 self.switch("sink1")
                 self.eph_error = False
-                logger.debug('Epiphan RECOVERED: Switching back to Epiphan')
+                logger.info('Epiphan RECOVERED: Switching back to Epiphan')
                 return False # Sure about this?
         else:
             return True # the eos keeps going till the sink
 
     def switch(self, padname):
-        logger.debug("Switching to: "+padname)
+        logger.info("Switching to: "+padname)
         self.selector.emit('block')
         newpad = self.selector.get_static_pad(padname)
         # start_time = newpad.get_property('running-time')
@@ -203,7 +203,7 @@ class Switcher(Gst.Bin):
         self.selector.emit('switch', newpad, -1, -1)
 
     def reset_vga(self):
-        logger.debug("Resetting Epiphan")
+        logger.info("Resetting Epiphan")
         
         if self.get_by_name('device') != None :
             self.device.set_state(Gst.State.NULL) 

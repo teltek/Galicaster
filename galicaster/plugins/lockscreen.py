@@ -71,7 +71,7 @@ def show_buttons(ui):
     try:
         builder = context.get_mainwindow().nbox.get_nth_page(ui).gui
     except Exception as error:
-        logger.debug("The view not exist: "+error)
+        logger.error("Exception (Does the view exists?): "+error)
         return None
 
     box = builder.get_object("box2")

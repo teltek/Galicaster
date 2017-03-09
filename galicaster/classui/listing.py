@@ -306,7 +306,7 @@ class ListingClassUI(ManagerUI):
         elif action == "info_action":
             self.vista.get_selection().selected_foreach(self.on_info)
         else:
-            logger.debug('Invalid action')
+            logger.warning('Invalid action')
 
 
     def fill_menu(self):
