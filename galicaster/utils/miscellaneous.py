@@ -45,6 +45,6 @@ def get_timezone():
     if tzname:
         pass
     elif os.path.exists('/etc/timezone'):
-        tzname = file('/etc/timezone').read().rstrip()
+        tzname = open('/etc/timezone').read().rstrip()
 
     return tzname
