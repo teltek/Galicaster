@@ -22,10 +22,10 @@ import ast
 
 from gi.repository import Gst
 
+from galicaster.core import context as gc_context
 #import gst
 
 FLAVOR = ['presenter', 'presentation', 'other']
-
 
 def validate_track(options, gc_parameters=None, recursive=False):
     """ Transforms string on proper types and checks value validity """
@@ -50,6 +50,8 @@ def validate_track(options, gc_parameters=None, recursive=False):
 
     # Init options with default gc_parameters values and options
     default_options = dict([(k,parse_automatic(v['default'])) for k,v in gc_parameters.iteritems()])
+    gc_conf = gc_context.get_conf()
+    custom_flavors = gc_conf.get_list('basic', 'custom_flavors');
 
     for k, v in options.iteritems():
         default_options[k] = parse_automatic(v)
@@ -109,8 +111,8 @@ def validate_track(options, gc_parameters=None, recursive=False):
                     k, options[k], v['type'],'true, yes, 1, false, no, 0')
 
 
-        elif v['type'] == 'flavor' and options[k] not in FLAVOR:
-            current_error = 'INFO: Parameter "{}" with value {} is not a valid {}. Valid flavors are {}'.format(k, options[k], v['type'], FLAVOR)
+        elif v['type'] == 'flavor' and options[k] not in FLAVOR and options[k] not in custom_flavors:
+            current_error = 'INFO: Parameter "{}" with value {} is not a valid {}. Valid flavors are {}'.format(k, options[k], v['type'], FLAVOR + custom_flavors)
 
 
         elif v['type'] == 'select' and options[k] not in v['options']:
