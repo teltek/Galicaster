@@ -23,7 +23,7 @@ import uuid
 import re
 import time
 import os
-import dateutil
+from dateutil import tz
 from dateutil import parser
 from os import path
 from datetime import datetime
@@ -1488,8 +1488,8 @@ class Mediapackage(object):
         if self.metadata_episode.has_key('temporal') and self.metadata_episode['temporal'] and not self.hasTracks():
             try:
                 g = re.search('start=(.*); end=(.*); ', self.metadata_episode['temporal'])
-                start = parser.parse(g.group(1)).astimezone(dateutil.tz.tzutc()).replace(tzinfo=None)
-                stop = parser.parse(g.group(2)).astimezone(dateutil.tz.tzutc()).replace(tzinfo=None)
+                start = parser.parse(g.group(1)).astimezone(tz.tzutc()).replace(tzinfo=None)
+                stop = parser.parse(g.group(2)).astimezone(tz.tzutc()).replace(tzinfo=None)
                 diff = stop - start
                 self.setDuration(diff.seconds*1000)
                 self.setDate(start)
