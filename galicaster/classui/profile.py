@@ -20,8 +20,6 @@ from gi.repository import GObject
 from gi.repository import Pango
 
 from galicaster.core import context
-from galicaster.core import conf
-from galicaster.recorder import get_modules
 from galicaster.classui.elements.message_header import Header
 
 #from galicaster.recorder.bins import v4l2
