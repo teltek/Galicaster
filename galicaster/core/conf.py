@@ -97,11 +97,11 @@ class Conf(object): # TODO list get and other ops arround profile
         """
         for section in self.__user_conf.sections():
             if section not in self.__conf_dist.sections():
-                self.logger and self.logger.debug('No section "{0}". Please check the file {1}'.format(section, self.conf_file))
+                self.logger and self.logger.warning('No section "{0}". Please check the file {1}'.format(section, self.conf_file))
             else:
                 for option in self.__user_conf.options(section):
                     if option not in self.__conf_dist.options(section):
-                        self.logger and self.logger.debug('No option "{0}" in section "{1}". Please check the file {2}'.format(option, section, self.conf_file))
+                        self.logger and self.logger.warning('No option "{0}" in section "{1}". Please check the file {2}'.format(option, section, self.conf_file))
 
 
     def get(self, sect, opt, default=None): # TODO overload ConfigParser?
@@ -118,7 +118,7 @@ class Conf(object): # TODO list get and other ops arround profile
             return response
         except Exception as exc:
             if self.logger:
-                self.logger.debug('The parameter "{0}" in section "{1}" does not exist. Exception: {2}'.format(opt, sect, exc))
+                self.logger.error('The parameter "{0}" in section "{1}" does not exist. Exception: {2}'.format(opt, sect, exc))
 
         return default
 
@@ -591,7 +591,7 @@ class Conf(object): # TODO list get and other ops arround profile
 
         try:
             configfile = open(self.conf_file, 'wb')
-            self.logger and self.logger.debug("Saving current configuration to {}".format(configfile.name))
+            self.logger and self.logger.info("Saving current configuration to {}".format(configfile.name))
             self.__user_conf.write(configfile)
             configfile.close()
         except Exception as exc:
@@ -822,7 +822,7 @@ class Conf(object): # TODO list get and other ops arround profile
         """
         if name != self.__current_profile.name:
             if name in self.__profiles:
-                self.logger and self.logger.debug("Changing current profile to '{}'".format(name))
+                self.logger and self.logger.info("Changing current profile to '{}'".format(name))
                 self.__current_profile = self.__profiles[name]
                 self.force_set_current_profile(name)
             else:

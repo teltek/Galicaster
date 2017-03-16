@@ -268,12 +268,10 @@ class RecorderClassUI(Gtk.Box):
             text = {"title" : _("Recorder"),
                     "main" : _("Are you sure you want to\nstop the recording?")}
             buttons = (Gtk.STOCK_STOP, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
-            self.dispatcher.emit("action-audio-disable-msg")
             #warning = message.PopUp(message.WARN_STOP, text,
             #  context.get_mainwindow(), buttons)
             message.PopUp(message.WARN_STOP, text,
                           context.get_mainwindow(), buttons, self.on_stop_dialog_response)
-            self.dispatcher.emit("action-audio-enable-msg")
             #if warning.response not in message.POSITIVE or self.recorder.status not in [RECORDING_STATUS]:
             #    return False
 
@@ -291,10 +289,8 @@ class RecorderClassUI(Gtk.Box):
                 "text" : _(self.help_text_str)
                 }
         buttons = None
-        self.dispatcher.emit("action-audio-disable-msg")
         message.PopUp(message.INFO, text,
                       context.get_mainwindow(), buttons)
-        self.dispatcher.emit("action-audio-enable-msg")
 
 
     def launch_error_message(self, error_msg=None):
@@ -703,7 +699,6 @@ class RecorderClassUI(Gtk.Box):
         swapb = self.gui.get_object("swapbutton")
 
         if status == INIT_STATUS:
-            self.pause_dialog.destroy()
             record.set_sensitive(False)
             pause.set_sensitive(False)
             stop.set_sensitive(False)

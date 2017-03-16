@@ -67,7 +67,7 @@ class RecorderService(object):
         self.__handle_recover_id = None
         self.autorecover = autorecover
 
-        self.logger.debug("Autorecover mode: {}".format(self.autorecover))
+        self.logger.info("Autorecover mode: {}".format(self.autorecover))
 
         self.dispatcher.connect("init", WeakMethod(self, '_handle_init'))
         self.dispatcher.connect_ui("action-reload-profile", WeakMethod(self, '_handle_reload_profile'))
@@ -97,7 +97,7 @@ class RecorderService(object):
 
     def __prepare(self):
         current_profile = self.conf.get_current_profile()
-        self.logger.debug("Using profile with name {} and path {}".format(current_profile.name, current_profile.path))
+        self.logger.info("Using profile with name {} and path {}".format(current_profile.name, current_profile.path))
         if current_profile.execute:
             out = os.system(current_profile.execute)
             self.logger.info("Executing {0} with out {1}".format(current_profile.execute, out))
@@ -310,7 +310,7 @@ class RecorderService(object):
         self.__set_status(ERROR_STATUS)
 
         if self.autorecover and not self.__handle_recover_id:
-            self.logger.debug("Connecting recover recorder callback")
+            self.logger.info("Connecting recover recorder callback")
             self.__handle_recover_id = self.dispatcher.connect("timer-long",
                                                              WeakMethod(self, '_handle_recover'))
 
@@ -319,7 +319,7 @@ class RecorderService(object):
         self.logger.info("Handle recover from error")
         if self.__handle_recover_id and self.preview():
             self.error_msg = None
-            self.logger.debug("Disconnecting recover recorder callback")
+            self.logger.info("Disconnecting recover recorder callback")
             self.__handle_recover_id = self.dispatcher.disconnect(self.__handle_recover_id)
 
 
@@ -330,7 +330,7 @@ class RecorderService(object):
 
     def _handle_reload_profile(self, origin):
         if self.status in (PREVIEW_STATUS, ERROR_STATUS):
-            self.logger.debug("Resetting recorder after reloading the profile")
+            self.logger.info("Resetting recorder after reloading the profile")
             self.repo.check_for_recover_recordings()
             self.current_mediapackage = None
             if self.recorder:

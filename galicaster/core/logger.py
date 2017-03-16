@@ -6,13 +6,25 @@
 # Copyright (c) 2013, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
+# LEVELS:
+# -------
+#
+# DEBUG     Detailed information, typically of interest only when diagnosing problems.
+# INFO      Confirmation that things are working as expected.
+# WARNING   An indication that something unexpected happened, or indicative of some problem in the near future (e.g. ‘disk space low’). The software is still working as expected.
+# ERROR     Due to a more serious problem, the software has not been able to perform some function.
+# CRITICAL  A serious error, indicating that the program itself may be unable to continue running.
+#
+# Please use these levels consistently when logging information.
+#
+
 """
-Logger Proxy class to use in Galciaster.
+Logger Proxy class to use in Galicaster.
 """
 import sys
 import logging
@@ -36,8 +48,8 @@ class Logger(logging.Logger):
         if use_syslog:
             from logging.handlers import SysLogHandler
             loghandler = SysLogHandler(address='/dev/log')
-            formatting.insert(0, "Galicaster") 
-            del(formatting[2]) 
+            formatting.insert(0, "Galicaster")
+            del(formatting[2])
             loghandler.setFormatter(logging.Formatter(" ".join(formatting)))
         elif self.log_path == None or len(self.log_path) == 0:
             loghandler = logging.NullHandler()

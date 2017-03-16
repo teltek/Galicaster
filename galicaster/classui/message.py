@@ -99,7 +99,7 @@ class PopUp(Gtk.Widget):
         self.size = size
         self.wprop = size[0]/1920.0
         self.hprop = size[1]/1080.0
-
+        self.dispatcher = context.get_dispatcher()
         # Create dialog
         self.gui = Gtk.Builder()
         self.gui.add_from_file(get_ui_path(message))
@@ -156,6 +156,7 @@ class PopUp(Gtk.Widget):
         parent.get_style_context().add_class('shaded')
         self.dialog.set_transient_for(parent)
         if message in [ERROR, WARN_QUIT, WARN_STOP, ABOUT, INFO, WARN_DELETE, LOCKSCREEN, MP_INFO]:
+            self.dispatcher.emit("action-audio-disable-msg")
             self.dialog.show()
             self.dialog.connect('response', self.on_dialog_response)
         #elif message == ABOUT:
@@ -441,7 +442,7 @@ class PopUp(Gtk.Widget):
             self.dialog.destroy()
             self.dialog = None
         instance = None
-
+        self.dispatcher.emit("action-audio-enable-msg")
 
 GObject.type_register(PopUp)
 
