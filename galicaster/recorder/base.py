@@ -19,7 +19,6 @@ from galicaster.utils import validator
 from galicaster.core import context
 
 logger = context.get_logger()
-FLAVOR = ['presenter', 'presentation', 'other']
 
 class Base(object):
     gc_parameters = {
