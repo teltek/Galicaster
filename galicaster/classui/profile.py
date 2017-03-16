@@ -188,7 +188,7 @@ class ProfileDialog(Gtk.HBox):
         profile_list = context.get_conf().get_profiles()
         for name,profile in profile_list.iteritems():
             if not profile.to_delete:
-                self.list.append(self.prepare_data(profile))
+                self.list.append([profile, profile.name])
 
     def append_info(self, selection = None):
         """Completes the profile auxiliar data on the right side of the box"""
@@ -247,27 +247,6 @@ class ListProfileBox(ProfileDialog):
             iterator = self.list.iter_next(iterator)
 
         return self.list,iterator
-
-    def prepare_data(self, profile):
-
-        profile_name = profile.name
-        presenter = []
-        presentation = []
-        other = []
-        for track in profile.tracks:
-            if track.flavor == "presenter":
-                presenter.append(track.name)
-            elif track.flavor == "presentation":
-                presentation.append(track.name)
-            elif track.flavor == "other":
-                other.append(track.name)
-
-        data = [
-            profile, profile_name,
-            #, ", ".join(presenter), ", ".join(presentation), ", ".join(other)
-            ]
-
-        return data
 
     def prepare_view(self):
         lista = Gtk.ListStore(object, str)
