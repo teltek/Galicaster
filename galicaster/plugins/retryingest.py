@@ -54,13 +54,13 @@ def is_published(mp_id, mp):
     # check if the mediapackage is published to the search index
     search_result = occlient.search_by_mp_id(mp_id)
     if int(search_result['total']):
-        logger.debug('mediapackage {} is already published'.format(mp_id))
+        logger.info('mediapackage {} is already published'.format(mp_id))
         # mediapackage has actually been ingested successfully at some point
         # as it is published in opencast so set the state to "done"
         mp.setOpStatus('ingest', mediapackage.OP_DONE)
         repo.update(mp)
         return True
-    logger.debug('mediapackage {} is not published'.format(mp_id))
+    logger.info('mediapackage {} is not published'.format(mp_id))
     return False
 
 

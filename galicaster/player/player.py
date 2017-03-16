@@ -141,7 +141,7 @@ class Player(object):
         """
         Start to play
         """
-        logger.debug("player playing")
+        logger.info("Player playing")
         if not self.pipeline_complete:
             self.pipeline.set_state(Gst.State.PAUSED)
             self.pipeline_complete = True
@@ -157,7 +157,7 @@ class Player(object):
         """
         Pause the player
         """
-        logger.debug("player paused")
+        logger.info("Player paused")
         self.pipeline.set_state(Gst.State.PAUSED)
         self.dispatcher.emit("player-status", PAUSED)
         self.get_status()
@@ -171,7 +171,7 @@ class Player(object):
 
         Pause the reproduction and seek to begin
         """
-        logger.debug("player stoped")
+        logger.info("Player stoped")
         self.pipeline.set_state(Gst.State.PAUSED)
         self.seek(0)
         self.dispatcher.emit("player-status", STOPPED)
@@ -185,7 +185,7 @@ class Player(object):
         """
         Close the pipeline
         """
-        logger.debug("player deleted")
+        logger.info("Player deleted")
         self.pipeline.set_state(Gst.State.NULL)
         self.dispatcher.emit("player-status", STOPPED)
         self.get_status()
@@ -231,11 +231,11 @@ class Player(object):
     def _on_new_decoded_pad(self, element, pad):
         name = pad.query_caps(None).to_string()
         element_name = element.get_name()[7:]
-        logger.debug('new decoded pad: %r in %r', name, element_name)
+        logger.info('new decoded pad: %r in %r', name, element_name)
         sink = None
 
         if self.error:
-            logger.debug('There is an error, so ingoring decoded pad: %r in %r', name, element_name)
+            logger.warning('There was an error, the decoded pad will be ignored: %r in %r', name, element_name)
             return None
 
         if name.startswith('audio/'):
@@ -337,7 +337,7 @@ class Player(object):
             self.duration = get_duration(filepath)
             logger.info("Duration ON_DISCOVERED: " + str(self.duration))
         except Exception as exc:
-            logger.debug("Error trying to get duration of {}: {}".format(filepath, exc))
+            logger.warning("Error trying to get duration of {}: {}".format(filepath, exc))
 
         self.create_pipeline()
         return True

@@ -359,7 +359,7 @@ class Recorder(object):
                     bin.disable_preview()
                     self.mute_status["preview"][bin_nam] = False
         except Exception as exc:
-            logger.debug(exc)
+            logger.error(exc)
 
 
     def enable_preview(self, bin_names=[]):
@@ -376,7 +376,7 @@ class Recorder(object):
                     bin.enable_preview()
                     self.mute_status["preview"][bin_nam] = True
         except Exception as exc:
-            logger.debug(exc)
+            logger.error(exc)
 
     def set_drawing_areas(self, players):
         self.players = players

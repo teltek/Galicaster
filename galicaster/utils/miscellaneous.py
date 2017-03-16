@@ -16,6 +16,9 @@ from galicaster import __version__
 from galicaster.core import context
 import datetime
 
+import os
+import os.path
+
 conf = context.get_conf()
 
 def get_screenshot_as_pixbuffer():
@@ -36,3 +39,12 @@ def round_microseconds(date):
     if not rounded < 1:
         date = date + datetime.timedelta(seconds=1)
     return datetime.datetime(date.year, date.month, date.day, date.hour, date.minute, date.second)
+
+def get_timezone():
+    tzname = os.environ.get('TZ')
+    if tzname:
+        pass
+    elif os.path.exists('/etc/timezone'):
+        tzname = open('/etc/timezone').read().rstrip()
+
+    return tzname
