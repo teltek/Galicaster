@@ -24,6 +24,9 @@ from galicaster.mediapackage import mediapackage
 from galicaster.mediapackage import serializer
 from galicaster.mediapackage import deserializer
 
+from galicaster.opencast import series
+from galicaster.core import context
+
 """
 This class manages (add, list, remove...) all the mediapackages in the repository.
 """
@@ -575,6 +578,10 @@ class Repository(object):
             else:
                 self.logger and self.logger.info("Not adding {} to MP {}".format(bin['file'],mp.getIdentifier()))
 
+        if mp.manual and not mp.getSeriesIdentifier():
+            conf = context.get_conf()
+            if conf.get('series','default'):
+                series.setSeriebyId(mp, conf.get('series','default'))
 
         mp.forceDuration(duration)
 
