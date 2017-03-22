@@ -117,7 +117,7 @@ class OCHTTPClient(object):
         c.setopt(pycurl.NOSIGNAL, 1)
         c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_DIGEST)
         c.setopt(pycurl.USERPWD, self.user + ':' + self.password)
-        sendheaders = ['X-Requested-Auth: Digest', 'X-Matterhorn-Opencast-Authorization: true']
+        sendheaders = ['X-Requested-Auth: Digest', 'X-Opencast-Matterhorn-Authorization: true']
         if headers:
             for h, v in headers.iteritems():
                 sendheaders.append('{}: {}'.format(h, v))

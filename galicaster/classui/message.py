@@ -15,6 +15,7 @@ from gi.repository import Gtk, Gdk, GdkPixbuf
 from gi.repository import GObject
 from galicaster.classui import get_image_path, get_ui_path
 from galicaster.classui.elements.message_header import Header
+from galicaster.recorder.service import ERROR_STATUS
 
 from galicaster.utils.i18n import _
 from galicaster.core import context
@@ -364,6 +365,9 @@ class PopUp(Gtk.Widget):
                         new_widget.set_property('halign', widget.get_property('halign'))
                         new_widget.set_property('valign', widget.get_property('valign'))
                         new_widget.connect("clicked", self.send_start, content)
+                        recorder = context.get_recorder()
+                        if recorder.status == ERROR_STATUS:
+                            new_widget.set_sensitive(False)
                     widget_classes = widget.get_style_context().list_classes()
                     for style_class in widget_classes:
                         widget_style_context = new_widget.get_style_context()
