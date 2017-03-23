@@ -21,6 +21,7 @@ conf = None
 logger = None
 repo = None
 dispatcher = None
+minfreespace = None
 
 def init():
     global conf, logger, repo, dispatcher, minfreespace, freespace
