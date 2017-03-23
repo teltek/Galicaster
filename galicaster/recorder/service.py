@@ -87,6 +87,7 @@ class RecorderService(object):
             self.__prepare()
             self.recorder.preview()
             self.__set_status(PREVIEW_STATUS)
+            self.dispatcher.emit("recorder-ready")
             return True
 
         except Exception as exc:
@@ -109,7 +110,6 @@ class RecorderService(object):
 
 
         self.recorder = self.__recorderklass(bins)
-        self.dispatcher.emit("recorder-ready")
 
         self.mute_preview(self.mute)
         if self.__create_drawing_areas_func:
