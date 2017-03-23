@@ -16,7 +16,6 @@
 """
 
 from galicaster.core import context
-from galicaster.recorder.service import PREVIEW_STATUS
 
 conf = None
 logger = None
