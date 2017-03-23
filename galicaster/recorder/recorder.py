@@ -248,6 +248,9 @@ class Recorder(object):
             elif msg.type == Gst.MessageType.EOS:
                 logger.debug('EOS message successfully received')
             elif msg.type == Gst.MessageType.ERROR:
+                err, debug = msg.parse_error()
+                logger.error("Error received from element {}: {}".format(msg.sr.get_name(), err))
+                logger.debug("Debugging information: {}".format(debug))
                 self.__emit_error('Received ERROR message from pipeline', '', stop=False)
 
         self.pipeline.set_state(Gst.State.NULL)
