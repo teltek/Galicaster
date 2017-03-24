@@ -25,6 +25,8 @@ from galicaster.utils import readable
 
 from galicaster.utils.i18n import _
 
+import cgi
+
 logger = context.get_logger()
 
 rcstring = """
@@ -93,10 +95,10 @@ class ListingClassUI(ManagerUI):
             duration = round(mp.getDuration(), -3)
             if duration in ["", None]:
                 duration = 0
-
+            # TODO: Use of cgi.escape(mp.getTitle()) is a WORKAROUND for https://github.com/teltek/Galicaster/issues/458
             if mp.status != mediapackage.SCHEDULED:
                 lista.append([mp.getIdentifier(),
-                    mp.getTitle(),
+                    cgi.escape(mp.getTitle()),
                     mp.getCreator(),
                     mp.series_title ,
                     long(mp.getSize()),
@@ -139,7 +141,7 @@ class ListingClassUI(ManagerUI):
         # Create each column
         #columna5 = Gtk.TreeViewColumn("Id",render5,text = 0, background= 8)
         # column5 wont be append to the treeview
-        columna1 = Gtk.TreeViewColumn(_("Name"),render1,text = 1, background= 8)
+        columna1 = Gtk.TreeViewColumn(_("Name"),render1, markup = 1, background= 8)
         columna6 = Gtk.TreeViewColumn(_("Presenter"), render6, text = 2, background= 8)
         columna7 = Gtk.TreeViewColumn(_("Series"), render7, text = 3, background= 8)
         columna2 = Gtk.TreeViewColumn(_("Size"), render2, text = 4, background= 8)
@@ -256,7 +258,8 @@ class ListingClassUI(ManagerUI):
     def _refresh(self,mp,i):
         """Fills the new values of a refreshed row"""
         self.lista.set(i,0,mp.getIdentifier())
-        self.lista.set(i,1,mp.getTitle())
+        # TODO: Use of cgi.escape(mp.getTitle()) is a WORKAROUND for https://github.com/teltek/Galicaster/issues/458
+        self.lista.set(i,1,cgi.escape(mp.getTitle()))
         self.lista.set(i,2,mp.getCreator())
         self.lista.set(i,3,mp.series_title)
         self.lista.set(i,4,long(mp.getSize()))
