@@ -85,10 +85,10 @@ class RecorderService(object):
         try:
             self.logger.info("Starting recording service in the preview status")
             self.__prepare()
-            self.recorder.preview()
-            self.__set_status(PREVIEW_STATUS)
-            self.dispatcher.emit("recorder-ready")
-            return True
+            if not self.is_error():
+                self.recorder.preview()
+                self.__set_status(PREVIEW_STATUS)
+                return True
 
         except Exception as exc:
             self.dispatcher.emit("recorder-error", str(exc))
@@ -110,6 +110,7 @@ class RecorderService(object):
 
 
         self.recorder = self.__recorderklass(bins)
+        self.dispatcher.emit("recorder-ready")
 
         self.mute_preview(self.mute)
         if self.__create_drawing_areas_func:
