@@ -41,7 +41,6 @@ def init():
     global no_audio_dialog
 
     dispatcher = context.get_dispatcher()
-    conf = context.get_conf()
     no_audio_dialog = create_ui()
 
     dispatcher.connect('audio-mute', warning_audio_show)
