@@ -99,8 +99,8 @@ class OCService(object):
     def __check_recording_started(self, element=None, mp_id=None):
         #TODO: Improve the way of checking if it is a scheduled recording
         mp = self.repo.get(mp_id)
-        self.t_stop = mp.getDuration()
         if mp and mp.getOCCaptureAgentProperty('capture.device.names'):
+            self.t_stop = mp.getDuration()
             self.scheduler.mp_rec = mp_id
             self.jobs.put((self.__set_recording_state, (mp, 'capturing')))
 
