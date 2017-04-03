@@ -95,6 +95,9 @@ class Main():
             logger.info("Set {} as home page, modules loaded: {}".format(homepage, self.modules))
             self.window.set_current_page(PAGES[homepage])
 
+        # Notify home page setting by issuing a 'view-changed' signal
+        self.dispatcher.emit('view-changed', None, self.window.get_current_page())
+
         context.get_heartbeat().init_timer()
         self.dispatcher.emit("init")
 
