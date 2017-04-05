@@ -85,7 +85,15 @@ class RecorderService(object):
         try:
             self.logger.info("Starting recording service in the preview status")
             self.__prepare()
+
+            if self.is_error():
+                return False
+
             self.recorder.preview()
+
+            if self.is_error():
+                return False
+
             self.__set_status(PREVIEW_STATUS)
             return True
 
