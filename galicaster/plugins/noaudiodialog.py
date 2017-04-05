@@ -30,7 +30,7 @@ lock = Lock()
 
 no_audio = False
 no_audio_dialog = None
-focus_is_active = True
+focus_is_active = False
 keep_hidden = False
 old_keep_hidden = False
 was_shown = False
@@ -41,10 +41,7 @@ def init():
     global no_audio_dialog
 
     dispatcher = context.get_dispatcher()
-    conf = context.get_conf()
     no_audio_dialog = create_ui()
-
-    focus_is_active = not conf.get_boolean('basic','admin')
 
     dispatcher.connect('audio-mute', warning_audio_show)
     dispatcher.connect('audio-recovered', warning_audio_hide)
