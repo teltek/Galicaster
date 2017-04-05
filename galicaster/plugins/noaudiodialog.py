@@ -82,6 +82,10 @@ def __check_dialog():
     global no_audio
 
     if not keep_hidden and no_audio and focus_is_active:
+        windows = context.get_mainwindow().list_toplevels()
+        for w in windows:
+            if w.get_modal():
+                return False
         no_audio_dialog.show()
     else:
         no_audio_dialog.hide()
