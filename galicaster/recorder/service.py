@@ -85,10 +85,17 @@ class RecorderService(object):
         try:
             self.logger.info("Starting recording service in the preview status")
             self.__prepare()
-            if not self.is_error():
-                self.recorder.preview()
-                self.__set_status(PREVIEW_STATUS)
-                return True
+
+            if self.is_error():
+                return False
+
+            self.recorder.preview()
+
+            if self.is_error():
+                return False
+
+            self.__set_status(PREVIEW_STATUS)
+            return True
 
         except Exception as exc:
             self.dispatcher.emit("recorder-error", str(exc))
