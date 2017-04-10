@@ -26,7 +26,8 @@ from gi.repository import GLib    # noqa: ignore=E402
 from gi.repository import Gst     # noqa: ignore=E402
 
 from galicaster.core import core  # noqa: ignore=E402
-
+from galicaster.core import context
+from galicaster.utils.dbusservice import AlreadyRunning
 
 def main(args):
     def usage():
@@ -53,6 +54,16 @@ def main(args):
     except KeyboardInterrupt:
         gc.emit_quit()
         print("Interrupted by user!")
+
+    except AlreadyRunning as exc:
+        #Added custom exception when galicaster it's already running
+        msg = "Error starting Galicaster: {0}".format(exc)
+        print(msg)
+
+        d = context.get_dispatcher()
+        d.emit("quit")
+        return -2
+
     except Exception as exc:
         # debug
         # print traceback.format_exc()
@@ -60,7 +71,6 @@ def main(args):
         msg = "Error starting Galicaster: {0}".format(exc)
         print(msg)
 
-        from galicaster.core import context
         logger = context.get_logger()
         logger and logger.error(msg)
 
