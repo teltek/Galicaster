@@ -6,9 +6,9 @@
 # Copyright (c) 2011, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
 from gi.repository import Gst
@@ -21,7 +21,7 @@ logger = context.get_logger()
 
 class Switcher(Gst.Bin):
 
-    def __init__(self, name, device, image=None, driver_type="v4lsrc", size=[1024,768], framerate="25/1"): 
+    def __init__(self, name, device, image=None, driver_type="v4lsrc", size=[1024,768], framerate="25/1"):
 
         Gst.Bin.__init__(self, name)
         self.eph_error = False
@@ -38,8 +38,8 @@ class Switcher(Gst.Bin):
 
 
         self.device = Gst.ElementFactory.make(self.driver_type, 'device')
-        scale = Gst.ElementFactory.make('videoscale') 
-        rate  = Gst.ElementFactory.make('videorate') 
+        scale = Gst.ElementFactory.make('videoscale')
+        rate  = Gst.ElementFactory.make('videorate')
         self.selector = Gst.ElementFactory.make('input-selector', 'selector')
         q0 = Gst.ElementFactory.make('queue', 'q2branchimg')
         q1 = Gst.ElementFactory.make('queue', 'q2branchdev')
@@ -84,7 +84,7 @@ class Switcher(Gst.Bin):
         caps_res.set_property('caps', filtre_resolution)
 
         # Add elements
-        self.add(self.image, caps_img, text, q0, 
+        self.add(self.image, caps_img, text, q0,
                  self.device, self.identity, caps_dev, q2, scale, caps_res, rate, caps_rate, q1,
                  self.selector, qs)
 
@@ -99,10 +99,10 @@ class Switcher(Gst.Bin):
 
         # Set active pad
         if self.checking():
-            self.selector.set_property('active-pad', 
+            self.selector.set_property('active-pad',
                                        self.selector.get_pad('sink1'))
         else:
-            self.selector.set_property('active-pad', 
+            self.selector.set_property('active-pad',
                                        self.selector.get_pad('sink0'))
             self.eph_error = True
             self.thread_id=thread.start_new_thread(self.polling_thread, ())
@@ -112,7 +112,7 @@ class Switcher(Gst.Bin):
       # Set probe
         pad = self.identity.get_static_pad("src")
         pad.add_event_probe(self.probe)
-        
+
     def let_eos_pass(self):
         """
         Change the variable to let the final EOS event pass
@@ -164,7 +164,7 @@ class Switcher(Gst.Bin):
             bucle += 1
 
 
-    def probe(self, pad, event):        
+    def probe(self, pad, event):
         if not self.let_pass:
             if event.type == Gst.EVENT_EOS and not self.eph_error:
                 logger.info("EOS Received")
@@ -176,7 +176,7 @@ class Switcher(Gst.Bin):
                 return False
             if event.type == Gst.EVENT_NEWSEGMENT and self.eph_error:
                 logger.info("NEW SEGMENT Received")
-                
+
                 self.switch("sink1")
                 self.eph_error = False
                 logger.info('Epiphan RECOVERED: Switching back to Epiphan')
@@ -199,14 +199,14 @@ class Switcher(Gst.Bin):
         else:
             newpad = self.selector.get_static_pad("sink0")
 
-        self.selector.emit('block')            
+        self.selector.emit('block')
         self.selector.emit('switch', newpad, -1, -1)
 
     def reset_vga(self):
         logger.info("Resetting Epiphan")
-        
+
         if self.get_by_name('device') != None :
-            self.device.set_state(Gst.State.NULL) 
+            self.device.set_state(Gst.State.NULL)
             self.remove(self.device)
         del self.device
         self.device = Gst.ElementFactory.make(self.driver_type, 'device')
@@ -214,7 +214,7 @@ class Switcher(Gst.Bin):
         self.add(self.device)
         self.device.link(self.identity)
         self.device.set_state(Gst.State.PLAYING)
-        self.identity.get_state() 
+        self.identity.get_state()
 
     def reset2(self):
         self.device = Gst.ElementFactory.make(self.driver_type, 'device')
@@ -226,7 +226,7 @@ class Switcher(Gst.Bin):
 
     def send_event_to_src(self, event): # IDEA made a common for all our bins
         self.let_eos_pass()
-        self.device.send_event(event)    
+        self.device.send_event(event)
         self.src1.send_event(event)
 
 
@@ -239,26 +239,26 @@ VIDEOSINK_PROPERTIES = {
 }
 
 AUDIOSINK_PROPERTIES = {
-    'alsasink'        : {'sync': 'false', 'qos': 'true'},
-    'pulsesink'       : {'sync': 'false', 'qos': 'true'},
-    'fakesink'        : {'silent': 'true'},
+    'alsasink'        : {'async': 'false', 'sync': 'false', 'qos': 'true'},
+    'pulsesink'       : {'async': 'false', 'sync': 'false', 'qos': 'true'},
+    'fakesink'        : {'async': 'false', 'silent': 'true'},
 }
 
 
 def get_videosink(videosink='xvimagesink', name='gc-preview', properties = {}):
     logger.debug("Video sink: {} -> {}".format(name, videosink))
-    
-    props_str = get_properties(videosink, properties, VIDEOSINK_PROPERTIES)        
+
+    props_str = get_properties(videosink, properties, VIDEOSINK_PROPERTIES)
     if videosink == "fpsdisplaysink":
         xvimagesink_props = get_properties('xvimagesink', {}, VIDEOSINK_PROPERTIES)
         gcvsink = '{} name={}-fps {} video-sink="xvimagesink name={} {}"'.format(videosink, name, props_str, name, xvimagesink_props)
     else:
         gcvsink = "{} name={} {}".format(videosink, name, props_str)
-            
+
     return gcvsink
 
 
-def get_audiosink(audiosink='autoaudiosink', name='gc-apreview', properties = {}):    
+def get_audiosink(audiosink='autoaudiosink', name='gc-apreview', properties = {}):
     logger.debug("Audio sink: {} -> {}".format(name, audiosink))
 
     props_str = get_properties(audiosink, properties, AUDIOSINK_PROPERTIES)
@@ -272,8 +272,8 @@ def get_properties(videosink, properties, default_properties):
     if videosink in default_properties.keys():
         props = default_properties[videosink]
         props.update(properties)
-        
+
         for k,v in props.iteritems():
             props_str = props_str + k + "=" + v + ' '
-    
+
     return props_str
