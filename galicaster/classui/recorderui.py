@@ -699,6 +699,7 @@ class RecorderClassUI(Gtk.Box):
         swapb = self.gui.get_object("swapbutton")
 
         if status == INIT_STATUS:
+            self.pause_dialog.destroy()
             record.set_sensitive(False)
             pause.set_sensitive(False)
             stop.set_sensitive(False)
