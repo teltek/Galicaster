@@ -29,6 +29,7 @@ except:
 
 INIT_ENDPOINT = 'info/me.json'
 ME_ENDPOINT = 'info/me.json'
+SERVICES_ENDPOINT = 'info/components.json'
 SETRECORDINGSTATE_ENDPOINT = 'capture-admin/recordings/{id}'
 SETSTATE_ENDPOINT = 'capture-admin/agents/{hostname}'
 SETCONF_ENDPOINT = 'capture-admin/agents/{hostname}/configuration'
@@ -167,6 +168,8 @@ class OCHTTPClient(object):
     def welcome(self):
         return self.__call('GET', INIT_ENDPOINT)
 
+    def services(self):
+        return self.__call('GET', SERVICES_ENDPOINT)
 
     def ical(self):
         icalendar = self.__call('GET', ICAL_ENDPOINT, query_params={'agentid': self.hostname}, headers={'If-None-Match': self.ical_etag})

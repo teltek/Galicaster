@@ -72,6 +72,7 @@ class OCService(object):
         self.dispatcher.connect('recorder-started', self.__check_recording_started)
         self.dispatcher.connect('recorder-stopped', self.__check_recording_stopped)
         self.dispatcher.connect("recorder-error", self.on_recorder_error)
+        self.dispatcher.connect("quit", self.on_quit)
 
         self.t_stop = None
 
@@ -248,3 +249,11 @@ class OCService(object):
             if now_is_recording_time:
                 self.scheduler.mp_rec = None
                 self.__set_recording_state(mp, 'capture_error')
+
+    def on_quit(self, origin=None):
+        import json
+        from distutils.version import LooseVersion
+        response = json.loads(self.client.services())
+        version = response["rest"][0]["version"]
+        if LooseVersion("2.3.0") <= LooseVersion(version):
+            self.client.setstate('offline')
