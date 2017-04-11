@@ -127,6 +127,7 @@ class RecorderClassUI(Gtk.Box):
 
         # UI
         self.pack_start(self.recorderui,True,True,0)
+        self.pause_dialog = None
 
         # Event Manager
         self.dispatcher.connect_ui("recorder-vumeter", self.set_vumeter)
@@ -699,7 +700,8 @@ class RecorderClassUI(Gtk.Box):
         swapb = self.gui.get_object("swapbutton")
 
         if status == INIT_STATUS:
-            self.pause_dialog.destroy()
+            if self.pause_dialog:
+                self.pause_dialog.destroy()
             record.set_sensitive(False)
             pause.set_sensitive(False)
             stop.set_sensitive(False)
