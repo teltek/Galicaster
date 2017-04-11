@@ -214,13 +214,15 @@ class GCrtp(Gst.Bin, base.Base):
         src1 = self.get_by_name('sink-'+self.options['name'])
         src1.set_property('saturation', -1000)
         src1.set_property('contrast', -1000)
-        element = self.get_by_name("gc-rtp-volume")
-        element.set_property("mute", True)
+        if self.has_audio:
+            element = self.get_by_name("gc-rtp-volume")
+            element.set_property("mute", True)
 
 
     def enable_preview(self):
         src1 = self.get_by_name('sink-'+self.options['name'])
         src1.set_property('saturation',0)
         src1.set_property('contrast',0)
-        element = self.get_by_name("gc-rtp-volume")
-        element.set_property("mute", False)
+        if self.has_audio:
+            element = self.get_by_name("gc-rtp-volume")
+            element.set_property("mute", False)

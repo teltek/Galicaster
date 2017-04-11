@@ -110,7 +110,7 @@ class TestFunctions(TestCase):
     def test_init(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
 
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, recorderklass=self.recorderklass)
         self.assertEqual(recorder_service.status, INIT_STATUS)
         self.assertEqual(recorder_service.get_recorded_time(), 0)
 
@@ -118,7 +118,7 @@ class TestFunctions(TestCase):
     def test_preview(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
 
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, recorderklass=self.recorderklass)
         self.assertEqual(recorder_service.status, INIT_STATUS)
         recorder_service.preview()
         self.assertEqual(recorder_service.status, PREVIEW_STATUS)
@@ -136,7 +136,7 @@ class TestFunctions(TestCase):
     def test_recording(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
 
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, recorderklass=self.recorderklass)
         self.assertEqual(recorder_service.status, INIT_STATUS)
         recorder_service.preview()
         self.assertEqual(recorder_service.status, PREVIEW_STATUS)
@@ -156,7 +156,7 @@ class TestFunctions(TestCase):
     def test_stop_recoding_on_pause(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
 
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, recorderklass=self.recorderklass)
         self.assertEqual(recorder_service.status, INIT_STATUS)
         recorder_service.preview()
         self.assertEqual(recorder_service.is_recording(), False)
@@ -180,7 +180,7 @@ class TestFunctions(TestCase):
     def test_error_and_recover(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
 
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, recorderklass=self.recorderklass)
         self.assertEqual(recorder_service.status, INIT_STATUS)
         recorder_service.preview()
         self.__sleep()
@@ -206,7 +206,7 @@ class TestFunctions(TestCase):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         #Necessary for execute test without Glib loop
         dispatcher.connect_ui = dispatcher.connect
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, recorderklass=self.recorderklass)
         self.assertEqual(recorder_service.status, INIT_STATUS)
         recorder_service.preview()
         old_id = id(recorder_service.recorder)
@@ -229,7 +229,7 @@ class TestFunctions(TestCase):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         conf.set("allows", "overlap", "True")
 
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, recorderklass=self.recorderklass)
         recorder_service.preview()
         self.__sleep()
         recorder_service.record()
@@ -247,7 +247,7 @@ class TestFunctions(TestCase):
     def test_new_recording_when_recording_not_allow(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
 
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, recorderklass=self.recorderklass)
         recorder_service.preview()
         self.__sleep()
         recorder_service.record()
@@ -266,7 +266,7 @@ class TestFunctions(TestCase):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
         conf.set("allows", "overlap", "True")
 
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, recorderklass=self.recorderklass)
         recorder_service.preview()
         self.__sleep()
         recorder_service.record()
@@ -285,7 +285,7 @@ class TestFunctions(TestCase):
     @attr('notravis')
     def test_record_scheduled_mp(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, recorderklass=self.recorderklass)
 
         self.assertEqual(len(repo), 0)
         recorder_service.preview()

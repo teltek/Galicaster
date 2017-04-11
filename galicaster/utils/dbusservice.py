@@ -17,6 +17,9 @@ Use dbus to only limit a single instance running of your app.
 
 import dbus, dbus.glib, dbus.service
 
+class AlreadyRunning(Exception):
+    pass
+
 class DBusService(dbus.service.Object):
     def __init__(self, app):
 
@@ -24,19 +27,19 @@ class DBusService(dbus.service.Object):
             if dbus.SystemBus().request_name("es.teltek.Galicaster") != dbus.bus.REQUEST_NAME_REPLY_PRIMARY_OWNER:
                 method = dbus.SystemBus().get_object("es.teltek.Galicaster", "/es/teltek/Galicaster").get_dbus_method("show_window")
                 method()
-                raise SystemError("Galicaster already running")
+                raise AlreadyRunning("Galicaster already running")
             else:
                 self.app = app
                 bus_name = dbus.service.BusName('es.teltek.Galicaster', bus = dbus.SystemBus())
                 dbus.service.Object.__init__(self, bus_name, '/es/teltek/Galicaster')
         except Exception as exc:
             if "Galicaster already running" in exc.args:
-                raise SystemError("Galicaster already running")
+                raise AlreadyRunning("Galicaster already running")
 
             if dbus.SessionBus().request_name("es.teltek.Galicaster") != dbus.bus.REQUEST_NAME_REPLY_PRIMARY_OWNER:
                 method = dbus.SessionBus().get_object("es.teltek.Galicaster", "/es/teltek/Galicaster").get_dbus_method("show_window")
                 method()
-                raise SystemError("Galicaster already running")
+                raise AlreadyRunning("Galicaster already running")
             else:
                 self.app = app
                 bus_name = dbus.service.BusName('es.teltek.Galicaster', bus = dbus.SessionBus())
