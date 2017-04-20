@@ -1553,7 +1553,7 @@ class Mediapackage(object):
             prop (str): the name of the property.
             value (str): the new value of the property name.
         """
-        if not prop or not value:
+        if not prop or value is None:
             return None
         else:
             self.properties[prop] = value
