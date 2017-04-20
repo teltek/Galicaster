@@ -60,135 +60,8 @@ def validate_track(options, gc_parameters=None, recursive=False):
     global_error_msg = None
 
     for k,v in gc_parameters.iteritems():
-        if not options[k] and options[k] is not False and options[k] is not 0:
-            set_default()
-            continue
-
-        if v['type'] == 'integer':
-            if type(options[k]) != int:
-                if not re.search('[^0-9]',options[k]):
-                    options[k] = int(options[k])
-                else:
-                    current_error = 'INFO: Parameter "{}" with value {} must be {}'.format(k, options[k], v['type'])
-
-            if options[k] < v['range'][0] or options[k] > v['range'][1]:
-                current_error = 'INFO: Parameter "{}" with value {} out of range {}'.format(
-                    k, options[k], v['range'])
-
-
-        elif v['type'] == 'float':
-            try:
-                options[k] = float(options[k])
-                if options[k] < v['range'][0] or options[k] > v['range'][1]:
-                    current_error = 'INFO: Parameter "{}" with value {} out of range {}'.format(
-                        k, options[k], v['range'])
-            except:
-                current_error = 'INFO: Parameter "{}" with value {} must be {}'.format(
-                    k, options[k], v['type'])
-
-
-        elif v['type'] == 'hexadecimal':
-            try:
-                int(options[k])
-            except Exception as exc:
-                current_error = 'INFO: Parameter "{}" with value {} must be {}: {}'.format(
-                    k, options[k], v['type'], exc)
-
-
-        elif v['type'] == 'boolean':
-            parse = options[k]
-
-            if type(options[k]) == type(''):
-                parse = options[k].lower()
-            if parse in [True, 'true', 'yes', 1, '1', "True"]:
-                options[k] = True
-            elif parse in [False, 'false', 'no', 0, '0', "False"]:
-                options[k] = False
-            else:
-                current_error = 'INFO: Parameter "{}" with value {} must be an accepted {} ({}). Boolean parser ignores case'.format(
-                    k, options[k], v['type'],'true, yes, 1, false, no, 0')
-
-
-        elif v['type'] == 'flavor' and options[k] not in FLAVOR:
-            current_error = 'INFO: Parameter "{}" with value {} is not a valid {}. Valid flavors are {}'.format(k, options[k], v['type'], FLAVOR)
-
-
-        elif v['type'] == 'select' and options[k] not in v['options']:
-            current_error = 'INFO: Parameter "{}" with value {} must be a valid option {}'.format(k, options[k], v['options'])
-
-        elif v['type'] == 'list':
-            # If it is not a list try to convert to dict using JSON
-            if not (type(options[k]) is list):
-                try:
-                    options[k] = json.loads(options[k], "utf-8")
-                except Exception as exc:
-                    current_error = 'INFO: Parameter "{}" with value {} must be {}. {}'.format(
-                        k, options[k], v['type'], exc)
-
-            # Check if now it is a list
-            if not (type(options[k]) is list):
-                if not current_error:
-                    current_error = 'INFO: Parameter "{}" with value {} must be {}'.format(
-                        k, options[k], v['type'])
-
-
-        elif v['type'] == 'dict':
-            # If it is not a dict try to convert to dict using JSON
-            if not isinstance(options[k], dict):
-                try:
-                    options[k] = json.loads(options[k], "utf-8")
-                except Exception as exc:
-                    current_error = 'INFO: Parameter "{}" with value {} must be {}. {}'.format(
-                        k, options[k], v['type'], exc)
-
-            # Parse dict
-            if not isinstance(options[k], dict):
-                if not current_error:
-                    current_error = 'INFO: Parameter "{}" with value {} must be {}.'.format(
-                        k, options[k], v['type'])
-            # else:
-            #     iteration_error, options[k] = validate_track(options[k], v['default'], recursive=True)
-            #     current_error = iteration_error
-
-
-        #TODO add check location tests and check only in bins with location
-        #if v['type'] == 'device' and type(self).__name__ != 'GCpulse' and not path.exists(options[k]):
-        #    raise SystemError('Parameter "{0}" on {1} is not a valid {2}'.format(
-        #            k, type(self).__name__ , v['type']))
-
-
-        # TODO improve the caps validation
-        # https://gstreamer.freedesktop.org/data/doc/gstreamer/head/pwg/html/section-types-definitions.html#table-video-types
-        elif v['type'] == 'caps':
-           try:
-               caps = Gst.Caps.from_string(options[k])
-               structure = caps.get_structure(0)
-               caps_name = structure.get_name()
-
-               # Must be a tuple (True, value), it would be false if it is not defined
-               # Note that caps like 'video/x-raw,framerate=5/1' does not have height or width but it works anyway
-               # if not structure.get_int('height')[0]:
-               #     if not current_error:
-               #         current_error = 'INFO: Parameter "{}" with value {} must have a height defined.'.format(k, options[k])
-
-               # if not structure.get_int('width')[0]:
-               #     if not current_error:
-               #         current_error = 'INFO: Parameter "{}" with value {} must be a width defined.'.format(
-               #             k, options[k])
-
-               if not "video" in caps_name and not "image" in caps_name:
-                   if not current_error:
-                       current_error = 'INFO: Parameter "{}" with value {} must be of type video or image.'.format(
-                           k, options[k])
-
-           except Exception as exc:
-               current_error = 'INFO: Parameter "{}" with value {} must be valid caps. {}'.format(
-                   k, options[k], exc)
-
-
-        # If the value is not set, put the default value
-        if options[k] is None and v.has_key("default") :
-            options[k] = v['default']
+        current_error, value = parse_validate(k, options[k], v)
+        options[k] = value
 
         if current_error:
             if not recursive:
@@ -207,8 +80,6 @@ def validate_track(options, gc_parameters=None, recursive=False):
                 global_error_msg = current_error
 
             current_error = None
-
-
     return global_error_msg, options
 
 
@@ -220,6 +91,146 @@ def get_gc_parameters_from_bin(device):
 
     return Klass.gc_parameters
 
+
+def parse_validate(k, option, gc_parameter=None):
+    current_error = None
+
+    if not gc_parameter:
+        return current_error, option
+
+    if not option and option is not False and option is not 0:
+        # If the value is not set, put the default value
+        if gc_parameter.has_key("default") :
+            option = parse_automatic(gc_parameter['default'])
+        return current_error, option
+
+    if gc_parameter['type'] == 'integer':
+        if type(option) != int:
+            if not re.search('[^0-9]',option):
+                option = int(option)
+            else:
+                current_error = 'INFO: Parameter "{}" with value {} must be {}'.format(k, option, gc_parameter['type'])
+
+        if option < gc_parameter['range'][0] or option > gc_parameter['range'][1]:
+            current_error = 'INFO: Parameter "{}" with value {} out of range {}'.format(
+                k, option, gc_parameter['range'])
+
+
+    elif gc_parameter['type'] == 'float':
+        try:
+            option = float(option)
+            if option < gc_parameter['range'][0] or option > gc_parameter['range'][1]:
+                current_error = 'INFO: Parameter "{}" with value {} out of range {}'.format(
+                    k, option, gc_parameter['range'])
+        except:
+            current_error = 'INFO: Parameter "{}" with value {} must be {}'.format(
+                k, option, gc_parameter['type'])
+
+
+    elif gc_parameter['type'] == 'hexadecimal':
+        try:
+            int(option)
+        except Exception as exc:
+            current_error = 'INFO: Parameter "{}" with value {} must be {}: {}'.format(
+                k, option, gc_parameter['type'], exc)
+
+
+    elif gc_parameter['type'] == 'boolean':
+        parse = option
+
+        if type(option) == type(''):
+            parse = option.lower()
+        if parse in [True, 'true', 'yes', 1, '1', "True"]:
+            option = True
+        elif parse in [False, 'false', 'no', 0, '0', "False"]:
+            option = False
+        else:
+            current_error = 'INFO: Parameter "{}" with value {} must be an accepted {} ({}). Boolean parser ignores case'.format(
+                k, option, gc_parameter['type'],'true, yes, 1, false, no, 0')
+
+
+    elif gc_parameter['type'] == 'flavor' and option not in FLAVOR:
+        current_error = 'INFO: Parameter "{}" with value {} is not a valid {}. Valid flavors are {}'.format(k, option, gc_parameter['type'], FLAVOR)
+
+
+    elif gc_parameter['type'] == 'select' and option not in gc_parameter['options']:
+        current_error = 'INFO: Parameter "{}" with value {} must be a valid option {}'.format(k, option, gc_parameter['options'])
+
+    elif gc_parameter['type'] == 'list':
+        # If it is not a list try to convert to dict using JSON
+        if not (type(option) is list):
+            try:
+                option = json.loads(option, "utf-8")
+            except Exception as exc:
+                current_error = 'INFO: Parameter "{}" with value {} must be {}. {}'.format(
+                    k, option, gc_parameter['type'], exc)
+
+        # Check if now it is a list
+        if not (type(option) is list):
+            if not current_error:
+                current_error = 'INFO: Parameter "{}" with value {} must be {}'.format(
+                    k, option, gc_parameter['type'])
+
+
+    elif gc_parameter['type'] == 'dict':
+        # If it is not a dict try to convert to dict using JSON
+        if not isinstance(option, dict):
+            try:
+                option = json.loads(option, "utf-8")
+            except Exception as exc:
+                current_error = 'INFO: Parameter "{}" with value {} must be {}. {}'.format(
+                    k, option, gc_parameter['type'], exc)
+
+        # Parse dict
+        if not isinstance(option, dict):
+            if not current_error:
+                current_error = 'INFO: Parameter "{}" with value {} must be {}.'.format(
+                    k, option, gc_parameter['type'])
+        # else:
+        #     iteration_error, options[k] = validate_track(options[k], v['default'], recursive=True)
+        #     current_error = iteration_error
+
+
+    #TODO add check location tests and check only in bins with location
+    #if v['type'] == 'device' and type(self).__name__ != 'GCpulse' and not path.exists(options[k]):
+    #    raise SystemError('Parameter "{0}" on {1} is not a valid {2}'.format(
+    #            k, type(self).__name__ , v['type']))
+
+
+    # TODO improve the caps validation
+    # https://gstreamer.freedesktop.org/data/doc/gstreamer/head/pwg/html/section-types-definitions.html#table-video-types
+    elif gc_parameter['type'] == 'caps':
+       try:
+           caps = Gst.Caps.from_string(option)
+           structure = caps.get_structure(0)
+           caps_name = structure.get_name()
+
+           # Must be a tuple (True, value), it would be false if it is not defined
+           # Note that caps like 'video/x-raw,framerate=5/1' does not have height or width but it works anyway
+           # if not structure.get_int('height')[0]:
+           #     if not current_error:
+           #         current_error = 'INFO: Parameter "{}" with value {} must have a height defined.'.format(k, options[k])
+
+           # if not structure.get_int('width')[0]:
+           #     if not current_error:
+           #         current_error = 'INFO: Parameter "{}" with value {} must be a width defined.'.format(
+           #             k, options[k])
+
+           if not "video" in caps_name and not "image" in caps_name:
+               if not current_error:
+                   current_error = 'INFO: Parameter "{}" with value {} must be of type video or image.'.format(
+                       k, option)
+
+       except Exception as exc:
+           current_error = 'INFO: Parameter "{}" with value {} must be valid caps. {}'.format(
+               k, option, exc)
+
+
+    # If the value is not set, put the default value
+    if option is None and gc_parameter.has_key("default") :
+        option = gc_parameter['default']
+
+    return current_error, option
 
 def parse_automatic(value):
     # Parses from string to integer, float, boolean... If not returns the string
