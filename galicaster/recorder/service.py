@@ -325,7 +325,8 @@ class RecorderService(object):
 
     def _handle_recover(self, origin):
         self.logger.info("Handle recover from error")
-        if self.__handle_recover_id and self.preview():
+        self.dispatcher.emit("action-reload-profile")
+        if self.__handle_recover_id:
             self.error_msg = None
             self.logger.info("Disconnecting recover recorder callback")
             self.__handle_recover_id = self.dispatcher.disconnect(self.__handle_recover_id)
