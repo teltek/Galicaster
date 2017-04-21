@@ -65,21 +65,13 @@ class Base(object):
         self.options = dict([(k,v['default']) for k,v in self.gc_parameters.iteritems()])
         # TODO parsear
 
+        # Validate option values
         for k, v in options.iteritems():
             gc_parameter = None
             if self.gc_parameters.has_key(k):
                 gc_parameter = self.gc_parameters[k]
             if v is not None:
                 error, self.options[k] = validator.parse_validate(k, v, gc_parameter)
-        # Validate option values
-        try:
-            global_error, self.options = validator.validate_track(self.options, gc_parameters=self.gc_parameters)
-        except Exception as exc:
-            error_msg = 'Profile error in {0}, track {1}. {2}'.format(
-                path, self.options['name'], exc)
-
-            logger.error(error_msg)
-            raise SystemError(error_msg)
 
         # Sanitaze values
         self.options["name"] = re.sub(r'\W+', '', self.options["name"])
