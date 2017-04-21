@@ -16,9 +16,7 @@
 """
 
 import sys
-import re
 import json
-import ast
 
 from gi.repository import Gst
 
