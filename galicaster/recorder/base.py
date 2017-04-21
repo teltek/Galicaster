@@ -54,10 +54,10 @@ class Base(object):
         if current_profile:
             path = current_profile.path
         # Check the profile parameters (*.ini)
-        # for k in options:
-        #     if k not in self.gc_parameters and k not in ['device', 'active', 'path']:
-        #         logger.warning('Does not exit the parameter "{0}". Please check the file {1}'.format(
-        #                 k, current_profile_path))
+        for k in options:
+            if k not in self.gc_parameters and k not in ['device', 'active', 'path']:
+                logger.warning('The profile parameter "{0}" does not exist. Please check the file {1}'.format(
+                        k, path))
 
 
 
