@@ -730,7 +730,9 @@ class RecorderClassUI(Gtk.Box):
             helpb.set_sensitive(True)
             prevb.set_sensitive(False)
             swapb.set_sensitive(False)
-            editb.set_sensitive(self.recorder.current_mediapackage and self.recorder.current_mediapackage.manual)
+            editb.set_sensitive((self.recorder.current_mediapackage
+                                and self.recorder.current_mediapackage.manual)
+                                or False)
 
         elif status == PAUSED_STATUS:
             record.set_sensitive(False)
