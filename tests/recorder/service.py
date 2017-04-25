@@ -180,7 +180,7 @@ class TestFunctions(TestCase):
     def test_error_and_recover(self):
         dispatcher, repo, worker, conf, logger = self.__get_dependencies()
 
-        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, recorderklass=self.recorderklass)
+        recorder_service = RecorderService(dispatcher, repo, worker, conf, logger, autorecover=True, recorderklass=self.recorderklass)
         self.assertEqual(recorder_service.status, INIT_STATUS)
         recorder_service.preview()
         self.__sleep()
@@ -192,6 +192,8 @@ class TestFunctions(TestCase):
         self.assertEqual(recorder_service.is_error(), True)
         self.assertNotEqual(recorder_service.error_msg, None)
         dispatcher.emit("timer-long")
+        while Gtk.events_pending():
+            Gtk.main_iteration()
         self.assertEqual(recorder_service.status, PREVIEW_STATUS)
         self.assertEqual(recorder_service.error_msg, None)
         recorder_service.record()

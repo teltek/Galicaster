@@ -143,6 +143,10 @@ class Recorder(object):
             bin.changeValve(True)
         self.__valves_status = True
         self.__set_state(Gst.State.PLAYING)
+        Gst.debug_bin_to_dot_file_with_ts(self.pipeline,
+                                          Gst.DebugGraphDetails.ALL,
+                                          'galicaster-pipeline')
+
 
 
     def preview_and_record(self):

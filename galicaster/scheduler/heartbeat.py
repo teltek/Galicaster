@@ -48,8 +48,9 @@ class Heartbeat(object):
         self.dispatcher.emit('timer-nightly')
         if self.logger:
             self.logger.debug('timer-nightly in %s', seg)
-        return True
 
+        GObject.timeout_add_seconds(seg, self.__notify_timer_long)
+        return False
 
     def __notify_timer_short(self):
         self.dispatcher.emit('timer-short')
