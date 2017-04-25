@@ -138,14 +138,14 @@ class TestFunctions(TestCase):
 
 
     def test_reload(self):
-        self.conf.set('basic', 'temp', 'temporal')
-        self.assertEqual('temporal', self.conf.get('basic', 'temp'))
-        self.conf.set('basic', 'temp', 'newtemporal')
-        self.assertEqual('newtemporal', self.conf.get('basic', 'temp'))
+        self.conf.set('basic', 'temp', 'temporary')
+        self.assertEqual('temporary', self.conf.get('basic', 'temp'))
+        self.conf.set('basic', 'temp', 'newtemporary')
+        self.assertEqual('newtemporary', self.conf.get('basic', 'temp'))
         self.conf.remove_option('basic', 'temp')
         self.assertEqual(None, self.conf.get('basic', 'temp'))
         self.conf.reload()
-        self.assertEqual('newtemporal', self.conf.get('basic', 'temp'))
+        self.assertEqual('newtemporary', self.conf.get('basic', 'temp'))
 
 
     def test_get_tracks_in_oc_dict(self):
