@@ -338,7 +338,7 @@ class TestFunctions(TestCase):
 
     def test_recover_recording(self):
         repo_folder = get_resource('repository')
-        rectemp_aux = get_resource('utils/temporal_recording')
+        rectemp_aux = get_resource('utils/temporary_recording')
         rectemp = get_resource('repository/rectemp')
 
         # Read info.json
@@ -351,7 +351,7 @@ class TestFunctions(TestCase):
         for indx, track in enumerate(info['tracks']):
             info['tracks'][indx]['path'] = rectemp
 
-        # Copy temporal files
+        # Copy temporary files
         for temp_file in os.listdir(rectemp_aux):
             full_path = os.path.join(rectemp_aux, temp_file)
             copy(full_path, os.path.join(rectemp, temp_file))

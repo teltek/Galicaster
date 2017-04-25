@@ -61,7 +61,7 @@ class Worker(object):
             logger (Logger): the object that prints all the information, warning and error messages.
             oc_client (OCHTTPClient): the opencast HTTP client.
             export_path (str): the absolute path where galicaster exports zip and sidebyside.
-            tmp_path (str): temporal path (needed if /tmp partition is small).
+            tmp_path (str): temporary path (needed if /tmp partition is small).
             use_namespace (bool): if true the manifest attribute xmlns has 'http://mediapackage.opencastproject.org' value.
             sbs_layout (str): the identifier of side by side layout. See notes.
             hide_ops (List[str]): List of hidden mediapackage operations.
