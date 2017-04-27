@@ -1,0 +1,236 @@
+.large{
+	font-size: 20px;
+}
+
+.medium{
+	font-size: 12px;
+}
+
+.small{
+	font-size: 10px;
+}
+
+/* BUTTONS */
+GtkButton:insensitive{
+	opacity: 0.5;
+}
+
+GtkButton{
+	border-radius: 1em;
+	border: 2px solid shade(gray,1.5);
+}
+.distrib_button{
+	border-radius: 2em;
+}
+GtkTreeView > GtkButton{
+	border-radius: 0;
+	border-right: 1px ridge shade(gray,1.6);
+	border-left: 1px ridge shade(gray,1.6);
+	border-top: 1px solid rgba(0,0,0,0);
+	border-bottom: 1px solid shade(gray,0.8);
+}
+.tools_button{
+	border: 1px solid rgba(0,0,0,0);
+	border-radius: 0;
+	border-bottom-left-radius: 1em;
+}
+.tools_button:hover,
+.tools_button:active{
+	border: 1px solid shade(gray,1.5);
+}
+
+/* DIALOG */
+GtkDialog{
+	border: 1px solid rgb(201,198,194);
+	border-radius: 8px;
+}
+GtkWindow.shaded>*{
+	opacity: 0.5;
+}
+
+.dialog_title{
+	font-weight : bold;
+	font-size: 1em;
+}
+.dialog_body{
+	font-size: 0.9em;
+}
+.info_mp GtkFrame{
+	font-size: 0.8em;
+}
+.info_mp .frame_title{
+	font-size: 1.5em;
+}
+.dialog_button{
+	font-size: 1.3em;
+	padding: 0.3em 1em 0.3em 1em;
+	color: shade(gray,0.5);
+}
+.operation_dialog_buttons GtkLabel{
+	font-size: 0.75em;
+}
+.operation_dialog_buttons GtkButton{
+	padding-top: 0.8em;
+	padding-bottom: 0.8em;
+	font-size: 1.1em;
+}
+.error_label{
+	font-size: 0.75em;
+}
+.ok_button{
+	background-image: -gtk-gradient(
+		linear,
+		left top, left bottom,
+		from(shade(coral,1.2)),
+		to(coral));
+}
+.ok_button:active{
+	background-image: -gtk-gradient(
+		linear,
+		left top, left bottom,
+		from(coral),
+		to(shade(coral,1.2)));
+}
+.cancel_button,
+.about_buttons GtkButton{
+	color: shade(gray,0.5);
+	background-image: -gtk-gradient(
+		linear,
+		left top, left bottom,
+		from(shade(gray,1.9)),
+		to(shade(gray,1.5)));
+}
+.cancel_button:active,
+.about_buttons GtkButton:active{
+	background-image: -gtk-gradient(
+		linear,
+		left top, left bottom,
+		from(shade(gray,1.5)),
+		to(shade(gray,1.9)));
+}
+/* Recorder - Vumeter */
+.vumeter_high{
+    color: red;
+}
+.vumeter_medium{
+    color: orange;
+}
+.vumeter_low{
+    color: green;
+}
+
+.label_extrabig{
+    font-weight: bold;
+    font-size: 2.3em;
+}
+.label_big{
+    font-size: 1.5em;
+}
+.label_medium{
+    font-size: 1em;
+}
+.label_small{
+    font-size: 0.75em;
+}
+
+.label_extrasmall{
+    font-size: 0.25em;
+}
+/* Recorder - Tabs */
+GtkNotebook tab:active{
+	background-image: inherit;
+}
+.notebook_horizontal tab{
+	background-image: -gtk-gradient(
+		linear,
+		left top, right top,
+		from(shade(gray,1.9)),
+		to(shade(gray,1.5)));
+}
+
+.notebook_vertical tab{
+	background-image: -gtk-gradient(
+		linear,
+		left bottom, left top,
+		from(shade(gray,1.9)),
+		to(shade(gray,1.5)));
+}
+
+
+/* Event status */
+.status_text{
+	font-weight: bold;
+}
+#red_coloured{
+	color: red;
+}
+#black_coloured{
+	color: shade(gray,0.5);
+}
+#orange_coloured{
+	color: #F4A00E;
+}
+#blinking_coloured_from{
+	color: shade(red,1.5);
+}
+#blinking_coloured_to{
+	color: red;
+}
+#gray_coloured{
+	color: gray;
+}
+#green_coloured{
+	color: shade(green,1.7);
+}
+
+/* Progress bar (Vumeter)*/
+.horizontal_vumeter.trough{
+    background-image: -gtk-gradient(
+			      linear,
+			      left bottom, right bottom,
+			      from(green),
+			      color-stop(0.7,yellow),
+			      to(red));
+}
+.vertical_vumeter.trough{
+    background-image: -gtk-gradient(
+			      linear,
+			      left bottom, left top,
+			      from(green),
+			      color-stop(0.7,yellow),
+			      to(red));
+}
+
+.horizontal_vumeter.progressbar,
+.vertical_vumeter.progressbar{
+    background-color: shade(gray,1.7);
+    margin: 0;
+    border: 0px;
+    border-radius: 0px;
+
+    background-image: -gtk-gradient (linear,
+				     left top,
+				     left bottom,
+				     from (shade (@base_color, 0.88)),
+				     to (shade (@base_color, 0.88)));
+}
+
+/* Footer*/
+.corner{
+	border-bottom: 21em solid transparent;
+	border-right: 30px solid rgb(242,241,240);
+	font-size: 0.1em;
+}
+.release_label{
+    padding-left: 3px;
+    border-bottom: 3px solid #6E9717;
+    color:white;
+}
+.release_box{
+	border-top:0.20em solid rgb(242,241,240);
+	background-image: -gtk-gradient(
+			      linear,
+			      left top, left bottom,
+			      from(shade(#6E9717,1.0)),
+			      to(shade(#6E9717, 1.0)));
+}

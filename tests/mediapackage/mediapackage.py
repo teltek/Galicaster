@@ -14,13 +14,15 @@
 """
 Unit tests for `galicaster.mediapackage` module.
 """
+import datetime
+import time
 from os import path
 from unittest import TestCase
 
 from tests import get_resource
 from galicaster.mediapackage import mediapackage
 from galicaster.mediapackage import fromXML
-
+from galicaster.core import context
 
 class TestFunctions(TestCase):
     
@@ -58,7 +60,7 @@ class TestFunctions(TestCase):
         self.assertEqual(self.attach.getElementType(), mediapackage.TYPE_ATTACHMENT)
         # Check Other
         self.assertEqual(self.other.getElementType(), mediapackage.TYPE_OTHER)
-        
+
     def test_element_equality(self):
         track = mediapackage.Track(self.path_track1, 532, "presentation/source")
         attach = mediapackage.Attachment(self.path_attach, "attachment/source")
@@ -167,6 +169,15 @@ class TestFunctions(TestCase):
         self.assertEqual(mp.properties['notes'], u"Nota de Prueba <?php Caracteres ñ I'm raros >")
 
 
+    def test_fromXML_without_galicaster_xml(self):
+        logger = context.get_logger()
+        xml = path.join(self.baseDir, 'wrongmp', 'manifest.xml')
+        mp = fromXML(xml, logger)
+        self.assertEqual(mp.title, "Opening a folder...")
+        self.assertEqual(mp.getIdentifier(), "dae91194-2114-481b-8908-8a8962baf8dc")
+        self.assertEqual(mp.status, 4)
+
+
     def test_mediapackage_size(self):
         xml = path.join(self.baseDir, 'manifest.xml')
         mp = fromXML(xml)
@@ -202,6 +213,109 @@ class TestFunctions(TestCase):
 
     def test_properties(self):
         mp = mediapackage.Mediapackage()
-        mp.title = 'title'
+        mp.setTitle('title')
         self.assertEqual(mp.title, 'title')
         self.assertEqual(mp.metadata_episode['title'], 'title')
+        self.assertEqual(mp.getMetadataByName('title'), 'title')
+
+        now = datetime.datetime.now()
+        timeok = False
+        if (mp.getMetadataByName('created') < now + datetime.timedelta(10) and mp.getMetadataByName('created') > now - datetime.timedelta(10)):
+            timeok = True
+        self.assertTrue(timeok)
+
+        mp.setIdentifier('12345')
+        mp.setNewIdentifier()
+        self.assertTrue(mp.getIdentifier() != '12345')
+
+        self.assertEqual(mp.getMetadataByName('test'), None)
+        self.assertEqual(mp.getMetadataByName('seriestitle'), None)
+        self.assertEqual(mp.getMetadataByName('ispartof'), {'title':None, 'identifier': None })
+
+        mp.setMetadataByName('seriestitle', 'testseries')
+        self.assertEqual(mp.getMetadataByName('seriestitle'), 'testseries')
+
+        mp.setSeriesTitle('test2')
+        self.assertEqual(mp.getSeriesTitle(), 'test2')
+
+        mp.setCreator('someone')
+        self.assertEqual(mp.getCreator(), 'someone')
+
+        mp.setLicense('Creative Commons')
+        self.assertEqual(mp.getLicense(), 'Creative Commons')
+
+        mp.setContributor('contributor1')
+        self.assertEqual(mp.getContributor(), 'contributor1')
+
+        mp.setLanguage('language1')
+        self.assertEqual(mp.getLanguage(), 'language1')
+
+        mp.setDescription('description1')
+        self.assertEqual(mp.getDescription(), 'description1')
+
+        
+        now = datetime.datetime.now()
+        mp.setLocalDate(now)
+        self.assertEqual(mp.getLocalDate(), now)
+
+        self.assertEqual(mp.getStartDateAsString(), now.isoformat())
+        aux = time.time()
+        utcdiff = datetime.datetime.utcfromtimestamp(aux) - datetime.datetime.fromtimestamp(aux)
+        self.assertEqual(mp.getStartDateAsString(True, False), (now + utcdiff).isoformat())
+        self.assertEqual(mp.getStartDateAsString(False, True), unicode(mp.getDate() - utcdiff))
+        self.assertEqual(mp.getStartDateAsString(False, False), unicode(mp.getDate()))
+
+        mp.setSeries(None)
+        self.assertEqual(mp.metadata_series, {'title':None, 'identifier': None })
+        self.assertEqual(mp.metadata_episode["isPartOf"], None)
+
+
+    def test_getAsDict(self):
+        mp = mediapackage.Mediapackage()
+        mp.add(self.path_track1, mediapackage.TYPE_TRACK, "presentation/source", None, 532)
+        mp.add(self.path_track2, mediapackage.TYPE_TRACK, "presenter/source", None, 532)
+        mp.add(self.path_catalog, mediapackage.TYPE_CATALOG, "catalog/source")
+        mp.add(self.path_attach, mediapackage.TYPE_ATTACHMENT, "attachment/source")
+        mp.add(self.path_other, mediapackage.TYPE_OTHER, "other/source")
+
+        info = mp.getAsDict()
+        self.assertTrue(info.has_key('id'))
+        self.assertTrue(info.has_key('title'))
+        self.assertTrue(info.has_key('status'))
+        self.assertTrue(info.has_key('start'))
+        self.assertTrue(info.has_key('creator'))
+        self.assertTrue(info.has_key('tracks'))
+
+    def test_element_tags(self):
+        self.assertTrue(self.track1.getTags(), ['archive'])
+        self.track1.addTag('engage')
+        self.assertTrue(self.track1.getTags(), ['archive', 'engage'])
+        self.track1.removeTag('archive')
+        self.assertEqual(self.track1.getTags(), ['engage'])
+        self.assertTrue(self.track1.containsTag('engage'))
+        self.assertEqual(self.track1.containsTag('archive'), False)
+        self.track1.setTags(['test', 'sometag'])
+        self.assertEqual(self.track1.containsTag('engage'), False)
+        self.track1.clearTags()
+        self.assertEqual(self.track1.getTags(), set([]))
+
+    def test_element_set_uri(self):
+        self.assertEqual(self.track1.uri, path.join(get_resource('mediapackage'), 'SCREEN.mpeg'))
+        self.track1.setURI(self.path_track2)
+        self.assertEqual(self.track1.uri, path.join(get_resource('mediapackage'), 'CAMERA.mpeg'))
+
+    def test_element_set_mime(self):
+        self.assertEqual(self.track1.mime, None)
+        self.track1.setMimeType('video/mp4')
+        self.assertEqual(self.track1.mime, 'video/mp4')
+
+    def test_element_set_flavor(self):
+        self.assertEqual(self.track1.flavor, 'presentation/source')
+        self.track1.setFlavor('presenter/source')
+        self.assertEqual(self.track1.flavor, 'presenter/source')
+
+    def test_element_set_mp(self):
+        mp = mediapackage.Mediapackage()
+        self.track1.setMediapackage(mp)
+        string = 'test'
+        self.assertRaises(TypeError, self.track1.setMediapackage, string)

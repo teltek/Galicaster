@@ -78,3 +78,9 @@ def list(listed):
         return  ", ".join(listed)
 
     
+def str2bool(v):
+    if v:
+        return v.lower() in ("yes", "true", "t", "1")
+    else:
+        return False
+

@@ -10,9 +10,14 @@ taking advantage of all the tools within to process and distribute educational m
 
 Galicaster is been developed with GStreamer and Python, designed as a heavy application fully based on free software.
 
-    http://galicaster.teltek.es
+    http://galicaster.org
     galicaster@teltek.es
 
+
+Documentation Project
+=====================
+
+https://github.com/teltek/Galicaster-doc
 
 
 Coding Style

@@ -22,32 +22,29 @@ from galicaster.mediapackage import mediapackage
 logger = context.get_logger()
 
 def init():	
-    try:
-        dispatcher = context.get_dispatcher()
-	dispatcher.connect('after-process-ical', check_repository)	
-    except ValueError:
-	    pass
+    dispatcher = context.get_dispatcher()
+    dispatcher.connect('ical-processed', check_repository)	
 
 def check_repository(self):
+    global logger
     #mp_list is collection of mediapackages ID's
     mp_list = context.get_repository()
 
     for uid,mp in mp_list.iteritems():
         if mp.status == mediapackage.SCHEDULED and mp.getDate() < datetime.datetime.utcnow() and mp.getDate()+datetime.timedelta(seconds=(mp.getDuration()/1000)) > datetime.datetime.utcnow():
             #duration update			
-		x = datetime.datetime.utcnow() - mp.getDate()
-		x = x.seconds-2			
-		mp.setDuration(mp.getDuration() - x*1000)
-		#start-datetime update
-		mp.setDate(datetime.datetime.utcnow()+datetime.timedelta(seconds=2))
-		#repository update
-		mp_list.update(mp)
-
-		scheduler = context.get_scheduler()
-		try:
-                    scheduler.create_new_timer(mp)
-		except ValueError:
-                    #log or set default value
-                    pass
-		#logging
-		logger.info("Mediapackage with UID:%s have been reprogrammed", uid)
+	    x = datetime.datetime.utcnow() - mp.getDate()
+	    x = x.seconds-2			
+	    mp.setDuration(mp.getDuration() - x*1000)
+	    #start-datetime update
+	    mp.setDate(datetime.datetime.utcnow()+datetime.timedelta(seconds=2))
+	    #repository update
+	    mp_list.update(mp)
+            
+	    scheduler = context.get_scheduler()
+	    try:
+                scheduler.create_timer(mp)
+                logger.info("Mediapackage with UID:%s have been reprogrammed", uid)
+	    except Exception as exc:
+                logger.error("Error trying to create a new timer for MP {}: {}".format(uid, exc))
+        

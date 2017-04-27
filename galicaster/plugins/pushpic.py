@@ -11,47 +11,43 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-import gtk
 from StringIO import StringIO
-import pycurl
 
 from galicaster.core import context
+from galicaster.utils.miscellaneous import get_screenshot_as_pixbuffer
 
 """
-Description: Galicaster Dashboard PUSH mode. It fetchs a screenchoot of the window through gtk and sends it with Galicaster's Matterhorn HTTP client to the Dashboard endpoint.
+Description: Galicaster Dashboard PUSH mode. It fetchs a screenchoot of the window through gtk and sends it with Galicaster's Opencast HTTP client to the Dashboard endpoint.
 This module can work as a plugin or as a separated application.
 Status: Experimental 
 """
 
 def init():
     dispatcher = context.get_dispatcher()
-    dispatcher.connect('galicaster-notify-timer-long', push_pic)
+    dispatcher.connect('timer-long', push_pic)
 
 
 def get_screenshot():
-    """makes screenshot of the current root window, yields gtk.Pixbuf"""
-    window = gtk.gdk.get_default_root_window()
-    size = window.get_size()
-    pixbuf = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB, False, 8, size[0], size[1])
-    pixbuf.get_from_drawable(window, window.get_colormap(),
-                                    0, 0, 0, 0, size[0], size[1])
+    """makes screenshot of the current root window, yields Gtk.Pixbuf"""
+    pixbuf = get_screenshot_as_pixbuffer()
+
     b = StringIO()
-    pixbuf.save_to_callback(b.write, 'png')
+    pixbuf.save_to_callback(b.write, 'png', [], ["100"])
     return b.getvalue()    
 
 
 def push_pic(sender=None):
     conf = context.get_conf()
-    mhclient = context.get_mhclient()
+    occlient = context.get_occlient()
 
-    endpoint = "/dashboard/rest/agents/{hostname}/snapshot.png".format(hostname=conf.hostname)
+    endpoint = "/dashboard/rest/agents/{hostname}/snapshot.png".format(hostname=conf.get_hostname())
     postfield = [ ("snapshot", get_screenshot() ) ]
     
     try:
-        aux = mhclient._MHHTTPClient__call('POST', endpoint, {}, {}, postfield, False, None, False)
-    except IOError as e:
+        occlient._OCHTTPClient__call('POST', endpoint, {}, {}, postfield, False, None, False)
+    except IOError:
         # This endpoint return 204, not 200.
-        aux = None
+        pass
         
 
 

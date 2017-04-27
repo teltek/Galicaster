@@ -6,52 +6,66 @@
 # Copyright (c) 2013, Teltek Video Research <galicaster@teltek.es>
 #
 # This work is licensed under the Creative Commons Attribution-
-# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of 
-# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ 
-# or send a letter to Creative Commons, 171 Second Street, Suite 300, 
+# NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+# this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
+# or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
+# LEVELS:
+# -------
+#
+# DEBUG     Detailed information, typically of interest only when diagnosing problems.
+# INFO      Confirmation that things are working as expected.
+# WARNING   An indication that something unexpected happened, or indicative of some problem in the near future (e.g. ‘disk space low’). The software is still working as expected.
+# ERROR     Due to a more serious problem, the software has not been able to perform some function.
+# CRITICAL  A serious error, indicating that the program itself may be unable to continue running.
+#
+# Please use these levels consistently when logging information.
+#
+
 """
-Logger Proxy class to use in Galciaster.
+Logger Proxy class to use in Galicaster.
 """
 import sys
 import logging
 import getpass
 
+import os
 from os import path
 
 class Logger(logging.Logger):
     def __init__(self, log_path, level="DEBUG", rotate=False, use_syslog=False):
         logging.Logger.__init__(self, "galicaster", level)
 
+        self.log_path = log_path
         formatting = [
             "%(user)s",
             "%(asctime)s",
             "%(levelname)s",
-            "%(module)s",
+            "%(pathname)s",
             "%(message)s"]
 
         if use_syslog:
             from logging.handlers import SysLogHandler
             loghandler = SysLogHandler(address='/dev/log')
-            formatting.insert(0, "Galicaster") 
-            del(formatting[2]) 
+            formatting.insert(0, "Galicaster")
+            del(formatting[2])
             loghandler.setFormatter(logging.Formatter(" ".join(formatting)))
-        elif log_path == None or len(log_path) == 0:
+        elif self.log_path == None or len(self.log_path) == 0:
             loghandler = logging.NullHandler()
         else:
-            if log_path[0] != "/":
-                log_path = path.abspath(path.join(path.dirname(__file__), "..", "..", log_path))
+            if self.log_path[0] != "/":
+                self.log_path = path.abspath(path.join(path.dirname(__file__), "..", "..", self.log_path))
             if rotate:
                 from logging.handlers import TimedRotatingFileHandler
-                loghandler = TimedRotatingFileHandler(log_path, "midnight")
+                loghandler = TimedRotatingFileHandler(self.log_path, "midnight")
             else:
                 try:
-                    loghandler = logging.FileHandler(log_path, "a")
+                    loghandler = logging.FileHandler(self.log_path, "a")
                 except IOError:
-                    fallback_log_path = path.expanduser('~/.galicaster.log')
-                    sys.stderr.write("Error writing in the log in '{0}', using '{1}'\n".format(log_path, fallback_log_path))
-                    loghandler = logging.FileHandler(fallback_log_path, "a")
+                    self.log_path = path.expanduser('~/.galicaster.log')
+                    sys.stderr.write("Error writing in the log in '{0}', using '{1}'\n".format(self.log_path, self.log_path))
+                    loghandler = logging.FileHandler(self.log_path, "a")
 
             loghandler.setFormatter(logging.Formatter("\t".join(formatting)))
 
@@ -59,6 +73,8 @@ class Logger(logging.Logger):
         self.addHandler(loghandler)
 
 
+    def get_path(self):
+        return self.log_path
 
 
 class GalicasterFilter(logging.Filter):
@@ -71,4 +87,11 @@ class GalicasterFilter(logging.Filter):
     def filter(self, record):
         # Insert the username in a parameter named 'user'
         record.user = GalicasterFilter.CURRENT_USER
+
+        pathname = record.pathname
+        if pathname.find('galicaster/') > -1:
+            record.pathname = "/".join(os.path.splitext(pathname)[0].split("/")[-2:])
+
         return True
+
+

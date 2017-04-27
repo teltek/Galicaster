@@ -16,20 +16,25 @@
 
 from os import path
 
-import gst
+from gi.repository import Gst
+Gst.init(None)
 
 layouts = {'sbs': 
-           {'screen_width': 640, 'screen_height': 480, 'screen_aspect': '4/3', 'screen_xpos': 640,'screen_ypos': 120, 'screen_zorder': 0, 
-            'camera_width': 640, 'camera_height': 480, 'camera_aspect': '4/3', 'camera_xpos': 0, 'camera_ypos': 120, 'camera_zorder': 0, 
+           {'screen_width': 640, 'screen_height': 480, 'screen_aspect': '4/3', 'screen_xpos': 640,'screen_ypos': 0, 'screen_zorder': 0, 
+            'camera_width': 640, 'camera_height': 480, 'camera_aspect': '4/3', 'camera_xpos': 0, 'camera_ypos':  0, 'camera_zorder': 0, 
+            'out_width': 1280, 'out_height': 720},
+           'sbsnocrop': 
+           {'screen_width': 640, 'screen_height': 480, 'screen_aspect': '0/1', 'screen_xpos': 640,'screen_ypos': 0, 'screen_zorder': 0, 
+            'camera_width': 640, 'camera_height': 480, 'camera_aspect': '0/1', 'camera_xpos': 0, 'camera_ypos':  0, 'camera_zorder': 0, 
             'out_width': 1280, 'out_height': 720},
            'pip_screen': 
-           {'screen_width': 160, 'screen_height': 120, 'screen_aspect': '4/3', 'screen_xpos': 640,'screen_ypos': 480, 'screen_zorder': 1, 
-            'camera_width': 800, 'camera_height': 600, 'camera_aspect': '4/3', 'camera_xpos': 0, 'camera_ypos': 0, 'camera_zorder': 0, 
-            'out_width': 800, 'out_height': 600},
+           {'screen_width': 320, 'screen_height': 180, 'screen_aspect': '16/9', 'screen_xpos': 960,'screen_ypos': 540, 'screen_zorder': 1, 
+            'camera_width': 960, 'camera_height': 720, 'camera_aspect': '4/3',  'camera_xpos': 0,  'camera_ypos': 0, 'camera_zorder': 0, 
+            'out_width': 1280, 'out_height': 720},
            'pip_camera': 
-           {'screen_width': 800, 'screen_height': 600, 'screen_aspect': '4/3', 'screen_xpos': 0,'screen_ypos': 0, 'screen_zorder': 0, 
-            'camera_width': 160, 'camera_height': 120, 'camera_aspect': '4/3', 'camera_xpos': 640, 'camera_ypos': 480, 'camera_zorder': 1, 
-            'out_width': 800, 'out_height': 600},}
+           {'screen_width': 960, 'screen_height': 720, 'screen_aspect': '4/3', 'screen_xpos': 0,'screen_ypos': 0, 'screen_zorder': 0, 
+            'camera_width': 320, 'camera_height': 180, 'camera_aspect': '16/9', 'camera_xpos': 960, 'camera_ypos': 540, 'camera_zorder': 1, 
+            'out_width': 1280, 'out_height': 720},}
 
 def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
     """
@@ -42,69 +47,60 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
     """
 
     pipestr = """
-    videomixer name=mix 
-        sink_0::xpos=0 sink_0::ypos=0 sink_0::zorder=0
-        sink_1::xpos=640 sink_1::ypos=120 sink_1::zorder=1 !
-    ffmpegcolorspace name=colorsp_saida ! 
-    x264enc quantizer=45 speed-preset=6 profile=1 ! queue ! 
+    videomixer name=mix background=1
+        sink_0::xpos={screen_xpos} sink_0::ypos={screen_ypos} sink_0::zorder={screen_zorder}
+        sink_1::xpos={camera_xpos} sink_1::ypos={camera_ypos} sink_1::zorder={camera_zorder} !
+    videoconvert name=colorsp_saida ! 
+    videoscale ! videorate ! video/x-raw,width={out_width},height={out_height},framerate=25/1,pixel-aspect-ratio=1/1,interlace-mode=progressive !
+    x264enc quantizer=45 speed-preset=6 ! queue ! 
     mp4mux name=mux  ! queue ! filesink location="{OUT}"
 
-    filesrc location="{SCREEN}" ! decodebin2 name=dbscreen ! deinterlace ! 
+    filesrc location="{SCREEN}" ! decodebin name=dbscreen ! deinterlace ! videoconvert name=colorsp_screen !
     aspectratiocrop aspect-ratio={screen_aspect} ! videoscale ! videorate !
-    ffmpegcolorspace name=colorsp_screen !
-    video/x-raw-yuv,width=640,height=480,pixel-aspect-ratio=1/1,framerate=25/1,interlaced=false !
-    videobox right=-640 top=-120 bottom=-120 ! queue !
+    video/x-raw,width={screen_width},height={screen_height},framerate=25/1,pixel-aspect-ratio=1/1,interlace-mode=progressive !
     mix.sink_0 
 
-    filesrc location="{CAMERA}" ! decodebin2 name=dbcamera ! deinterlace ! 
+    filesrc location="{CAMERA}" ! decodebin name=dbcamera ! deinterlace ! videoconvert name=colorsp_camera !
     aspectratiocrop aspect-ratio={camera_aspect} ! videoscale ! videorate !
-    ffmpegcolorspace name=colorsp_camera !
-    video/x-raw-yuv,width=640,height=480,framerate=25/1,pixel-aspect-ratio=1/1,interlaced=false ! queue !
+    video/x-raw,width={camera_width},height={camera_height},framerate=25/1,pixel-aspect-ratio=1/1,interlace-mode=progressive ! queue !
     mix.sink_1 
     """
 
-    pipestr_audio = """
-    db{SRC}. ! audioconvert ! queue ! faac bitrate=128000 ! queue ! mux. 
-    """
-
     pipestr_audio_file = """
-    filesrc location="{AUDIO}" ! decodebin2 name=dbaudio ! 
-    audioconvert ! queue ! faac bitrate=128000 ! queue ! mux.
+    filesrc location="{AUDIO}" ! decodebin name=dbaudio ! 
+    audioconvert ! queue ! voaacenc bitrate=128000 ! queue ! mux.
     """
 
     if not layout in layouts:
         if logger:
             logger.error('Layout not exists')
-        raise IOError, 'Error in SideBySide proccess'
-
-    if not gst.element_factory_find('videomixer2'):
-        pipestr = old_pipestr    
+        raise IOError, 'Error in SideBySide process'
 
     if not camera or not screen:
         if logger:
             logger.error('SideBySide Error: Two videos needed')
-        raise IOError, 'Error in SideBySide proccess'
+        raise IOError, 'Error in SideBySide process'
 
     for track in [camera, screen, audio]:    
         if track and not path.isfile(camera):
             if logger:
                 logger.error('SideBySide Error: Not  a valid file %s', track)
-            raise IOError, 'Error in SideBySide proccess'
+            raise IOError, 'Error in SideBySide process'
 
     embeded = False
     if audio:
         pipestr = "".join((pipestr, pipestr_audio_file.format(AUDIO=audio)))
         if logger:
-            logger.debug('Audio track detected: %s', audio)
+            logger.info('Audio track detected: %s', audio)
     else:
         if logger:
-            logger.debug('Audio embeded')
+            logger.info('Audio embeded')
         embeded = True
 
+    logger and logger.info("Output file {} and layout {}".format(out, layout))
     parameters = {'OUT': out, 'SCREEN': screen, 'CAMERA': camera}
     parameters.update(layouts[layout])
-
-    pipeline = gst.parse_launch(pipestr.format(**parameters))
+    pipeline = Gst.parse_launch(pipestr.format(**parameters))
     bus = pipeline.get_bus()
 
     # connect callback to fetch the audio stream
@@ -116,21 +112,21 @@ def create_sbs(out, camera, screen, audio=None, layout='sbs', logger=None):
         dec_screen.connect('pad-added', on_audio_decoded, pipeline, mux)
 
 
-    pipeline.set_state(gst.STATE_PLAYING)
-    msg = bus.timed_pop_filtered(gst.CLOCK_TIME_NONE, gst.MESSAGE_ERROR | gst.MESSAGE_EOS)
-    pipeline.set_state(gst.STATE_NULL)
-
-    if msg.type == gst.MESSAGE_ERROR:
+    pipeline.set_state(Gst.State.PLAYING)
+    msg = bus.timed_pop_filtered(Gst.CLOCK_TIME_NONE, Gst.MessageType.ERROR | Gst.MessageType.EOS)
+    pipeline.set_state(Gst.State.NULL)
+    
+    if msg.type == Gst.MessageType.ERROR:
         err, debug = msg.parse_error()
         if logger:
             logger.error('SideBySide Error: %s', err)
-        raise IOError, 'Error in SideBySide proccess'
+        raise IOError, 'Error in SideBySide process'
 
     return True
     
 
 def on_audio_decoded(element, pad, bin, muxer):
-    name = pad.get_caps()[0].get_name()
+    name = pad.query_caps(None).to_string()
     element_name = element.get_name()[:8]
     sink = None
 
@@ -140,11 +136,11 @@ def on_audio_decoded(element, pad, bin, muxer):
 
     if name.startswith('audio/x-raw') and pending:
         # db%. audioconvert ! queue ! faac bitrate = 12800 ! queue ! mux.
-        convert = gst.element_factory_make('audioconvert', 'sbs-audio-convert')
-        q1 = gst.element_factory_make('queue','sbs-audio-queue1')
-        f = gst.element_factory_make('faac','sbs-audio-encoder')
+        convert = Gst.ElementFactory.make('audioconvert', 'sbs-audio-convert-{0}'.format(element_name))
+        q1 = Gst.ElementFactory.make('queue','sbs-audio-queue-{0}'.format(element_name))
+        f = Gst.ElementFactory.make('voaacenc','sbs-audio-encoder-{0}'.format(element_name))
         f.set_property('bitrate',128000)
-        q2 = gst.element_factory_make('queue','sbs-audio-queue2')
+        q2 = Gst.ElementFactory.make('queue','sbs-audio-queue2-{0}'.format(element_name))
 
         #link
         bin.add(convert)
@@ -156,11 +152,11 @@ def on_audio_decoded(element, pad, bin, muxer):
         f.link(q2)
         q2.link(muxer)
         #keep activating
-        convert.set_state(gst.STATE_PLAYING)
-        q1.set_state(gst.STATE_PLAYING)
-        f.set_state(gst.STATE_PLAYING)
-        q2.set_state(gst.STATE_PLAYING)
-        pad.link(convert.get_pad('sink'))
+        convert.set_state(Gst.State.PLAYING)
+        q1.set_state(Gst.State.PLAYING)
+        f.set_state(Gst.State.PLAYING)
+        q2.set_state(Gst.State.PLAYING)
+        pad.link(convert.get_static_pad('sink'))
 
     return sink
 
