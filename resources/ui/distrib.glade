@@ -1,58 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.18.3 -->
 <interface>
-  <!-- interface-requires gtk+ 3.0 -->
+  <requires lib="gtk+" version="3.0"/>
   <object class="GtkVBox" id="distbox">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <child>
-      <object class="GtkAlignment" id="logo_align">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="xscale">0.87999999523162842</property>
-        <child>
-          <object class="GtkHButtonBox" id="hbuttonbox1">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <child>
-              <object class="GtkImage" id="logo1">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="xalign">0</property>
-                <property name="pixbuf">../images/teltek.svg</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkEventBox" id="aboutevent">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <child>
-                  <object class="GtkImage" id="logo2">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="xalign">1</property>
-                    <property name="pixbuf">../images/logo.svg</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-        </child>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">False</property>
-        <property name="position">0</property>
-      </packing>
+      <placeholder/>
     </child>
     <child>
       <object class="GtkAlignment" id="dis_align">
@@ -72,10 +26,10 @@
                 <child>
                   <object class="GtkButton" id="button1">
                     <property name="use_action_appearance">False</property>
+                    <property name="name">recorder_tab_button</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">True</property>
-                    <property name="use_action_appearance">False</property>
                     <property name="relief">half</property>
                     <child>
                       <object class="GtkVBox" id="vbox_rec">
@@ -98,8 +52,8 @@
                           <object class="GtkLabel" id="reclabel">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="yalign">0</property>
                             <property name="label" translatable="yes">Recorder</property>
+                            <property name="yalign">0</property>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -109,6 +63,14 @@
                         </child>
                       </object>
                     </child>
+                    <child internal-child="accessible">
+                      <object class="AtkObject" id="button1-atkobject">
+                        <property name="AtkObject::accessible-name" translatable="yes">distrib_recorder_button</property>
+                      </object>
+                    </child>
+                    <style>
+                      <class name="distrib_button"/>
+                    </style>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -122,7 +84,6 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">True</property>
-                    <property name="use_action_appearance">False</property>
                     <child>
                       <object class="GtkHBox" id="hbox4">
                         <property name="visible">True</property>
@@ -133,7 +94,7 @@
                             <property name="can_focus">False</property>
                             <property name="xalign">1</property>
                             <property name="stock">gtk-properties</property>
-                            <property name="icon-size">3</property>
+                            <property name="icon_size">3</property>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -145,11 +106,11 @@
                           <object class="GtkLabel" id="selected_profile">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="xalign">0</property>
                             <property name="ypad">20</property>
                             <property name="label" translatable="yes">label</property>
                             <property name="ellipsize">end</property>
                             <property name="max_width_chars">20</property>
+                            <property name="xalign">0</property>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -159,6 +120,9 @@
                         </child>
                       </object>
                     </child>
+                    <style>
+                      <class name="distrib_button"/>
+                    </style>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -184,7 +148,6 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">True</property>
-                    <property name="use_action_appearance">False</property>
                     <property name="relief">half</property>
                     <child>
                       <object class="GtkVBox" id="vbox_mm">
@@ -207,9 +170,9 @@
                           <object class="GtkLabel" id="mmlabel">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="yalign">0</property>
                             <property name="label" translatable="yes">Media Manager</property>
                             <property name="justify">center</property>
+                            <property name="yalign">0</property>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -219,6 +182,9 @@
                         </child>
                       </object>
                     </child>
+                    <style>
+                      <class name="distrib_button"/>
+                    </style>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -254,150 +220,195 @@
       </packing>
     </child>
     <child>
-      <object class="GtkAlignment" id="bottom_align">
+      <object class="GtkBox" id="box_footer">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="xscale">0.97000002861022949</property>
+        <property name="hexpand">True</property>
+        <property name="homogeneous">True</property>
         <child>
-          <object class="GtkHBox" id="hbox2">
+          <object class="GtkAlignment" id="alignment1">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="valign">end</property>
+            <property name="xalign">0</property>
+            <property name="yalign">1</property>
+            <property name="xscale">0.20000000298023224</property>
+            <property name="yscale">0</property>
             <child>
-              <object class="GtkLabel" id="release_label">
+              <object class="GtkBox" id="box1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">0.0099999997764825821</property>
-                <property name="ypad">10</property>
-                <property name="label" translatable="yes">Galicaster Release 1 .3</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkHButtonBox" id="hbuttonbox2">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="layout_style">end</property>
                 <child>
-                  <object class="GtkButton" id="button3">
-                    <property name="use_action_appearance">False</property>
+                  <object class="GtkLabel" id="release_label">
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="receives_default">True</property>
-                    <property name="no_show_all">True</property>
-                    <property name="use_action_appearance">False</property>
-                    <property name="relief">half</property>
-                    <property name="image_position">top</property>
-                    <child>
-                      <object class="GtkHBox" id="hbox3">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <child>
-                          <object class="GtkLabel" id="label1">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="xpad">10</property>
-                            <property name="ypad">10</property>
-                            <property name="label" translatable="yes">Quit</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkImage" id="image1">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="stock">gtk-stop</property>
-                            <property name="icon-size">3</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </object>
-                    </child>
+                    <property name="valign">end</property>
+                    <property name="ypad">5</property>
+                    <property name="label" translatable="yes">Galicaster Release 1 .3</property>
+                    <property name="justify">center</property>
+                    <property name="xalign">0.0099999997764825821</property>
+                    <property name="yalign">1</property>
+                    <style>
+                      <class name="label_small"/>
+                      <class name="release_label"/>
+                    </style>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="padding">20</property>
-                    <property name="pack_type">end</property>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="button4">
-                    <property name="use_action_appearance">False</property>
+                  <object class="GtkLabel" id="corner">
+                    <property name="width_request">30</property>
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="receives_default">True</property>
-                    <property name="no_show_all">True</property>
-                    <property name="use_action_appearance">False</property>
-                    <property name="relief">half</property>
-                    <property name="image_position">top</property>
-                    <child>
-                      <object class="GtkHBox" id="hbox5">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <child>
-                          <object class="GtkLabel" id="label2">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="xpad">10</property>
-                            <property name="ypad">10</property>
-                            <property name="label" translatable="yes">Shutdown</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkImage" id="image3">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="stock">gtk-quit</property>
-                            <property name="icon-size">3</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </object>
-                    </child>
+                    <property name="valign">end</property>
+                    <style>
+                      <class name="corner"/>
+                    </style>
                   </object>
                   <packing>
                     <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="padding">20</property>
-                    <property name="pack_type">end</property>
+                    <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
+                </child>
+                <style>
+                  <class name="release_box"/>
+                </style>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="box2">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="halign">end</property>
+            <property name="margin_right">5</property>
+            <property name="margin_top">5</property>
+            <property name="margin_bottom">5</property>
+            <child>
+              <object class="GtkButton" id="button3">
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="no_show_all">True</property>
+                <property name="halign">end</property>
+                <property name="image_position">top</property>
+                <child>
+                  <object class="GtkHBox" id="hbox3">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkLabel" id="label1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="xpad">10</property>
+                        <property name="ypad">10</property>
+                        <property name="label" translatable="yes">Quit</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkImage" id="image1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="stock">gtk-stop</property>
+                        <property name="icon_size">6</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+                <child internal-child="accessible">
+                  <object class="AtkObject" id="button3-atkobject">
+                    <property name="AtkObject::accessible-name" translatable="yes">distrib_quit_button</property>
+                  </object>
                 </child>
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="pack_type">end</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="button4">
+                <property name="use_action_appearance">False</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="no_show_all">True</property>
+                <property name="halign">end</property>
+                <property name="image_position">top</property>
+                <child>
+                  <object class="GtkHBox" id="hbox5">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkLabel" id="label2">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="xpad">10</property>
+                        <property name="ypad">10</property>
+                        <property name="label" translatable="yes">Shutdown</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkImage" id="image3">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="stock">gtk-quit</property>
+                        <property name="icon_size">6</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
             </child>
           </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">2</property>
+          </packing>
         </child>
       </object>
       <packing>
         <property name="expand">False</property>
         <property name="fill">False</property>
-        <property name="padding">5</property>
         <property name="position">2</property>
       </packing>
     </child>

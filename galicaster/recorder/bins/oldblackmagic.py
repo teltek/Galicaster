@@ -14,26 +14,23 @@
 """
 The 'oldblackmagic' bin is preserved to keep the support to Blackmagic capture cards with the Ubuntu version 10.10. For new versions, please use the 'blackmagic' bin.
 """
-
-import gobject
-import gst
-import re
+from gi.repository import Gst
 
 from os import path
 
 from galicaster.recorder import base
-from galicaster.recorder import module_register
+from galicaster.recorder.utils import get_videosink
 
 pipestr = ( ' decklinksrc input=sdi input-mode=12 name=gc-blackmagic-src ! capsfilter name=gc-blackmagic-filter ! '
             ' videorate ! capsfilter name=gc-blackmagic-vrate ! videocrop name=gc-blackmagic-crop ! '
-            ' tee name=tee-cam2  ! queue !  xvimagesink async=false sync=false qos=false name=gc-blackmagic-preview'
+            ' tee name=tee-cam2  ! queue ! gc-vsink '
             ' tee-cam2. ! queue ! valve drop=false name=gc-blackmagic-valve ! ffmpegcolorspace ! queue ! '
             #' xvidenc bitrate=50000000 ! queue ! avimux ! '
             ' x264enc quantizer=22 speed-preset=2 profile=1 ! queue ! avimux ! '
             #' ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000 ! queue ! avimux ! '
             ' queue ! filesink name=gc-blackmagic-sink async=false' )
 
-class GColdblackmagic(gst.Bin, base.Base):
+class GColdblackmagic(Gst.Bin, base.Base):
 
   order = ["name","flavor","location","file","input","input-mode"]
 
@@ -46,7 +43,7 @@ class GColdblackmagic(gst.Bin, base.Base):
         "flavor": {
             "type": "flavor",
             "default": "presenter",
-            "description": "Matterhorn flavor associated to the track",
+            "description": "Opencast flavor associated to the track",
             },
         "location": {
             "type": "device",
@@ -114,8 +111,14 @@ class GColdblackmagic(gst.Bin, base.Base):
 #                },
             "description": "Video input mode (resolution and frame rate)",
             },
-        }
-    
+    "videosink" : {
+      "type": "select",
+      "default": "xvimagesink",
+      "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
+      "description": "Video sink",
+    },
+  }
+  
     
   is_pausable = True
   has_audio    = False
@@ -129,11 +132,14 @@ class GColdblackmagic(gst.Bin, base.Base):
         )
 
   def __init__(self, options={}):
-        base.Base.__init__(self, options)
-        gst.Bin.__init__(self, self.options['name'])
+        raise Exception("Not implemented. Using gst 0.10")
 
-        aux = pipestr.replace('gc-blackmagic-preview', 'sink-' + self.options['name'])
-        bin = gst.parse_bin_from_description(aux, True)
+        base.Base.__init__(self, options)
+        Gst.Bin.__init__(self, self.options['name'])
+
+        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+        aux = pipestr.replace('gc-vsink', gcvideosink)
+        bin = Gst.parse_bin_from_description(aux, True)
         # replace identity
         self.add(bin)
 
@@ -163,7 +169,7 @@ class GColdblackmagic(gst.Bin, base.Base):
     valve1.set_property('drop', value)
 
   def getVideoSink(self):
-    return self.get_by_name('gc-blackmagic-preview')
+    return self.get_by_name('sink-' + self.options['name'])
 
   def getSource(self):
     return self.get_by_name('gc-blackmagic-src')
@@ -172,7 +178,3 @@ class GColdblackmagic(gst.Bin, base.Base):
     src1 = self.get_by_name('gc-blackmagic-src')
     src1.send_event(event)
 
-
-gobject.type_register(GColdblackmagic)
-gst.element_register(GColdblackmagic, 'gc-old-blackmagic-bin')
-module_register(GColdblackmagic, 'oldblackmagic')

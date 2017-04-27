@@ -11,30 +11,27 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
-import gobject
-import gst
-import re
-
-
 from os import path
 
-from galicaster.recorder import base
-from galicaster.recorder import module_register
+from gi.repository import Gst
 
-pipestr = (' v4l2src name=gc-v4l2-src ! capsfilter name=gc-v4l2-filter ! queue ! gc-v4l2-dec '
-           ' videorate ! ffmpegcolorspace ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! gc-videofilter ! '
-           ' tee name=gc-v4l2-tee  ! queue !  xvimagesink async=false sync=false qos=false name=gc-v4l2-preview'
-           ' gc-v4l2-tee. ! queue ! valve drop=false name=gc-v4l2-valve ! ffmpegcolorspace ! queue ! '
+from galicaster.recorder import base
+from galicaster.recorder.utils import get_videosink
+
+pipestr = (' v4l2src name=gc-v4l2-src ! capsfilter name=gc-v4l2-filter ! queue ! gc-v4l2-dec ! videobox name=gc-v4l2-videobox top=0 bottom=0 !'
+           ' videorate ! videoconvert ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! gc-videofilter ! '
+           ' tee name=gc-v4l2-tee ! queue ! caps-preview ! gc-vsink '
+           ' gc-v4l2-tee. ! queue ! valve drop=false name=gc-v4l2-valve ! videoconvert ! queue ! '
            ' gc-v4l2-enc ! queue ! gc-v4l2-mux ! '
            ' queue ! filesink name=gc-v4l2-sink async=false')
 
 
-class GCv4l2(gst.Bin, base.Base):
+class GCv4l2(Gst.Bin, base.Base):
 
 
-    order = ["name","flavor","location","file","caps", 
-             "videoencoder", "muxer"]
-    
+    order = ["name","flavor","location","file","caps",
+             "videoencoder", "muxer", "io-mode", "caps-preview"]
+
     gc_parameters = {
         "name": {
             "type": "text",
@@ -44,11 +41,11 @@ class GCv4l2(gst.Bin, base.Base):
         "flavor": {
             "type": "flavor",
             "default": "presenter",
-            "description": "Matterhorn flavor associated to the track",
+            "description": "Opencast flavor associated to the track",
             },
         "location": {
             "type": "device",
-            "default": "/dev/webcam",
+            "default": None,
             "description": "Device's mount point of the output",
             },
         "file": {
@@ -58,8 +55,8 @@ class GCv4l2(gst.Bin, base.Base):
             },
         "caps": {
             "type": "caps",
-            "default": "image/jpeg,framerate=10/1,width=640,height=480", 
-            # video/x-raw-yuv,framerate=25/1,width=1024,height=768", 
+            "default": "video/x-raw,framerate=20/1,width=640,height=480",
+            # image/jpeg,framerate=10/1,width=640,height=480",
             "description": "Forced capabilities",
             },
         "videocrop-right": {
@@ -88,9 +85,7 @@ class GCv4l2(gst.Bin, base.Base):
             },
         "videoencoder": {
             "type": "text",
-            "default": "x264enc pass=5 quantizer=22 speed-preset=4 profile=1",
-            # "ffenc_mpeg2video quantizer=4 gop-size=1 bitrate=10000000",
-            # "xvidenc bitrate=5000000"
+            "default": "x264enc pass=5 quantizer=22 speed-preset=4",
             "description": "Gstreamer encoder element used in the bin",
             },
         "muxer": {
@@ -103,8 +98,26 @@ class GCv4l2(gst.Bin, base.Base):
             "default": "",
             "description": "Videofilter elements (like: videoflip method=rotate-180)",
             },
-        }
-    
+        "videosink" : {
+            "type": "select",
+            "default": "xvimagesink",
+            "options": ["xvimagesink", "ximagesink", "autovideosink", "fpsdisplaysink","fakesink"],
+            "description": "Video sink",
+        },
+        "io-mode": {
+            "type": "select",
+            "default": "auto",
+            "options": ["auto", "rw", "mmap", "userptr", "dmabuf", "dmabuf-import"],
+            "description": "I/O mode",
+        },
+        "caps-preview" : {
+            "type": "text",
+            "default": None,
+            "description": "Caps-preview",
+        },
+
+    }
+
     is_pausable = True
     has_audio   = False
     has_video   = True
@@ -118,57 +131,73 @@ class GCv4l2(gst.Bin, base.Base):
 
     def __init__(self, options={}):
         base.Base.__init__(self, options)
-        gst.Bin.__init__(self, self.options['name'])
+        Gst.Bin.__init__(self)
 
-        aux = (pipestr.replace('gc-v4l2-preview', 'sink-' + self.options['name'])
-                      .replace('gc-v4l2-enc', self.options['videoencoder'])
-                      .replace('gc-v4l2-mux', self.options['muxer']))
-
+        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
+        aux = (pipestr.replace('gc-vsink', gcvideosink)
+               .replace('gc-v4l2-enc', self.options['videoencoder'])
+               .replace('gc-v4l2-mux', self.options['muxer']))
 
         if self.options['videofilter']:
             aux = aux.replace('gc-videofilter', self.options['videofilter'])
         else:
             aux = aux.replace('gc-videofilter !', '')
-            
+
 
         if 'image/jpeg' in self.options['caps']:
-            aux = aux.replace('gc-v4l2-dec', 'jpegdec max-errors=-1 ! queue !')
+            aux = aux.replace('gc-v4l2-dec !', 'jpegdec max-errors=-1 ! queue !')
         else:
-            aux = aux.replace('gc-v4l2-dec', '')
+            aux = aux.replace('gc-v4l2-dec !', '')
 
-        #bin = gst.parse_bin_from_description(aux, True)
-        bin = gst.parse_launch("( {} )".format(aux))
+        if self.options["caps-preview"]:
+            aux = aux.replace("caps-preview !","videoscale ! videorate ! "+self.options["caps-preview"]+" !")
+        else:
+            aux = aux.replace("caps-preview !","")
+
+
+        #bin = Gst.parse_bin_from_description(aux, True)
+        bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
-        self.set_option_in_pipeline('location', 'gc-v4l2-src', 'device')
+        if self.options['location']:
+            self.set_option_in_pipeline('location', 'gc-v4l2-src', 'device')
+
+        self.set_option_in_pipeline('io-mode', 'gc-v4l2-src', 'io-mode')
+
 
         self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-v4l2-sink', 'location')
 
-        self.set_option_in_pipeline('caps', 'gc-v4l2-filter', 'caps', gst.Caps)
-        fr = re.findall("framerate *= *[0-9]+/[0-9]+", self.options['caps'])
-        if fr:            
-            newcaps = 'video/x-raw-yuv,' + fr[0]
-            self.set_value_in_pipeline(newcaps, 'gc-v4l2-vrate', 'caps', gst.Caps)
-
-        for pos in ['right','left','top','bottom']:
-            self.set_option_in_pipeline('videocrop-'+pos, 'gc-v4l2-crop', pos, int)
-
+        self.set_option_in_pipeline('caps', 'gc-v4l2-filter', 'caps', None)
 
     def changeValve(self, value):
         valve1=self.get_by_name('gc-v4l2-valve')
         valve1.set_property('drop', value)
 
     def getVideoSink(self):
-        return self.get_by_name('gc-v4l2-preview')
-    
+        return self.get_by_name('sink-' + self.options['name'])
+
     def getSource(self):
-        return self.get_by_name('gc-v4l2-src') 
+        return self.get_by_name('gc-v4l2-src')
 
     def send_event_to_src(self, event):
         src1 = self.get_by_name('gc-v4l2-src')
         src1.send_event(event)
 
+    def disable_input(self):
+        src1 = self.get_by_name('gc-v4l2-videobox')
+        src1.set_properties(top = -10000, bottom = 10000)
 
-gobject.type_register(GCv4l2)
-gst.element_register(GCv4l2, 'gc-v4l2-bin')
-module_register(GCv4l2, 'v4l2')
+    def enable_input(self):
+        src1 = self.get_by_name('gc-v4l2-videobox')
+        src1.set_property('top',0)
+        src1.set_property('bottom',0)
+
+    def disable_preview(self):
+        src1 = self.get_by_name('sink-'+self.options['name'])
+        src1.set_property('saturation', -1000)
+        src1.set_property('contrast', -1000)
+
+    def enable_preview(self):
+        src1 = self.get_by_name('sink-'+self.options['name'])
+        src1.set_property('saturation',0)
+        src1.set_property('contrast',0)

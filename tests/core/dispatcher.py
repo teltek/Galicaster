@@ -18,21 +18,46 @@ Unit tests for `galicaster.core.context` module.
 
 from unittest import TestCase
 from galicaster.core.dispatcher import Dispatcher
+from gi.repository import Gtk
+from gi.repository import GObject
+
+called = False
 
 class TestFunctions(TestCase):
 
     def callback(self, emisor, value):
         value['called'] = True
-
-
+        
+    def callback_ui(self, emisor, value):
+        global called
+        called = True
+        Gtk.main_quit()
+        
+    def emit_signal(self, dispatcher, signal, *args):
+        dispatcher.emit(signal, args)
+        
     def test_connect_and_emit(self):
         dispatcher = Dispatcher()
 
         dispatcher.connect('pr', self.callback)
         obj = {'called': False}
-        dispatcher.emit('pr', obj)
 
+        dispatcher.emit('pr', obj)
         self.assertTrue(obj['called'])
+
+        
+    def test_connect_ui_and_emit(self):
+        global called
+        called = False
+        
+        dispatcher = Dispatcher()
+
+        dispatcher.connect_ui('pr', self.callback_ui)
+        obj = {'called': False}
+
+        timeout_id = GObject.timeout_add_seconds(1, self.emit_signal, dispatcher, 'pr', obj)
+        Gtk.main()
+        self.assertTrue(called)
 
 
     def test_add_new_signal(self):

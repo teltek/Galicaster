@@ -11,16 +11,13 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
-import gobject
-import gst
-import re
-
 from os import path
 
-from galicaster.recorder import base
-from galicaster.recorder import module_register
+from gi.repository import Gst
 
-class GCcustom(gst.Bin, base.Base):
+from galicaster.recorder import base
+
+class GCcustom(Gst.Bin, base.Base):
 
     order = ["name", "flavor", "location", "file", "pipestr"]
     gc_parameters = {
@@ -32,7 +29,7 @@ class GCcustom(gst.Bin, base.Base):
         "flavor": {
             "type": "flavor",
             "default": "presenter",
-            "description": "Matterhorn flavor associated to the track",
+            "description": "Opencast flavor associated to the track",
             },
         "location": {
             "type": "device",
@@ -47,7 +44,7 @@ class GCcustom(gst.Bin, base.Base):
         "pipestr": {
             "type": "text",
             "default": "fakesrc name=gc-custom-src ! valve drop=false name=gc-custom-valve ! fakesink ",
-            "description": "Custom pipeline. It has to hava a valve (gc-custom-valve), a source (gc-custom-src) and a filesink (gc-custom-sink)",
+            "description": "Custom pipeline. It has to have a valve (gc-custom-valve), a source (gc-custom-src) and a filesink (gc-custom-sink)",
             },
         }
     
@@ -64,15 +61,16 @@ class GCcustom(gst.Bin, base.Base):
 
     def __init__(self, options={}):
         base.Base.__init__(self, options)
-        gst.Bin.__init__(self, self.options['name'])
+        Gst.Bin.__init__(self)
 
         aux = self.options['pipestr'].replace('gc-custom-preview', 'sink-' + self.options['name'])
 
-        #bin = gst.parse_bin_from_description(aux, False)
-        bin = gst.parse_launch("( {} )".format(aux))
+        #bin = Gst.parse_bin_from_description(aux, False)
+        bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
-        self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-custom-sink', 'location')
+        if self.get_by_name('gc-custom-sink'):
+            self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-custom-sink', 'location')
 
     def changeValve(self, value):
         valve1=self.get_by_name('gc-custom-valve')
@@ -89,6 +87,3 @@ class GCcustom(gst.Bin, base.Base):
         src1.send_event(event)
 
 
-gobject.type_register(GCcustom)
-gst.element_register(GCcustom, 'gc-custom-bin')
-module_register(GCcustom, 'custom')

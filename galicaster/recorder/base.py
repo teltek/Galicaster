@@ -11,9 +11,14 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
-from os import path
 import re
 
+from gi.repository import Gst
+
+from galicaster.utils import validator
+from galicaster.core import context
+
+logger = context.get_logger()
 
 class Base(object):
     gc_parameters = {
@@ -25,7 +30,7 @@ class Base(object):
         "flavor": {
             "type": "flavor",
             "default": "presenter",
-            "description": "Matterhorn flavor associated to the track",
+            "description": "Opencast flavor associated to the track",
             },
         "location": {
             "type": "device",
@@ -40,96 +45,62 @@ class Base(object):
         }
 
     def __init__(self, options):
+        self.logger = logger
         # Init gc_parameters add Base and Object class
         self.gc_parameters = self.get_gc_parameters()
+        path = 'Unknown'
+        current_profile = context.get_conf().get_current_profile()
+        if current_profile:
+            path = current_profile.path
+        # Check the profile parameters (*.ini)
+        # for k in options:
+        #     if k not in self.gc_parameters and k not in ['device', 'active', 'path']:
+        #         logger.warning('Does not exit the parameter "{0}". Please check the file {1}'.format(
+        #                 k, current_profile_path))
+
+
 
         # Init options with default gc_parameters values and options
         self.options = dict([(k,v['default']) for k,v in self.gc_parameters.iteritems()])
         # TODO parsear
-        self.options.update(options)
+
+        for k, v in options.iteritems():
+            if v:
+                self.options[k] = validator.parse_automatic(v)
 
         # Validate option values
-        self.validate()
+        try:
+            global_error, self.options = validator.validate_track(self.options)
+        except Exception as exc:
+            error_msg = 'Profile error in {0}, track {1}. {2}'.format(
+                path, self.options['name'], exc)
+
+            logger.error(error_msg)
+            raise SystemError(error_msg)
 
         # Sanitaze values
         self.options["name"] = re.sub(r'\W+', '', self.options["name"])
 
 
-    def validate(self):
-        """ Transforms string on proper types and checks value validity """
-        #try:
-        #    get_module(self.options['device'])
-        #except:
-        #    raise SystemError(
-        #        "Track {0}: device type {0} doesn't exists.".format(
-        #            self.options['name'],self.options['device']))
-
-        for k,v in self.gc_parameters.iteritems():            
-            if v['type'] == 'integer':
-                if type(self.options[k]) != int: 
-                    if not re.search('[^0-9]',self.options[k]):
-                        self.options[k] = int(self.options[k])
-                    else:
-                        raise SystemError(
-                            'Parameter "{0}" on {1} must be {2}.'.format(
-                                k,type(self).__name__,v['type']))
-
-                if self.options[k] < v['range'][0] or self.options[k] > v['range'][1]:
-                    raise SystemError(
-                        'Parameter "{0}" on {1} out of range. {2}.'.format(
-                            k,type(self).__name__,v['range']))
-
-            if v['type'] == 'float':
-                try:
-                    self.options[k] = float(self.options[k])
-                except:
-                    raise SystemError(
-                        'Parameter "{0}" on {1} must be {2}.'.format(
-                            k,type(self).__name__,v['type']))
-
-                if self.options[k] < v['range'][0] or self.options[k] > v['range'][1]:
-                    raise SystemError(
-                        'Parameter "{0}" on {1} out of range. {2}.'.format(
-                            k,type(self).__name__,v['range']))
-
-            if v['type'] == 'boolean':
-                parse = self.options[k].lower()
-                if parse in [True, 'true', 'yes', 1, '1']:
-                    self.options[k] = True
-                elif parse in [False, 'false', 'no', 0, '0']:
-                    self.options[k] = False
-                else:
-                    raise SystemError(
-                        'Parameter "{0}" on {1} must be an accepted {2}.\n{3}. Boolean parser ignores case"'.format(k,type(self).__name__,v['type'],'true, yes, 1, false, no, 0')) 
-
-            #TODO add check location tests and check only in bins with location
-            #if v['type'] == 'device' and type(self).__name__ != 'GCpulse' and not path.exists(self.options[k]):
-            #    raise SystemError('Parameter "{0}" on {1} is not a valid {2}.'.format(
-            #            k, type(self).__name__ , v['type']))
-
-            if v['type'] == 'select' and self.options[k] not in v['options']:
-                raise SystemError('Parameter "{0}" on {1} must be a valid option.{2}'.format(
-                        k,type(self).__name__,v['options'])
-                                  ) 
-
-            # TODO validate caps using gst module
-            #if v['type'] == 'caps':
-            #    try:
-            #        caps = gst.caps_from_string(self.options[k])
-            #    except:
-            #         raise SystemError('Parameter {0} on {1} holds invalid caps'.format(
-            #                  k, type(self).__name__)) # TODO Mejorar
-            
-    
-            # TODO Completar
-
     def set_option_in_pipeline(self, option, element, prop, parse=str):
+        element_name = element
         element = self.get_by_name(element)
-        element.set_property(prop, parse(self.options[option]))
+        if not element:
+            self.logger.error("There isn't an element named {}".format(element_name))
+        elif prop == "caps":
+            element.set_property(prop, Gst.Caps.from_string(self.options[option]))
+        else:
+            element.set_property(prop, parse(self.options[option]))
+
 
     def set_value_in_pipeline(self, value, element, prop, parse=str):
+        element_name = element
         element = self.get_by_name(element)
-        element.set_property(prop, parse(value))
+        if not element:
+            self.logger.error("There isn't an element named {}".format(element_name))
+        else:
+            element.set_property(prop, parse(value))
+
 
     def get_display_areas_info(self):
         if self.has_video:
@@ -142,6 +113,21 @@ class Base(object):
             self.options['mimetype'] = 'audio/' + ext if self.has_audio and not self.has_video else 'video/' + ext
         return [self.options]
 
+    def prepare(self, bus=None):
+        pass
+
+    def disable_input(self):
+        self.logger.warning("disable_input not implemented")
+
+    def enable_input(self):
+        self.logger.warning("enable_input not implemented")
+
+    def disable_preview(self):
+        self.logger.warning("disable_preview not implemented")
+
+    def enable_preview(self):
+        self.logger.warning("enable_preview not implemented")
+
     @classmethod
     def get_gc_parameters(klass):
         ps = {}
@@ -153,4 +139,3 @@ class Base(object):
     def get_conf_form(self):
         ##TODO necesito GLADE
         pass
-

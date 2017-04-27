@@ -15,7 +15,6 @@ Hides controls from the Galicaster UI
 """
 
 from galicaster.core import context
-import gtk
 
 ALL_TABS = { "events": "eventpanel",
              "status": "status_panel",
@@ -23,24 +22,15 @@ ALL_TABS = { "events": "eventpanel",
              }
 
 
-
 def init():
     dispatcher = context.get_dispatcher()
-    dispatcher.connect("galicaster-init", post_init)
+    dispatcher.connect("init", post_init)
 
 
 def post_init(source=None):
     conf = context.get_conf()
-
     recorder_ui = context.get_mainwindow().nbox.get_nth_page(0).gui
-
     data_panel = recorder_ui.get_object('data_panel')
-
-    #rec_button = recorder_ui.gui.get_object('recbutton')
-    #edit_button = recorder_ui.gui.get_object('editbutton')
-    #help_button = recorder_ui.gui.get_object('helpbutton')
-    #pause_button = recorder_ui.gui.get_object('pausebutton')
-    #stop_button = recorder_ui.gui.get_object('stopbutton')
 
     # Customize tabs in the recorder UI
     try: 
@@ -49,14 +39,12 @@ def post_init(source=None):
             for tab, obj_name in ALL_TABS.iteritems():
                 page = recorder_ui.get_object(obj_name)
                 if tab in tabs_to_hide:
-                    page.hide_all()
-                else:
-                    data_panel.set_tab_label_packing(page, False, True,gtk.PACK_START)
-    except AttributeError as e:
+                    page.hide()
+
+    except AttributeError:
         # The conf parameter isn't defined. Ignore
         print "Attribute error"
         pass
-
 
     default_tab = conf.get('hidetabs', 'default') or None
     try:
