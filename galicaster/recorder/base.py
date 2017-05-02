@@ -53,10 +53,10 @@ class Base(object):
         if current_profile:
             path = current_profile.path
         # Check the profile parameters (*.ini)
-        # for k in options:
-        #     if k not in self.gc_parameters and k not in ['device', 'active', 'path']:
-        #         logger.warning('Does not exit the parameter "{0}". Please check the file {1}'.format(
-        #                 k, current_profile_path))
+        for k in options:
+            if k not in self.gc_parameters and k not in ['device', 'active', 'path']:
+                logger.warning('The profile parameter "{0}" does not exist. Please check the file {1}'.format(
+                        k, path))
 
 
 
@@ -64,19 +64,13 @@ class Base(object):
         self.options = dict([(k,v['default']) for k,v in self.gc_parameters.iteritems()])
         # TODO parsear
 
-        for k, v in options.iteritems():
-            if v:
-                self.options[k] = validator.parse_automatic(v)
-
         # Validate option values
-        try:
-            global_error, self.options = validator.validate_track(self.options)
-        except Exception as exc:
-            error_msg = 'Profile error in {0}, track {1}. {2}'.format(
-                path, self.options['name'], exc)
-
-            logger.error(error_msg)
-            raise SystemError(error_msg)
+        for k, v in options.iteritems():
+            gc_parameter = None
+            if self.gc_parameters.has_key(k):
+                gc_parameter = self.gc_parameters[k]
+            if v is not None:
+                error, self.options[k] = validator.parse_validate(k, v, gc_parameter)
 
         # Sanitaze values
         self.options["name"] = re.sub(r'\W+', '', self.options["name"])
