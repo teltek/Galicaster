@@ -232,9 +232,9 @@ class Repository(object):
             f.write(json.dumps(info, indent=4, sort_keys=True))
             f.close()
 
-            self.logger and self.logger.info("Temporal data saved to {}".format(filename))
+            self.logger and self.logger.info("Temporary data saved to {}".format(filename))
         except Exception as exc:
-            self.logger and self.logger.error("Problem on save temporal data: {}".format(exc))
+            self.logger and self.logger.error("Problem saving temporary data: {}".format(exc))
 
 
 
@@ -596,7 +596,7 @@ class Repository(object):
         # ADD MP to repo
         self.__add(mp)
 
-        # Remove temporal files
+        # Remove temporary files
         self._manage_tmp_files(remove_tmp_files, mp.getURI())
 
         return mp.getURI()
@@ -608,10 +608,10 @@ class Repository(object):
             remove_tmp_files (bool): true if the temporary files are going to be removed. False if they're going to be moved.
             folder (str): if remove_tmp_file is false, these are moved to this folder.
     """
-        temporal_files = ['{}/*.json'.format(self.get_rectemp_path()),
+        temporary_files = ['{}/*.json'.format(self.get_rectemp_path()),
                           '{}/*.xml'.format(self.get_rectemp_path())]
 
-        for expr in temporal_files:
+        for expr in temporary_files:
             files = glob.glob(expr)
             if files:
                 for filename in files:
@@ -624,9 +624,9 @@ class Repository(object):
             self.crash_file_remover()
 
         if remove_tmp_files:
-            self.logger and self.logger.info("Repository temporal files removed")
+            self.logger and self.logger.info("Repository temporary files removed")
         else:
-            self.logger and self.logger.info("Repository temporal files moved to {}".format(folder))
+            self.logger and self.logger.info("Repository temporary files moved to {}".format(folder))
 
     def delete(self, mp):
         """Deletes a mediapackage from de repository.
