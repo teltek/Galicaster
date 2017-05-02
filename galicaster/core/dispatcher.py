@@ -75,6 +75,7 @@ GObject.signal_new('recorder-ready', Dispatcher, GObject.SignalFlags.RUN_LAST, N
 GObject.signal_new('recorder-starting', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('recorder-started', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('recorder-stopped', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
+GObject.signal_new('record-finished', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
 
 #AUDIO
 GObject.signal_new('audio-mute', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
