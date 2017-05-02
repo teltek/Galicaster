@@ -45,7 +45,7 @@ To get the diff between two versions, go to https://github.com/teltek/galicaster
  * Changes to signals to allow failovermic plugin to run (androidwiltron)
  * Added the option to configure the output framerate using Blackmagic devices
  * Force to reload available space on entering in the recorder UI
- * Use a temporal folder to save the manifest (save zip), closes #15
+ * Use a temporary folder to save the manifest (save zip), closes #15
  * Change the current working directory to the rectemp folder
  * Capture any general exception in order to print it to the log file
  * Set the polling_config interval to the long heartbeat, fixes #114
