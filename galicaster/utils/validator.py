@@ -35,10 +35,6 @@ def validate_track(options, gc_parameters=None, recursive=False):
     if not gc_parameters:
         gc_parameters = get_gc_parameters_from_bin(options['device'])
 
-    # Init options with default gc_parameters values and options
-    default_options = dict([(k,parse_automatic(v['default'])) for k,v in gc_parameters.iteritems()])
-    gc_conf = gc_context.get_conf()
-    custom_flavors = gc_conf.get_list('basic', 'custom_flavors');
     current_error = None
 
     for k, gc_parameter in gc_parameters.iteritems():
@@ -80,6 +76,8 @@ def check_range(key, value, gc_parameter):
 
 def parse_validate(k, option, gc_parameter=None):
     current_error = None
+    custom_flavors = gc_context.get_conf().get_list('basic', 'custom_flavors');
+
     if not gc_parameter:
         return current_error, option
 
