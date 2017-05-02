@@ -60,6 +60,7 @@ class RecorderService(object):
         self.__set_status(INIT_STATUS)
 
         self.current_mediapackage = None
+        self.last_mediapackage = None
         self.error_msg = None
         self.recorder = None
         self.__recorderklass = recorderklass
@@ -193,6 +194,8 @@ class RecorderService(object):
             self.__close_mp()
             self.__set_status(INIT_STATUS)
             self.preview()
+
+        self.dispatcher.emit("record-finished", self.last_mediapackage)
         return True
 
 
@@ -211,8 +214,8 @@ class RecorderService(object):
             self.worker.enqueue_job_by_name('ingest', self.current_mediapackage)
         elif self.conf.get_lower('ingest', code) == 'nightly':
             self.worker.enqueue_nightly_job_by_name('ingest', self.current_mediapackage)
+        self.last_mediapackage = self.current_mediapackage
         self.current_mediapackage = None
-
 
     def pause(self):
         self.logger.info("Pausing recorder")
