@@ -20,6 +20,11 @@ Documentation Project
 https://github.com/teltek/Galicaster-doc
 
 
+External Plugins List
+--------------------------
+https://github.com/teltek/Galicaster-doc/blob/master/ExternalPluginsList.md
+
+
 Coding Style
 ============
 
