@@ -49,7 +49,7 @@ class Heartbeat(object):
         if self.logger:
             self.logger.debug('timer-nightly in %s', seg)
 
-        GObject.timeout_add_seconds(seg, self.__notify_timer_long)
+        GObject.timeout_add_seconds(seg, self.__notify_timer_daily)
         return False
 
     def __notify_timer_short(self):
