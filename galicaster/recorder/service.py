@@ -208,14 +208,17 @@ class RecorderService(object):
                                 close_duration, self.current_mediapackage.manual, True, self.conf.get_boolean('ingest', 'ignore_capture_devices'))
 
         self.dispatcher.emit("recorder-stopped", self.current_mediapackage.getIdentifier())
-
-        code = 'manual' if self.current_mediapackage.manual else 'scheduled'
-        if self.conf.get_lower('ingest', code) == 'immediately':
-            self.worker.enqueue_job_by_name('ingest', self.current_mediapackage)
-        elif self.conf.get_lower('ingest', code) == 'nightly':
-            self.worker.enqueue_nightly_job_by_name('ingest', self.current_mediapackage)
+        self.enqueue_ingest(self.current_mediapackage)
         self.last_mediapackage = self.current_mediapackage
         self.current_mediapackage = None
+
+
+    def enqueue_ingest(self, mp):
+        code = 'manual' if mp.manual else 'scheduled'
+        if self.conf.get_lower('ingest', code) == 'immediately':
+            self.worker.enqueue_job_by_name('ingest', mp)
+        elif self.conf.get_lower('ingest', code) == 'nightly':
+            self.worker.enqueue_nightly_job_by_name('ingest', mp)
 
     def pause(self):
         self.logger.info("Pausing recorder")
