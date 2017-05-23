@@ -141,7 +141,6 @@ class Recorder(object):
         for bin in self.bins.values():
             bin.changeValve(True)
         self.__valves_status = True
-        self.__set_state(Gst.State.PAUSED)
         self.__set_state(Gst.State.PLAYING)
         Gst.debug_bin_to_dot_file_with_ts(self.pipeline,
                                           Gst.DebugGraphDetails.ALL,
