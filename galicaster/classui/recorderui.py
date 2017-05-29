@@ -558,7 +558,7 @@ class RecorderClassUI(Gtk.Box):
         v.add_attribute(r, "foreground", 2)
 #        v.set_displayed_row(0)
         v.set_displayed_row(Gtk.TreePath(0))
-        relabel(v,k1*52,True)
+        relabel(v,k1*42,True)
         return v
 
 
