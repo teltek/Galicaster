@@ -16,154 +16,158 @@
 """
 
 import sys
-import re
 import json
-import ast
 
 from gi.repository import Gst
 
 from galicaster.core import context as gc_context
-#import gst
 
 FLAVOR = ['presenter', 'presentation', 'other']
+YES = [True, 'true', 'yes', 'ok', 'si', 'y', 1, '1']
+NO = [False, 'false', 'no', 'n', 0, '0']
 
 def validate_track(options, gc_parameters=None, recursive=False):
     """ Transforms string on proper types and checks value validity """
 
-    def set_default():
-        # If the value is not set, put the default value
-        if v.has_key("default") :
-            options[k] = parse_automatic(v['default'])
-
-    #try:
-    #    get_module(options['device'])
-    #except:
-    #    raise SystemError(
-    #        "Track {0}: device type {0} doesn't exists.".format(
-    #            options['name'],options['device']))
-
-    iteration_error = None
+    global_error_msg = None
     options = dict(options)
 
     if not gc_parameters:
         gc_parameters = get_gc_parameters_from_bin(options['device'])
 
-    # Init options with default gc_parameters values and options
-    default_options = dict([(k,parse_automatic(v['default'])) for k,v in gc_parameters.iteritems()])
-    gc_conf = gc_context.get_conf()
-    custom_flavors = gc_conf.get_list('basic', 'custom_flavors');
-
-    for k, v in options.iteritems():
-        default_options[k] = parse_automatic(v)
-
-    options = default_options.copy()
-
     current_error = None
-    global_error_msg = None
 
-    for k,v in gc_parameters.iteritems():
-        if not options[k] and options[k] is not False and options[k] is not 0:
-            set_default()
-            continue
+    for k, gc_parameter in gc_parameters.iteritems():
+        v = None
+        if options.has_key(k):
+            v = options[k]
+        current_error, value = parse_validate(k, v, gc_parameter)
+        options[k] = value
 
-        if v['type'] == 'integer':
-            if type(options[k]) != int:
-                if not re.search('[^0-9]',options[k]):
-                    options[k] = int(options[k])
-                else:
-                    current_error = 'INFO: Parameter "{}" with value {} must be {}'.format(k, options[k], v['type'])
+        if current_error:
+            if global_error_msg:
+                global_error_msg = "{} - {}, forced to {}.".format(
+                    global_error_msg, current_error, gc_parameter['default'])
+            else:
+                global_error_msg = "{}, forced to {}.".format(
+                    current_error, gc_parameter['default'])
 
-            if options[k] < v['range'][0] or options[k] > v['range'][1]:
-                current_error = 'INFO: Parameter "{}" with value {} out of range {}'.format(
-                    k, options[k], v['range'])
+            options[k] = gc_parameter['default']
+
+            current_error = None
+    return global_error_msg, options
 
 
-        elif v['type'] == 'float':
+def get_gc_parameters_from_bin(device):
+    mod_name = 'galicaster.recorder.bins.' + device
+    __import__(mod_name)
+    mod = sys.modules[mod_name]
+    Klass = getattr(mod, "GC" + device)
+
+    return Klass.gc_parameters
+
+def check_range(key, value, gc_parameter):
+    current_error = None
+    if value < gc_parameter['range'][0] or value > gc_parameter['range'][1]:
+        value = gc_parameter['default']
+        current_error = 'INFO: Parameter "{}" with value {} out of range {}. Forced to {}'.format(
+            key, value, gc_parameter['range'], value)
+    return current_error, value
+
+def parse_validate(k, option, gc_parameter=None):
+    current_error = None
+    custom_flavors = gc_context.get_conf().get_list('basic', 'custom_flavors');
+
+    if not gc_parameter:
+        return current_error, option
+
+    if option is None:
+        # If the value is not set, put the default value
+        if gc_parameter.has_key("default") :
+            option = gc_parameter['default']
+
+    if option is not None:
+        if gc_parameter['type'] == 'integer':
             try:
-                options[k] = float(options[k])
-                if options[k] < v['range'][0] or options[k] > v['range'][1]:
-                    current_error = 'INFO: Parameter "{}" with value {} out of range {}'.format(
-                        k, options[k], v['range'])
+                option = int(option)
+                current_error, option = check_range(k, option, gc_parameter)
+            except ValueError as exc:
+                current_error = 'INFO: Parameter "{}" with value {} must be {}'.format(k, option, gc_parameter['type'])
+
+        elif gc_parameter['type'] == 'float':
+            try:
+                option = float(option)
+                current_error, option = check_range(k, option, gc_parameter)
             except:
                 current_error = 'INFO: Parameter "{}" with value {} must be {}'.format(
-                    k, options[k], v['type'])
+                    k, option, gc_parameter['type'])
 
-
-        elif v['type'] == 'hexadecimal':
+        elif gc_parameter['type'] == 'hexadecimal':
             try:
-                int(options[k])
+                option = int(str(option), 16)
             except Exception as exc:
                 current_error = 'INFO: Parameter "{}" with value {} must be {}: {}'.format(
-                    k, options[k], v['type'], exc)
+                    k, option, gc_parameter['type'], exc)
 
+        elif gc_parameter['type'] == 'boolean':
+            parse = option
 
-        elif v['type'] == 'boolean':
-            parse = options[k]
-
-            if type(options[k]) == type(''):
-                parse = options[k].lower()
-            if parse in [True, 'true', 'yes', 1, '1', "True"]:
-                options[k] = True
-            elif parse in [False, 'false', 'no', 0, '0', "False"]:
-                options[k] = False
+            if type(option) == type(''):
+                parse = option.lower()
+            if parse in YES:
+                option = True
+            elif parse in NO:
+                option = False
             else:
                 current_error = 'INFO: Parameter "{}" with value {} must be an accepted {} ({}). Boolean parser ignores case'.format(
-                    k, options[k], v['type'],'true, yes, 1, false, no, 0')
+                    k, option, gc_parameter['type'],'true, yes, 1, false, no, 0')
 
+        elif gc_parameter['type'] == 'flavor' and option not in FLAVOR + custom_flavors:
+            current_error = 'INFO: Parameter "{}" with value {} is not a valid {}. Valid flavors are {}'.format(k, option, gc_parameter['type'], FLAVOR + custom_flavors)
 
-        elif v['type'] == 'flavor' and options[k] not in FLAVOR and options[k] not in custom_flavors:
-            current_error = 'INFO: Parameter "{}" with value {} is not a valid {}. Valid flavors are {}'.format(k, options[k], v['type'], FLAVOR + custom_flavors)
+        elif gc_parameter['type'] == 'select' and option not in gc_parameter['options']:
+            current_error = 'INFO: Parameter "{}" with value {} must be a valid option {}'.format(k, option, gc_parameter['options'])
 
-
-        elif v['type'] == 'select' and options[k] not in v['options']:
-            current_error = 'INFO: Parameter "{}" with value {} must be a valid option {}'.format(k, options[k], v['options'])
-
-        elif v['type'] == 'list':
+        elif gc_parameter['type'] == 'list':
             # If it is not a list try to convert to dict using JSON
-            if not (type(options[k]) is list):
+            if type(option) is not list:
                 try:
-                    options[k] = json.loads(options[k], "utf-8")
+                    option = json.loads(option, "utf-8")
                 except Exception as exc:
                     current_error = 'INFO: Parameter "{}" with value {} must be {}. {}'.format(
-                        k, options[k], v['type'], exc)
+                        k, option, gc_parameter['type'], exc)
 
             # Check if now it is a list
-            if not (type(options[k]) is list):
+            if type(option) is not list:
                 if not current_error:
                     current_error = 'INFO: Parameter "{}" with value {} must be {}'.format(
-                        k, options[k], v['type'])
+                        k, option, gc_parameter['type'])
 
-
-        elif v['type'] == 'dict':
+        elif gc_parameter['type'] == 'dict':
             # If it is not a dict try to convert to dict using JSON
-            if not isinstance(options[k], dict):
+            if not isinstance(option, dict):
                 try:
-                    options[k] = json.loads(options[k], "utf-8")
+                    option = json.loads(option, "utf-8")
                 except Exception as exc:
                     current_error = 'INFO: Parameter "{}" with value {} must be {}. {}'.format(
-                        k, options[k], v['type'], exc)
+                        k, option, gc_parameter['type'], exc)
 
             # Parse dict
-            if not isinstance(options[k], dict):
+            if not isinstance(option, dict):
                 if not current_error:
                     current_error = 'INFO: Parameter "{}" with value {} must be {}.'.format(
-                        k, options[k], v['type'])
-            # else:
-            #     iteration_error, options[k] = validate_track(options[k], v['default'], recursive=True)
-            #     current_error = iteration_error
-
+                        k, option, gc_parameter['type'])
 
         #TODO add check location tests and check only in bins with location
         #if v['type'] == 'device' and type(self).__name__ != 'GCpulse' and not path.exists(options[k]):
         #    raise SystemError('Parameter "{0}" on {1} is not a valid {2}'.format(
         #            k, type(self).__name__ , v['type']))
 
-
         # TODO improve the caps validation
         # https://gstreamer.freedesktop.org/data/doc/gstreamer/head/pwg/html/section-types-definitions.html#table-video-types
-        elif v['type'] == 'caps':
+        elif gc_parameter['type'] == 'caps':
            try:
-               caps = Gst.Caps.from_string(options[k])
+               caps = Gst.Caps.from_string(option)
                structure = caps.get_structure(0)
                caps_name = structure.get_name()
 
@@ -181,52 +185,15 @@ def validate_track(options, gc_parameters=None, recursive=False):
                if not "video" in caps_name and not "image" in caps_name:
                    if not current_error:
                        current_error = 'INFO: Parameter "{}" with value {} must be of type video or image.'.format(
-                           k, options[k])
+                           k, option)
 
            except Exception as exc:
                current_error = 'INFO: Parameter "{}" with value {} must be valid caps. {}'.format(
-                   k, options[k], exc)
+                   k, option, exc)
 
 
-        # If the value is not set, put the default value
-        if options[k] is None and v.has_key("default") :
-            options[k] = v['default']
+    # If the value is not set, put the default value
+    if option is None or current_error and gc_parameter.has_key("default") :
+        option = gc_parameter['default']
 
-        if current_error:
-            if not recursive:
-                if global_error_msg:
-                    global_error_msg = "{} - {}, forced to {}.".format(
-                        global_error_msg, current_error, v['default'])
-                else:
-                    global_error_msg = "{}, forced to {}.".format(
-                        current_error, v['default'])
-
-                if not iteration_error:
-                    options[k] = v['default']
-
-            else:
-                options[k] = v['default']
-                global_error_msg = current_error
-
-            current_error = None
-
-
-    return global_error_msg, options
-
-
-def get_gc_parameters_from_bin(device):
-    mod_name = 'galicaster.recorder.bins.' + device
-    __import__(mod_name)
-    mod = sys.modules[mod_name]
-    Klass = getattr(mod, "GC" + device)
-
-    return Klass.gc_parameters
-
-
-def parse_automatic(value):
-    # Parses from string to integer, float, boolean... If not returns the string
-    try:
-        return ast.literal_eval(value)
-    except:
-        return value
-    return value
+    return current_error, option
