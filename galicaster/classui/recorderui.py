@@ -96,6 +96,7 @@ class RecorderClassUI(Gtk.Box):
         self.focus_is_active = False
         self.net_activity = None
         self.error_dialog = None
+        self.close_before_response_action = False
 
         # BUILD
         self.recorderui = builder.get_object("recorderbox")
@@ -277,7 +278,8 @@ class RecorderClassUI(Gtk.Box):
             #warning = message.PopUp(message.WARN_STOP, text,
             #  context.get_mainwindow(), buttons)
             message.PopUp(message.WARN_STOP, text,
-                          context.get_mainwindow(), buttons, self.on_stop_dialog_response)
+                          context.get_mainwindow(), buttons, self.on_stop_dialog_response, close_before_response_action = self.close_before_response_action)
+
             #if warning.response not in message.POSITIVE or self.recorder.status not in [RECORDING_STATUS]:
             #    return False
 
@@ -556,7 +558,7 @@ class RecorderClassUI(Gtk.Box):
         v.add_attribute(r, "foreground", 2)
 #        v.set_displayed_row(0)
         v.set_displayed_row(Gtk.TreePath(0))
-        relabel(v,k1*52,True)
+        relabel(v,k1*42,True)
         return v
 
 
