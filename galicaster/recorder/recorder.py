@@ -26,6 +26,8 @@ logger = context.get_logger()
 GST_TIMEOUT= Gst.SECOND*10
 
 class Recorder(object):
+    def __del__(self):
+        self.bus.remove_signal_watch()
 
     def __init__(self, bins, players={}):
         """
