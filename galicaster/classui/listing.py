@@ -98,7 +98,7 @@ class ListingClassUI(ManagerUI):
             # TODO: Use of cgi.escape(mp.getTitle()) is a WORKAROUND for https://github.com/teltek/Galicaster/issues/458
             if mp.status != mediapackage.SCHEDULED:
                 lista.append([mp.getIdentifier(),
-                    cgi.escape(mp.getTitle()),
+                    cgi.escape(mp.getTitle() or ""),
                     mp.getCreator(),
                     mp.series_title ,
                     long(mp.getSize()),
@@ -259,7 +259,7 @@ class ListingClassUI(ManagerUI):
         """Fills the new values of a refreshed row"""
         self.lista.set(i,0,mp.getIdentifier())
         # TODO: Use of cgi.escape(mp.getTitle()) is a WORKAROUND for https://github.com/teltek/Galicaster/issues/458
-        self.lista.set(i,1,cgi.escape(mp.getTitle()))
+        self.lista.set(i,1,cgi.escape(mp.getTitle() or ""))
         self.lista.set(i,2,mp.getCreator())
         self.lista.set(i,3,mp.series_title)
         self.lista.set(i,4,long(mp.getSize()))
