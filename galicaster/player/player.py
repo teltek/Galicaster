@@ -44,6 +44,9 @@ STOPPED = 4
 ERRORED = 5
 
 class Player(object):
+    def __del__(self):
+        self.pipeline.get_bus().remove_signal_watch()
+
     def __init__(self, files, players={}):
         """
         Initialize the player
