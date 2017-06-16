@@ -11,13 +11,15 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
-from gi.repository import Gdk
-from galicaster import __version__
-from galicaster.core import context
 import datetime
 
 import os
 import os.path
+import traceback
+
+from gi.repository import Gdk
+from galicaster import __version__
+from galicaster.core import context
 
 conf = context.get_conf()
 
@@ -48,3 +50,11 @@ def get_timezone():
         tzname = open('/etc/timezone').read().rstrip()
 
     return tzname
+
+def count_files(folder):
+    try:
+        path, dirs, files = os.walk(folder).next()
+        return len(files)
+    except Exception as exc:
+        print traceback.format_exc()
+        print exc
