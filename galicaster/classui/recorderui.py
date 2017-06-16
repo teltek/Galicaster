@@ -323,7 +323,7 @@ class RecorderClassUI(Gtk.Box):
     def recording_info_timeout(self, rec_title, rec_elapsed):
         """GObject.timeout callback with 500 ms intervals"""
         if self.recorder.status == RECORDING_STATUS:
-            if rec_title.get_text() != self.recorder.current_mediapackage.getTitle():
+            if rec_title.get_text() != self.recorder.current_mediapackage.getTitle().encode('utf-8'):
                 rec_title.set_text(self.recorder.current_mediapackage.getTitle())
             msec = datetime.timedelta(microseconds=(round(self.recorder.get_recorded_time()/1000.0,-6)))
             rec_elapsed.set_text(_("Elapsed Time: ") + readable.long_time(msec))
@@ -391,7 +391,7 @@ class RecorderClassUI(Gtk.Box):
                 dif = start - datetime.datetime.now()
                 if event_type.get_text != NEXT_TEXT:
                     event_type.set_text(NEXT_TEXT)
-                if title.get_text() != next_mediapackage.title:
+                if title.get_text() != next_mediapackage.title.encode('utf-8'):
                     title.set_text(next_mediapackage.title)
                 status.set_text(_("Starting in {0}").format(readable.long_time(dif)))
 
@@ -423,7 +423,7 @@ class RecorderClassUI(Gtk.Box):
                     event_type.set_text("")
                 if status.get_text():
                     status.set_text("")
-                if title.get_text() != _("No upcoming events"):
+                if title.get_text() != _("No upcoming events").encode('utf-8'):
                     title.set_text(_("No upcoming events"))
 
         return True
