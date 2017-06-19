@@ -40,6 +40,13 @@ device = None
 MAX_AMPLITUDE = None
 audio_track = None
 
+dispatcher = None
+conf = None
+logger = None
+repo = None
+pipe = None
+bus = None
+
 def init():
     try:
         global MAX_AMPLITUDE
