@@ -24,7 +24,6 @@ TODO:
 
 from gi.repository import GObject
 from gi.repository import Gtk, Gdk, GdkPixbuf
-#import Gtk.glade
 from gi.repository import Pango
 import datetime
 
@@ -135,12 +134,6 @@ class RecorderClassUI(Gtk.Box):
         self.dispatcher.connect_ui("view-changed", self.event_change_mode)
         self.dispatcher.connect_ui("recorder-status", self.handle_status)
         self.dispatcher.connect_ui("recorder-ready", self.reset_mute)
-
-        #nb=builder.get_object("data_panel")
-        # pages = nb.get_n_pages()
-        # for index in range(pages):
-        #     page=nb.get_nth_page(index)
-        #     nb.set_tab_label_packing(page, True, True,Gtk.PackType.START)
 
         # STATES
         self.previous = None
@@ -270,13 +263,10 @@ class RecorderClassUI(Gtk.Box):
             text = {"title" : _("Recorder"),
                     "main" : _("Are you sure you want to\nstop the recording?")}
             buttons = (Gtk.STOCK_STOP, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
-            #warning = message.PopUp(message.WARN_STOP, text,
-            #  context.get_mainwindow(), buttons)
+
             message.PopUp(message.WARN_STOP, text,
                           context.get_mainwindow(), buttons, self.on_stop_dialog_response, close_before_response_action = self.close_before_response_action)
 
-            #if warning.response not in message.POSITIVE or self.recorder.status not in [RECORDING_STATUS]:
-            #    return False
 
     def on_stop_dialog_response(self, response_id, **kwargs):
         """ Manage the response of the WARN_STOP dialog """
@@ -528,7 +518,6 @@ class RecorderClassUI(Gtk.Box):
 
         size = context.get_mainwindow().get_size()
         k1 = size[0] / 1920.0
-#        k2 = size[1] / 1080.0
 
         l = Gtk.ListStore(str,str,str)
 
@@ -546,12 +535,10 @@ class RecorderClassUI(Gtk.Box):
         self.renderer=r
         r.set_alignment(0.5,0.5)
 
-        # k1 = size[0] / 1920.0
         v.pack_start(r,True)
         v.add_attribute(r, "text", 0)
         v.add_attribute(r, "background", 1)
         v.add_attribute(r, "foreground", 2)
-#        v.set_displayed_row(0)
         v.set_displayed_row(Gtk.TreePath(0))
         relabel(v,k1*42,True)
         return v
@@ -563,7 +550,6 @@ class RecorderClassUI(Gtk.Box):
         """Updates the values on the recording tab"""
         s1 = self.gui.get_object("status1")
         s2 = self.gui.get_object("status2")
-        # s3 = self.gui.get_object("status3")
         s4 = self.gui.get_object("status4")
 
         freespace = self.repo.get_free_space()
@@ -611,11 +597,9 @@ class RecorderClassUI(Gtk.Box):
         """Adapts GUI elements to the screen size"""
         size = context.get_mainwindow().get_size()
 
- #       altura = size[1]
         anchura = size[0]
 
         k1 = anchura / 1920.0
-#        k2 = altura / 1080.0
         self.proportion = k1
 
         #Recorder
@@ -623,7 +607,6 @@ class RecorderClassUI(Gtk.Box):
         logo = self.gui.get_object("classlogo")
         nextl = self.gui.get_object("nextlabel")
         title = self.gui.get_object("titlelabel")
-        # eventl = self.gui.get_object("eventlabel")
         pbox = self.gui.get_object("prebox")
 
         rec_title = self.gui.get_object("recording1")
