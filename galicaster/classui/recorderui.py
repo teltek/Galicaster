@@ -313,8 +313,7 @@ class RecorderClassUI(Gtk.Box):
     def recording_info_timeout(self, rec_title, rec_elapsed):
         """GObject.timeout callback with 500 ms intervals"""
         if self.recorder.status == RECORDING_STATUS:
-            if rec_title.get_text() != self.recorder.current_mediapackage.getTitle().encode('utf-8'):
-                rec_title.set_text(self.recorder.current_mediapackage.getTitle())
+            rec_title.set_text(self.recorder.current_mediapackage.getTitle())
             msec = datetime.timedelta(microseconds=(round(self.recorder.get_recorded_time()/1000.0,-6)))
             rec_elapsed.set_text(_("Elapsed Time: ") + readable.long_time(msec))
             return True
@@ -351,10 +350,10 @@ class RecorderClassUI(Gtk.Box):
                 return True
 
             if self.recorder.current_mediapackage.anticipated:
-                if event_type.get_text() != CURRENT_TEXT or title.get_text() != self.recorder.current_mediapackage.title:
-                    status.set_text("")
-                    event_type.set_text(CURRENT_TEXT)
-                    title.set_text(self.recorder.current_mediapackage.title)
+                status.set_text("")
+                event_type.set_text(CURRENT_TEXT)
+                title.set_text(self.recorder.current_mediapackage.title)
+
                 return True
             status.set_text(_("Stopping in {0}").format(readable.long_time(dif)))
             event_type.set_text(CURRENT_TEXT)
@@ -379,10 +378,8 @@ class RecorderClassUI(Gtk.Box):
             if next_mediapackage and next_mediapackage.isScheduled():
                 start = next_mediapackage.getLocalDate()
                 dif = start - datetime.datetime.now()
-                if event_type.get_text != NEXT_TEXT:
-                    event_type.set_text(NEXT_TEXT)
-                if title.get_text() != next_mediapackage.title.encode('utf-8'):
-                    title.set_text(next_mediapackage.title)
+                event_type.set_text(NEXT_TEXT)
+                title.set_text(next_mediapackage.title)
                 status.set_text(_("Starting in {0}").format(readable.long_time(dif)))
 
                 if dif < datetime.timedelta(0,TIME_UPCOMING):
@@ -413,8 +410,7 @@ class RecorderClassUI(Gtk.Box):
                     event_type.set_text("")
                 if status.get_text():
                     status.set_text("")
-                if title.get_text() != _("No upcoming events").encode('utf-8'):
-                    title.set_text(_("No upcoming events"))
+                title.set_text(_("No upcoming events"))
 
         return True
 
@@ -560,8 +556,7 @@ class RecorderClassUI(Gtk.Box):
         hours = int(freespace/four_gb)
         s2.set_text(_("{0} hours left").format(str(hours)))
         agent = self.conf.get_hostname() # TODO just consult it once
-        if s4.get_text() != agent:
-            s4.set_text(agent)
+        s4.set_text(agent)
 
 
     def check_net(self, origin, status=None):
