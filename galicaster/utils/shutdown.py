@@ -33,8 +33,3 @@ def get_dbus_method(method_name):
 def shutdown(signal=None):
     poweroff = get_dbus_method('Shutdown')
     poweroff()
-
-def close_session(signal=None): # Not used but usable
-    logout = get_dbus_method('Logout')
-    # logout(2,reply_handler=None, error_handler=None)
-    logout()
