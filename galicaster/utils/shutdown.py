@@ -17,7 +17,6 @@ A button appears on the Welcome area
 """
 
 import dbus
-from dbus.bus import BusConnection
 from dbus.mainloop.glib import DBusGMainLoop
 
 def get_dbus_method(method_name):
