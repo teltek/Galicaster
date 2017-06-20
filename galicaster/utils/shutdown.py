@@ -22,14 +22,14 @@ from dbus.mainloop.glib import DBusGMainLoop
 
 def get_dbus_method(method_name):
     dbus_loop = DBusGMainLoop()
-    connection = BusConnection(mainloop=dbus_loop)
-    bus_name = "com.canonical.Unity"
-    object_path = "/com/canonical/Unity/Session"
-    session_object = connection.get_object(bus_name,object_path)
-    interface = dbus.Interface(session_object, bus_name+".Session")
+    systembus = dbus.SystemBus(mainloop=dbus_loop)
+    bus_name = "org.freedesktop.login1"
+    object_path = "/org/freedesktop/login1"
+    session_object = systembus.get_object(bus_name,object_path)
+    interface = dbus.Interface(session_object, bus_name+".Manager")
     method = interface.get_dbus_method(method_name)
     return method
 
 def shutdown(signal=None):
-    poweroff = get_dbus_method('Shutdown')
-    poweroff()
+    poweroff = get_dbus_method('PowerOff')
+    poweroff(True)
