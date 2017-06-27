@@ -114,7 +114,7 @@ class RecorderClassUI(Gtk.Box):
 
         # SWAP
         if not self.conf.get_boolean('basic', 'swapvideos'):
-            self.gui.get_object("swapbutton").hide()
+            self.gui.get_object("swapbutton").destroy()
         self.swap = False
 
         # STATUS
