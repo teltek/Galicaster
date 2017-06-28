@@ -24,7 +24,6 @@ TODO:
 
 from gi.repository import GObject
 from gi.repository import Gtk, Gdk, GdkPixbuf
-#import Gtk.glade
 from gi.repository import Pango
 import datetime
 
@@ -135,12 +134,6 @@ class RecorderClassUI(Gtk.Box):
         self.dispatcher.connect_ui("view-changed", self.event_change_mode)
         self.dispatcher.connect_ui("recorder-status", self.handle_status)
         self.dispatcher.connect_ui("recorder-ready", self.reset_mute)
-
-        #nb=builder.get_object("data_panel")
-        # pages = nb.get_n_pages()
-        # for index in range(pages):
-        #     page=nb.get_nth_page(index)
-        #     nb.set_tab_label_packing(page, True, True,Gtk.PackType.START)
 
         # STATES
         self.previous = None
@@ -275,13 +268,10 @@ class RecorderClassUI(Gtk.Box):
             text = {"title" : _("Recorder"),
                     "main" : _("Are you sure you want to\nstop the recording?")}
             buttons = (Gtk.STOCK_STOP, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
-            #warning = message.PopUp(message.WARN_STOP, text,
-            #  context.get_mainwindow(), buttons)
+
             message.PopUp(message.WARN_STOP, text,
                           context.get_mainwindow(), buttons, self.on_stop_dialog_response, close_before_response_action = self.close_before_response_action)
 
-            #if warning.response not in message.POSITIVE or self.recorder.status not in [RECORDING_STATUS]:
-            #    return False
 
     def on_stop_dialog_response(self, response_id, **kwargs):
         """ Manage the response of the WARN_STOP dialog """
@@ -328,8 +318,7 @@ class RecorderClassUI(Gtk.Box):
     def recording_info_timeout(self, rec_title, rec_elapsed):
         """GObject.timeout callback with 500 ms intervals"""
         if self.recorder.status == RECORDING_STATUS:
-            if rec_title.get_text() != self.recorder.current_mediapackage.getTitle():
-                rec_title.set_text(self.recorder.current_mediapackage.getTitle())
+            rec_title.set_text(self.recorder.current_mediapackage.getTitle())
             msec = datetime.timedelta(microseconds=(round(self.recorder.get_recorded_time()/1000.0,-6)))
             rec_elapsed.set_text(_("Elapsed Time: ") + readable.long_time(msec))
             return True
@@ -366,10 +355,10 @@ class RecorderClassUI(Gtk.Box):
                 return True
 
             if self.recorder.current_mediapackage.anticipated:
-                if event_type.get_text() != CURRENT_TEXT or title.get_text() != self.recorder.current_mediapackage.title:
-                    status.set_text("")
-                    event_type.set_text(CURRENT_TEXT)
-                    title.set_text(self.recorder.current_mediapackage.title)
+                status.set_text("")
+                event_type.set_text(CURRENT_TEXT)
+                title.set_text(self.recorder.current_mediapackage.title)
+
                 return True
             status.set_text(_("Stopping in {0}").format(readable.long_time(dif)))
             event_type.set_text(CURRENT_TEXT)
@@ -394,10 +383,8 @@ class RecorderClassUI(Gtk.Box):
             if next_mediapackage and next_mediapackage.isScheduled():
                 start = next_mediapackage.getLocalDate()
                 dif = start - datetime.datetime.now()
-                if event_type.get_text != NEXT_TEXT:
-                    event_type.set_text(NEXT_TEXT)
-                if title.get_text() != next_mediapackage.title:
-                    title.set_text(next_mediapackage.title)
+                event_type.set_text(NEXT_TEXT)
+                title.set_text(next_mediapackage.title)
                 status.set_text(_("Starting in {0}").format(readable.long_time(dif)))
 
                 if dif < datetime.timedelta(0,TIME_UPCOMING):
@@ -428,8 +415,7 @@ class RecorderClassUI(Gtk.Box):
                     event_type.set_text("")
                 if status.get_text():
                     status.set_text("")
-                if title.get_text() != _("No upcoming events"):
-                    title.set_text(_("No upcoming events"))
+                title.set_text(_("No upcoming events"))
 
         return True
 
@@ -533,7 +519,6 @@ class RecorderClassUI(Gtk.Box):
 
         size = context.get_mainwindow().get_size()
         k1 = size[0] / 1920.0
-#        k2 = size[1] / 1080.0
 
         l = Gtk.ListStore(str,str,str)
 
@@ -551,12 +536,10 @@ class RecorderClassUI(Gtk.Box):
         self.renderer=r
         r.set_alignment(0.5,0.5)
 
-        # k1 = size[0] / 1920.0
         v.pack_start(r,True)
         v.add_attribute(r, "text", 0)
         v.add_attribute(r, "background", 1)
         v.add_attribute(r, "foreground", 2)
-#        v.set_displayed_row(0)
         v.set_displayed_row(Gtk.TreePath(0))
         relabel(v,k1*42,True)
         return v
@@ -568,7 +551,6 @@ class RecorderClassUI(Gtk.Box):
         """Updates the values on the recording tab"""
         s1 = self.gui.get_object("status1")
         s2 = self.gui.get_object("status2")
-        # s3 = self.gui.get_object("status3")
         s4 = self.gui.get_object("status4")
 
         freespace = self.repo.get_free_space()
@@ -579,8 +561,7 @@ class RecorderClassUI(Gtk.Box):
         hours = int(freespace/four_gb)
         s2.set_text(_("{0} hours left").format(str(hours)))
         agent = self.conf.get_hostname() # TODO just consult it once
-        if s4.get_text() != agent:
-            s4.set_text(agent)
+        s4.set_text(agent)
 
 
     def check_net(self, origin, status=None):
@@ -616,11 +597,9 @@ class RecorderClassUI(Gtk.Box):
         """Adapts GUI elements to the screen size"""
         size = context.get_mainwindow().get_size()
 
- #       altura = size[1]
         anchura = size[0]
 
         k1 = anchura / 1920.0
-#        k2 = altura / 1080.0
         self.proportion = k1
 
         #Recorder
@@ -628,7 +607,6 @@ class RecorderClassUI(Gtk.Box):
         logo = self.gui.get_object("classlogo")
         nextl = self.gui.get_object("nextlabel")
         title = self.gui.get_object("titlelabel")
-        # eventl = self.gui.get_object("eventlabel")
         pbox = self.gui.get_object("prebox")
 
         rec_title = self.gui.get_object("recording1")
