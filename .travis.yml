@@ -22,4 +22,4 @@ before_script:
  - sudo pip install python-ldap
  - pip install gi
 script:
-  - make test-travis
+  - sudo make test-travis
