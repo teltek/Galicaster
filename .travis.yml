@@ -1,6 +1,5 @@
 sudo: required
 dist: trusty
-group: deprecated-2017Q2
 
 language: python
 python:
@@ -18,6 +17,6 @@ before_script:
  - sudo apt-get install --yes pep8 pyflakes pychecker python-nose python-coverage python-dogtail python-flake8
  - sudo apt-get install --yes libsasl2-dev python-dev libldap2-dev libssl-dev
  - sudo pip install python-ldap
-
+ - sudo pip install gi
 script:
   - make test-travis
