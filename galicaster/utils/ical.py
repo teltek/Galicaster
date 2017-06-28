@@ -29,7 +29,7 @@ def get_events_from_string_ical(ical_data, limit=0):
     if limit > 0:
         events = cal.walk('vevent')[count:limit+count]
         for event in events:
-            if event['DTSTART'].dt.replace(tzinfo=None) < datetime.utcnow():
+            if event['DTEND'].dt.replace(tzinfo=None) < datetime.utcnow():
                 count += 1
         if count > 0:
             events = cal.walk('vevent')[count:limit+count]

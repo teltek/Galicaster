@@ -1,6 +1,9 @@
 sudo: required
 dist: trusty
 
+# Fix. Will stop working after 1st September
+group: deprecated-2017Q2
+
 language: python
 python:
   - "2.7"
