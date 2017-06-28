@@ -9,6 +9,9 @@ python:
 virtualenv:
   system_site_packages: true
 
+install:
+ - sudo pip install gi
+ 
 before_script:
  - sudo apt-get install --yes gstreamer1.0-alsa gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-base-apps gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly
  - sudo apt-get install --yes gstreamer1.0-libav
