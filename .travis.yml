@@ -11,11 +11,11 @@ virtualenv:
 
 install:
  - sudo pip install gi
- 
+
 before_script:
  - sudo apt-get install --yes gstreamer1.0-alsa gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-base-apps gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly
  - sudo apt-get install --yes gstreamer1.0-libav
- - sudo apt-get install --yes python-gi gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 gir1.2-gtk-3.0
+ - apt-get install --yes python-gi gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 gir1.2-gtk-3.0
  - sudo apt-get install --yes python-pycurl python-bottle python-icalendar python-glade2
  - sudo apt-get install --yes pep8 pyflakes pychecker python-nose python-coverage python-dogtail python-flake8
  - sudo apt-get install --yes libsasl2-dev python-dev libldap2-dev libssl-dev
