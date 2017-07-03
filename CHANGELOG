@@ -25,6 +25,7 @@ To get the diff between two versions, go to https://github.com/teltek/galicaster
  * Fixed ical processing issue where first event is ignored #451
  * Fixed a bug that permit launch recordings from next recordings window
  * Fixed non public series from Opencast aren't shown in Galicaster
+ * Fixed minor bug: the swapvideos button was not hiding when set to false.
 
 * 2.0.0 (2017-03-13)
  * Upgrade to Gstreamer 1.x and GTK 3.x
