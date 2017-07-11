@@ -66,7 +66,8 @@ class Base(object):
         # TODO parsear
 
         for k, v in options.iteritems():
-            if v:
+            #Fixed in master https://github.com/teltek/Galicaster/pull/510
+            if v is not None:
                 self.options[k] = validator.parse_automatic(v)
 
         # Validate option values
