@@ -189,8 +189,11 @@ class RecorderService(object):
             self.logger.warning("Cancel stop: status error (is {})".format(self.status))
             return False
 
+        self.dispatcher.emit("recorder-stopping")
         self.recorder.stop(force)
-        if not  self.is_error():
+        if self.is_error():
+            self.logger.error("Error stopping the recording. Recording service state: ERROR_STATUS")
+        else:
             self.__close_mp()
             self.__set_status(INIT_STATUS)
             self.preview()

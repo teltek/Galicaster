@@ -167,12 +167,22 @@ class OCService(object):
         if self.net:
             self.jobs.put((self.process_ical,()))
             self.jobs.put((self.update_series,()))
+            self.jobs.put((self.update_conf,()))
 
 
     def update_series(self):
         self.logger.info('Updating series from server')
         self.series = get_series()
 
+    def update_conf(self):
+        self.logger.info('Setting CA configuration to server')
+        try:
+            self.client.setconfiguration(self.conf.get_tracks_in_oc_dict())
+            self.__set_opencast_up()
+        except Exception as exc:
+            self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
+            self.__set_opencast_down()
+            return
 
     def init_client(self):
         """Tries to initialize opencast's client and set net's state.
@@ -208,7 +218,6 @@ class OCService(object):
 
         try:
             self.client.setstate(self.ca_status)
-            self.client.setconfiguration(self.conf.get_tracks_in_oc_dict())
             self.__set_opencast_up()
         except Exception as exc:
             self.logger.warning('Problems to connect to opencast server: {0}'.format(exc))
