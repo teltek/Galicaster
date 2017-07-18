@@ -26,6 +26,8 @@ logger = context.get_logger()
 GST_TIMEOUT= Gst.SECOND*10
 
 class Recorder(object):
+    def __del__(self):
+        self.bus.remove_signal_watch()
 
     def __init__(self, bins, players={}):
         """
@@ -245,11 +247,16 @@ class Recorder(object):
             for bin_name, bin in self.bins.iteritems():
                 bin.send_event_to_src(event)
 
-            msg = self.bus.timed_pop_filtered(GST_TIMEOUT, Gst.MessageType.EOS)
+            msg = self.bus.timed_pop_filtered(GST_TIMEOUT, Gst.MessageType.ERROR | Gst.MessageType.EOS)
             if not msg:
                 self.__emit_error('Timeout trying to receive EOS message', '', stop=False)
-            else:
+            elif msg.type == Gst.MessageType.EOS:
                 logger.debug('EOS message successfully received')
+            elif msg.type == Gst.MessageType.ERROR:
+                err, debug = msg.parse_error()
+                logger.error("Error received from element {}: {}".format(msg.sr.get_name(), err))
+                logger.debug("Debugging information: {}".format(debug))
+                self.__emit_error('Received ERROR message from pipeline', '', stop=False)
 
         self.pipeline.set_state(Gst.State.NULL)
 
