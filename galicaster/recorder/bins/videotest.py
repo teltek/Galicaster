@@ -20,7 +20,7 @@ from galicaster.recorder import base
 from galicaster.recorder.utils import get_videosink
 
 pipestr = (' videotestsrc name=gc-videotest-src pattern=0 is-live=true ! capsfilter name=gc-videotest-filter ! videobox name=gc-videotest-videobox top=0 bottom=0 !'
-           ' queue ! videoconvert ! video/x-raw ! tee name=tee-vt  ! '
+           ' queue ! videoconvert ! video/x-raw ! tee name=tee-vt  ! videobox name=gc-videotest-videobox-pre top=0 bottom=0 !'
            ' queue ! caps-preview ! gc-vsink '
            ' tee-vt. ! queue ! valve drop=false name=gc-videotest-valve ! videoconvert ! queue ! '
            ' gc-videotest-enc ! queue ! gc-videotest-mux ! '
@@ -178,12 +178,10 @@ class GCvideotest(Gst.Bin, base.Base):
         src1.set_property('bottom',0)
 
     def disable_preview(self):
-        src1 = self.get_by_name('sink-'+self.options['name'])
-        print src1
-        src1.set_property('saturation', -1000)
-        src1.set_property('contrast', -1000)
+        src1 = self.get_by_name('gc-videotest-videobox-pre')
+        src1.set_properties(top = -10000, bottom = 10000)
 
     def enable_preview(self):
-        src1 = self.get_by_name('sink-'+self.options['name'])
-        src1.set_property('saturation',0)
-        src1.set_property('contrast',0)
+        src1 = self.get_by_name('gc-videotest-videobox-pre')
+        src1.set_property('top',0)
+        src1.set_property('bottom',0)

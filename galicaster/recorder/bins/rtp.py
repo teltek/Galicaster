@@ -34,7 +34,7 @@ pipe_config_audio = {'mp3':
                          {'depay': 'rtpmp4gdepay', 'parse': 'aacparse', 'dec': 'faad'}}
 
 pipestr = (' rtspsrc name=gc-rtp-src ! gc-rtp-depay ! gc-rtp-videoparse ! queue !'
-           ' tee name=gc-rtp-tee  ! queue ! gc-rtp-dec  ! caps-preview ! gc-vsink '
+           ' tee name=gc-rtp-tee ! queue ! gc-rtp-dec ! videobox name=gc-rtp-videobox-pre top=0 bottom=0  ! caps-preview ! gc-vsink '
            ' gc-rtp-tee. ! queue ! valve drop=false name=gc-rtp-valve ! '
            ' queue ! gc-rtp-muxer name=gc-rtp-mux ! queue ! filesink name=gc-rtp-sink async=false')
 
@@ -211,18 +211,17 @@ class GCrtp(Gst.Bin, base.Base):
         src1.send_event(event)
 
     def disable_preview(self):
-        src1 = self.get_by_name('sink-'+self.options['name'])
-        src1.set_property('saturation', -1000)
-        src1.set_property('contrast', -1000)
+        src1 = self.get_by_name('gc-rtp-videobox-pre')
+        src1.set_properties(top = -10000, bottom = 10000)
         if self.has_audio:
             element = self.get_by_name("gc-rtp-volume")
             element.set_property("mute", True)
 
 
     def enable_preview(self):
-        src1 = self.get_by_name('sink-'+self.options['name'])
-        src1.set_property('saturation',0)
-        src1.set_property('contrast',0)
+        src1 = self.get_by_name('gc-rtp-videobox-pre')
+        src1.set_property('top',0)
+        src1.set_property('bottom',0)
         if self.has_audio:
             element = self.get_by_name("gc-rtp-volume")
             element.set_property("mute", False)
