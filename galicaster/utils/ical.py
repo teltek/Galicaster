@@ -39,7 +39,7 @@ def get_events_from_string_ical(ical_data, limit=0, logger=None):
             events = cal.walk('vevent')
 
         return events
-    except Exception as exc:
+    except Exception:
         logger and logger.error("There was an error processing calendar.ical file")
         return None
 
