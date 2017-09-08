@@ -18,30 +18,43 @@ from datetime import datetime
 
 from icalendar import Calendar
 from galicaster.mediapackage import mediapackage
+from galicaster.utils.systemcalls import execute
 
 count = 0
 
-def get_events_from_string_ical(ical_data, limit=0):
+def get_events_from_string_ical(ical_data, limit=0, logger=None):
     global count
     # See https://github.com/collective/icalendar#api-change
-    f = getattr(Calendar, 'from_ical', getattr(Calendar, 'from_string', None))
-    cal = f(ical_data)
-    if limit > 0:
-        events = cal.walk('vevent')[count:limit+count]
-        for event in events:
-            if event['DTEND'].dt.replace(tzinfo=None) < datetime.utcnow():
-                count += 1
-        if count > 0:
+    try:
+        f = getattr(Calendar, 'from_ical', getattr(Calendar, 'from_string', None))
+        cal = f(ical_data)
+        if limit > 0:
             events = cal.walk('vevent')[count:limit+count]
-    else:
-        events = cal.walk('vevent')
-    return events
+            for event in events:
+                if event['DTEND'].dt.replace(tzinfo=None) < datetime.utcnow():
+                    count += 1
+            if count > 0:
+                events = cal.walk('vevent')[count:limit+count]
+        else:
+            events = cal.walk('vevent')
 
+        return events
+    except Exception as exc:
+        logger and logger.error("There was an error processing calendar.ical file")
+        return None
 
-def get_events_from_file_ical(ical_file, limit=0):
+def get_events_from_file_ical(ical_file, limit=0, logger=None):
     ical_data = open(ical_file).read()
-    return get_events_from_string_ical(ical_data, limit)
+    events = get_events_from_string_ical(ical_data, limit, logger)
 
+    if events != None:
+        return events
+
+    else:
+        timestamp = datetime.now().replace(microsecond=0).isoformat()
+        logger and logger.info(("Renaming errored calendar from  calendar.ical to calendar.ical.old.{}, a new calendar.ical file will be created in the next long heartbeat").format(timestamp))
+        execute(["mv" , ical_file, ("{}.old.{}").format(ical_file, timestamp)], logger)
+        return list()
 
 def get_deleted_events(old_events, new_events):
     out = list()
