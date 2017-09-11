@@ -19,7 +19,7 @@ from galicaster.recorder import base
 #from galicaster.recorder import module_register
 from galicaster.recorder.utils import get_audiosink
 
-pipestr = (" pulsesrc name=gc-audio-src  ! queue name=gc-min-threshold-time gc-max-size-time gc-max-size-buffers gc-max-size-bytes gc-leaky ! "
+pipestr = (" pulsesrc name=gc-audio-src buffer-time ! queue name=gc-min-threshold-time gc-max-size-time gc-max-size-buffers gc-max-size-bytes gc-leaky ! "
            " audioamplify name=gc-audio-amplify amplification=1 ! audioconvert ! audio/x-raw,channels=gc-audio-channels ! "
            " tee name=tee-aud  ! queue ! level name=gc-audio-level message=true interval=100000000 ! "
            " volume name=gc-audio-volumemaster ! volume name=gc-audio-volume ! gc-asink "
@@ -98,6 +98,12 @@ class GCpulse(Gst.Bin, base.Base):
             "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
             "description": "Audio sink",
         },
+        "buffer_time" : {
+            "type": "integer",
+            "default": 200000,
+            "range": (10000,100000000),
+            "description": "Size of audio buffer in microseconds.",
+        },
 
     }
 
@@ -137,6 +143,11 @@ class GCpulse(Gst.Bin, base.Base):
             aux = aux.replace('gc-max-size-buffers', '')
             aux = aux.replace('gc-max-size-bytes', '')
             aux = aux.replace('gc-leaky', '')
+
+        if self.options["buffer_time"] != 200000:
+            aux = aux.replace('buffer-time','buffer-time='+str(self.options["buffer_time"]))
+        else:
+            aux = aux.replace('buffer-time','')
 
         #bin = Gst.parse_bin_from_description(aux, True)
         bin = Gst.parse_launch("( {} )".format(aux))
