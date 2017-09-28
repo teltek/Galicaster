@@ -20,7 +20,7 @@ from galicaster.recorder import base
 from galicaster.recorder.utils import get_videosink
 
 pipestr = (' videotestsrc name=gc-videotest-src pattern=0 is-live=true ! capsfilter name=gc-videotest-filter ! videobox name=gc-videotest-videobox top=0 bottom=0 !'
-           ' queue ! videoconvert ! video/x-raw,format=YUY2 ! tee name=tee-vt  ! '
+           ' queue ! videoconvert ! video/x-raw ! tee name=tee-vt  ! '
            ' queue ! caps-preview ! gc-vsink '
            ' tee-vt. ! queue ! valve drop=false name=gc-videotest-valve ! videoconvert ! queue ! '
            ' gc-videotest-enc ! queue ! gc-videotest-mux ! '

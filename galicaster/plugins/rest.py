@@ -18,7 +18,7 @@ import math
 import threading
 import tempfile
 from bottle import route, run, response, abort, request, install
-from gi.repository import GObject
+from gi.repository import GObject, Gdk, GLib
 
 from galicaster.core import context
 from galicaster.mediapackage.serializer import set_manifest
@@ -144,7 +144,7 @@ def stop():
     recorder = context.get_recorder()
 
     if recorder.is_recording():
-        recorder.stop()
+        Gdk.threads_add_idle(GLib.PRIORITY_HIGH, recorder.stop)
     else:
         abort(500, "failed to stop the capture, or no current active capture")
 
