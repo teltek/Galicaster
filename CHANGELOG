@@ -5,6 +5,28 @@ Web version of the changelog in http://wiki.teltek.es/display/Galicaster/Release
 To get the diff for a specific change, go to https://github.com/teltek/galicaster/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/teltek/galicaster/compare/1.2.1...1.2.3
 
+* 2.0.1 (2017-07-03)
+ * Improved Galicaster stability (Fixed preview freezes after multiple recordings #457, file descriptor leaks #441 and timeouts getting recorder status #493)
+ * Added an option to dump dot file of Gstreamer pipeline (ppettit)
+ * Added "capture.device.timezone" to Opencast config #472
+ * Added a new signal 'record-finished' when a recording is finished
+ * Added the possibility to close a popup dialog before execute his callback
+ * Corrected some bad interactions between the no-audio dialog and other popups.
+ * Fixed shutdown button
+ * Fixed problems with unicode strings #300 #458
+ * Fixed problem with 720p resolution #436
+ * Fixed bug: send config to MH in shot heartbeat instead of long heartbeat #114
+ * Fixed ingesting even if ingest was disabled #529
+ * Fixed exception if a recording finishes while it's paused #513 (ppettit)
+ * Fixed pause button not dissapearing when a recording finish
+ * Fixed incorrect status sent to Opencast #473 #491
+ * Fixed nightly timer from starting at wrong time #483
+ * Fixed errors in timestamps with offsets #471
+ * Fixed ical processing issue where first event is ignored #451
+ * Fixed a bug that permit launch recordings from next recordings window
+ * Fixed non public series from Opencast aren't shown in Galicaster
+ * Fixed minor bug: the swapvideos button was not hiding when set to false.
+
 * 2.0.0 (2017-03-13)
  * Upgrade to Gstreamer 1.x and GTK 3.x
  * Move the recorder logic to a service (in order to obtain the recorder state, get the current mediapackage, work on the recorder, ...)

@@ -138,7 +138,7 @@ class OCService(object):
         """
         ical_path = self.repo.get_attach_path('calendar.ical')
         if path.isfile(ical_path):
-            return ical.get_events_from_file_ical(ical_path, limit=100)
+            return ical.get_events_from_file_ical(ical_path, limit=100, logger=self.logger)
         else:
             return list()
 
