@@ -20,6 +20,7 @@ from galicaster.core import context
 from galicaster.utils.i18n import _
 
 import ldap
+import re
 from gi.repository import Gtk
 from galicaster.core.core import PAGES_LOADED
 
@@ -32,8 +33,9 @@ def init():
     logger = context.get_logger()
     conf = context.get_conf()
     dispatcher.connect('init', show_msg)
+    dispatcher.connect('record-finished', show_msg)
 
-def show_msg(element=None):
+def show_msg(element=None, *args):
     text = {"title" : _("Lock screen"),
             "main" : _("Please insert the password")}
 
@@ -48,10 +50,15 @@ def show_msg(element=None):
     if quit_button:
         show.append("quitbutton")
 
-    for page in PAGES_LOADED:
-        button = show_buttons(page)
-        if button is not None:
-            button.connect("clicked", lock, text, show)
+    if not args:
+        for page in PAGES_LOADED:
+            button = show_buttons(page)
+            if button is not None:
+                button.connect("clicked", lock, text, show)
+
+        #FIXME Change behaviour of stop dialog, to avoid shaded lockscreen
+        recorderui =  context.get_mainwindow().nbox.get_nth_page(0)
+        recorderui.close_before_response_action = True
 
     lock(None,text,show)
 
@@ -67,7 +74,6 @@ def show_buttons(ui):
     except Exception as error:
         logger.error("View has not been loaded. Page id: {}, exception: {}".format(ui, str(error)))
         return None
-
     box = builder.get_object("box2")
     button = Gtk.Button()
     hbox = Gtk.Box()
@@ -85,7 +91,7 @@ def show_buttons(ui):
 
 
 def on_unlock(*args, **kwargs):
-    global conf, logger
+    global conf, logger, builder
 
     builder = kwargs.get('builder', None)
     popup = kwargs.get('popup', None)
@@ -100,36 +106,75 @@ def on_unlock(*args, **kwargs):
         logger.info("Galicaster unlocked")
         popup.dialog_destroy()
 
-    else:
-        lmessage = builder.get_object("lockmessage")
-        lmessage.set_text("Wrong username/password")
-        lmessage.show()
+    elif auth_method == "basic":
+        set_error_text("Wrong password")
+
+def set_error_text(error_text):
+    lmessage = builder.get_object("lockmessage")
+    lmessage.set_text(error_text)
+    lmessage.show()
 
 
 def connect_ldap(user,password):
     ldapserver = conf.get("lockscreen","ldapserver")
     ldapserverport = conf.get("lockscreen","ldapserverport")
-    ldapou_list = conf.get_list("lockscreen","ldapou")
-    ldapdc_list = conf.get_list("lockscreen","ldapdc")
-    ldapusertype = conf.get_choice("lockscreen","ldapusertype", ["cn", "uid"], "cn")
+    ldapusertype = conf.get("lockscreen","ldapusertype", "cn")
+    ldap_advanced_bind = conf.get_boolean("lockscreen", "ldap_advanced_bind")
 
-    ldapOU = ""
-    for x in ldapou_list:
-        ldapOU = "{},ou={}".format(ldapOU, x)
+    if ldap_advanced_bind:
+        bind_dn = conf.get("lockscreen","search_dn")
+        bind_password = conf.get("lockscreen","search_password")
+        search_filter = conf.get("lockscreen","filter")
+        base_dn = conf.get("lockscreen","base_dn")
+        memberof = conf.get("lockscreen", "group")
 
-    ldapDC = ""
-    for x in ldapdc_list:
-        ldapDC = "{},dc={}".format(ldapDC, x)
+    else:
+        ldapou_list = conf.get_list("lockscreen","ldapou")
+        ldapdc_list = conf.get_list("lockscreen","ldapdc")
+        ldapOU = ""
+        for x in ldapou_list:
+            ldapOU = "{},ou={}".format(ldapOU, x)
+        ldapDC = ""
+        for x in ldapdc_list:
+            ldapDC = "{},dc={}".format(ldapDC, x)
+        bind_dn = "{}={}{}{}".format(ldapusertype, user, ldapOU, ldapDC)
+        bind_password = password
+
 
     try:
         fullserver = "{}:{}".format(ldapserver,ldapserverport)
-        dn = "{}={}{}{}".format(ldapusertype, user, ldapOU, ldapDC)
-        logger.debug("Trying to connect to LDAP server with dn: {}".format(dn))
+        logger.debug("Trying to connect to LDAP server with dn: {}".format(bind_dn))
         l = ldap.initialize(fullserver)
         l.protocol_version = ldap.VERSION3
-        l.simple_bind_s(dn, password)
+        l.simple_bind_s(bind_dn, bind_password)
+
+        if ldap_advanced_bind:
+            if not search_filter == "":
+                mappings = {'user' : user}
+                search_filter = re.sub(r'{\w+}', '', search_filter.format(**mappings))
+            else:
+                search_filter = "(&({}={})(memberof={}))".format(ldapusertype, user, memberof)
+            logger.debug("Searching in LDAP server with filter: {}".format(search_filter))
+            result = l.search_s(base_dn, ldap.SCOPE_SUBTREE, search_filter, [])
+
+            if not result:
+                logger.warning("User {} not found".format(user))
+                set_error_text("User not found")
+                return False
+
+            dn = result[0][0]
+            l.simple_bind_s(dn, password)
         logger.info("Connect to LDAP server success with username: {}".format(user))
-    except Exception as error:
-        logger.error("Can't connect to to LDAP server {} - {}".format(fullserver,error))
+
+    except ldap.LDAPError as error:
+        if type(error) == ldap.INVALID_CREDENTIALS:
+            logger.warning("Can't connect to to LDAP server {} - {}".format(fullserver,error))
+        else:
+            logger.error("Can't connect to to LDAP server {} - {}".format(fullserver,error))
+        set_error_text(error[0]["desc"])
         return False
+
+    finally:
+        l.unbind()
+
     return True
