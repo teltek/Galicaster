@@ -110,7 +110,7 @@ def on_unlock(*args, **kwargs):
         set_error_text("Wrong password")
 
 def set_error_text(error_text):
-    lmessage = builder.get_object("lockmessage")
+    lmessage = builder.get_object("lockmessage") # noqa: F821
     lmessage.set_text(error_text)
     lmessage.show()
 
