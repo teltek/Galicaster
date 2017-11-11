@@ -24,6 +24,7 @@ pip-log.txt
 \#*\#
 nbproject/
 .idea/
+.vscode
 *\.sw*
 
 #Galicaster unit test / coverage reports
