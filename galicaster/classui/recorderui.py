@@ -29,6 +29,7 @@ import datetime
 
 from galicaster.utils.miscellaneous import get_footer
 from galicaster.core import context
+from galicaster.core.worker import JOB_NAMES
 
 from galicaster.classui.metadata import MetadataClass as Metadata
 from galicaster.classui import message
@@ -126,6 +127,8 @@ class RecorderClassUI(Gtk.Box):
         self.dispatcher.connect_ui("init", self.check_status_area)
         self.dispatcher.connect_ui("init", self.check_net, None)
         self.dispatcher.connect_ui("opencast-status", self.check_net)
+        self.dispatcher.connect_ui("operation-started", self.check_operations)
+        self.dispatcher.connect_ui("operation-stopped", self.check_operations)
 
         # UI
         self.pack_start(self.recorderui,True,True,0)
@@ -577,10 +580,10 @@ class RecorderClassUI(Gtk.Box):
         freespace = self.repo.get_free_space()
         text_space = readable.size(freespace)
 
-        s1.set_text(text_space)
         four_gb = 4000000000.0
         hours = int(freespace/four_gb)
-        s2.set_text(_("{0} hours left").format(str(hours)))
+        s1.set_text(_("{0} ({1} hours left)").format(text_space, str(hours)))
+        s2.set_text(_("Idle"))
         agent = self.conf.get_hostname() # TODO just consult it once
         s4.set_text(agent)
 
@@ -613,6 +616,16 @@ class RecorderClassUI(Gtk.Box):
                 s3.set_text(_("Connecting"))
                 s3.set_name(network_css_ids['Connecting'])
 
+
+    def check_operations(self, origin, code, mp, success=None, exc=None):
+        if success is None:
+            success = _("Processing")
+        elif success:
+            success = _("Done")
+        else:
+            success = _("Failed")
+        s2 = self.gui.get_object("status2")
+        s2.set_text("{0}: {1}".format(JOB_NAMES[code], success))
 
     def resize(self):
         """Adapts GUI elements to the screen size"""
