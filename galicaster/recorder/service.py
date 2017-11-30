@@ -211,7 +211,9 @@ class RecorderService(object):
                                 close_duration, self.current_mediapackage.manual, True, self.conf.get_boolean('ingest', 'ignore_capture_devices'))
 
         self.dispatcher.emit("recorder-stopped", self.current_mediapackage.getIdentifier())
-        self.enqueue_ingest(self.current_mediapackage)
+        # Do not ingest if status set to nightly at the end of recording
+        if self.current_mediapackage.getOpStatus('ingest') != mediapackage.OP_NIGHTLY:
+            self.enqueue_ingest(self.current_mediapackage)
         self.last_mediapackage = self.current_mediapackage
         self.current_mediapackage = None
 
