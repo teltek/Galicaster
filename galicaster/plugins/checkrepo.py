@@ -23,7 +23,6 @@ import uuid
 
 from galicaster.core import context
 from galicaster.mediapackage import mediapackage
-from galicaster.plugins import failovermic
 
 logger = context.get_logger()
 worker = context.get_worker()
