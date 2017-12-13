@@ -198,6 +198,7 @@ class Recorder(object):
 
     def pause(self):
         logger.debug("recorder paused")
+        self.__pause_timestamp = self.__query_position()
         self.__set_state(Gst.State.PAUSED)
         return True
 
