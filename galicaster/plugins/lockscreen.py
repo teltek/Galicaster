@@ -21,7 +21,7 @@ from galicaster.utils.i18n import _
 
 import ldap
 from gi.repository import Gtk
-from galicaster.core.core import PAGES
+from galicaster.core.core import PAGES_LOADED
 
 conf = None
 logger = None
@@ -34,10 +34,6 @@ def init():
     dispatcher.connect('init', show_msg)
 
 def show_msg(element=None):
-    buttonDIS = show_buttons(PAGES['DIS'])
-    buttonREC = show_buttons(PAGES['REC'])
-    buttonMMA = show_buttons(PAGES['MMA'])
-
     text = {"title" : _("Lock screen"),
             "main" : _("Please insert the password")}
 
@@ -52,12 +48,10 @@ def show_msg(element=None):
     if quit_button:
         show.append("quitbutton")
 
-    if buttonDIS is not None:
-        buttonDIS.connect("clicked",lock,text,show)
-    if buttonREC is not None:
-        buttonREC.connect("clicked",lock,text,show)
-    if buttonMMA is not None:
-        buttonMMA.connect("clicked",lock,text,show)
+    for page in PAGES_LOADED:
+        button = show_buttons(page)
+        if button is not None:
+            button.connect("clicked", lock, text, show)
 
     lock(None,text,show)
 
@@ -71,7 +65,7 @@ def show_buttons(ui):
     try:
         builder = context.get_mainwindow().nbox.get_nth_page(ui).gui
     except Exception as error:
-        logger.error("Exception (Does the view exists?): "+error)
+        logger.error("View has not been loaded. Page id: {}, exception: {}".format(ui, str(error)))
         return None
 
     box = builder.get_object("box2")
