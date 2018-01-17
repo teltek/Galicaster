@@ -20,11 +20,8 @@ This module contains:
 """
 
 import uuid
-import re
 import time
 import os
-from dateutil import tz
-from dateutil import parser
 from os import path
 from datetime import datetime
 from xml.dom import minidom
