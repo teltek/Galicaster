@@ -5,6 +5,15 @@ Web version of the changelog in http://wiki.teltek.es/display/Galicaster/Release
 To get the diff for a specific change, go to https://github.com/teltek/galicaster/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/teltek/galicaster/compare/1.2.1...1.2.3
 
+* Unreleased
+ * Improved cURL and StringIO handling in the Opencast client #562 (sinhote)
+ * Fixed scheduler logic by using DTSTART instead of dcterm:temporal #567
+ * Removed duplicated cameracontrol external plugin (has its own repo)
+ * Added "version" option to run_galicaster.py (pmgration)
+ * Fixed get_recording_start_time() returning wrong duration when pipeline is paused #559 (pmgration)
+ * Added "dcterm:temporal" to newly created mps #570
+ * Added "Close button" to about window when none appears (details in commit: ebfde66)
+
 * 2.0.2 (2017-09-28)
  * Improved profile validation #507 (ppettit)
  * Added buffer-time property to Pulse bin
