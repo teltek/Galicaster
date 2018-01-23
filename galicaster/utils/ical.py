@@ -135,6 +135,8 @@ def create_mp(repo, event):
 
     mp.setTitle(event['SUMMARY'])
     mp.setDate(event['DTSTART'].dt.replace(tzinfo=None))
+    diff = event['DTEND'].dt.replace(tzinfo=None) - event['DTSTART'].dt.replace(tzinfo=None)
+    mp.setDuration(diff.seconds*1000)
 
     catalog= mp.getCatalogs("dublincore/series")
     if catalog:
