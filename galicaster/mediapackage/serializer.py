@@ -243,15 +243,15 @@ def set_manifest(mp, use_namespace=True):
         track.setAttribute("id", t.getIdentifier())
         track.setAttribute("type", t.getFlavor())
 
-        #TAGS
         # -- TAGS --
-        tags = doc.createElement("tags")
-        for tag_elem in t.getTags():
-            tag = doc.createElement("tag")
-            tagtext = doc.createTextNode(tag_elem)
-            tag.appendChild(tagtext)
-            tags.appendChild(tag)
-        track.appendChild(tags)
+        if t.getTags():
+            tags = doc.createElement("tags")
+            for tag_elem in t.getTags():
+                tag = doc.createElement("tag")
+                tagtext = doc.createTextNode(tag_elem)
+                tag.appendChild(tagtext)
+                tags.appendChild(tag)
+            track.appendChild(tags)
         ## --    --
 
         mime = doc.createElement("mimetype")
