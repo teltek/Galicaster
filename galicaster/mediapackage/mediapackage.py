@@ -288,7 +288,6 @@ class Track(Element):
             etype (str): 'Track' (element type)
             duration (int): the given duration of the track in seconds.
         """
-        tags=["archive"]
 
         super(Track, self).__init__(uri=uri, flavor=flavor, mimetype=mimetype, identifier=identifier, tags=tags)
         self.etype = TYPE_TRACK

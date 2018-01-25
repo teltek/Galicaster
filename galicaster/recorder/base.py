@@ -32,6 +32,11 @@ class Base(object):
             "default": "presenter",
             "description": "Opencast flavor associated to the track",
             },
+        "tags": {
+            "type": "tags",
+            "default": [],
+            "description": "Opencast tags associated to the track",
+        },
         "location": {
             "type": "device",
             "default": "/dev/video0",
