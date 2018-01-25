@@ -574,7 +574,12 @@ class Repository(object):
                     flavour = bin['flavor'] + '/source'
                 else:
                     flavour = bin['flavor']
-                mp.add(dest, mediapackage.TYPE_TRACK, flavour, etype, duration) # FIXME MIMETYPE
+
+                tags = []
+                if 'tags' in bin:
+                    tags = bin['tags']
+
+                mp.add(dest, mediapackage.TYPE_TRACK, flavour, etype, duration, tags=tags) # FIXME MIMETYPE
             else:
                 self.logger and self.logger.info("Not adding {} to MP {}".format(bin['file'],mp.getIdentifier()))
 
