@@ -287,7 +287,9 @@ class TestFunctions(TestCase):
         self.assertTrue(info.has_key('tracks'))
 
     def test_element_tags(self):
-        self.assertTrue(self.track1.getTags(), ['archive'])
+        self.assertEqual(self.track1.getTags(), [])
+        self.track1.addTag('archive')
+        self.assertEqual(self.track1.getTags(), ['archive'])
         self.track1.addTag('engage')
         self.assertTrue(self.track1.getTags(), ['archive', 'engage'])
         self.track1.removeTag('archive')
