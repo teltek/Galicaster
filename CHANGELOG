@@ -6,13 +6,24 @@ To get the diff for a specific change, go to https://github.com/teltek/galicaste
 To get the diff between two versions, go to https://github.com/teltek/galicaster/compare/1.2.1...1.2.3
 
 * Unreleased
+ * Added multistream bin #512 (ppettit)
+ * Allowed "auto" framerate option for blackmagic pipeline #561
+ * Improved logger for plugin load errors #527 (ppettit)
+ * Sending offline status to Opencast before closing Galicaster (OC > 2.3.0) #455
+ * Added tags conf option to profile tracks. #575
+ * Added default (series) conf option for unscheduled recordings #468
+ * Refactored profile validation logic #510 (ppettit)
+ * Added pausedialog_size conf option #515 (ppettit)
+ * Added LDAP login to lockscreen plugin
+ * Added checkspace plugin #438
+ * Added CONTRIBUTING.md file (Contributing Guidelines)
  * Improved cURL and StringIO handling in the Opencast client #562 (sinhote)
  * Fixed scheduler logic by using DTSTART instead of dcterm:temporal #567
  * Removed duplicated cameracontrol external plugin (has its own repo)
  * Added "version" option to run_galicaster.py (pmgration)
  * Fixed get_recording_start_time() returning wrong duration when pipeline is paused #559 (pmgration)
  * Added "dcterm:temporal" to newly created mps #570
- * Added "Close button" to about window when none appears (details in commit: ebfde66)
+ * Added "Close button" to about window when none appears #559
 
 * 2.0.2 (2017-09-28)
  * Improved profile validation #507 (ppettit)
