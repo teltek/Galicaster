@@ -429,7 +429,7 @@ class Mediapackage(object):
         date = date or datetime.utcnow().replace(microsecond = 0)
         self.date = date
         self.metadata_episode = {"title" : title, "identifier" : identifier,
-                                 "creator" : presenter, "created" : self.date, "temporal": self.date}
+                                 "creator" : presenter, "created" : self.date}
 
         self.metadata_series = {'identifier': None,
                                 'title': None}
