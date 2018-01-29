@@ -467,7 +467,7 @@ def set_episode(mp):
         except KeyError:
             continue
 
-    if 'temporal' not in mp.metadata_episode:
+    if 'temporal' not in mp.metadata_episode and mp.getDuration():
         elem = doc.createElement("dcterms:temporal" )
         start = mp.getDate().isoformat() + "Z"
         end = (mp.getDate() + timedelta(seconds=mp.getDuration()/1000)).isoformat() + "Z"
