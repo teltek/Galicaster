@@ -219,10 +219,11 @@ class RecorderService(object):
     def enqueue_ingest(self, mp):
         if self.conf.get_boolean("ingest", "active"):
             code = 'manual' if mp.manual else 'scheduled'
+            params = mp.getProperty("enqueue_params")
             if self.conf.get_lower('ingest', code) == 'immediately':
-                self.worker.enqueue_job_by_name('ingest', mp)
+                self.worker.enqueue_job_by_name('ingest', mp, params)
             elif self.conf.get_lower('ingest', code) == 'nightly':
-                self.worker.enqueue_nightly_job_by_name('ingest', mp)
+                self.worker.enqueue_nightly_job_by_name('ingest', mp, params)
 
     def pause(self):
         self.logger.info("Pausing recorder")
