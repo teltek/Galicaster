@@ -19,6 +19,10 @@ from galicaster.core import context
 import threading
 
 timer = False
+dispatcher = None
+logger = None
+timeout = None
+t = None
 
 def init():
     global dispatcher, logger, timeout
