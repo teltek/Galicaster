@@ -296,17 +296,21 @@ class Worker(object):
         return os.path.join(self.export_path, name + '.' + extension)
 
 
-    def _ingest(self, mp, params={}):
+    def _ingest(self, mp, params=None):
         """Tries to immediately ingest the mediapackage into opencast.
         If the ingest cannot be done, logger prints it properly.
         Args:
-            mp(Mediapackage): the mediapackage to be immediately ingested.
+            mp (Mediapackage): the mediapackage to be immediately ingested.
+            params (dict): workflow and workflow_parameters for ingesting.
         """
         if not self.oc_client:
             raise Exception('Opencast client is not enabled')
 
-        workflow = None if not "workflow" in params else params["workflow"]
-        workflow_parameters = None if not "workflow_parameters" in params else params["workflow_parameters"]
+        workflow = None
+        workflow_parameters = None
+        if isinstance(params, dict):
+            workflow = params.get('workflow')
+            workflow_parameters = params.get('workflow_parameters')
 
         self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
 
