@@ -33,7 +33,7 @@ class Base(object):
             "description": "Opencast flavor associated to the track",
             },
         "tags": {
-            "type": "tags",
+            "type": "list",
             "default": [],
             "description": "Opencast tags associated to the track",
         },
