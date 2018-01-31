@@ -19,16 +19,21 @@ This module contains:
     the Element superclass.
 """
 
+import json
 import uuid
 import time
 import os
 from os import path
 from datetime import datetime
 from xml.dom import minidom
+
+from galicaster.core import context
 from galicaster.mediapackage.utils import _checknget, read_ini
 
 from galicaster.utils.mediainfo import get_duration
 from galicaster.utils.i18n import _
+
+logger = context.get_logger()
 
 # Mediapackage Status
 NEW = 0
@@ -1520,26 +1525,39 @@ class Mediapackage(object):
 
     def setProperty(self, prop=None, value=None):
         """Sets the value of a property in the mediapackage.
+        The enqueue_params property will be JSON serialized.
         Args:
             prop (str): the name of the property.
-            value (str): the new value of the property name.
+            value (str): the new value of the property.
         """
         if not prop or value is None:
             return None
-        else:
-            self.properties[prop] = value
-            return True
+        property_value = value
+        if prop == "enqueue_params":
+            try:
+                property_value = json.dumps(value)
+            except Exception:
+                logger.warn('Unable to serialize property {} of media package {}'.format(prop, self.getIdentifier()))
+                return False
+        self.properties[prop] = property_value
+        return True
 
 
     def getProperty(self, prop=None):
         """Gets the property specified of the mediapackage.
+        When specifying the enqueue_params property the object returned will be
+        the result of JSON deserialization.
+        See https://docs.python.org/2/library/json.html#encoders-and-decoders
         Returns:
             Obj: the object with the value of the property specified
         """
-        if not prop:
-            return None
-        else:
-            if prop in self.properties:
-                return self.properties[prop]
-            else:
+        if prop and prop in self.properties:
+            property_string = self.properties[prop]
+            if prop == "enqueue_params":
+                try:
+                    return json.loads(property_string)
+                except Exception:
+                    logger.warn('Unable to deserialize property {} of media package {}'.format(prop, self.getIdentifier()))
                 return None
+            return property_string
+        return None
