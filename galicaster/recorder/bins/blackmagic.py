@@ -130,9 +130,9 @@ class GCblackmagic(Gst.Bin, base.Base):
       },
     "subdevice" : {
       "type": "select",
-      "default": 0,
+      "default": '0',
       "options": [
-        0,1,2,3
+        '0','1','2','3'
         ],
       "description": "Select a Blackmagic card from a maximum of 4 devices",
       },
@@ -183,7 +183,7 @@ class GCblackmagic(Gst.Bin, base.Base):
     "deinterlace" : {
       "type": "select",
       "default": "",
-      "options": ["auto", "interlaced", "auto-strict"],
+      "options": ["", "auto", "interlaced", "auto-strict"],
       "description": "Deinterlace mode",
     },
     "caps-preview" : {
@@ -216,7 +216,7 @@ class GCblackmagic(Gst.Bin, base.Base):
         aux = (pipestr.replace('gc-vsink', gcvideosink)
                .replace('gc-blackmagic-conn', self.options['input'])
                .replace('gc-blackmagic-mode', self.options['input-mode'])
-               .replace('gc-blackmagic-subd', str(self.options['subdevice']))
+               .replace('gc-blackmagic-subd', self.options['subdevice'])
                .replace('gc-blackmagic-enc', self.options['videoencoder'])
                .replace('gc-blackmagic-muxer', self.options['muxer']+" name=gc-blackmagic-muxer")
                )
