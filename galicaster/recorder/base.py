@@ -76,6 +76,8 @@ class Base(object):
                 gc_parameter = self.gc_parameters[k]
             if v is not None:
                 error, self.options[k] = validator.parse_validate(k, v, gc_parameter)
+                if error:
+                    self.logger.error(error)
 
         # Sanitaze values
         self.options["name"] = re.sub(r'\W+', '', self.options["name"])
