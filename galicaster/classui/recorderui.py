@@ -111,6 +111,8 @@ class RecorderClassUI(Gtk.Box):
         self.vumeterL = builder.get_object("progressbarL")
         self.vumeterR = builder.get_object("progressbarR")
         self.label_channels= builder.get_object("label_channels")
+        self.low_audio = False
+        self.lowaudio_threshold = self.conf.get_float('lowaudio','lowaudio_threshold')
 
         # SWAP
         if not self.conf.get_boolean('basic', 'swapvideos'):
@@ -192,13 +194,18 @@ class RecorderClassUI(Gtk.Box):
 
         average = (data + data2)/2.0
         if not self.mute:
+            if self.lowaudio_threshold and average < (self.lowaudio_threshold):
+                self.dispatcher.emit("low-audio")
+                self.low_audio = True
             if average < (self.thresholdVum):
                 self.dispatcher.emit("audio-mute")
                 self.mute = True
         if self.mute and average > (self.thresholdVum + 5.0):
             self.dispatcher.emit("audio-recovered")
             self.mute = False
-
+        if self.low_audio and self.lowaudio_threshold and average > (self.lowaudio_threshold + 5.0):
+            self.dispatcher.emit("low-audio-recovered")
+            self.low_audio = False
 
         if data < -self.rangeVum:
             valor = 1
