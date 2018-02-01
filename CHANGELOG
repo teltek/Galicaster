@@ -6,6 +6,7 @@ To get the diff for a specific change, go to https://github.com/teltek/galicaste
 To get the diff between two versions, go to https://github.com/teltek/galicaster/compare/1.2.1...1.2.3
 
 * Unreleased
+ * Added lowaudio plugin #495
  * Added multistream bin #512 (ppettit)
  * Allowed "auto" framerate option for blackmagic pipeline #561
  * Improved logger for plugin load errors #527 (ppettit)
