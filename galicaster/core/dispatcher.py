@@ -83,6 +83,9 @@ GObject.signal_new('audio-mute', Dispatcher, GObject.SignalFlags.RUN_LAST, None,
 GObject.signal_new('audio-recovered', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('action-audio-enable-msg', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
 GObject.signal_new('action-audio-disable-msg', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
+GObject.signal_new('low-audio', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
+GObject.signal_new('low-audio-recovered', Dispatcher, GObject.SignalFlags.RUN_LAST, None, () )
+
 #PLAYER
 GObject.signal_new('player-vumeter', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,GObject.TYPE_PYOBJECT,) )
 GObject.signal_new('player-status', Dispatcher, GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_PYOBJECT,) )
