@@ -29,14 +29,15 @@ def get_events_from_string_ical(ical_data, limit=0, logger=None):
         f = getattr(Calendar, 'from_ical', getattr(Calendar, 'from_string', None))
         cal = f(ical_data)
         if limit > 0:
-            events = cal.walk('vevent')[count:limit+count]
+            #FIXME: In Opencast 4 iCal events can be returned in any order, use cutoff OC parameter instead of sort the events #569
+            events = sorted(cal.walk('vevent'), key=lambda event: event['DTSTART'].dt.replace(tzinfo=None))[count:limit+count]
             for event in events:
                 if event['DTEND'].dt.replace(tzinfo=None) < datetime.utcnow():
                     count += 1
             if count > 0:
-                events = cal.walk('vevent')[count:limit+count]
+                events = sorted(cal.walk('vevent'), key=lambda event: event['DTSTART'].dt.replace(tzinfo=None))[count:limit+count]
         else:
-            events = cal.walk('vevent')
+            events = sorted(cal.walk('vevent'), key=lambda event: event['DTSTART'].dt.replace(tzinfo=None))
 
         return events
     except Exception:
@@ -168,8 +169,6 @@ def create_mp(repo, event):
 
 def handle_ical(ical_data, last_events, repo, scheduler, logger):
     if ical_data:
-
-
         try:
             events = get_events_from_string_ical(ical_data, limit=100)
             if last_events:
