@@ -44,15 +44,21 @@ class TestFunctions(TestCase):
             ical.create_mp(repo, event)
 
         next = repo.get_next_mediapackage()
-        self.assertEqual(next.getDate(), datetime.strptime('2019-04-05 11:00:00', '%Y-%m-%d %H:%M:%S'))
+        self.assertEqual(next.getDate(), datetime.strptime('3016-04-05 11:00:00', '%Y-%m-%d %H:%M:%S'))
         self.assertEqual(len(next.getElements()), 2)
         self.assertEqual(len(next.getAttachments()), 1)
         self.assertTrue(next.getAttachment('org.opencastproject.capture.agent.properties'))
         self.assertEqual(len(next.getCatalogs()), 1)
 
         nexts = repo.get_next_mediapackages()
-        self.assertEqual(nexts[0].getDate(), datetime.strptime('2019-04-05 11:00:00', '%Y-%m-%d %H:%M:%S'))
+        self.assertEqual(nexts[0].getDate(), datetime.strptime('3016-04-05 11:00:00', '%Y-%m-%d %H:%M:%S'))
 
+    def test_ical_get_events(self):
+        events = ical.get_events_from_file_ical(path.join(self.base_dir, 'past_unordered_events.ical'))
+        self.assertEqual(len(events), 6)
+
+        events = ical.get_events_from_file_ical(path.join(self.base_dir, 'past_unordered_eventsv2.ical'))
+        self.assertEqual(len(events), 4)
 
     def test_ical_get_deleted_events(self):
         old_events = ical.get_events_from_file_ical(path.join(self.base_dir, 'test.ical'))
