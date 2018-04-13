@@ -20,28 +20,19 @@ from icalendar import Calendar
 from galicaster.mediapackage import mediapackage
 from galicaster.utils.systemcalls import execute
 
-count = 0
-
 def get_events_from_string_ical(ical_data, limit=0, logger=None):
-    global count
-    # See https://github.com/collective/icalendar#api-change
     try:
-        f = getattr(Calendar, 'from_ical', getattr(Calendar, 'from_string', None))
-        cal = f(ical_data)
+        cal = Calendar.from_ical(ical_data)
+        now = datetime.utcnow()
+        events = [e for e in cal.walk('vevent') if e['DTEND'].dt.replace(tzinfo=None) >= now]
+        events = sorted(events, key=lambda event: event['DTSTART'].dt.replace(tzinfo=None))
+
         if limit > 0:
-            #FIXME: In Opencast 4 iCal events can be returned in any order, use cutoff OC parameter instead of sort the events #569
-            events = sorted(cal.walk('vevent'), key=lambda event: event['DTSTART'].dt.replace(tzinfo=None))[count:limit+count]
-            for event in events:
-                if event['DTEND'].dt.replace(tzinfo=None) < datetime.utcnow():
-                    count += 1
-            if count > 0:
-                events = sorted(cal.walk('vevent'), key=lambda event: event['DTSTART'].dt.replace(tzinfo=None))[count:limit+count]
-        else:
-            events = sorted(cal.walk('vevent'), key=lambda event: event['DTSTART'].dt.replace(tzinfo=None))
+            events = events[:limit]
 
         return events
-    except Exception:
-        logger and logger.error("There was an error processing calendar.ical file")
+    except Exception as exc:
+        logger and logger.error("There was an error processing calendar.ical file: {}".format(exc))
         return None
 
 def get_events_from_file_ical(ical_file, limit=0, logger=None):
@@ -170,7 +161,7 @@ def create_mp(repo, event):
 def handle_ical(ical_data, last_events, repo, scheduler, logger):
     if ical_data:
         try:
-            events = get_events_from_string_ical(ical_data, limit=100)
+            events = get_events_from_string_ical(ical_data, limit=100, logger=logger)
             if last_events:
                 delete_events = get_deleted_events(last_events, events)
                 update_events = get_updated_events(last_events, events)
