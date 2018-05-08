@@ -16,6 +16,7 @@
 Unit tests for `galicaster.serializer` module.
 """
 import zipfile
+import json
 from os import path,remove
 from shutil import rmtree
 from tempfile import mkdtemp, mkstemp
@@ -76,7 +77,7 @@ class TestFunctions(TestCase):
             raise AssertionError("Error in serializer.set_episode")
 
         try:
-            parseString(serializer.set_properties(mp))
+            json.loads(serializer.set_properties(mp))
         except ExpatError:
             raise AssertionError("Error in serializer.set_properties")
 
