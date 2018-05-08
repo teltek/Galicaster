@@ -14,6 +14,7 @@
 
 # TODO:
 # * metadata dict in mediapackage *33
+import json
 import os
 import zipfile
 from datetime import datetime
@@ -57,9 +58,14 @@ def save_in_dir(mp, logger=None, directory=None):
     m2.close()
 
     # Galicaster properties
-    m = open(path.join(directory or mp.getURI(), 'galicaster.xml'), 'w')
+    m = open(path.join(directory or mp.getURI(), 'galicaster.json'), 'w')
     m.write(set_properties(mp))
     m.close()
+    try:
+        # Pythonically remove old galicaster.xml file
+        os.remove(path.join(directory or mp.getURI(), 'galicaster.xml'))
+    except OSError: # For python > 3.3, use with suppress(FileNotFoundError):
+        pass
 
     # Series
     if mp.getSeriesIdentifier != None:
@@ -175,7 +181,6 @@ if ziptype == "system":
 else:
     save_in_zip = save_native_zip
 
-
 def set_properties(mp):
     """Creates the string for galicaster properties.
     Args:
@@ -183,35 +188,15 @@ def set_properties(mp):
     Returns:
         Str: serialized galicaster properties.
     """
-    doc = minidom.Document()
-    galicaster = doc.createElement("galicaster")
-    doc.appendChild(galicaster)
-    status = doc.createElement("status")
-    stext = doc.createTextNode(unicode(mp.status))
-    status.appendChild(stext)
-    galicaster.appendChild(status)
+    galicaster_json = {
+        'galicaster':{
+            'status': mp.status,
+            'operations': mp.operation,
+            'properties': mp.properties,
+        }
+    }
 
-    operations = doc.createElement("operations")
-    galicaster.appendChild(operations)
-    for (op_name, op_value) in mp.operation.iteritems():
-        operation = doc.createElement("operation")
-        operation.setAttribute("key", op_name)
-        status = doc.createElement("status")
-        text = doc.createTextNode(unicode(op_value))
-        status.appendChild(text)
-        operation.appendChild(status)
-        operations.appendChild(operation)
-
-    properties = doc.createElement("properties")
-    galicaster.appendChild(properties)
-    for (prop_name, prop_value) in mp.properties.iteritems():
-        prop = doc.createElement("property")
-        prop.setAttribute("name", prop_name)
-        text = doc.createTextNode(unicode(prop_value))
-        prop.appendChild(text)
-        properties.appendChild(prop)
-
-    return doc.toprettyxml(indent="   ", newl="\n", encoding="utf-8")
+    return json.dumps(galicaster_json, sort_keys=True, indent=4, separators=(',', ': '))
 
 def set_manifest(mp, use_namespace=True):
     """Creates the manifest xml.
