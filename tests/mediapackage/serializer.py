@@ -122,7 +122,7 @@ class TestFunctions(TestCase):
     def test_operation_status(self):
         mp = mediapackage.Mediapackage()
         mp.add(self.track1)
-        mp.operation["ingest"] = 4
+        mp.operations["ingest"] = 4
         mp.marshalDublincore()
         da = minidom.parseString(serializer.set_properties(mp))
         name = "key:ingest"

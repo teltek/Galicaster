@@ -113,4 +113,10 @@ def fromXML(xml, logger=None):
                 mp.status = mediapackage.RECORDED
 
     mp.marshalDublincore()
+
+    # To rewrite the galicaster.xml file with a galicaster.json file
+    if not galicaster_json:
+        from galicaster.mediapackage import serializer
+        serializer.save_in_dir(mp)
+
     return mp

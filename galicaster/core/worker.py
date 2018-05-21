@@ -499,7 +499,7 @@ class Worker(object):
         """
         self.logger.info('Executing nightly process')
         for mp in self.repo.values():
-            for (op_name, op_status) in mp.operation.iteritems():
+            for (op_name, op_status) in mp.operations.iteritems():
                 if op_status == mediapackage.OP_NIGHTLY:
                     params = {}
                     if mp.getProperty("enqueue_params"):

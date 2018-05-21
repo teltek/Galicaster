@@ -280,7 +280,7 @@ class Repository(object):
         if mp.status > mediapackage.FAILED:
             mp.status = mediapackage.RECORDED
             change = True
-        for (op_name, op_value) in mp.operation.iteritems():
+        for (op_name, op_value) in mp.operations.iteritems():
             if op_value in [mediapackage.OP_PROCESSING, mediapackage.OP_PENDING]:
                 mp.setOpStatus(op_name, mediapackage.OP_FAILED)
                 change = True
