@@ -366,9 +366,8 @@ def set_manifest_json(mp):
 
     # OPERATIONS STATUS
     mp_json["operations"] = {}
-    mp_json["operations"]["ingest"] = mp.getOpStatus("ingest")
-    mp_json["operations"]["exporttozip"] = mp.getOpStatus("exporttozip")
-    mp_json["operations"]["sidebyside"] = mp.getOpStatus("sidebyside")
+    for op, status in mp.operations.iteritems():
+        mp_json["operations"][op] = status
 
     # MEDIA - TRACKS
     mp_json['media'] = {}
