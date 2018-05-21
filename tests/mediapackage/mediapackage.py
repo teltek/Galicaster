@@ -208,7 +208,7 @@ class TestFunctions(TestCase):
     def test_mp_and_operations(self):
         xml = path.join(self.baseDir, 'manifest.xml')
         mp = fromXML(xml)
-        self.assertEqual(0, len(mp.operation))
+        self.assertEqual(0, len(mp.operations))
 
 
     def test_properties(self):

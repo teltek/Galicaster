@@ -191,7 +191,7 @@ def set_properties(mp):
     galicaster_json = {
         'galicaster':{
             'status': mp.status,
-            'operations': mp.operation,
+            'operations': mp.operations,
             'properties': mp.properties,
         }
     }

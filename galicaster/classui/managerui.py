@@ -190,7 +190,7 @@ class ManagerUI(Gtk.Box):
             text['text'] = text['text'] + _("Ingest disabled because of network problems. ")
 
         for job in day:
-            op_state = package.operation[job.lower().replace(" ", "")]
+            op_state = package.operations[job.lower().replace(" ", "")]
             if op_state == mediapackage.OP_DONE:
                 text['text']=text['text'] + "\n" + _("{0} already performed").format(OPERATION_NAMES.get(job, job))
             elif op_state == mediapackage.OP_NIGHTLY:

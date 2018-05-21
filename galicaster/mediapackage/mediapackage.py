@@ -445,7 +445,7 @@ class Mediapackage(object):
         self.__duration = None
         self.__howmany = dict( (k, 0) for k in ELEMENT_TYPES )
 
-        self.operation = dict()
+        self.operations = dict()
         self.properties = {'notes':'', 'origin': ''}
         self.elements = dict()
 
@@ -836,10 +836,10 @@ class Mediapackage(object):
         Returns:
             Int: the status of the operation received.
         """
-        if name in self.operation:
-            return self.operation[name]
+        if name in self.operations:
+            return self.operations[name]
 
-        self.operation[name] = OP_IDLE
+        self.operations[name] = OP_IDLE
         return OP_IDLE
 
     def setOpStatus(self, name, value):
@@ -848,7 +848,7 @@ class Mediapackage(object):
             name (Str): name of the operation whose status is going to be set.
             value (int): the status to be set.
         """
-        self.operation[name] = value
+        self.operations[name] = value
 
     def isScheduled(self):
         """ Checks if the status of the MP is scheduled
