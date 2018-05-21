@@ -1,0 +1,13 @@
+{
+    "galicaster": {
+        "operations": {
+            "ingest": 1,
+            "zip": 5
+        },
+        "properties": {
+            "notes": "",
+            "origin": ""
+        },
+        "status": 5
+    }
+}
