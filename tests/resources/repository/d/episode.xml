@@ -1,1 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?><dublincore xmlns="http://www.opencastproject.org/xsd/1.0/dublincore/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance/"><dcterms:title>D</dcterms:title><dcterms:identifier>dae91194-2114-481b-8908-8a8962baf8dd</dcterms:identifier><dcterms:created>2011-05-06T17:53:07Z</dcterms:created></dublincore>
+<?xml version="1.0" encoding="utf-8"?>
+<dublincore xmlns="http://www.opencastproject.org/xsd/1.0/dublincore/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance/">
+   <dcterms:created>2011-05-06T17:53:07Z</dcterms:created>
+   <dcterms:identifier>dae91194-2114-481b-8908-8a8962baf8dd</dcterms:identifier>
+   <dcterms:title>D</dcterms:title>
+   <dcterms:temporal>start=2011-05-06T17:54:04Z; end=2011-05-06T17:54:06Z; scheme=W3C-DTF;</dcterms:temporal>
+</dublincore>

@@ -181,7 +181,7 @@ class TestFunctions(TestCase):
     def test_mediapackage_size(self):
         xml = path.join(self.baseDir, 'manifest.xml')
         mp = fromXML(xml)
-        self.assertEqual(mp.getSize(), 598)
+        self.assertEqual(mp.getSize(), 526)
 
 
     def test_mediapackage_get_oc_capture_agent_property(self):
@@ -190,7 +190,7 @@ class TestFunctions(TestCase):
 
         self.assertEqual(mp.getOCCaptureAgentProperty('capture.device.names'), 'camera,screen,audio')
         self.assertNotEqual(mp.getOCCaptureAgentProperty('capture.device.names.error'), 'camera,screen,audio')
-        
+
         mp2 = mediapackage.Mediapackage()
         self.assertNotEqual(mp2.getOCCaptureAgentProperty('capture.device.names'), 'camera,screen,audio')
 
