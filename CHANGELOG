@@ -6,6 +6,7 @@ To get the diff for a specific change, go to https://github.com/teltek/galicaste
 To get the diff between two versions, go to https://github.com/teltek/galicaster/compare/1.2.1...1.2.3
 
 * 2.2.0 (Unreleased)
+ * Added script_button plugin: Allows configuring a button for the Galicaster UI that executes a script
  * Edited default recording title to include the capture agent name
  * Changed the galicaster.xml file to json format. Updated mp test files.
 
