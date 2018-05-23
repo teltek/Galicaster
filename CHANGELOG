@@ -5,6 +5,10 @@ Web version of the changelog in http://wiki.teltek.es/display/Galicaster/Release
 To get the diff for a specific change, go to https://github.com/teltek/galicaster/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/teltek/galicaster/compare/1.2.1...1.2.3
 
+* 2.2.0 (Unreleased)
+ * Edited default recording title to include the capture agent name
+ * Changed the galicaster.xml file to json format. Updated mp test files.
+
 * 2.1.1 (Unreleased)
  * Improved ical logic: Solves existing issues. Supports an unordered events ical
  * Fixed error when inserting non-unicode characters in the presenter metadata field
