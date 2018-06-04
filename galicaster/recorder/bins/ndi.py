@@ -11,6 +11,7 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
+import re
 from os import path
 
 from gi.repository import Gst
@@ -44,7 +45,7 @@ class GCndi(Gst.Bin, base.Base):
         "location": {
             "type": "text",
             "default": None,
-            "description": "NDI stream name",
+            "description": "NDI stream ip or name",
             },
         "file": {
             "type": "text",
@@ -118,8 +119,12 @@ class GCndi(Gst.Bin, base.Base):
         bin = Gst.parse_launch("( {} )".format(aux))
         self.add(bin)
 
+        test_ip = re.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$")
         if self.options['location']:
-            self.set_option_in_pipeline('location', 'gc-ndi-src', 'stream-name')
+            if test_ip.match(self.options['location']):
+                self.set_option_in_pipeline('location', 'gc-ndi-src', 'ip')
+            else:
+                self.set_option_in_pipeline('location', 'gc-ndi-src', 'stream-name')
 
         self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-ndi-sink', 'location')
 
