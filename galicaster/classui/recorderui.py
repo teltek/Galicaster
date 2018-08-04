@@ -252,6 +252,9 @@ class RecorderClassUI(Gtk.Box):
         self.pause_dialog.destroy()
         Gdk.threads_leave()
 
+    def hide_pause_dialog(self):
+        self.pause_dialog.destroy()
+
     def create_pause_dialog(self, parent):
         gui = Gtk.Builder()
         gui.add_from_file(get_ui_path("paused.glade"))
@@ -694,8 +697,6 @@ class RecorderClassUI(Gtk.Box):
         swapb = self.gui.get_object("swapbutton")
 
         if status == INIT_STATUS:
-            if self.pause_dialog:
-                self.pause_dialog.destroy()
             record.set_sensitive(False)
             pause.set_sensitive(False)
             stop.set_sensitive(False)
@@ -735,7 +736,6 @@ class RecorderClassUI(Gtk.Box):
             prevb.set_sensitive(False)
             helpb.set_sensitive(False)
             editb.set_sensitive(False)
-            GLib.idle_add(self.show_pause_dialog)
 
         elif status == ERROR_STATUS:
             record.set_sensitive(False)
@@ -746,6 +746,12 @@ class RecorderClassUI(Gtk.Box):
             editb.set_sensitive(False)
             if self.focus_is_active:
                 self.launch_error_message()
+
+        if status == PAUSED_STATUS:
+            GLib.idle_add(self.show_pause_dialog)
+        else:
+            if self.pause_dialog:
+                GLib.idle_add(self.hide_pause_dialog)
 
         # Change status label
         if status in STATUSES:
