@@ -23,7 +23,7 @@ TODO:
 """
 
 from gi.repository import GObject
-from gi.repository import Gtk, Gdk, GdkPixbuf
+from gi.repository import Gtk, Gdk, GdkPixbuf, GLib
 from gi.repository import Pango
 import datetime
 
@@ -244,11 +244,13 @@ class RecorderClassUI(Gtk.Box):
             logger.debug("Pausing Recording")
             self.recorder.pause()
 
-            self.pause_dialog = self.create_pause_dialog(self.get_toplevel())
-            if self.pause_dialog.run() == 1:
-                self.on_pause(None)
-            self.pause_dialog.destroy()
-
+    def show_pause_dialog(self):
+        self.pause_dialog = self.create_pause_dialog(self.get_toplevel())
+        Gdk.threads_enter()
+        if self.pause_dialog.run() == 1:
+            self.on_pause(None)
+        self.pause_dialog.destroy()
+        Gdk.threads_leave()
 
     def create_pause_dialog(self, parent):
         gui = Gtk.Builder()
@@ -733,6 +735,7 @@ class RecorderClassUI(Gtk.Box):
             prevb.set_sensitive(False)
             helpb.set_sensitive(False)
             editb.set_sensitive(False)
+            GLib.idle_add(self.show_pause_dialog)
 
         elif status == ERROR_STATUS:
             record.set_sensitive(False)
