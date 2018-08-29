@@ -1,17 +1,25 @@
 # Contributing to Galicaster
 
+1. [General Guidelines](#general-guidelines)
+   1. [Questions and support](#questions-and-support)
+   2. [Report issues](#report-issues)
+   3. [Contribute code](#contribute-code)
+2. [Committers](#committers)
+3. [Reviewing Rules](#reviewing-rules)
+
+## General Guidelines
 First of all, thanks for contributing to the Galicaster project!
 
 Below are some guidelines that will help you to contribute to this project.
 
-## Questions and support
+### Questions and support
 
 If you have a problem with Galicaster, want to discuss a new feature or have any doubts regarding this project, consider subscribing to the galicaster community mailing list (community@galicaster.org) through this [SUBSCRIBE LINK](http://groups.google.com/a/galicaster.org/group/community/subscribe).
 
 Feel free to send any questions you may have regarding Galicaster there.
 
 
-## Report issues
+### Report issues
                 
 Please give as much detail as possible:
 
@@ -20,9 +28,9 @@ Please give as much detail as possible:
 3. If it is a recording issue, include the profile and/or conf.ini file with the tracks configuration. Include the hardware you are using as well.
 4. Feel free to add any other details you think may be relevant.
 
-## Contribute code
+### Contribute code
 
-### Guidelines
+#### Guidelines
 * All new features must be contributed to master.
 * All bugfixes should be contributed to the first affected release branch.
 * Features or bug fixes that don't merge cleanly won't be accepted. You should solve any conflicts by rebasing your code with the origin branch to avoid extra *merge commits*.
@@ -31,10 +39,18 @@ Please give as much detail as possible:
 * If you are submitting a bugfix, it's encouraged to **add a test** reproducing the bug. Make sure that the test fails if the fix is not applied.
 * Try to follow PEP8. The line-length limit can be ignored if following it makes the code less readable.
 
-### Branching model
+#### Branching model
 We are using a model inspired by Vincent Driessen's [git-flow](http://nvie.com/posts/a-successful-git-branching-model/). The main difference between our model and his is that we don't have a branch named **develop**. We use the **master** branch instead to hold the latest version of the code.
 
 For a better explanation, here is a picture of our model:
 
 ![git-flow-image](docs/git-flow.jpg)
 
+## Committers
+
+For more information about the commiter role, check out the Committers section of the Developer docs: [Committers.md](https://github.com/teltek/Galicaster-doc/blob/master/DeveloperGuide/Committers.md)
+
+## Reviewing Rules
+
+For more information about the reviewing rules, check out the Reviewing Rules section section of the Developer docs: [ReviewingRules.md](https://github.com/teltek/Galicaster-doc/blob/master/DeveloperGuide/ReviewingRules.md)
+ 
