@@ -19,7 +19,7 @@ from gi.repository import Gst
 from galicaster.recorder import base
 from galicaster.recorder.utils import get_videosink, get_audiosink
 
-videostr = (' ndivideosrc name=gc-ndi-src ! capsfilter name=gc-ndi-filter ! videobox name=gc-ndi-videobox top=0 bottom=0 ! videorate ! '
+videostr = (' ndivideosrc name=gc-ndi-src ! videoconvert ! videobox name=gc-ndi-videobox top=0 bottom=0 ! videorate ! '
            ' tee name=gc-ndi-tee ! caps-preview ! gc-vsink '
            ' gc-ndi-tee. ! queue ! valve drop=false name=gc-ndi-valve ! videoconvert ! queue ! '
            ' gc-ndi-enc ! queue ! gc-ndi-mux ! '
@@ -178,8 +178,6 @@ class GCndi(Gst.Bin, base.Base):
                 self.set_option_in_pipeline('location', 'gc-ndi-audiosrc', 'stream-name')
 
         self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-ndi-sink', 'location')
-
-        # self.set_option_in_pipeline('caps', 'gc-ndi-filter', 'caps', None)
 
         # Audio properties
         if self.has_audio:
