@@ -483,15 +483,24 @@ class RecorderClassUI(Gtk.Box):
         """Create as preview areas as video sources exits"""
         main = self.main_area
 
-        for child in main.get_children():
-            main.remove(child)
-            child.destroy()
-
         if self.swap:
             sources.reverse()
 
+        sources_num = len(sources)
+        i = 0
         areas = dict()
-        for source in sources:
+        for child in main.get_children():
+            if i > sources_num:
+                main.remove(child)
+                child.destroy()
+                continue
+            source = sources[i]
+            child.set_name(source)
+            child.modify_bg(Gtk.StateType.NORMAL, Gdk.color_parse("black"))
+            areas[source] = child
+            i+=1
+
+        for source in sources[i:]:
             new_area = Gtk.DrawingArea()
             new_area.set_name(source)
             new_area.modify_bg(Gtk.StateType.NORMAL, Gdk.color_parse("black"))
