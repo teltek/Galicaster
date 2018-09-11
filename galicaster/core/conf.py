@@ -337,24 +337,22 @@ class Conf(object): # TODO list get and other ops arround profile
 
 
     def get_json(self, sect, opt, default={}):
-        """Tries to return a set of values of an option in a section as a dictionary.
-        If else returns the given default value.
+        """Try to return JSON deserialized version of a config option
+        Otherwise returns the given default value.
         Args:
             sect (str): section of configuration file.
             opt (str): option of configuration file.
             default (str): default output if there is no value.
         Returns:
-            Dict: the set of values of option opt in section sect if there are no error. Default otherwise.
-        Note:
-        key = {"foo":["bar", null, 1.0, 2]}
+            Object: see JSON conversion table below. Default otherwise.
+            https://docs.python.org/2/library/json.html#json-to-py-table
         """
-        dictionary = {}
         if self.get(sect, opt):
             try:
-                dictionary = json.loads(self.get(sect, opt))
+                return json.loads(self.get(sect, opt))
             except Exception as exc:
-                self.logger and self.logger.warning('Error obtaining a json dictionary from "{0}" in section "{1}", FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
-        return dictionary if dictionary else default
+                self.logger and self.logger.warning('Error deserializing JSON from "{0}" in section "{1}", FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
+        return default
 
 
     def get_section(self, sect, default={}):
