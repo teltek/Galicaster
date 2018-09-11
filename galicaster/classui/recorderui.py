@@ -23,7 +23,7 @@ TODO:
 """
 
 from gi.repository import GObject
-from gi.repository import Gtk, Gdk, GdkPixbuf
+from gi.repository import Gtk, Gdk, GdkPixbuf, GLib
 from gi.repository import Pango
 import datetime
 
@@ -244,11 +244,16 @@ class RecorderClassUI(Gtk.Box):
             logger.debug("Pausing Recording")
             self.recorder.pause()
 
-            self.pause_dialog = self.create_pause_dialog(self.get_toplevel())
-            if self.pause_dialog.run() == 1:
-                self.on_pause(None)
-            self.pause_dialog.destroy()
+    def show_pause_dialog(self):
+        self.pause_dialog = self.create_pause_dialog(self.get_toplevel())
+        Gdk.threads_enter()
+        if self.pause_dialog.run() == 1:
+            self.on_pause(None)
+        self.pause_dialog.destroy()
+        Gdk.threads_leave()
 
+    def hide_pause_dialog(self):
+        self.pause_dialog.destroy()
 
     def create_pause_dialog(self, parent):
         gui = Gtk.Builder()
@@ -701,8 +706,6 @@ class RecorderClassUI(Gtk.Box):
         swapb = self.gui.get_object("swapbutton")
 
         if status == INIT_STATUS:
-            if self.pause_dialog:
-                self.pause_dialog.destroy()
             record.set_sensitive(False)
             pause.set_sensitive(False)
             stop.set_sensitive(False)
@@ -752,6 +755,12 @@ class RecorderClassUI(Gtk.Box):
             editb.set_sensitive(False)
             if self.focus_is_active:
                 self.launch_error_message()
+
+        if status == PAUSED_STATUS:
+            GLib.idle_add(self.show_pause_dialog)
+        else:
+            if self.pause_dialog:
+                GLib.idle_add(self.hide_pause_dialog)
 
         # Change status label
         if status in STATUSES:
