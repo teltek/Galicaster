@@ -19,8 +19,8 @@ from gi.repository import Gst
 from galicaster.recorder import base
 from galicaster.recorder.utils import get_videosink, get_audiosink
 
-videostr = (' ndivideosrc name=gc-ndi-src ! videoconvert ! videobox name=gc-ndi-videobox top=0 bottom=0 ! videorate ! '
-           ' tee name=gc-ndi-tee ! caps-preview ! gc-vsink '
+videostr = (' ndivideosrc name=gc-ndi-src ! queue ! videoconvert ! videobox name=gc-ndi-videobox top=0 bottom=0 ! videorate ! '
+           ' tee name=gc-ndi-tee ! queue ! caps-preview ! gc-vsink '
            ' gc-ndi-tee. ! queue ! valve drop=false name=gc-ndi-valve ! videoconvert ! queue ! '
            ' gc-ndi-enc ! queue ! gc-ndi-mux ! '
            ' queue ! filesink name=gc-ndi-sink async=false')
