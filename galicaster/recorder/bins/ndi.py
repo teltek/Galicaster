@@ -142,8 +142,8 @@ class GCndi(Gst.Bin, base.Base):
         Gst.Bin.__init__(self)
 
         pipestr = videostr
-        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
-        gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-audio-'+self.options['name'])
+        gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'], properties={"sync":"true"})
+        gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-audio-'+self.options['name'], properties={"sync":"true"})
         aux = (pipestr.replace('gc-vsink', gcvideosink)
                .replace('gc-ndi-enc', self.options['videoencoder'])
                .replace('gc-ndi-mux', self.options['muxer'] + " name=gc-ndi-mux"))
