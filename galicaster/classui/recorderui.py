@@ -406,13 +406,6 @@ class RecorderClassUI(Gtk.Box):
                 elif signalized:
                     signalized = False
 
-                elif self.recorder.title_standin is not None:
-                    if event_type.get_text():
-                        event_type.set_text("")
-                    if status.get_text():
-                        status.set_text("")
-                    title.set_text(_(self.recorder.title_standin))
-
                 if dif < datetime.timedelta(0,TIME_RED_START):
                     if not status_label_changed:
                         status.set_name('red_coloured')
@@ -427,6 +420,13 @@ class RecorderClassUI(Gtk.Box):
                     else:
                         status.set_name('blinking_coloured_to')
                     status_label_blink = not status_label_blink
+
+            elif self.recorder.title_standin is not None:
+                if event_type.get_text():
+                    event_type.set_text("")
+                if status.get_text():
+                    status.set_text("")
+                title.set_text(_(self.recorder.title_standin))
 
             else: # Not current or pending recordings
                 if event_type.get_text():
