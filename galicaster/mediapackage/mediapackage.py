@@ -1347,7 +1347,7 @@ class Mediapackage(object):
         elem.setIdentifier(None)
 
         # If the element removed was a track, set the MP duration accordingly
-        if self.__howmany[TYPE_TRACK] == 0:
+        if elem.etype == TYPE_TRACK and self.__howmany[TYPE_TRACK] == 0:
             self.__duration = None
 
         if not soft:

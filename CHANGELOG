@@ -13,6 +13,7 @@ To get the diff between two versions, go to https://github.com/teltek/galicaster
 * 2.1.1 (Unreleased)
  * Improved ical logic: Solves existing issues. Supports an unordered events ical
  * Fixed error when inserting non-unicode characters in the presenter metadata field
+ * Moved Opencast Client initial connection from short_timer to Galicaster init #452 #581
 
 * 2.1.0 (2018-02-09)
  * Added lowaudio plugin #495
