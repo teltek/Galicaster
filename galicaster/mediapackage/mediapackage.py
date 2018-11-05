@@ -971,7 +971,7 @@ class Mediapackage(object):
             TypeError: If the argument tag type is not a string.
         """
         if isinstance(tag, basestring):
-            return self.getElementsByTags(self, tag, etype)
+            return self.getElementsByTags(tag, etype)
         else:
             raise TypeError("The argument 'tag' should be a string")
 
