@@ -958,23 +958,6 @@ class Mediapackage(object):
         return result
 
 
-    #TODO Remove this method an use getElementsByTags instead (string and lists allowed)
-    def getElementsByTag(self, tag, etype=None):
-        """Calls getElementsByTags if the tag is a string.
-        Otherwise raises TypeError.
-        Args:
-            tag (str): tag of the elements to be returned.
-            etype (str): type of the element to be retured. See module constants.
-        Returns:
-            List[Element]: a set of elements with the specified tag and type.
-        Raises:
-            TypeError: If the argument tag type is not a string.
-        """
-        if isinstance(tag, basestring):
-            return self.getElementsByTags(self, tag, etype)
-        else:
-            raise TypeError("The argument 'tag' should be a string")
-
     def getElementsByTags(self, tags, etype=None):
         """Returns the elements that are tagged with any of the given tags or an empty list if no such elements are found.
         If any of the tags supplied start with a '-' character, any elements matching the tag will be excluded instead.
@@ -1097,16 +1080,6 @@ class Mediapackage(object):
 
         return result
 
-    #TODO Remove this method an use getTracksByTags instead (string and lists allowed)
-    def getTracksByTag(self, tag):
-        """Gets the tracks with a particular tag.
-        Args:
-            tag (str): the tag of the tracks that are going to be returned.
-        Returns:
-            List[Track]: a list of tracks with the specified tag.
-        """
-        return self.getElementsByTag(tag, TYPE_TRACK)
-
     def getTracksByTags(self, tags):
         """Gets the tracks that contains determined tags.
         Args:
@@ -1141,16 +1114,6 @@ class Mediapackage(object):
             List[Attachment]: a list of attachments with a determined flavor if it is specified.
         """
         return self.getElements(etype=TYPE_ATTACHMENT, flavor=flavor)
-
-    #TODO Remove this method an use getAttachmentsByTags instead (string and lists allowed)
-    def getAttachmentsByTag(self, tag):
-        """Gets a set of attachments with a tag.
-        Args:
-            tag (str): the tag of the attachments that are going to be returned.
-        Returns:
-            List[Attachment]: a list of attachments with a determined tag.
-        """
-        return self.getElementsByTag(tag, TYPE_ATTACHMENT)
 
     def getAttachmentsByTags(self, tags):
         """Gets a set of attachments that containes a determined set of tags.
@@ -1187,16 +1150,6 @@ class Mediapackage(object):
         """
         return self.getElements(etype=TYPE_CATALOG, flavor=flavor)
 
-    #TODO Remove this method an use getCatalogsByTags instead (string and lists allowed)
-    def getCatalogsByTag(self, tag):
-        """Gets all the catalogs with the given tag.
-        Args:
-            tag (str): the tag of the catalogs that are going to be returned.
-        Returns:
-            List[Catalog]: list of Catalogs with the given tag.
-        """
-        return self.getElementsByTag(tag, TYPE_CATALOG)
-
     def getCatalogsByTags(self, tags):
         """Gets the catalogs that contains a set of tags.
         Args:
@@ -1231,16 +1184,6 @@ class Mediapackage(object):
             List[Other]: list of the elements typed other with a particular flavor if it is given.
         """
         return self.getElements(etype=TYPE_OTHER, flavor=flavor)
-
-    #TODO Remove this method an use getUnclassifiedElementsByTags instead (string and lists allowed)
-    def getUnclassifiedElementsByTag(self, tag):
-        """Gets all the unclassified elements (type other) with a particular tag.
-        Args:
-            tag (str): the tag of the elements that are going to be returned.
-        Returns:
-            List[Other]: list of the elements typed other with the given tag.
-        """
-        return self.getElementsByTag(tag, TYPE_OTHER)
 
     def getUnclassifiedElementsByTags(self, tags):
         """Gets the unclassified elements (type other) that contains a given set of tags.

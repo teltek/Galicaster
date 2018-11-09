@@ -969,21 +969,6 @@ class Profile(object):
 
         return audio_tracks
 
-    #TODO error, be careful with self.tracks(. It's not a method
-    def reorder_tracks(self, order=[]):
-        """Reorders the tracks following the order set by the argument order.
-        If the new list of index (order) is smaller than the dictionary of tracks, the tracks from the old order are added at the end of the new order.
-        Args:
-            order (List[int]): the list of the new index of tracks.
-        """
-        new_order = []
-        for index in range(len(order)):
-            new_order.append(self.tracks(order[index]).copy())
-        for track in self.tracks:
-            if self.tracks.index(track) not in order:
-                new_order.append(track.copy())
-        self.tracks = new_order
-
     #TODO same as profile.path
     def set_path(self, path):
         """Sets the path of the profile.
