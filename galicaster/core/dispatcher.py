@@ -39,9 +39,7 @@ class Dispatcher(GObject.GObject):
         GObject.GObject.__init__(self)
 
     def add_new_signal(self, name, *args):
-        parameters = ()
-        for element in args:
-            parameters = parameters + (GObject.TYPE_PYOBJECT,)
+        parameters = (GObject.TYPE_PYOBJECT,) * len(args)
 
         if not self.is_signal(name):
             GObject.signal_new(name, self, GObject.SignalFlags.RUN_LAST, None, parameters)

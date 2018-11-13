@@ -22,7 +22,6 @@ This module contains:
 import uuid
 import time
 import os
-from os import path
 from datetime import datetime
 from xml.dom import minidom
 from galicaster.mediapackage.utils import _checknget, read_ini
@@ -114,7 +113,7 @@ class Element(object):
         # Element could not exist and going to be created:
         # Examples: - episode.xml in new MediaPackages
         #           - tracks before being recorded...
-        #if path.exists(uri):
+        #if os.path.exists(uri):
         #    self.uri = uri
         #else:
         #    raise ValueError("The argument 'uri' must be a valid URI")
@@ -140,7 +139,7 @@ class Element(object):
             Bool: True if they share file, type and flavor. False otherwise.
         """
         return isinstance(other, Element) and \
-            path.samefile(self.uri, other.uri) and \
+            os.path.samefile(self.uri, other.uri) and \
             self.etype == other.etype and \
             self.flavor == other.flavor
 
@@ -267,7 +266,7 @@ class Element(object):
         Args:
             mp (Mediapackage): the mediapackage.
         """
-        if mp == None or isinstance(mp, Mediapackage):
+        if mp is None or isinstance(mp, Mediapackage):
             self.__mp = mp
         else:
             raise TypeError("Argument 'mp' needs to be a Mediapackage")
@@ -381,7 +380,7 @@ class Attachment(Element):
 
 
 class Other(Element):
-    def __init__(self, uri, flavor=None, mimetype=None, identifier=None, tags=['engage']):
+    def __init__(self, uri, flavor=None, mimetype=None, identifier=None, tags=[]):
         """Initializes the representation of uniclassified files of a mediapackage.
         Args:
             uri (str): the absolute path of the uniclassified file.
@@ -391,11 +390,7 @@ class Other(Element):
         Attributes:
             etype (str): 'Other' (element type)
         """
-        # Add the tag 'engage' by default
-        if not tags:
-            tags=["engage"]
-
-        super(Other, self).__init__(uri=uri, flavor=flavor, mimetype=mimetype, identifier=None, tags=[])
+        super(Other, self).__init__(uri=uri, flavor=flavor, mimetype=mimetype, identifier=None, tags=tags)
         self.etype = TYPE_OTHER
 
 
@@ -434,7 +429,7 @@ class Mediapackage(object):
         self.metadata_series = {'identifier': None,
                                 'title': None}
 
-        if self.getIdentifier() == None:
+        if self.getIdentifier() is None:
             self.setNewIdentifier()
 
         # Secondary metadata
@@ -513,7 +508,7 @@ class Mediapackage(object):
         if 'start' in info.keys():
             try:
                 self.setDate(datetime.strptime(info['start'], "%Y-%m-%dT%H:%M:%S"))
-            except:
+            except Exception:
                 pass
         if 'creator' in info.keys():
             self.setCreator(info['creator'])
@@ -607,8 +602,6 @@ class Mediapackage(object):
         """
         self.metadata_episode['creator'] = creator
 
-    creator = property(getCreator, setCreator)
-
     def getSpatial(self):
         """Gets the spatial of the mediapackage episode.
         Returns:
@@ -622,9 +615,6 @@ class Mediapackage(object):
             spatial (str): the creator to be set.
         """
         self.metadata_episode['spatial'] = spatial
-
-    creator = property(getSpatial, setSpatial)
-
 
     def getSeriesIdentifier(self):
         """Gets the identifier of the serie to which the mediapackage episode belongs.
@@ -645,7 +635,7 @@ class Mediapackage(object):
         Args:
             catalog (Dict{Str,str}): information of the metadata serie.
         """
-        if catalog == None:
+        if catalog is None:
             catalog = {'title':None, 'identifier': None }
         self.metadata_episode["isPartOf"] = catalog['identifier']
         self.metadata_series = catalog
@@ -866,7 +856,7 @@ class Mediapackage(object):
         Raises:
             ValueError: if the argument received it is not an element.
         """
-        if element == None:
+        if element is None:
             raise ValueError("Argument 'element' must not be None")
         elif isinstance(element, Element):
             return element in self.elements.values()
@@ -912,7 +902,7 @@ class Mediapackage(object):
         if identifier not in self.elements:
             return None
         elem = self.elements[identifier]
-        if etype == None or elem.getElementType() == etype:
+        if etype is None or elem.getElementType() == etype:
             return elem
         else:
             return None
@@ -950,7 +940,7 @@ class Mediapackage(object):
 
         if basename:
             results = sorted(self.elements.values(), key=lambda e: e.getIdentifier())
-            results = filter(lambda elem: path.basename(elem.getURI()) == basename, results)
+            results = filter(lambda elem: os.path.basename(elem.getURI()) == basename, results)
 
         if results:
             result = results[0]
@@ -976,7 +966,7 @@ class Mediapackage(object):
         Raises:
             ValueError: if flavor is None.
         """
-        if flavor == None:
+        if flavor is None:
             raise ValueError("Argument 'flavor' cannot be None")
         return self.getElements(flavor=flavor)
 
@@ -991,7 +981,7 @@ class Mediapackage(object):
         Note:
             This method is not present in the original Java implementation, but it is included here for completeness
         """
-        if etype == None:
+        if etype is None:
             return sum(self.__howmany[x] for x in self.__howmany.keys()) > 0
         elif etype in ELEMENT_TYPES:
             return self.__howmany[etype] > 0
@@ -1252,8 +1242,8 @@ class Mediapackage(object):
         if etype not in ELEMENT_TYPES:
             raise ValueError("Invalid element type in argument")
 
-        if elem.getMediapackage() == None:
-            if elem.getIdentifier() == None:
+        if elem.getMediapackage() is None:
+            if elem.getIdentifier() is None:
                 identifier = self.__newElementId(etype)
                 elem.setIdentifier(identifier)
             elem.setMediapackage(self)
@@ -1305,7 +1295,7 @@ class Mediapackage(object):
         """
         size = 0
         for f in self.getElements():
-            size += path.getsize(f.uri)
+            size += os.path.getsize(f.uri)
         #TODO taking into account the size of the xml or not.
         return size
 
@@ -1317,9 +1307,9 @@ class Mediapackage(object):
         for f in self.getElements():
             # Sum size of elements with the same flavor
             if f.getFlavor() in info:
-                info[f.getFlavor()] += path.getsize(f.getURI())
+                info[f.getFlavor()] += os.path.getsize(f.getURI())
             else:
-                info[f.getFlavor()] = path.getsize(f.getURI())
+                info[f.getFlavor()] = os.path.getsize(f.getURI())
 
         return info
 
@@ -1347,9 +1337,9 @@ class Mediapackage(object):
             content (str): content to be written in the xml file.
             name (str): name of the file.
         """
-        assert path.isdir(self.getURI())
+        assert os.path.isdir(self.getURI())
 
-        f_path = path.join(self.getURI(), name if name != None else 'episode.xml' ) #FIXME
+        f_path = os.path.join(self.getURI(), name if name != None else 'episode.xml' ) #FIXME
 
         f = open(f_path, 'w')
         f.write(content)
@@ -1367,9 +1357,9 @@ class Mediapackage(object):
         Note:
             From XML (series)  to galicaster.Mediapackage
         """
-        assert path.isdir(self.getURI())
+        assert os.path.isdir(self.getURI())
 
-        f_path = path.join(self.getURI(), name if name != None else 'series.xml' ) #FIXME
+        f_path = os.path.join(self.getURI(), name if name != None else 'series.xml' ) #FIXME
         f = open(f_path, 'w')
         f.write(content)
         f.close()
@@ -1418,9 +1408,9 @@ class Mediapackage(object):
             name (str): the name of the file.
             identifier (str): the identifier of the attachment element.
         """
-        assert path.isdir(self.getURI())
+        assert os.path.isdir(self.getURI())
 
-        f_path = path.join(self.getURI(), name if name != None else 'data' )
+        f_path = os.path.join(self.getURI(), name if name != None else 'data' )
 
         f = open(f_path, 'w')
         f.write(content)
@@ -1442,7 +1432,7 @@ class Mediapackage(object):
             attach = self.getAttachment('org.opencastproject.capture.agent.properties')
             values = dict(read_ini(attach.getURI()))
             return values[name].lower()
-        except:
+        except Exception:
             return None
 
 
@@ -1456,7 +1446,7 @@ class Mediapackage(object):
         try:
             attach = self.getAttachment('org.opencastproject.capture.agent.properties')
             return dict(read_ini(attach.getURI()))
-        except:
+        except Exception:
             return {}
 
 
