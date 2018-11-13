@@ -217,7 +217,7 @@ class Player(object):
         return self.pipeline.query_position(format)
 
     def get_volume(self):
-        if self.audio_sink == None:
+        if self.audio_sink is None:
             return 100
         return self.audio_sink.get_property('volume')
 
@@ -303,7 +303,6 @@ class Player(object):
                 GObject.idle_add(self._prepare_window_handler, gtk_player, message)
 
             except TypeError:
-                pass
                 logger.error('players[%r]: need a %r; got a %r: %r' % (
                     name, Gtk.DrawingArea, type(gtk_player), gtk_player))
             except KeyError:

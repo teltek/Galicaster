@@ -163,7 +163,7 @@ class GCWindow(Gtk.Window):
             screen = root.get_screen()
             rect = screen.get_monitor_geometry(0)
             size = [rect.width, rect.height]
-        except:
+        except Exception:
             if self.logger:
                 self.logger.error("Unable to get root screen size")
 
@@ -268,8 +268,7 @@ class GCWindow(Gtk.Window):
                 }
 
         buttons = (Gtk.STOCK_QUIT, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
-        warning = message.PopUp(message.WARN_QUIT, text, # noqa ; This is a GTK.PopUp. The result IS used at `self.on_shutdown_dialog_response`
-                                self, buttons, self.on_shutdown_dialog_response)
+        message.PopUp(message.WARN_QUIT, text, self, buttons, self.on_shutdown_dialog_response)
 
     def on_shutdown_dialog_response(self, response_id, **kwargs):
         if response_id in message.POSITIVE:

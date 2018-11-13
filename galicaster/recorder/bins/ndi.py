@@ -218,7 +218,6 @@ class GCndi(Gst.Bin, base.Base):
         if not self.mute:
             element = self.get_by_name("gc-ndi-volume")
             element.set_property("mute", value)
-        pass
 
     def send_event_to_src(self, event):
         src1 = self.get_by_name('gc-ndi-src')

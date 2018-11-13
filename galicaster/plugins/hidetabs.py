@@ -44,7 +44,6 @@ def post_init(source=None):
     except AttributeError:
         # The conf parameter isn't defined. Ignore
         print "Attribute error"
-        pass
 
     default_tab = conf.get('hidetabs', 'default') or None
     try:

@@ -437,7 +437,7 @@ class Repository(object):
         next = None
         for mp in self.__list.values():
             if mp.getDate() > datetime.datetime.utcnow():
-                if next == None:
+                if next is None:
                     next = mp
                 else:
                     if mp.getDate() < next.getDate():
@@ -536,7 +536,7 @@ class Repository(object):
         """
         if self.has(mp):
             raise KeyError('Key Repeated')
-        if mp.getURI() == None:
+        if mp.getURI() is None:
             mp.setURI(self.__get_folder_name(mp))
         else:
             assert mp.getURI().startswith(self.root + os.sep)
