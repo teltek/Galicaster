@@ -143,6 +143,9 @@ class Element(object):
             self.etype == other.etype and \
             self.flavor == other.flavor
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def getIdentifier(self):
         """Gets the identifier of the element.
         Returns:
@@ -295,6 +298,15 @@ class Track(Element):
         else:
             self.duration = duration
 
+    def __eq__(self, other):
+        """Compares if two elements are equals.
+        Returns:
+            Bool: True if they share file, type, flavor and duration. False otherwise.
+        """
+        return isinstance(other, Track) and \
+            super(Track, self).__eq__(other) and \
+            self.duration == other.duration
+
     def getDuration(self):
         return self.duration
 
@@ -361,6 +373,15 @@ class Attachment(Element):
         super(Attachment, self).__init__(uri=uri, flavor=flavor, mimetype=mimetype, identifier=identifier, tags=tags)
         self.etype = TYPE_ATTACHMENT
         self.ref = ref
+
+    def __eq__(self, other):
+        """Compares if two elements are equals.
+        Returns:
+            Bool: True if they share file, type, flavor and duration. False otherwise.
+        """
+        return isinstance(other, Attachment) and \
+            super(Attachment, self).__eq__(other) and \
+            self.ref == other.ref
 
     def getRef(self):
         """Gets the reference of the mediapackage attachment.
