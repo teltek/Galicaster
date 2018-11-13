@@ -346,9 +346,10 @@ class Player(object):
 
     def __get_duration_and_run(self):
         # choose lighter file
-        size = location = None
+        minsize = location = None
         for key, value in self.files.iteritems():
-            new = os.path.getsize(value)
-            if not size or new > size:
+            size = os.path.getsize(value)
+            if not minsize or size < minsize:
+                minsize = size
                 location = value
         return self.__discover(location)
