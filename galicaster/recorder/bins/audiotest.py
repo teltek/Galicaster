@@ -28,10 +28,6 @@ pipestr = (" audiotestsrc name=gc-audiotest-src is-live=true freq=440 volume=0.8
 
 class GCaudiotest(Gst.Bin, base.Base):
 
-    order = ["name", "flavor", "location", "file", 
-             "vumeter", "player","amplification","audioencoder"
-             "volume", "pattern", "frequency" ]
-
     gc_parameters = {
         "name": {
             "type": "text",
@@ -79,12 +75,12 @@ class GCaudiotest(Gst.Bin, base.Base):
             "type": "select",
             "default": "pink-noise",
             "options": ["sine", "square", "saw", "triangle",
-                        "white-noise", "pink-noise", "sine-table"
-                        "ticks", "gaussian-noise", "red-noise"
+                        "white-noise", "pink-noise", "sine-table",
+                        "ticks", "gaussian-noise", "red-noise",
                         "blue-noise", "violet-noise"
-                        ],                                  
+                        ],
             "description" : "Premade samples to test audio",
-            },                      
+            },
         "frequency":  {
             "type": "integer",
             "default" : 440,

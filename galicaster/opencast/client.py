@@ -24,7 +24,7 @@ from galicaster.utils.miscellaneous import get_timezone
 
 try:
     from galicaster import __version__ as version
-except:
+except Exception:
     version = ""
 
 INIT_ENDPOINT = 'info/me.json'
@@ -170,15 +170,12 @@ class OCHTTPClient(object):
                 except Exception as e:
                     # We did our best!
                     self.logger and self.logger.warning("Could not close cURL object properly: {}", e)
-                    pass
             if b is not None:
                 try:
                     b.close()
                 except Exception as e:
                     # We did our best!
                     self.logger and self.logger.warning("Could not close StringIO object properly: {}", e)
-                    pass
-
 
     def scanforetag(self, buffer):
         if buffer.startswith('ETag:'):
@@ -243,7 +240,7 @@ class OCHTTPClient(object):
             'capture.recording.shutdown.timeout': '60',
             'capture.recording.state.remote.endpoint.url': self.server + '/capture-admin/recordings',
             'capture.schedule.event.drop': 'false',
-            'capture.schedule.remote.polling.interval': int(self.polling_schedule)/60,
+            'capture.schedule.remote.polling.interval': int(self.polling_schedule)//60,
             'capture.schedule.event.buffertime': '1',
             'capture.schedule.remote.endpoint.url': self.server + '/recordings/calendars',
             'capture.schedule.cache.url': '/opt/opencast/storage/cache/schedule.ics',
@@ -400,5 +397,5 @@ class OCHTTPClient(object):
             start = s.index(first) + len(first)
             end = s.index(last, start)
             return s[start:end]
-        except:
+        except Exception:
             return ""
