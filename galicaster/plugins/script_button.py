@@ -37,7 +37,7 @@ class ScriptButton:
         # Add button
         mw = context.get_mainwindow()
         button = self.__create_button(self.name, self.icon)
-        button = mw.insert_element_with_position(button, PAGES['DIS'], "box2", "add", 0)
+        mw.insert_element_with_position(button, PAGES['DIS'], "box2", "add", 0)
 
     def __create_button(self, name, icon):
         logger.info("Creating button {}".format(name))

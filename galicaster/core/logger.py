@@ -26,12 +26,10 @@
 """
 Logger Proxy class to use in Galicaster.
 """
+import os
 import sys
 import logging
 import getpass
-
-import os
-from os import path
 
 class Logger(logging.Logger):
     def __init__(self, log_path, level="DEBUG", rotate=False, use_syslog=False):
@@ -51,11 +49,11 @@ class Logger(logging.Logger):
             formatting.insert(0, "Galicaster")
             del(formatting[2])
             loghandler.setFormatter(logging.Formatter(" ".join(formatting)))
-        elif self.log_path == None or len(self.log_path) == 0:
+        elif self.log_path is None or len(self.log_path) == 0:
             loghandler = logging.NullHandler()
         else:
             if self.log_path[0] != "/":
-                self.log_path = path.abspath(path.join(path.dirname(__file__), "..", "..", self.log_path))
+                self.log_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", self.log_path))
             if rotate:
                 from logging.handlers import TimedRotatingFileHandler
                 loghandler = TimedRotatingFileHandler(self.log_path, "midnight")
@@ -63,7 +61,7 @@ class Logger(logging.Logger):
                 try:
                     loghandler = logging.FileHandler(self.log_path, "a")
                 except IOError:
-                    self.log_path = path.expanduser('~/.galicaster.log')
+                    self.log_path = os.path.expanduser('~/.galicaster.log')
                     sys.stderr.write("Error writing in the log in '{0}', using '{1}'\n".format(self.log_path, self.log_path))
                     loghandler = logging.FileHandler(self.log_path, "a")
 

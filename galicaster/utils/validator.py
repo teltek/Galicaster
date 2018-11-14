@@ -98,7 +98,7 @@ def parse_validate(k, option, gc_parameter=None):
             try:
                 option = float(option)
                 current_error, option = check_range(k, option, gc_parameter)
-            except:
+            except Exception:
                 current_error = 'INFO: Parameter "{}" with value {} must be {}'.format(
                     k, option, gc_parameter['type'])
 

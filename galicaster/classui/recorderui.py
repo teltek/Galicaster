@@ -16,7 +16,7 @@ Recording Area GUI
 TODO:
  * check_status_area timeout???
  * Waiting vs Iddle en status
-     if self.next == None and state == GC_PREVIEW:
+     if self.next is None and state == GC_PREVIEW:
             self.view.set_displayed_row(GC_PRE2)
 
 

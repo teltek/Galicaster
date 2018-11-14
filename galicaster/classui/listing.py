@@ -475,11 +475,7 @@ class ListingClassUI(ManagerUI):
             else:
                 label = column.get_widget()
                 attr = Pango.AttrList()
-    #            attr.insert(Pango.AttrFontDesc(font,0,-1))
                 label.set_attributes(attr)
-                if not first:
-                    label.show()
-                    column.set_widget(label)
                 column.queue_resize()
 
         self.do_resize(buttonlist)
