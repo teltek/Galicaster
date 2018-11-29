@@ -38,6 +38,7 @@ from galicaster.utils import readable
 from galicaster.utils.resize import relabel, resize_button
 from galicaster.utils.i18n import _
 
+from galicaster.mediapackage.mediapackage import op_status
 from galicaster.recorder.service import STATUSES
 from galicaster.recorder.service import INIT_STATUS
 from galicaster.recorder.service import PREVIEW_STATUS
@@ -618,14 +619,10 @@ class RecorderClassUI(Gtk.Box):
 
 
     def check_operations(self, origin, code, mp, success=None, exc=None):
-        if success is None:
-            success = _("Processing")
-        elif success:
-            success = _("Done")
-        else:
-            success = _("Failed")
+        status = op_status[mp.getOpStatus(code)]
+
         s2 = self.gui.get_object("status2")
-        s2.set_text("{0}: {1}".format(JOB_NAMES[code], success))
+        s2.set_text("{0}: {1}".format(JOB_NAMES[code], status))
 
     def resize(self):
         """Adapts GUI elements to the screen size"""
