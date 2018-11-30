@@ -406,7 +406,7 @@
                         <property name="can_focus">False</property>
                         <property name="halign">end</property>
                         <property name="xpad">10</property>
-                        <property name="label" translatable="yes">Storage space left: </property>
+                        <property name="label" translatable="yes">Space left: </property>
                         <property name="justify">center</property>
                         <property name="wrap">True</property>
                         <property name="ellipsize">end</property>
@@ -423,7 +423,7 @@
                         <property name="can_focus">False</property>
                         <property name="halign">end</property>
                         <property name="xpad">10</property>
-                        <property name="label" translatable="yes">Recording space: </property>
+                        <property name="label" translatable="yes">Operations: </property>
                         <property name="justify">center</property>
                         <property name="wrap">True</property>
                         <property name="ellipsize">end</property>
