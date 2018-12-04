@@ -333,11 +333,13 @@ class RecorderClassUI(Gtk.Box):
 
     def recording_info_timeout(self, rec_title, rec_elapsed):
         """GObject.timeout callback with 500 ms intervals"""
-        if self.recorder.status == RECORDING_STATUS:
+        if self.recorder.status in [PAUSED_STATUS, RECORDING_STATUS]:
             rec_title.set_text(self.recorder.current_mediapackage.getTitle())
             msec = datetime.timedelta(microseconds=(round(self.recorder.get_recorded_time()/1000.0,-6)))
             rec_elapsed.set_text(_("Elapsed Time: ") + readable.long_time(msec))
             return True
+        rec_title.set_text(_("Not recording"))
+        rec_elapsed.set_text("")
         return False
 
 
