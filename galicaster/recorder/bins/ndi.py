@@ -123,7 +123,12 @@ class GCndi(Gst.Bin, base.Base):
             "default": None,
             "description": "Caps-preview",
         },
-
+        "loss-threshold" : {
+            "type": "integer",
+            "default": 40000,
+            "range": (0,200000),
+            "description": "Loss threshold",
+        },
     }
 
     is_pausable = False
@@ -176,6 +181,12 @@ class GCndi(Gst.Bin, base.Base):
             else:
                 self.set_option_in_pipeline('location', 'gc-ndi-src', 'stream-name')
                 self.set_option_in_pipeline('location', 'gc-ndi-audiosrc', 'stream-name')
+
+        if self.options['loss-threshold']:
+            element = self.get_by_name("gc-ndi-src")
+            element.set_property("loss-threshold", self.options["loss-threshold"])
+            element = self.get_by_name("gc-ndi-audiosrc")
+            element.set_property("loss-threshold", self.options["loss-threshold"])
 
         self.set_value_in_pipeline(path.join(self.options['path'], self.options['file']), 'gc-ndi-sink', 'location')
 

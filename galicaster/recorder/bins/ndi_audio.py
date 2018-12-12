@@ -82,6 +82,13 @@ class GCndi_audio(Gst.Bin, base.Base):
             "options": ["autoaudiosink", "alsasink", "pulsesink", "fakesink"],
             "description": "Audio sink",
         },
+        "loss-threshold" : {
+            "type": "integer",
+            "default": 40000,
+            "range": (0,200000),
+            "description": "Loss threshold",
+        },
+
     }
 
     is_pausable = False
@@ -113,6 +120,10 @@ class GCndi_audio(Gst.Bin, base.Base):
                 self.set_option_in_pipeline('location', 'gc-audio-src', 'ip')
             else:
                 self.set_option_in_pipeline('location', 'gc-audio-src', 'stream-name')
+
+        if self.options['loss-threshold']:
+            element = self.get_by_name("gc-audio-src")
+            element.set_property("loss-threshold", self.options["loss-threshold"])
 
 
         sink = self.get_by_name("gc-audio-sink")
