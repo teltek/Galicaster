@@ -53,7 +53,7 @@ This operations are threads concurrently done with the rest of galicaster tasks 
 class Worker(object):
 
     def __init__(self, dispatcher, repo, logger, oc_client=None, export_path=None, tmp_path=None,
-                 use_namespace=True, sbs_layout='sbs', hide_ops=[], hide_nightly=[]):
+                 use_namespace=True, sbs_layout='sbs', hide_ops=[], hide_nightly=[], min_length=0):
         """Initializes a worker that manages the mediapackages of the repository in order to do long operations concurrently by throwing Threads when necessay.
         Args:
             dispacher (Dispatcher): the galicaster event-dispatcher to emit signals.
@@ -87,6 +87,7 @@ class Worker(object):
         self.logger = logger
         self.hide_ops = hide_ops
         self.hide_nightly = hide_nightly
+        self.min_length = min_length * 1000
 
         for dir_path in (self.export_path, self.tmp_path):
             if not os.path.isdir(dir_path):
@@ -318,7 +319,10 @@ class Worker(object):
         self._export_to_zip(mp, params={"location" : ifile, "is_action": False})
 
         if mp.manual:
-            self.oc_client.ingest(ifile.name, mp.getIdentifier(), workflow=workflow, workflow_instance=None, workflow_parameters=workflow_parameters)
+            if mp.getDuration() > self.min_length or self.min_length == 0:
+                self.oc_client.ingest(ifile.name, mp.getIdentifier(), workflow=workflow, workflow_instance=None, workflow_parameters=workflow_parameters)
+            else:
+                self.logger.info("NOT Ingesting MP {}: duration:{} less than {}".format(mp.getIdentifier(), mp.getDuration(), self.min_length))
         else:
             if not workflow:
                 properties = mp.getOCCaptureAgentProperties()
@@ -334,7 +338,10 @@ class Worker(object):
                     if k[0:36] == 'org.opencastproject.workflow.config.':
                         workflow_parameters[k[36:]] = v
 
-            self.oc_client.ingest(ifile.name, mp.getIdentifier(), workflow, mp.getIdentifier(), workflow_parameters)
+            if mp.getDuration() > self.min_length or self.min_length == 0:
+                self.oc_client.ingest(ifile.name, mp.getIdentifier(), workflow, mp.getIdentifier(), workflow_parameters)
+            else:
+                self.logger.info("NOT Ingesting MP {}: duration:{} less than {}".format(mp.getIdentifier(), mp.getDuration(), self.min_length))
 
         ifile.close()
 
