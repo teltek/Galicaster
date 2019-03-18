@@ -32,6 +32,11 @@ class Base(object):
             "default": "presenter",
             "description": "Opencast flavor associated to the track",
             },
+        "tags": {
+            "type": "list",
+            "default": [],
+            "description": "Opencast tags associated to the track",
+        },
         "location": {
             "type": "device",
             "default": "/dev/video0",
@@ -71,14 +76,15 @@ class Base(object):
                 gc_parameter = self.gc_parameters[k]
             if v is not None:
                 error, self.options[k] = validator.parse_validate(k, v, gc_parameter)
+                if error:
+                    self.logger.error(error)
 
         # Sanitaze values
         self.options["name"] = re.sub(r'\W+', '', self.options["name"])
 
 
-    def set_option_in_pipeline(self, option, element, prop, parse=str):
-        element_name = element
-        element = self.get_by_name(element)
+    def set_option_in_pipeline(self, option, element_name, prop, parse=str):
+        element = self.get_by_name(element_name)
         if not element:
             self.logger.error("There isn't an element named {}".format(element_name))
         elif prop == "caps":
@@ -87,9 +93,8 @@ class Base(object):
             element.set_property(prop, parse(self.options[option]))
 
 
-    def set_value_in_pipeline(self, value, element, prop, parse=str):
-        element_name = element
-        element = self.get_by_name(element)
+    def set_value_in_pipeline(self, value, element_name, prop, parse=str):
+        element = self.get_by_name(element_name)
         if not element:
             self.logger.error("There isn't an element named {}".format(element_name))
         else:

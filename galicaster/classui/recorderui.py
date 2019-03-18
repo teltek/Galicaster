@@ -16,19 +16,20 @@ Recording Area GUI
 TODO:
  * check_status_area timeout???
  * Waiting vs Iddle en status
-     if self.next == None and state == GC_PREVIEW:
+     if self.next is None and state == GC_PREVIEW:
             self.view.set_displayed_row(GC_PRE2)
 
 
 """
 
 from gi.repository import GObject
-from gi.repository import Gtk, Gdk, GdkPixbuf
+from gi.repository import Gtk, Gdk, GdkPixbuf, GLib
 from gi.repository import Pango
 import datetime
 
 from galicaster.utils.miscellaneous import get_footer
 from galicaster.core import context
+from galicaster.core.worker import JOB_NAMES
 
 from galicaster.classui.metadata import MetadataClass as Metadata
 from galicaster.classui import message
@@ -37,6 +38,7 @@ from galicaster.utils import readable
 from galicaster.utils.resize import relabel, resize_button
 from galicaster.utils.i18n import _
 
+from galicaster.mediapackage.mediapackage import op_status
 from galicaster.recorder.service import STATUSES
 from galicaster.recorder.service import INIT_STATUS
 from galicaster.recorder.service import PREVIEW_STATUS
@@ -111,6 +113,8 @@ class RecorderClassUI(Gtk.Box):
         self.vumeterL = builder.get_object("progressbarL")
         self.vumeterR = builder.get_object("progressbarR")
         self.label_channels= builder.get_object("label_channels")
+        self.low_audio = False
+        self.lowaudio_threshold = self.conf.get_float('lowaudio','lowaudio_threshold')
 
         # SWAP
         if not self.conf.get_boolean('basic', 'swapvideos'):
@@ -124,6 +128,8 @@ class RecorderClassUI(Gtk.Box):
         self.dispatcher.connect_ui("init", self.check_status_area)
         self.dispatcher.connect_ui("init", self.check_net, None)
         self.dispatcher.connect_ui("opencast-status", self.check_net)
+        self.dispatcher.connect_ui("operation-started", self.check_operations)
+        self.dispatcher.connect_ui("operation-stopped", self.check_operations)
 
         # UI
         self.pack_start(self.recorderui,True,True,0)
@@ -192,13 +198,18 @@ class RecorderClassUI(Gtk.Box):
 
         average = (data + data2)/2.0
         if not self.mute:
+            if self.lowaudio_threshold and average < (self.lowaudio_threshold):
+                self.dispatcher.emit("low-audio")
+                self.low_audio = True
             if average < (self.thresholdVum):
                 self.dispatcher.emit("audio-mute")
                 self.mute = True
         if self.mute and average > (self.thresholdVum + 5.0):
             self.dispatcher.emit("audio-recovered")
             self.mute = False
-
+        if self.low_audio and self.lowaudio_threshold and average > (self.lowaudio_threshold + 5.0):
+            self.dispatcher.emit("low-audio-recovered")
+            self.low_audio = False
 
         if data < -self.rangeVum:
             valor = 1
@@ -237,11 +248,16 @@ class RecorderClassUI(Gtk.Box):
             logger.debug("Pausing Recording")
             self.recorder.pause()
 
-            self.pause_dialog = self.create_pause_dialog(self.get_toplevel())
-            if self.pause_dialog.run() == 1:
-                self.on_pause(None)
-            self.pause_dialog.destroy()
+    def show_pause_dialog(self):
+        self.pause_dialog = self.create_pause_dialog(self.get_toplevel())
+        Gdk.threads_enter()
+        if self.pause_dialog.run() == 1:
+            self.on_pause(None)
+        self.pause_dialog.destroy()
+        Gdk.threads_leave()
 
+    def hide_pause_dialog(self):
+        self.pause_dialog.destroy()
 
     def create_pause_dialog(self, parent):
         gui = Gtk.Builder()
@@ -317,11 +333,13 @@ class RecorderClassUI(Gtk.Box):
 
     def recording_info_timeout(self, rec_title, rec_elapsed):
         """GObject.timeout callback with 500 ms intervals"""
-        if self.recorder.status == RECORDING_STATUS:
+        if self.recorder.status in [PAUSED_STATUS, RECORDING_STATUS]:
             rec_title.set_text(self.recorder.current_mediapackage.getTitle())
             msec = datetime.timedelta(microseconds=(round(self.recorder.get_recorded_time()/1000.0,-6)))
             rec_elapsed.set_text(_("Elapsed Time: ") + readable.long_time(msec))
             return True
+        rec_title.set_text(_("Not recording"))
+        rec_elapsed.set_text("")
         return False
 
 
@@ -476,15 +494,24 @@ class RecorderClassUI(Gtk.Box):
         """Create as preview areas as video sources exits"""
         main = self.main_area
 
-        for child in main.get_children():
-            main.remove(child)
-            child.destroy()
-
         if self.swap:
             sources.reverse()
 
+        sources_num = len(sources)
+        i = 0
         areas = dict()
-        for source in sources:
+        for child in main.get_children():
+            if i > sources_num:
+                main.remove(child)
+                child.destroy()
+                continue
+            source = sources[i]
+            child.set_name(source)
+            child.modify_bg(Gtk.StateType.NORMAL, Gdk.color_parse("black"))
+            areas[source] = child
+            i+=1
+
+        for source in sources[i:]:
             new_area = Gtk.DrawingArea()
             new_area.set_name(source)
             new_area.modify_bg(Gtk.StateType.NORMAL, Gdk.color_parse("black"))
@@ -556,10 +583,10 @@ class RecorderClassUI(Gtk.Box):
         freespace = self.repo.get_free_space()
         text_space = readable.size(freespace)
 
-        s1.set_text(text_space)
         four_gb = 4000000000.0
         hours = int(freespace/four_gb)
-        s2.set_text(_("{0} hours left").format(str(hours)))
+        s1.set_text(_("{0} ({1} hours left)").format(text_space, str(hours)))
+        s2.set_text(_("Idle"))
         agent = self.conf.get_hostname() # TODO just consult it once
         s4.set_text(agent)
 
@@ -592,6 +619,12 @@ class RecorderClassUI(Gtk.Box):
                 s3.set_text(_("Connecting"))
                 s3.set_name(network_css_ids['Connecting'])
 
+
+    def check_operations(self, origin, code, mp, success=None, exc=None):
+        status = op_status[mp.getOpStatus(code)]
+
+        s2 = self.gui.get_object("status2")
+        s2.set_text("{0}: {1}".format(JOB_NAMES[code], status))
 
     def resize(self):
         """Adapts GUI elements to the screen size"""
@@ -685,8 +718,6 @@ class RecorderClassUI(Gtk.Box):
         swapb = self.gui.get_object("swapbutton")
 
         if status == INIT_STATUS:
-            if self.pause_dialog:
-                self.pause_dialog.destroy()
             record.set_sensitive(False)
             pause.set_sensitive(False)
             stop.set_sensitive(False)
@@ -736,6 +767,12 @@ class RecorderClassUI(Gtk.Box):
             editb.set_sensitive(False)
             if self.focus_is_active:
                 self.launch_error_message()
+
+        if status == PAUSED_STATUS:
+            GLib.idle_add(self.show_pause_dialog)
+        else:
+            if self.pause_dialog:
+                GLib.idle_add(self.hide_pause_dialog)
 
         # Change status label
         if status in STATUSES:

@@ -12,6 +12,7 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300,
 # San Francisco, California, 94105, USA.
 
+import argparse
 import sys
 # debug
 # import traceback
@@ -25,17 +26,15 @@ from gi.repository import Gtk     # noqa: ignore=E402
 from gi.repository import GLib    # noqa: ignore=E402
 from gi.repository import Gst     # noqa: ignore=E402
 
+from galicaster import __version__
 from galicaster.core import core  # noqa: ignore=E402
 from galicaster.core import context
 from galicaster.utils.dbusservice import AlreadyRunning
 
 def main(args):
-    def usage():
-        sys.stderr.write("usage: %s\n" % args[0])
-        return 1
-
-    if len(args) != 1:
-        return usage()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--version', action='version', version='Galicaster {version}'.format(version=__version__))
+    parser.parse_args(args=args[1:])
     try:
         Gst.init(None)
         gc = core.Main()

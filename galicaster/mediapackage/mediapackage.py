@@ -20,12 +20,8 @@ This module contains:
 """
 
 import uuid
-import re
 import time
 import os
-from dateutil import tz
-from dateutil import parser
-from os import path
 from datetime import datetime
 from xml.dom import minidom
 from galicaster.mediapackage.utils import _checknget, read_ini
@@ -117,7 +113,7 @@ class Element(object):
         # Element could not exist and going to be created:
         # Examples: - episode.xml in new MediaPackages
         #           - tracks before being recorded...
-        #if path.exists(uri):
+        #if os.path.exists(uri):
         #    self.uri = uri
         #else:
         #    raise ValueError("The argument 'uri' must be a valid URI")
@@ -143,9 +139,12 @@ class Element(object):
             Bool: True if they share file, type and flavor. False otherwise.
         """
         return isinstance(other, Element) and \
-            path.samefile(self.uri, other.uri) and \
+            os.path.samefile(self.uri, other.uri) and \
             self.etype == other.etype and \
             self.flavor == other.flavor
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def getIdentifier(self):
         """Gets the identifier of the element.
@@ -270,7 +269,7 @@ class Element(object):
         Args:
             mp (Mediapackage): the mediapackage.
         """
-        if mp == None or isinstance(mp, Mediapackage):
+        if mp is None or isinstance(mp, Mediapackage):
             self.__mp = mp
         else:
             raise TypeError("Argument 'mp' needs to be a Mediapackage")
@@ -291,7 +290,6 @@ class Track(Element):
             etype (str): 'Track' (element type)
             duration (int): the given duration of the track in seconds.
         """
-        tags=["archive"]
 
         super(Track, self).__init__(uri=uri, flavor=flavor, mimetype=mimetype, identifier=identifier, tags=tags)
         self.etype = TYPE_TRACK
@@ -299,6 +297,15 @@ class Track(Element):
             self.duration = int(duration)
         else:
             self.duration = duration
+
+    def __eq__(self, other):
+        """Compares if two elements are equals.
+        Returns:
+            Bool: True if they share file, type, flavor and duration. False otherwise.
+        """
+        return isinstance(other, Track) and \
+            super(Track, self).__eq__(other) and \
+            self.duration == other.duration
 
     def getDuration(self):
         return self.duration
@@ -367,6 +374,15 @@ class Attachment(Element):
         self.etype = TYPE_ATTACHMENT
         self.ref = ref
 
+    def __eq__(self, other):
+        """Compares if two elements are equals.
+        Returns:
+            Bool: True if they share file, type, flavor and duration. False otherwise.
+        """
+        return isinstance(other, Attachment) and \
+            super(Attachment, self).__eq__(other) and \
+            self.ref == other.ref
+
     def getRef(self):
         """Gets the reference of the mediapackage attachment.
         Returns:
@@ -385,7 +401,7 @@ class Attachment(Element):
 
 
 class Other(Element):
-    def __init__(self, uri, flavor=None, mimetype=None, identifier=None, tags=['engage']):
+    def __init__(self, uri, flavor=None, mimetype=None, identifier=None, tags=[]):
         """Initializes the representation of uniclassified files of a mediapackage.
         Args:
             uri (str): the absolute path of the uniclassified file.
@@ -395,11 +411,7 @@ class Other(Element):
         Attributes:
             etype (str): 'Other' (element type)
         """
-        # Add the tag 'engage' by default
-        if not tags:
-            tags=["engage"]
-
-        super(Other, self).__init__(uri=uri, flavor=flavor, mimetype=mimetype, identifier=None, tags=[])
+        super(Other, self).__init__(uri=uri, flavor=flavor, mimetype=mimetype, identifier=None, tags=tags)
         self.etype = TYPE_OTHER
 
 
@@ -431,13 +443,14 @@ class Mediapackage(object):
 
         # Catalog metadata
         date = date or datetime.utcnow().replace(microsecond = 0)
+        self.date = date
         self.metadata_episode = {"title" : title, "identifier" : identifier,
-                                 "creator" : presenter, "created" : date,}
+                                 "creator" : presenter, "created" : self.date}
 
         self.metadata_series = {'identifier': None,
                                 'title': None}
 
-        if self.getIdentifier() == None:
+        if self.getIdentifier() is None:
             self.setNewIdentifier()
 
         # Secondary metadata
@@ -448,7 +461,7 @@ class Mediapackage(object):
         self.__duration = None
         self.__howmany = dict( (k, 0) for k in ELEMENT_TYPES )
 
-        self.operation = dict()
+        self.operations = dict()
         self.properties = {'notes':'', 'origin': ''}
         self.elements = dict()
 
@@ -516,7 +529,7 @@ class Mediapackage(object):
         if 'start' in info.keys():
             try:
                 self.setDate(datetime.strptime(info['start'], "%Y-%m-%dT%H:%M:%S"))
-            except:
+            except Exception:
                 pass
         if 'creator' in info.keys():
             self.setCreator(info['creator'])
@@ -610,8 +623,6 @@ class Mediapackage(object):
         """
         self.metadata_episode['creator'] = creator
 
-    creator = property(getCreator, setCreator)
-
     def getSpatial(self):
         """Gets the spatial of the mediapackage episode.
         Returns:
@@ -625,9 +636,6 @@ class Mediapackage(object):
             spatial (str): the creator to be set.
         """
         self.metadata_episode['spatial'] = spatial
-
-    creator = property(getSpatial, setSpatial)
-
 
     def getSeriesIdentifier(self):
         """Gets the identifier of the serie to which the mediapackage episode belongs.
@@ -648,7 +656,7 @@ class Mediapackage(object):
         Args:
             catalog (Dict{Str,str}): information of the metadata serie.
         """
-        if catalog == None:
+        if catalog is None:
             catalog = {'title':None, 'identifier': None }
         self.metadata_episode["isPartOf"] = catalog['identifier']
         self.metadata_series = catalog
@@ -736,7 +744,7 @@ class Mediapackage(object):
         Returns:
             Datetime: Datetime of the mediapackage episode creation.
         """
-        return self.metadata_episode["created"]
+        return self.date
 
     def setDate(self, startTime):
         """Sets the date and time of the mediapackage episode creation.
@@ -744,7 +752,7 @@ class Mediapackage(object):
             startTime (Datetime): date and time to be set at creation parameter.
         """
         #FIXME check is datetime*
-        self.metadata_episode["created"] = startTime
+        self.date = startTime
 
     startTime = property(getDate, setDate)
 
@@ -755,7 +763,7 @@ class Mediapackage(object):
         """
         aux = time.time()
         utcdiff = datetime.utcfromtimestamp(aux) - datetime.fromtimestamp(aux)
-        return self.metadata_episode["created"] - utcdiff
+        return self.getDate() - utcdiff
 
     def setLocalDate(self, startTime):
         """Sets the local date and time of the mediapackage episode creation.
@@ -764,7 +772,7 @@ class Mediapackage(object):
         """
         aux = time.time()
         utcdiff = datetime.utcfromtimestamp(aux) - datetime.fromtimestamp(aux)
-        self.metadata_episode["created"] = startTime + utcdiff
+        self.setDate(startTime + utcdiff)
 
     def getStartDateAsString(self, isoformat=True, local=True):
         """Gets the mediapackage timestamp in a specific string format.
@@ -839,10 +847,10 @@ class Mediapackage(object):
         Returns:
             Int: the status of the operation received.
         """
-        if name in self.operation:
-            return self.operation[name]
+        if name in self.operations:
+            return self.operations[name]
 
-        self.operation[name] = OP_IDLE
+        self.operations[name] = OP_IDLE
         return OP_IDLE
 
     def setOpStatus(self, name, value):
@@ -851,7 +859,7 @@ class Mediapackage(object):
             name (Str): name of the operation whose status is going to be set.
             value (int): the status to be set.
         """
-        self.operation[name] = value
+        self.operations[name] = value
 
     def isScheduled(self):
         """ Checks if the status of the MP is scheduled
@@ -869,7 +877,7 @@ class Mediapackage(object):
         Raises:
             ValueError: if the argument received it is not an element.
         """
-        if element == None:
+        if element is None:
             raise ValueError("Argument 'element' must not be None")
         elif isinstance(element, Element):
             return element in self.elements.values()
@@ -915,7 +923,7 @@ class Mediapackage(object):
         if identifier not in self.elements:
             return None
         elem = self.elements[identifier]
-        if etype == None or elem.getElementType() == etype:
+        if etype is None or elem.getElementType() == etype:
             return elem
         else:
             return None
@@ -953,30 +961,13 @@ class Mediapackage(object):
 
         if basename:
             results = sorted(self.elements.values(), key=lambda e: e.getIdentifier())
-            results = filter(lambda elem: path.basename(elem.getURI()) == basename, results)
+            results = filter(lambda elem: os.path.basename(elem.getURI()) == basename, results)
 
         if results:
             result = results[0]
 
         return result
 
-
-    #TODO Remove this method an use getElementsByTags instead (string and lists allowed)
-    def getElementsByTag(self, tag, etype=None):
-        """Calls getElementsByTags if the tag is a string.
-        Otherwise raises TypeError.
-        Args:
-            tag (str): tag of the elements to be returned.
-            etype (str): type of the element to be retured. See module constants.
-        Returns:
-            List[Element]: a set of elements with the specified tag and type.
-        Raises:
-            TypeError: If the argument tag type is not a string.
-        """
-        if isinstance(tag, basestring):
-            return self.getElementsByTags(self, tag, etype)
-        else:
-            raise TypeError("The argument 'tag' should be a string")
 
     def getElementsByTags(self, tags, etype=None):
         """Returns the elements that are tagged with any of the given tags or an empty list if no such elements are found.
@@ -996,7 +987,7 @@ class Mediapackage(object):
         Raises:
             ValueError: if flavor is None.
         """
-        if flavor == None:
+        if flavor is None:
             raise ValueError("Argument 'flavor' cannot be None")
         return self.getElements(flavor=flavor)
 
@@ -1011,7 +1002,7 @@ class Mediapackage(object):
         Note:
             This method is not present in the original Java implementation, but it is included here for completeness
         """
-        if etype == None:
+        if etype is None:
             return sum(self.__howmany[x] for x in self.__howmany.keys()) > 0
         elif etype in ELEMENT_TYPES:
             return self.__howmany[etype] > 0
@@ -1100,16 +1091,6 @@ class Mediapackage(object):
 
         return result
 
-    #TODO Remove this method an use getTracksByTags instead (string and lists allowed)
-    def getTracksByTag(self, tag):
-        """Gets the tracks with a particular tag.
-        Args:
-            tag (str): the tag of the tracks that are going to be returned.
-        Returns:
-            List[Track]: a list of tracks with the specified tag.
-        """
-        return self.getElementsByTag(tag, TYPE_TRACK)
-
     def getTracksByTags(self, tags):
         """Gets the tracks that contains determined tags.
         Args:
@@ -1144,16 +1125,6 @@ class Mediapackage(object):
             List[Attachment]: a list of attachments with a determined flavor if it is specified.
         """
         return self.getElements(etype=TYPE_ATTACHMENT, flavor=flavor)
-
-    #TODO Remove this method an use getAttachmentsByTags instead (string and lists allowed)
-    def getAttachmentsByTag(self, tag):
-        """Gets a set of attachments with a tag.
-        Args:
-            tag (str): the tag of the attachments that are going to be returned.
-        Returns:
-            List[Attachment]: a list of attachments with a determined tag.
-        """
-        return self.getElementsByTag(tag, TYPE_ATTACHMENT)
 
     def getAttachmentsByTags(self, tags):
         """Gets a set of attachments that containes a determined set of tags.
@@ -1190,16 +1161,6 @@ class Mediapackage(object):
         """
         return self.getElements(etype=TYPE_CATALOG, flavor=flavor)
 
-    #TODO Remove this method an use getCatalogsByTags instead (string and lists allowed)
-    def getCatalogsByTag(self, tag):
-        """Gets all the catalogs with the given tag.
-        Args:
-            tag (str): the tag of the catalogs that are going to be returned.
-        Returns:
-            List[Catalog]: list of Catalogs with the given tag.
-        """
-        return self.getElementsByTag(tag, TYPE_CATALOG)
-
     def getCatalogsByTags(self, tags):
         """Gets the catalogs that contains a set of tags.
         Args:
@@ -1234,16 +1195,6 @@ class Mediapackage(object):
             List[Other]: list of the elements typed other with a particular flavor if it is given.
         """
         return self.getElements(etype=TYPE_OTHER, flavor=flavor)
-
-    #TODO Remove this method an use getUnclassifiedElementsByTags instead (string and lists allowed)
-    def getUnclassifiedElementsByTag(self, tag):
-        """Gets all the unclassified elements (type other) with a particular tag.
-        Args:
-            tag (str): the tag of the elements that are going to be returned.
-        Returns:
-            List[Other]: list of the elements typed other with the given tag.
-        """
-        return self.getElementsByTag(tag, TYPE_OTHER)
 
     def getUnclassifiedElementsByTags(self, tags):
         """Gets the unclassified elements (type other) that contains a given set of tags.
@@ -1312,8 +1263,8 @@ class Mediapackage(object):
         if etype not in ELEMENT_TYPES:
             raise ValueError("Invalid element type in argument")
 
-        if elem.getMediapackage() == None:
-            if elem.getIdentifier() == None:
+        if elem.getMediapackage() is None:
+            if elem.getIdentifier() is None:
                 identifier = self.__newElementId(etype)
                 elem.setIdentifier(identifier)
             elem.setMediapackage(self)
@@ -1350,7 +1301,7 @@ class Mediapackage(object):
         elem.setIdentifier(None)
 
         # If the element removed was a track, set the MP duration accordingly
-        if self.__howmany[TYPE_TRACK] == 0:
+        if elem.etype == TYPE_TRACK and self.__howmany[TYPE_TRACK] == 0:
             self.__duration = None
 
         if not soft:
@@ -1365,7 +1316,7 @@ class Mediapackage(object):
         """
         size = 0
         for f in self.getElements():
-            size += path.getsize(f.uri)
+            size += os.path.getsize(f.uri)
         #TODO taking into account the size of the xml or not.
         return size
 
@@ -1377,9 +1328,9 @@ class Mediapackage(object):
         for f in self.getElements():
             # Sum size of elements with the same flavor
             if f.getFlavor() in info:
-                info[f.getFlavor()] += path.getsize(f.getURI())
+                info[f.getFlavor()] += os.path.getsize(f.getURI())
             else:
-                info[f.getFlavor()] = path.getsize(f.getURI())
+                info[f.getFlavor()] = os.path.getsize(f.getURI())
 
         return info
 
@@ -1407,9 +1358,9 @@ class Mediapackage(object):
             content (str): content to be written in the xml file.
             name (str): name of the file.
         """
-        assert path.isdir(self.getURI())
+        assert os.path.isdir(self.getURI())
 
-        f_path = path.join(self.getURI(), name if name != None else 'episode.xml' ) #FIXME
+        f_path = os.path.join(self.getURI(), name if name != None else 'episode.xml' ) #FIXME
 
         f = open(f_path, 'w')
         f.write(content)
@@ -1427,9 +1378,9 @@ class Mediapackage(object):
         Note:
             From XML (series)  to galicaster.Mediapackage
         """
-        assert path.isdir(self.getURI())
+        assert os.path.isdir(self.getURI())
 
-        f_path = path.join(self.getURI(), name if name != None else 'series.xml' ) #FIXME
+        f_path = os.path.join(self.getURI(), name if name != None else 'series.xml' ) #FIXME
         f = open(f_path, 'w')
         f.write(content)
         f.close()
@@ -1450,22 +1401,7 @@ class Mediapackage(object):
                         continue
                     EPISODE_TERMS.append(node.nodeName.split(':')[1])
                 for name in EPISODE_TERMS:
-                    if name in ["created"]:
-                        creat = _checknget(dom, "dcterms:" + name)
-                        if creat:
-                            if creat[-1] == "Z":
-                                try:
-                                    self.setDate(datetime.strptime(creat, "%Y-%m-%dT%H:%M:%SZ"))
-                                except:
-                                    self.setDate(datetime.strptime(creat, "%Y-%m-%d %H:%M:%SZ"))
-                            else:
-                                try:
-                                    self.setDate(datetime.strptime(creat, "%Y-%m-%dT%H:%M:%S"))
-                                except:
-                                    self.setDate(datetime.strptime(creat, "%Y-%m-%d %H:%M:%S"))
-
-                                # parse erroneous format too
-                    elif name in ['creator']:
+                    if name in ['creator']:
                         self.setCreator(_checknget(dom, "dcterms:"+name))
                     elif name in ['isPartOf', 'ispartof']:
                         new = _checknget(dom, "dcterms:"+name)
@@ -1484,18 +1420,6 @@ class Mediapackage(object):
                 for name in SERIES_TERMS:
                     self.metadata_series[name] = _checknget(dom, "dcterms:" + name)
 
-        # Parse temporal metadatum
-        if self.metadata_episode.has_key('temporal') and self.metadata_episode['temporal'] and not self.hasTracks():
-            try:
-                g = re.search('start=(.*); end=(.*); ', self.metadata_episode['temporal'])
-                start = parser.parse(g.group(1)).astimezone(tz.tzutc()).replace(tzinfo=None)
-                stop = parser.parse(g.group(2)).astimezone(tz.tzutc()).replace(tzinfo=None)
-                diff = stop - start
-                self.setDuration(diff.seconds*1000)
-                self.setDate(start)
-            except:
-                pass
-
     #FIXME merge with add
     def addAttachmentAsString(self, content, name=None, identifier=None):
         """Adds the information of an attachment in a file.
@@ -1505,9 +1429,9 @@ class Mediapackage(object):
             name (str): the name of the file.
             identifier (str): the identifier of the attachment element.
         """
-        assert path.isdir(self.getURI())
+        assert os.path.isdir(self.getURI())
 
-        f_path = path.join(self.getURI(), name if name != None else 'data' )
+        f_path = os.path.join(self.getURI(), name if name != None else 'data' )
 
         f = open(f_path, 'w')
         f.write(content)
@@ -1529,7 +1453,7 @@ class Mediapackage(object):
             attach = self.getAttachment('org.opencastproject.capture.agent.properties')
             values = dict(read_ini(attach.getURI()))
             return values[name].lower()
-        except:
+        except Exception:
             return None
 
 
@@ -1543,7 +1467,7 @@ class Mediapackage(object):
         try:
             attach = self.getAttachment('org.opencastproject.capture.agent.properties')
             return dict(read_ini(attach.getURI()))
-        except:
+        except Exception:
             return {}
 
 
