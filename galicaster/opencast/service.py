@@ -72,6 +72,8 @@ class OCService(object):
         self.dispatcher.connect('recorder-started', self.__check_recording_started)
         self.dispatcher.connect('recorder-stopped', self.__check_recording_stopped)
         self.dispatcher.connect("recorder-error", self.on_recorder_error)
+        self.dispatcher.connect('init', self.on_start)
+        self.dispatcher.connect("quit", self.on_quit)
 
         self.t_stop = None
 
@@ -194,6 +196,9 @@ class OCService(object):
             self.client.welcome()
             self.__set_opencast_up()
             self.jobs.put((self.update_series,()))
+            self.jobs.put((self.process_ical,()))
+            self.jobs.put((self.update_conf,()))
+
             if self.conf.tracks_visible_to_opencast():
                 self.logger.info('Be careful using profiles and opencast scheduler')
         except Exception as exc:
@@ -257,3 +262,14 @@ class OCService(object):
             if now_is_recording_time:
                 self.scheduler.mp_rec = None
                 self.__set_recording_state(mp, 'capture_error')
+
+    def on_start(self, origin=None):
+        self.jobs.put((self.init_client, ()))
+
+    def on_quit(self, origin=None):
+        import json
+        from distutils.version import LooseVersion
+        response = json.loads(self.client.services())
+        version = response["rest"][0]["version"]
+        if LooseVersion("2.3.0") <= LooseVersion(version):
+            self.client.setstate('offline')

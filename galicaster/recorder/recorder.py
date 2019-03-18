@@ -133,7 +133,7 @@ class Recorder(object):
     def __query_position(self):
         try:
             succes, duration = self.pipeline.query_position(Gst.Format.TIME)
-        except:
+        except Exception:
             duration = 0
         return duration
 

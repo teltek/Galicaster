@@ -169,6 +169,16 @@ class TestFunctions(TestCase):
         self.assertNotEqual(error, None)
         self.assertEqual(valid_track['flavor'], 'presenter')
 
+        # Valid (Test custom flavors)
+        from galicaster.core import context as gc_context
+        gc_conf = gc_context.get_conf()
+        gc_conf.set('basic', 'custom_flavors', 'myflavor') # Add myflavor to list of valid flavors
+
+        track['flavor'] = 'myflavor'
+        error, valid_track = validator.validate_track(track)
+        self.assertEqual(error, None)
+        self.assertEqual(valid_track['flavor'], 'myflavor')
+
 
     def test_validate_select(self):
         track = {'device': 'videotest'}

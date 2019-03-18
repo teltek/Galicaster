@@ -312,7 +312,7 @@ class PlayerClassUI(ManagerUI):
                 else:
                     try:
                         format_type, actual_time =self.player.get_position()
-                    except:
+                    except Exception:
                             actual_time = 0
                             log.warning("Query position failed")
 
@@ -453,7 +453,7 @@ class PlayerClassUI(ManagerUI):
     def time_readable(self,seconds):
         """ Generates date hour:minute:seconds from seconds"""
         iso = int(seconds)
-        return "{}:{:02d}:{:02d}".format(iso/3600, (iso%3600)/60, iso%60)
+        return "{}:{:02d}:{:02d}".format(iso//3600, (iso%3600)//60, iso%60)
 
     def time_readable2(self,s1,s2):
         """ Generates date hour:minute:seconds from seconds """

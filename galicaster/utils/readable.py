@@ -42,7 +42,7 @@ def date(iso, style="%d-%m-%Y %H:%M"):
 def time(value):
     """ Generates date hout:minute:seconds from seconds """	
     seconds=int(value)
-    return "{0:2d}:{1:02d}:{2:02d}".format(seconds/3600,(seconds%3600)/60,seconds%60) if seconds>3599 else "{0:2d}:{1:02d}".format((seconds%3600)/60,seconds%60)
+    return "{0:2d}:{1:02d}:{2:02d}".format(seconds//3600,(seconds%3600)//60,seconds%60) if seconds>3599 else "{0:2d}:{1:02d}".format((seconds%3600)//60,seconds%60)
 
 
 def long_time(timedif):

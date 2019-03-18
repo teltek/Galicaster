@@ -13,6 +13,8 @@
 
 import os
 from datetime import datetime
+from gi.repository import Gdk, GLib
+
 from galicaster.mediapackage import mediapackage
 from galicaster.recorder import Recorder
 from galicaster.utils.i18n import _
@@ -121,10 +123,15 @@ class RecorderService(object):
         self.dispatcher.emit("recorder-ready")
 
         self.mute_preview(self.mute)
-        if self.__create_drawing_areas_func:
-            info = self.recorder.get_display_areas_info()
-            areas = self.__create_drawing_areas_func(info)
-            self.recorder.set_drawing_areas(areas)
+
+        def drawing_areas_wrapper():
+            if self.__create_drawing_areas_func:
+                info = self.recorder.get_display_areas_info()
+                areas = self.__create_drawing_areas_func(info)
+                self.recorder.set_drawing_areas(areas)
+
+        Gdk.threads_add_idle(GLib.PRIORITY_HIGH, drawing_areas_wrapper)
+
 
 
     def record(self, mp=None):
@@ -152,14 +159,9 @@ class RecorderService(object):
                 self.resume()
 
             if self.status == RECORDING_STATUS:
-                self.recorder.stop()
-                self.__close_mp()
-                try:
-                    self.__prepare()
-                    self.recorder.preview_and_record()
-                except Exception as exc:
-                    self.dispatcher.emit("recorder-error", str(exc))
-                    return False
+                self.stop()
+                self.record(mp)
+                return True
             else:
                 self.recorder and self.recorder.record()
 
@@ -365,7 +367,7 @@ class RecorderService(object):
 
     def __new_mediapackage(self):
         now = datetime.now().replace(microsecond=0)
-        title = _("Recording started at {0}").format(now.isoformat())
+        title = self.conf.get_hostname() + _(" at {0}").format(now.isoformat())
         mp = mediapackage.Mediapackage(title=title)
         return mp
 

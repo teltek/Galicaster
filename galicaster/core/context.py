@@ -204,7 +204,8 @@ def get_worker():
                                                 not legacy,
                                                 get_conf().get('sidebyside', 'layout'),
                                                 get_conf().get_list('operations', 'hide'),
-                                                get_conf().get_list('operations', 'hide_nightly'))
+                                                get_conf().get_list('operations', 'hide_nightly'),
+                                                get_conf().get_int('ingest', 'min-length', 0))
 
     return __galicaster_context['worker']
 
