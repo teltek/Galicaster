@@ -138,6 +138,18 @@ class PopUp(Gtk.Widget):
 
         elif message == ABOUT:
             self.set_logos(self.gui)
+            # WORKAROUND (TTK-16472):
+            # In some graphical environments the GtkAboutDialog default buttons would not appear
+            # This blocks Galicaster, as the dialog can't be closed
+            # As a workaround, we add a "Close" button if the dialog buttonbox is empty
+            # A more permanent solution might be crafting the about window manually
+            about_buttonbox = self.gui.get_object("aboutdialog-action_area1")
+            if len(about_buttonbox.get_children()) == 0 :
+                about_buttonbox.get_parent().set_property('visible' ,True)
+                close_button = Gtk.Button().new_with_label(_("Close"))
+                close_button.set_property('visible' ,True)
+                close_button.connect("clicked", self.dialog_destroy)
+                about_buttonbox.pack_start(close_button, False, True, 0)
 
         elif message == NEXT_REC:
             if text['next_recs']:

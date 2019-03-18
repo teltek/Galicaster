@@ -40,13 +40,6 @@ audiostr= (
             ' audioconvert ! gc-blackmagic-audioenc ! queue ! gc-blackmagic-muxer. '
             )
 
-
-FRAMERATE = dict(zip(
-    ["ntsc","ntsc2398", "pal", "ntsc-p","pal-p", "1800p2398", "1080p24", "1080p25", "1080p2997", "1080p30", "1080i50", "1080i5994", "1080i60", "1080p50", "1080p5994", "1080p60", "720p50", "720p5994","720p60"],
-    ["30000/1001","24000/1001", "25/1", "30000/1001","25/1", "24000/1001", "24/1", "25/1", "30000/1001", "30/1", "25/1", "30000/1001", "30/1", "50/1", "60000/1001", "60/1", "50/1", "60000/1001","60/1"]
-    ))
-
-
 class GCblackmagic(Gst.Bin, base.Base):
 
   order = ["name","flavor","location","file",
@@ -113,7 +106,7 @@ class GCblackmagic(Gst.Bin, base.Base):
       "type": "select",
       "default": "1080p25",
       "options": [
-        "ntsc","ntsc2398", "pal", "ntsc-p","pal-p",
+        "auto","ntsc","ntsc2398", "pal", "ntsc-p","pal-p",
         "1080p2398", "1080p24", "1080p25", "1080p2997", "1080p30",
         "1080i50", "1080i5994", "1080i60",
         "1080p50", "1080p5994", "1080p60",
@@ -137,9 +130,9 @@ class GCblackmagic(Gst.Bin, base.Base):
       },
     "subdevice" : {
       "type": "select",
-      "default": 0,
+      "default": '0',
       "options": [
-        0,1,2,3
+        '0','1','2','3'
         ],
       "description": "Select a Blackmagic card from a maximum of 4 devices",
       },
@@ -190,7 +183,7 @@ class GCblackmagic(Gst.Bin, base.Base):
     "deinterlace" : {
       "type": "select",
       "default": "",
-      "options": ["auto", "interlaced", "auto-strict"],
+      "options": ["", "auto", "interlaced", "auto-strict"],
       "description": "Deinterlace mode",
     },
     "caps-preview" : {
@@ -218,19 +211,20 @@ class GCblackmagic(Gst.Bin, base.Base):
 
         pipestr = videostr
 
-        if self.options['framerate'] == "auto":
-          self.options['framerate'] = FRAMERATE[self.options["input-mode"]]
-
         gcvideosink = get_videosink(videosink=self.options['videosink'], name='sink-'+self.options['name'])
         gcaudiosink = get_audiosink(audiosink=self.options['audiosink'], name='sink-audio-'+self.options['name'])
         aux = (pipestr.replace('gc-vsink', gcvideosink)
                .replace('gc-blackmagic-conn', self.options['input'])
                .replace('gc-blackmagic-mode', self.options['input-mode'])
-               .replace('gc-blackmagic-subd', str(self.options['subdevice']))
+               .replace('gc-blackmagic-subd', self.options['subdevice'])
                .replace('gc-blackmagic-enc', self.options['videoencoder'])
                .replace('gc-blackmagic-muxer', self.options['muxer']+" name=gc-blackmagic-muxer")
-               .replace('gc-blackmagic-capsfilter', "video/x-raw,framerate={0}".format(self.options['framerate']))
                )
+
+        if self.options['framerate'] == "auto":
+          aux = aux.replace('gc-blackmagic-capsfilter', "video/x-raw")
+        else:
+          aux = aux.replace('gc-blackmagic-capsfilter', "video/x-raw,framerate={0}".format(self.options['framerate']))
 
         if self.options["audio-input"] == "none":
           self.has_audio = False

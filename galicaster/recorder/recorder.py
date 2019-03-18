@@ -133,7 +133,7 @@ class Recorder(object):
     def __query_position(self):
         try:
             succes, duration = self.pipeline.query_position(Gst.Format.TIME)
-        except:
+        except Exception:
             duration = 0
         return duration
 
@@ -198,6 +198,7 @@ class Recorder(object):
 
     def pause(self):
         logger.debug("recorder paused")
+        self.__pause_timestamp = self.__query_position()
         self.__set_state(Gst.State.PAUSED)
         return True
 

@@ -258,7 +258,7 @@ class MetadataClass(Gtk.Widget):
                     if child.get_text() == "":
                         mp.metadata_episode[name] = None
                     else:
-                        mp.metadata_episode[name] = child.get_text().strip()
+                        mp.metadata_episode[name] = unicode(child.get_text().strip(),encoding='utf-8')
 
                 elif name in [ "ispartof", "isPartOf" ]:
                     if child.get_active_iter():
