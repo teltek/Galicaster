@@ -44,6 +44,7 @@ class Repository(object):
             hostname (str): galicaster name use in folder prefix
             folder_template (str): name of the mediapackage folder with the timestamp. See get_folder_name mapping.
             logger (Logger): logger that prints information, warnings and errors in the log file. See galicaster/context/logger
+            recoverytype (str): how mediapackage recovery should be handled after application error. choice between full and save.
         Attributes:
             __list (Dict{str,Mediapackage}): the mediapackages in the repository and its identifiers as keys
         """
