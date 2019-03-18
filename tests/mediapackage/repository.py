@@ -97,11 +97,11 @@ class TestFunctions(TestCase):
         self.assertEqual(repo.get("dae91194-2114-481b-8908-8a8962baf8dd").status, mediapackage.FAILED)
         self.assertEqual(repo.get("dae91194-2114-481b-8908-8a8962baf8de").status, mediapackage.RECORDED)
 
-        self.assertEqual(len(repo.get("dae91194-2114-481b-8908-8a8962baf8da").operation), 0)
-        self.assertEqual(len(repo.get("dae91194-2114-481b-8908-8a8962baf8db").operation), 0)
-        self.assertEqual(len(repo.get("dae91194-2114-481b-8908-8a8962baf8dc").operation), 1)
-        self.assertEqual(len(repo.get("dae91194-2114-481b-8908-8a8962baf8dd").operation), 2)
-        self.assertEqual(len(repo.get("dae91194-2114-481b-8908-8a8962baf8de").operation), 3)
+        self.assertEqual(len(repo.get("dae91194-2114-481b-8908-8a8962baf8da").operations), 0)
+        self.assertEqual(len(repo.get("dae91194-2114-481b-8908-8a8962baf8db").operations), 0)
+        self.assertEqual(len(repo.get("dae91194-2114-481b-8908-8a8962baf8dc").operations), 1)
+        self.assertEqual(len(repo.get("dae91194-2114-481b-8908-8a8962baf8dd").operations), 2)
+        self.assertEqual(len(repo.get("dae91194-2114-481b-8908-8a8962baf8de").operations), 3)
 
         mp_duration = repo.get("dae91194-2114-481b-8908-8a8962baf8da").getDuration()
         self.assertEqual(mp_duration, 2106)

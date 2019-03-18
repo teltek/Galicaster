@@ -24,11 +24,12 @@ from galicaster.utils.miscellaneous import get_timezone
 
 try:
     from galicaster import __version__ as version
-except:
+except Exception:
     version = ""
 
 INIT_ENDPOINT = 'info/me.json'
 ME_ENDPOINT = 'info/me.json'
+SERVICES_ENDPOINT = 'info/components.json'
 SETRECORDINGSTATE_ENDPOINT = 'capture-admin/recordings/{id}'
 SETSTATE_ENDPOINT = 'capture-admin/agents/{hostname}'
 SETCONF_ENDPOINT = 'capture-admin/agents/{hostname}/configuration'
@@ -102,59 +103,79 @@ class OCHTTPClient(object):
     def __call(self, method, endpoint, path_params={}, query_params={}, postfield={}, urlencode=True, server=None, timeout=True, headers={}):
 
         theServer = server or self.server
-        c = pycurl.Curl()
-        b = StringIO()
 
         url = list(urlparse.urlparse(theServer, 'http'))
         url[2] = urlparse.urljoin(url[2], endpoint.format(**path_params))
         url[4] = urllib.urlencode(query_params)
-        c.setopt(pycurl.URL, urlparse.urlunparse(url))
 
-        c.setopt(pycurl.FOLLOWLOCATION, False)
-        c.setopt(pycurl.CONNECTTIMEOUT, self.connect_timeout)
-        if timeout:
-            c.setopt(pycurl.TIMEOUT, self.timeout)
-        c.setopt(pycurl.NOSIGNAL, 1)
-        c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_DIGEST)
-        c.setopt(pycurl.USERPWD, self.user + ':' + self.password)
-        sendheaders = ['X-Requested-Auth: Digest', 'X-Opencast-Matterhorn-Authorization: true']
-        if headers:
-            for h, v in headers.iteritems():
-                sendheaders.append('{}: {}'.format(h, v))
-            # implies we might be interested in passing the response headers
-            c.setopt(pycurl.HEADERFUNCTION, self.scanforetag)
-        c.setopt(pycurl.HTTPHEADER, sendheaders)
-        c.setopt(pycurl.USERAGENT, 'Galicaster' + version)
-        c.setopt(pycurl.SSL_VERIFYPEER, False) # equivalent to curl's --insecure
-
-        if (method == 'POST'):
-            if urlencode:
-                c.setopt(pycurl.POST, 1)
-                c.setopt(pycurl.POSTFIELDS, urllib.urlencode(postfield))
-            else:
-                c.setopt(pycurl.HTTPPOST, postfield)
-        c.setopt(pycurl.WRITEFUNCTION, b.write)
-
-        #c.setopt(pycurl.VERBOSE, True) ##TO DEBUG
+        c = b = None
         try:
+            c = pycurl.Curl()
+
+            c.setopt(pycurl.URL, urlparse.urlunparse(url))
+
+            c.setopt(pycurl.FOLLOWLOCATION, False)
+            c.setopt(pycurl.CONNECTTIMEOUT, self.connect_timeout)
+            if timeout:
+                c.setopt(pycurl.TIMEOUT, self.timeout)
+            c.setopt(pycurl.NOSIGNAL, 1)
+            c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_DIGEST)
+            c.setopt(pycurl.USERPWD, self.user + ':' + self.password)
+            sendheaders = ['X-Requested-Auth: Digest', 'X-Opencast-Matterhorn-Authorization: true']
+            if headers:
+                for h, v in headers.iteritems():
+                    sendheaders.append('{}: {}'.format(h, v))
+                # implies we might be interested in passing the response headers
+                c.setopt(pycurl.HEADERFUNCTION, self.scanforetag)
+            c.setopt(pycurl.HTTPHEADER, sendheaders)
+            c.setopt(pycurl.USERAGENT, 'Galicaster' + version)
+            c.setopt(pycurl.SSL_VERIFYPEER, False) # equivalent to curl's --insecure
+
+            if (method == 'POST'):
+                if urlencode:
+                    c.setopt(pycurl.POST, 1)
+                    c.setopt(pycurl.POSTFIELDS, urllib.urlencode(postfield))
+                else:
+                    c.setopt(pycurl.HTTPPOST, postfield)
+
+            b = StringIO()
+            c.setopt(pycurl.WRITEFUNCTION, b.write)
+
+            #c.setopt(pycurl.VERBOSE, True) ##TO DEBUG
             c.perform()
+
+            status_code = c.getinfo(pycurl.HTTP_CODE)
+            self.response['Status-Code'] = status_code
+            self.response['Content-Type'] = c.getinfo(pycurl.CONTENT_TYPE)
+
+            if status_code != 200 and status_code != 302 and status_code != 304:
+                if (status_code > 200) and (status_code < 300):
+                    self.logger and self.logger.warning("Opencast client ({}) sent a response with status code {}".format(urlparse.urlunparse(url), status_code))
+                else:
+                    title = self.find_between(b.getvalue(), "<title>", "</title>")
+                    self.logger and self.logger.error('call error in %s, status code {%r}: %s',
+                                                      urlparse.urlunparse(url), status_code, title)
+                    raise IOError, 'Error in Opencast client'
+
+            return b.getvalue()
+        except IOError:
+            # Do not wrap the IOError. We raise it ourselves
+            raise
         except Exception as exc:
             raise RuntimeError, exc
-
-        status_code = c.getinfo(pycurl.HTTP_CODE)
-        self.response['Status-Code'] = status_code
-        self.response['Content-Type'] = c.getinfo(pycurl.CONTENT_TYPE)
-        c.close()
-        if status_code != 200 and status_code != 302 and status_code != 304:
-            if (status_code > 200) and (status_code < 300):
-                self.logger and self.logger.warning("Opencast client ({}) sent a response with status code {}".format(urlparse.urlunparse(url), status_code))
-            else:
-                title = self.find_between(b.getvalue(), "<title>", "</title>")
-                self.logger and self.logger.error('call error in %s, status code {%r}: %s',
-                                                  urlparse.urlunparse(url), status_code, title)
-                raise IOError, 'Error in Opencast client'
-
-        return b.getvalue()
+        finally:
+            if c is not None:
+                try:
+                    c.close()
+                except Exception as e:
+                    # We did our best!
+                    self.logger and self.logger.warning("Could not close cURL object properly: {}", e)
+            if b is not None:
+                try:
+                    b.close()
+                except Exception as e:
+                    # We did our best!
+                    self.logger and self.logger.warning("Could not close StringIO object properly: {}", e)
 
     def scanforetag(self, buffer):
         if buffer.startswith('ETag:'):
@@ -167,6 +188,8 @@ class OCHTTPClient(object):
     def welcome(self):
         return self.__call('GET', INIT_ENDPOINT)
 
+    def services(self):
+        return self.__call('GET', SERVICES_ENDPOINT)
 
     def ical(self):
         icalendar = self.__call('GET', ICAL_ENDPOINT, query_params={'agentid': self.hostname}, headers={'If-None-Match': self.ical_etag})
@@ -217,7 +240,7 @@ class OCHTTPClient(object):
             'capture.recording.shutdown.timeout': '60',
             'capture.recording.state.remote.endpoint.url': self.server + '/capture-admin/recordings',
             'capture.schedule.event.drop': 'false',
-            'capture.schedule.remote.polling.interval': int(self.polling_schedule)/60,
+            'capture.schedule.remote.polling.interval': int(self.polling_schedule)//60,
             'capture.schedule.event.buffertime': '1',
             'capture.schedule.remote.endpoint.url': self.server + '/recordings/calendars',
             'capture.schedule.cache.url': '/opt/opencast/storage/cache/schedule.ics',
@@ -374,5 +397,5 @@ class OCHTTPClient(object):
             start = s.index(first) + len(first)
             end = s.index(last, start)
             return s[start:end]
-        except:
+        except Exception:
             return ""

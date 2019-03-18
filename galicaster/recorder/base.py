@@ -19,7 +19,6 @@ from galicaster.utils import validator
 from galicaster.core import context
 
 logger = context.get_logger()
-FLAVOR = ['presenter', 'presentation', 'other']
 
 class Base(object):
     gc_parameters = {
@@ -33,6 +32,11 @@ class Base(object):
             "default": "presenter",
             "description": "Opencast flavor associated to the track",
             },
+        "tags": {
+            "type": "list",
+            "default": [],
+            "description": "Opencast tags associated to the track",
+        },
         "location": {
             "type": "device",
             "default": "/dev/video0",
@@ -54,10 +58,10 @@ class Base(object):
         if current_profile:
             path = current_profile.path
         # Check the profile parameters (*.ini)
-        # for k in options:
-        #     if k not in self.gc_parameters and k not in ['device', 'active', 'path']:
-        #         logger.warning('Does not exit the parameter "{0}". Please check the file {1}'.format(
-        #                 k, current_profile_path))
+        for k in options:
+            if k not in self.gc_parameters and k not in ['device', 'active', 'path']:
+                logger.warning('The profile parameter "{0}" does not exist. Please check the file {1}'.format(
+                        k, path))
 
 
 
@@ -65,28 +69,22 @@ class Base(object):
         self.options = dict([(k,v['default']) for k,v in self.gc_parameters.iteritems()])
         # TODO parsear
 
-        for k, v in options.iteritems():
-            #Fixed in master https://github.com/teltek/Galicaster/pull/510
-            if v is not None:
-                self.options[k] = validator.parse_automatic(v)
-
         # Validate option values
-        try:
-            global_error, self.options = validator.validate_track(self.options)
-        except Exception as exc:
-            error_msg = 'Profile error in {0}, track {1}. {2}'.format(
-                path, self.options['name'], exc)
-
-            logger.error(error_msg)
-            raise SystemError(error_msg)
+        for k, v in options.iteritems():
+            gc_parameter = None
+            if self.gc_parameters.has_key(k):
+                gc_parameter = self.gc_parameters[k]
+            if v is not None:
+                error, self.options[k] = validator.parse_validate(k, v, gc_parameter)
+                if error:
+                    self.logger.error(error)
 
         # Sanitaze values
         self.options["name"] = re.sub(r'\W+', '', self.options["name"])
 
 
-    def set_option_in_pipeline(self, option, element, prop, parse=str):
-        element_name = element
-        element = self.get_by_name(element)
+    def set_option_in_pipeline(self, option, element_name, prop, parse=str):
+        element = self.get_by_name(element_name)
         if not element:
             self.logger.error("There isn't an element named {}".format(element_name))
         elif prop == "caps":
@@ -95,9 +93,8 @@ class Base(object):
             element.set_property(prop, parse(self.options[option]))
 
 
-    def set_value_in_pipeline(self, value, element, prop, parse=str):
-        element_name = element
-        element = self.get_by_name(element)
+    def set_value_in_pipeline(self, value, element_name, prop, parse=str):
+        element = self.get_by_name(element_name)
         if not element:
             self.logger.error("There isn't an element named {}".format(element_name))
         else:

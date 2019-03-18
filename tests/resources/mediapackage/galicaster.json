@@ -1,0 +1,10 @@
+{
+    "galicaster": {
+        "operations": {},
+        "properties": {
+            "notes": "Nota de Prueba <?php Caracteres \u00f1 I'm raros >",
+            "origin": ""
+        },
+        "status": 0
+    }
+}

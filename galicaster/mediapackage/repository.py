@@ -24,6 +24,9 @@ from galicaster.mediapackage import mediapackage
 from galicaster.mediapackage import serializer
 from galicaster.mediapackage import deserializer
 
+from galicaster.opencast import series
+from galicaster.core import context
+
 """
 This class manages (add, list, remove...) all the mediapackages in the repository.
 """
@@ -282,7 +285,7 @@ class Repository(object):
         if mp.status > mediapackage.FAILED:
             mp.status = mediapackage.RECORDED
             change = True
-        for (op_name, op_value) in mp.operation.iteritems():
+        for (op_name, op_value) in mp.operations.iteritems():
             if op_value in [mediapackage.OP_PROCESSING, mediapackage.OP_PENDING]:
                 mp.setOpStatus(op_name, mediapackage.OP_FAILED)
                 change = True
@@ -439,7 +442,7 @@ class Repository(object):
         next = None
         for mp in self.__list.values():
             if mp.getDate() > datetime.datetime.utcnow():
-                if next == None:
+                if next is None:
                     next = mp
                 else:
                     if mp.getDate() < next.getDate():
@@ -538,7 +541,7 @@ class Repository(object):
         """
         if self.has(mp):
             raise KeyError('Key Repeated')
-        if mp.getURI() == None:
+        if mp.getURI() is None:
             mp.setURI(self.__get_folder_name(mp))
         else:
             assert mp.getURI().startswith(self.root + os.sep)
@@ -576,10 +579,19 @@ class Repository(object):
                     flavour = bin['flavor'] + '/source'
                 else:
                     flavour = bin['flavor']
-                mp.add(dest, mediapackage.TYPE_TRACK, flavour, etype, duration) # FIXME MIMETYPE
+
+                tags = []
+                if 'tags' in bin:
+                    tags = bin['tags']
+
+                mp.add(dest, mediapackage.TYPE_TRACK, flavour, etype, duration, tags=tags) # FIXME MIMETYPE
             else:
                 self.logger and self.logger.info("Not adding {} to MP {}".format(bin['file'],mp.getIdentifier()))
 
+        if mp.manual and not mp.getSeriesIdentifier():
+            conf = context.get_conf()
+            if conf.get('series','default'):
+                series.setSeriebyId(mp, conf.get('series','default'))
 
         mp.forceDuration(duration)
 

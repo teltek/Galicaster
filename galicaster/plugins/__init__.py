@@ -16,6 +16,9 @@ from galicaster.core import context
 
 logger = context.get_logger()
 loaded = []
+prefixes = {'galicaster.plugins.': 'Internal',
+            'galicaster_plugin_': 'External'}
+
 
 def init():
     global loaded
@@ -24,17 +27,24 @@ def init():
     list_plugins = conf.get_section('plugins')
     for plugin, v in list_plugins.iteritems():
         if v.lower() == 'true':
-            for prefix in ['galicaster.plugins.', 'galicaster_plugin_']:
+            for prefix in prefixes:
+                plugin_type = prefixes[prefix]
                 try:
                     name = prefix + plugin
                     __import__(name)
                     sys.modules[name].init()
-                    logger.info('Plugin {0} started'.format(plugin))
+                    logger.info('{} plugin {} started'.format(plugin_type,
+                                                              plugin))
                     loaded.append(name)
                     break
-                except Exception as exc:
-                    logger.error('Exception thrown when starting plugin {}: {}'.format(plugin, exc))
+                except Exception as e:
+                    if e.message == 'No module named {}'.format(plugin):
+                        logger.warning('{} plugin {} not found'
+                                       .format(plugin_type, plugin))
+                    else:
+                        logger.error('Exception thrown starting plugin {}:'
+                                     .format(plugin), exc_info=True)
             else:
-                logger.error('Error starting plugin {}: {}'.format(plugin, exc))
+                logger.error('Error starting plugin {}'.format(plugin))
         else:
             logger.info('Plugin {0} not enabled in conf'.format(plugin))

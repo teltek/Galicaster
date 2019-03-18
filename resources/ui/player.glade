@@ -289,7 +289,7 @@
                         <property name="margin_right">3</property>
                         <signal name="clicked" handler="on_question" swapped="no"/>
                         <child>
-                          <object class="GtkBox" id="box2">
+                          <object class="GtkBox" id="box0">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="valign">center</property>
@@ -645,7 +645,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox" id="box_quit">
+          <object class="GtkBox" id="box2">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">end</property>

@@ -20,6 +20,8 @@ from galicaster.mediapackage import mediapackage
 This class manages the timers and its respective signals in order to start and stop scheduled recordings.
 """
 
+DEFAULT_SCHEDULER_ACTIVE = True
+
 class Scheduler(object):
 
     def __init__(self, repo, conf, disp, logger, recorder):
@@ -52,8 +54,11 @@ class Scheduler(object):
         self.start_timers = dict()
         self.mp_rec = None
 
-        self.dispatcher.connect("timer-long", self._check_next_recording)
+        self.active     = conf.get('scheduler', 'active') or DEFAULT_SCHEDULER_ACTIVE
+        self.logger.debug('scheduler is active: %r' % self.active)
 
+        if self.active:
+            self.dispatcher.connect("timer-long", self._check_next_recording)
 
     def _check_next_recording(self, origin):
         next_mp = self.repo.get_next_mediapackage()

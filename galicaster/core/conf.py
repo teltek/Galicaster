@@ -22,9 +22,6 @@ from collections import OrderedDict
 from datetime import datetime
 from galicaster.utils import validator
 
-YES = ['true', 'yes', 'ok', 'si', 'y']
-NO = ['false', 'no', 'n']
-
 """
 These classes shapes the galicaster configuration.
 The Conf class gets all the configurable parameters and recording profiles including the default one.
@@ -235,9 +232,9 @@ class Conf(object): # TODO list get and other ops arround profile
             Bool: the value of option opt in section sect as a boolean if there are no errors. Default otherwise.
         """
         value = self.get_lower(sect, opt)
-        if value in YES:
+        if value in validator.YES:
             return True
-        elif value in NO:
+        elif value in validator.NO:
             return False
         else:
             self.logger and self.logger.warning('Unknown value "{0}" obtaining a boolean from the parameter "{1}" in section "{2}", FORCED TO "{3}"'.format(value, opt, sect, default))
@@ -340,24 +337,22 @@ class Conf(object): # TODO list get and other ops arround profile
 
 
     def get_json(self, sect, opt, default={}):
-        """Tries to return a set of values of an option in a section as a dictionary.
-        If else returns the given default value.
+        """Try to return JSON deserialized version of a config option
+        Otherwise returns the given default value.
         Args:
             sect (str): section of configuration file.
             opt (str): option of configuration file.
             default (str): default output if there is no value.
         Returns:
-            Dict: the set of values of option opt in section sect if there are no error. Default otherwise.
-        Note:
-        key = {"foo":["bar", null, 1.0, 2]}
+            Object: see JSON conversion table below. Default otherwise.
+            https://docs.python.org/2/library/json.html#json-to-py-table
         """
-        dictionary = {}
         if self.get(sect, opt):
             try:
-                dictionary = json.loads(self.get(sect, opt))
+                return json.loads(self.get(sect, opt))
             except Exception as exc:
-                self.logger and self.logger.warning('Error obtaining a json dictionary from "{0}" in section "{1}", FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
-        return dictionary if dictionary else default
+                self.logger and self.logger.warning('Error deserializing JSON from "{0}" in section "{1}", FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
+        return default
 
 
     def get_section(self, sect, default={}):
@@ -658,7 +653,7 @@ class Conf(object): # TODO list get and other ops arround profile
 
         profile.import_tracks_from_parser(parser)
         if activated:
-            def f(x): return x.get('active', 'true').lower() in YES
+            def f(x): return x.get('active', 'true').lower() in validator.YES
             profile.tracks = filter(f, profile.tracks)
         return profile
 
@@ -973,21 +968,6 @@ class Profile(object):
                 audio_tracks.append(element)
 
         return audio_tracks
-
-    #TODO error, be careful with self.tracks(. It's not a method
-    def reorder_tracks(self, order=[]):
-        """Reorders the tracks following the order set by the argument order.
-        If the new list of index (order) is smaller than the dictionary of tracks, the tracks from the old order are added at the end of the new order.
-        Args:
-            order (List[int]): the list of the new index of tracks.
-        """
-        new_order = []
-        for index in range(len(order)):
-            new_order.append(self.tracks(order[index]).copy())
-        for track in self.tracks:
-            if self.tracks.index(track) not in order:
-                new_order.append(track.copy())
-        self.tracks = new_order
 
     #TODO same as profile.path
     def set_path(self, path):
