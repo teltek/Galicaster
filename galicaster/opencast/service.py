@@ -72,6 +72,7 @@ class OCService(object):
         self.dispatcher.connect('recorder-started', self.__check_recording_started)
         self.dispatcher.connect('recorder-stopped', self.__check_recording_stopped)
         self.dispatcher.connect("recorder-error", self.on_recorder_error)
+        self.dispatcher.connect("opencast-status", self.on_opencast_status)
         self.dispatcher.connect('init', self.on_start)
         self.dispatcher.connect("quit", self.on_quit)
 
@@ -83,7 +84,6 @@ class OCService(object):
         self.series = []
 
         self.ical_data = None
-
         self.jobs = Queue.Queue()
         t = T(self.jobs)
         t.setDaemon(True)
@@ -262,6 +262,13 @@ class OCService(object):
             if now_is_recording_time:
                 self.scheduler.mp_rec = None
                 self.__set_recording_state(mp, 'capture_error')
+
+    def on_opencast_status(self, origin, status=None):
+        if status == True and self.scheduler.mp_rec != None:
+            mp = self.repo.get(self.scheduler.mp_rec)
+            if mp and mp.getOCCaptureAgentProperty('capture.device.names'):
+                self.logger.info("Resending scheduled MP state to Opencast")
+                self.__set_recording_state(mp, 'capturing')
 
     def on_start(self, origin=None):
         self.jobs.put((self.init_client, ()))
