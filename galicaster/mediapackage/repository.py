@@ -37,7 +37,7 @@ class Repository(object):
 
     def __init__(self, root=None, hostname='',
                  folder_template='gc_{hostname}_{year}-{month}-{day}T{hour}h{minute}m{second}',
-                 logger=None, recoverytype=None):
+                 logger=None, recoverytype='full'):
         """Initializes a repository that will contain a set of mediapackage.
         Args:
             root (str): absolute path to the working folder. ~/Repository used if it is None
