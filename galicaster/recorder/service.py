@@ -21,23 +21,27 @@ from galicaster.utils.i18n import _
 from galicaster.utils.gstreamer import WeakMethod
 from galicaster.utils.miscellaneous import round_microseconds
 
+
 class Status(object):
     def __init__(self, name, description="", fg_color="#484848", bg_color=None):
-        self.name        = name
+        self.name = name
         self.description = description
-        self.fg_color    = fg_color
-        self.bg_color    = bg_color
+        self.fg_color = fg_color
+        self.bg_color = bg_color
+
     def __str__(self): return self.name
+
     def __repr__(self): return self.name
 
 
-INIT_STATUS      = Status('init', 'Init')
-PREVIEW_STATUS   = Status('preview', 'Waiting')
+INIT_STATUS = Status('init', 'Init')
+PREVIEW_STATUS = Status('preview', 'Waiting')
 RECORDING_STATUS = Status('recording', 'Recording', '#484848', '#FF0000')
-PAUSED_STATUS    = Status('paused', 'Paused')
-ERROR_STATUS     = Status('error', 'Error', '#484848', '#FF0000')
+PAUSED_STATUS = Status('paused', 'Paused')
+ERROR_STATUS = Status('error', 'Error', '#484848', '#FF0000')
 
 STATUSES = [INIT_STATUS, PREVIEW_STATUS, RECORDING_STATUS, PAUSED_STATUS, ERROR_STATUS]
+
 
 class RecorderService(object):
     def __init__(self, dispatcher, repo, worker, conf, logger, autorecover=False, recorderklass=Recorder):
@@ -76,10 +80,8 @@ class RecorderService(object):
         self.dispatcher.connect_ui("action-reload-profile", WeakMethod(self, '_handle_reload_profile'))
         self.dispatcher.connect("recorder-error", WeakMethod(self, '_handle_error'))
 
-
     def set_create_drawing_areas_func(self, func):
         self.__create_drawing_areas_func = func
-
 
     def preview(self):
         if self.status not in (INIT_STATUS, ERROR_STATUS):
@@ -105,7 +107,6 @@ class RecorderService(object):
 
         return False
 
-
     def __prepare(self):
         current_profile = self.conf.get_current_profile()
         self.logger.info("Using profile with name {} and path {}".format(current_profile.name, current_profile.path))
@@ -117,7 +118,6 @@ class RecorderService(object):
         bins = current_profile.get_tracks_audio_at_end()
         for objectbin in bins:
             objectbin['path'] = self.repo.get_rectemp_path()
-
 
         self.recorder = self.__recorderklass(bins)
         self.dispatcher.emit("recorder-ready")
@@ -131,8 +131,6 @@ class RecorderService(object):
                 self.recorder.set_drawing_areas(areas)
 
         Gdk.threads_add_idle(GLib.PRIORITY_HIGH, drawing_areas_wrapper)
-
-
 
     def record(self, mp=None):
         self.dispatcher.emit("recorder-starting")
@@ -182,7 +180,6 @@ class RecorderService(object):
 
         return True
 
-
     def stop(self, force=False):
         self.logger.info("Stopping the capture")
         if self.status == PAUSED_STATUS:
@@ -203,35 +200,35 @@ class RecorderService(object):
         self.dispatcher.emit("record-finished", self.last_mediapackage)
         return True
 
-
     def __close_mp(self):
         close_duration = self.recorder.get_recorded_time() / 1000000
         self.current_mediapackage.status = mediapackage.RECORDED
         self.logger.info("Adding new mediapackage ({}) to the repository".format(
-                self.current_mediapackage.getIdentifier()))
+            self.current_mediapackage.getIdentifier()))
         self.repo.add_after_rec(self.current_mediapackage, self.recorder.get_bins_info(),
-                                close_duration, self.current_mediapackage.manual, True, self.conf.get_boolean('ingest', 'ignore_capture_devices'))
+                                close_duration, self.current_mediapackage.manual, True,
+                                self.conf.get_boolean('ingest', 'ignore_capture_devices'))
 
         self.dispatcher.emit("recorder-stopped", self.current_mediapackage.getIdentifier())
         self.enqueue_ingest(self.current_mediapackage)
         self.last_mediapackage = self.current_mediapackage
         self.current_mediapackage = None
 
-
     def enqueue_ingest(self, mp):
         if self.conf.get_boolean("ingest", "active"):
-            code = 'manual' if mp.manual else 'scheduled'
-            if self.conf.get_lower('ingest', code) == 'immediately':
-                self.worker.enqueue_job_by_name('ingest', mp)
-            elif self.conf.get_lower('ingest', code) == 'nightly':
-                self.worker.enqueue_nightly_job_by_name('ingest', mp)
+            if mp.getOpStatus('ingest') != mediapackage.OP_NIGHTLY:
+                code = 'manual' if mp.manual else 'scheduled'
+                if self.conf.get_lower('ingest', code) == 'immediately':
+                    self.worker.enqueue_job_by_name('ingest', mp)
+                elif self.conf.get_lower('ingest', code) == 'nightly':
+                    self.worker.enqueue_nightly_job_by_name('ingest', mp)
 
     def pause(self):
         self.logger.info("Pausing recorder")
 
         if self.status == RECORDING_STATUS:
             # Recorder mode (pausetype: pipeline (default value) or recording)
-            if self.conf.get_choice('recorder', 'pausetype', ['pipeline', 'recording'] , 'pipeline') == 'pipeline':
+            if self.conf.get_choice('recorder', 'pausetype', ['pipeline', 'recording'], 'pipeline') == 'pipeline':
                 self.recorder.pause()
             else:
                 self.recorder.pause_recording()
@@ -241,12 +238,11 @@ class RecorderService(object):
         self.logger.warning("Cancel pause: status error (in {})".format(self.status))
         return False
 
-
     def resume(self):
         self.logger.info("Resuming recorder")
         if self.status == PAUSED_STATUS:
             # Recorder mode (pausetype: pipeline (default value) or recording)
-            if self.conf.get_choice('recorder', 'pausetype', ['pipeline', 'recording'] , 'pipeline') == 'pipeline':
+            if self.conf.get_choice('recorder', 'pausetype', ['pipeline', 'recording'], 'pipeline') == 'pipeline':
                 self.recorder.resume()
             else:
                 self.recorder.resume_recording()
@@ -255,7 +251,6 @@ class RecorderService(object):
             return True
         self.logger.warning("Cancel resume: status error (in {})".format(self.status))
         return False
-
 
     def mute_preview(self, value):
         """Proxy function to mute preview"""
@@ -268,7 +263,7 @@ class RecorderService(object):
             self.recorder and self.recorder.disable_input(bin_names)
             self.logger.info("Input disabled {}".format(bin_names))
         except Exception as exc:
-            self.logger.error("Error in bins {}: {}".format(bin_names,exc))
+            self.logger.error("Error in bins {}: {}".format(bin_names, exc))
 
     def enable_input(self, bin_names=[]):
         """Proxy function to enable input"""
@@ -276,7 +271,7 @@ class RecorderService(object):
             self.recorder and self.recorder.enable_input(bin_names)
             self.logger.info("Input enabled {}".format(bin_names))
         except Exception as exc:
-            self.logger.error("Error in bins {}: {}".format(bin_names,exc))
+            self.logger.error("Error in bins {}: {}".format(bin_names, exc))
 
     def disable_preview(self, bin_names=[]):
         """Proxy function to disable input"""
@@ -284,7 +279,7 @@ class RecorderService(object):
             self.recorder and self.recorder.disable_preview(bin_names)
             self.logger.info("Preview disabled {}".format(bin_names))
         except Exception as exc:
-            self.logger.error("Error in bins {}: {}".format(bin_names,exc))
+            self.logger.error("Error in bins {}: {}".format(bin_names, exc))
 
     def enable_preview(self, bin_names=[]):
         """Proxy function to enable input"""
@@ -292,33 +287,29 @@ class RecorderService(object):
             self.recorder and self.recorder.enable_preview(bin_names)
             self.logger.info("Preview enabled {}".format(bin_names))
         except Exception as exc:
-            self.logger.error("Error in bins {}: {}".format(bin_names,exc))
+            self.logger.error("Error in bins {}: {}".format(bin_names, exc))
 
     def get_mute_status(self):
-        return self.recorder.mute_status if self.recorder else {"input":{},"preview":{}}
+        return self.recorder.mute_status if self.recorder else {"input": {}, "preview": {}}
 
     def is_pausable(self):
         """Proxy function to know if actual recorder is pausable"""
         return self.recorder.is_pausable() if self.recorder else False
 
-
     def is_recording(self):
         """Helper function to check if status is RECORDING_STATUS or PAUSED_STATUS"""
         return self.status == RECORDING_STATUS or self.status == PAUSED_STATUS
-
 
     def is_error(self):
         """Helper function to check if status is ERROR_STATUS"""
         return self.status == ERROR_STATUS
 
-
     def get_recorded_time(self):
         """Proxy function to get the recorder time"""
         return self.recorder.get_recorded_time() if self.recorder else 0
 
-
     def _handle_error(self, origin, error_msg):
-        self.logger.error("Handle error ({})". format(error_msg))
+        self.logger.error("Handle error ({})".format(error_msg))
         # self.current_mediapackage = None
         if self.recorder:
             self.recorder.stop(True)
@@ -332,8 +323,7 @@ class RecorderService(object):
         if self.autorecover and not self.__handle_recover_id:
             self.logger.info("Connecting recover recorder callback")
             self.__handle_recover_id = self.dispatcher.connect("timer-long",
-                                                             WeakMethod(self, '_handle_recover'))
-
+                                                               WeakMethod(self, '_handle_recover'))
 
     def _handle_recover(self, origin):
         self.logger.info("Handle recover from error")
@@ -343,11 +333,9 @@ class RecorderService(object):
             self.logger.info("Disconnecting recover recorder callback")
             self.__handle_recover_id = self.dispatcher.disconnect(self.__handle_recover_id)
 
-
     def _handle_init(self, origin):
         self.logger.debug("Init recorder service")
         self.preview()
-
 
     def _handle_reload_profile(self, origin):
         if self.status in (PREVIEW_STATUS, ERROR_STATUS):
@@ -369,11 +357,9 @@ class RecorderService(object):
         mp = mediapackage.Mediapackage(title=title)
         return mp
 
-
     def __set_status(self, status):
         self.status = status
         self.dispatcher.emit('recorder-status', status)
-
 
     def __del__(self):
         self.recorder and self.recorder.stop(True)

@@ -37,17 +37,19 @@ class Repository(object):
 
     def __init__(self, root=None, hostname='',
                  folder_template='gc_{hostname}_{year}-{month}-{day}T{hour}h{minute}m{second}',
-                 logger=None):
+                 logger=None, recoverytype='full'):
         """Initializes a repository that will contain a set of mediapackage.
         Args:
             root (str): absolute path to the working folder. ~/Repository used if it is None
             hostname (str): galicaster name use in folder prefix
             folder_template (str): name of the mediapackage folder with the timestamp. See get_folder_name mapping.
             logger (Logger): logger that prints information, warnings and errors in the log file. See galicaster/context/logger
+            recoverytype (str): how mediapackage recovery should be handled after application error. choice between full and save.
         Attributes:
             __list (Dict{str,Mediapackage}): the mediapackages in the repository and its identifiers as keys
         """
         self.logger = logger
+        self.recoverytype = recoverytype
 
         if not root:
             self.root = os.path.expanduser('~/Repository')
@@ -98,10 +100,13 @@ class Repository(object):
         """If a manifest.xml file exists, calls the recover_recoding method.
         If else, calls the save_crash_recordings method.
         """
-        if os.path.exists(os.path.join(self.get_rectemp_path(), "manifest.xml")):
-            self.logger and self.logger.info("Found a recording that has crashed")
-            self.crash_file_creator()
-            self.recover_recording()
+        if self.recoverytype == 'full':
+            if os.path.exists(os.path.join(self.get_rectemp_path(), "manifest.xml")):
+                self.logger and self.logger.info("Found a recording that has crashed")
+                self.crash_file_creator()
+                self.recover_recording()
+            else:
+                self.save_crash_recordings()
         else:
             self.save_crash_recordings()
 
@@ -138,7 +143,8 @@ class Repository(object):
             mp.setFromDict(info)
             # Overwrite some data
             mp.status = 4
-            mp.setTitle("Recovered - " + mp.getTitle())
+            if mp.manual:
+                mp.setTitle("Recovered - " + mp.getTitle())
             if not mp.getIdentifier():
                 mp.setNewIdentifier()
 
