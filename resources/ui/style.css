@@ -184,6 +184,7 @@ GtkNotebook tab:active{
 }
 
 /* Progress bar (Vumeter)*/
+.horizontal_vumeter trough,
 .horizontal_vumeter.trough{
     background-image: -gtk-gradient(
 			      linear,
@@ -192,6 +193,7 @@ GtkNotebook tab:active{
 			      color-stop(0.7,yellow),
 			      to(red));
 }
+.vertical_vumeter trough,
 .vertical_vumeter.trough{
     background-image: -gtk-gradient(
 			      linear,
@@ -201,6 +203,8 @@ GtkNotebook tab:active{
 			      to(red));
 }
 
+.horizontal_vumeter progress,
+.vertical_vumeter progress,
 .horizontal_vumeter.progressbar,
 .vertical_vumeter.progressbar{
     background-color: shade(gray,1.7);
