@@ -17,11 +17,12 @@ import json
 import math
 import threading
 import tempfile
-from bottle import route, run, response, abort, request, install
+from bottle import route, run, response, abort, request, install, HTTPError
 from gi.repository import GObject, Gdk, GLib
 
 from galicaster.core import context
 from galicaster.mediapackage.serializer import set_manifest
+from galicaster.opencast import series
 from galicaster.utils import readable
 from galicaster.utils import ical
 from galicaster.utils.miscellaneous import get_screenshot_as_pixbuffer
@@ -35,6 +36,8 @@ def error_handler(func):
     def wrapper(*args,**kwargs):
         try:
             return func(*args,**kwargs)
+        except HTTPError as e:
+            raise e
         except Exception as e:
             logger = context.get_logger()
             error_txt = str(e)
@@ -61,23 +64,25 @@ def index():
     response.content_type = 'application/json'
     text = {"description" : "Galicaster REST endpoint plugin\n\n"}
     endpoints = {
-            "/state" : "show some state values",
-            "/repository" : "list mp keys" ,
-            "/repository/:id" : "get mp manifest (XML)",
-            "/metadata/:id" : "get mp metadata (JSON)",
-            "/start" : "starts a manual recording",
-            "/stop" :  "stops current recording",
-            "/operation/ingest/:id" : "Ingest MP",
-            "/operation/sidebyside/:id"  : "Export MP to side-by-side",
-            "/operation/exporttozip/:id" : "Export MP to zip",
-            "/screen" : "get a screenshoot of the active",
-            "/logstale" : "check if log is stale (threads crashed)",
-            "/quit" : "Quit Galicaster",
-            "/enable_input" : "enable inputs",
-            "/disable_input" : "disable inputs",
-            "/enable_preview" : "enable preview",
-            "/disable_preview" : "disable preview",
-        }
+        "/state" : "show some state values",
+        "/repository" : "list mp keys" ,
+        "/repository/:id" : "get mp manifest (XML)",
+        "/metadata/:id" : "get mp metadata (JSON)",
+        "/start" : "starts a manual recording",
+        "/stop" :  "stops current recording",
+        "/operation/ingest/:id" : "Ingest MP",
+        "/operation/sidebyside/:id"  : "Export MP to side-by-side",
+        "/operation/exporttozip/:id" : "Export MP to zip",
+        "/screen" : "get a screenshoot of the active",
+        "/logstale" : "check if log is stale (threads crashed)",
+        "/quit" : "Quit Galicaster",
+        "/enable_input" : "enable inputs",
+        "/disable_input" : "disable inputs",
+        "/enable_preview" : "enable preview",
+        "/disable_preview" : "disable preview",
+        "/recording/set_property": "Adds a new property to the current recording",
+        "/recording/set_series": "Sets the series for the current recording",
+    }
     endpoints.update(text)
     return json.dumps(endpoints)
 
@@ -263,3 +268,73 @@ def disable_preview():
     preview = request.json
     recorder.disable_preview(preview.values()[0])
     logger.info("Preview disabled")
+
+@route('/recording/set_property', method='POST')
+def set_property():
+    logger = context.get_logger()
+    recorder = context.get_recorder()
+    if not recorder.current_mediapackage:
+        error_message = "[{}] No current_mediapackage available. Recording should be started before calling the endpoint.".format(request.fullpath)
+        logger.error(error_message)
+        abort(400, error_message)
+
+    mp = recorder.current_mediapackage
+    try:
+        property_name = request.forms['name']
+    except KeyError as exc:
+        error_message = "[{}] The request does not have the required field {}".format(request.fullpath, exc)
+        logger.error(error_message)
+        abort(400, error_message)
+
+    if mp.getProperty(property_name):
+        error_message = "[{}] The mp already has the property {}, we do not overwrite it.".format(request.fullpath, property_name)
+        logger.error(error_message)
+        abort(400, error_message)
+
+    try:
+        property_value = request.forms['value']
+    except KeyError as exc:
+        error_message = "[{}] The request does not have the required field {}".format(request.fullpath, exc)
+        logger.error(error_message)
+        abort(400, error_message)
+
+    mp.setProperty(property_name, property_value)
+    logger.info("Setting property {} with value {} for the mediapackage {}".format(property_name, property_value, mp.getIdentifier()))
+
+@route('/recording/set_series', method='POST')
+def set_series():
+    logger = context.get_logger()
+    recorder = context.get_recorder()
+
+    if not recorder.current_mediapackage:
+        error_message = "[{}] No current_mediapackage available. Recording should be started before calling the endpoint.".format(request.fullpath)
+        logger.error(error_message)
+        abort(400, error_message)
+
+    mp = recorder.current_mediapackage
+    if mp.getSeriesIdentifier() != None:
+        error_message = "[{}] The mp {} already has an Opencast series {} we do not overwrite it.".format(request.fullpath, mp.getIdentifier(), mp.getSeries())
+        logger.error(error_message)
+        abort(400, error_message)
+
+    try:
+        series_id = request.forms['id']
+    except KeyError as exc:
+        error_message = "[{}] The request does not have the required field {}".format(request.fullpath, exc)
+        logger.error(error_message)
+        abort(400, error_message)
+        return
+
+    series_title = request.forms.get('title', None)
+    opencastSeries = series.getSeriesbyId(series_id)
+    if opencastSeries != None:
+        series_title = opencastSeries['name']
+        logger.info("Series with id {} found. Using stored title: {}".format(series_id, series_title))
+
+    mp.setSeries(
+        catalog = {
+            'identifier': series_id,
+            'title': series_title
+        }
+    )
+    logger.info("Set series of mp {} to {}".format(mp.getIdentifier(), mp.getSeries()))
