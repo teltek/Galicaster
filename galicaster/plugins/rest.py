@@ -269,6 +269,27 @@ def disable_preview():
     recorder.disable_preview(preview.values()[0])
     logger.info("Preview disabled")
 
+@route('/recording/get_property', method='GET')
+def get_property():
+    logger = context.get_logger()
+    recorder = context.get_recorder()
+    if not recorder.current_mediapackage:
+        error_message = "[{}] No current_mediapackage available. Recording should be started before calling the endpoint.".format(request.fullpath)
+        logger.error(error_message)
+        abort(400, error_message)
+
+    mp = recorder.current_mediapackage
+    try:
+        property_name = request.query['name']
+    except KeyError as exc:
+        error_message = "[{}] The request does not have the required field {}".format(request.fullpath, exc)
+        logger.error(error_message)
+        abort(400, error_message)
+
+    property = mp.getProperty(property_name)
+    logger.info("Called {} api for property {} of mp {}: {}".format(request.fullpath, property_name,  mp.getIdentifier(), property))
+    return json.dumps(property)
+
 @route('/recording/set_property', method='POST')
 def set_property():
     logger = context.get_logger()
@@ -300,6 +321,21 @@ def set_property():
 
     mp.setProperty(property_name, property_value)
     logger.info("Setting property {} with value {} for the mediapackage {}".format(property_name, property_value, mp.getIdentifier()))
+
+@route('/recording/get_series', method='GET')
+def get_series():
+    logger = context.get_logger()
+    recorder = context.get_recorder()
+
+    if not recorder.current_mediapackage:
+        error_message = "[{}] No current_mediapackage available. Recording should be started before calling the endpoint.".format(request.fullpath)
+        logger.error(error_message)
+        abort(400, error_message)
+
+    mp = recorder.current_mediapackage
+    series = mp.getSeries()
+    logger.info("Called {} api. Returned series of mp {} as {}".format(request.fullpath, mp.getIdentifier(), series))
+    return json.dumps(series);
 
 @route('/recording/set_series', method='POST')
 def set_series():
