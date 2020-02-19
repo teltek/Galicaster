@@ -45,7 +45,12 @@ def manage_button(element=None):
     k1 = size[0] / 1920.0
     resize_button(button,size_image=k1*44,size_box=k1*46)
 
-    to_disable = conf.get_list("muteinputs","bins")
+    to_disable = conf.get("muteinputs","bins")
+    if to_disable == "":
+        to_disable = []
+    else:
+        to_disable = [bin.strip() for bin in to_disable.split(",")]
+
     mute_type = conf.get_choice("muteinputs","mute_type", ["input", "preview"], "input")
     started_mute = conf.get_boolean("muteinputs","mute_on_startup")
 

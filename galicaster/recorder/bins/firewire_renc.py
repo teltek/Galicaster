@@ -31,7 +31,7 @@ pipestr = (' dv1394src name=gc-firewire_renc-src ! queue ! '
            '       gc-firewire_renc-audioenc ! gc-firewire_renc-muxer ! '
            '       queue ! filesink name=gc-firewire_renc-sink async=false '
            ' gc-firewire_renc-demuxer. ! queue ! avdec_dvvideo ! videoconvert ! queue ! videobox name=gc-firewire_renc-videobox top=0 bottom=0 ! '
-           '    tee name=gc-firewire_renc-videotee ! caps-preview ! gc-vsink '
+           '    tee name=gc-firewire_renc-videotee ! videobox name=gc-firewire_renc-videobox-pre top=0 bottom=0 ! caps-preview ! gc-vsink '
            '    gc-firewire_renc-videotee. ! queue ! valve drop=false name=gc-firewire_renc-video-valve ! '
            '       videorate skip-to-first=true ! videoscale ! gc-firewire_renc-capsfilter ! gc-firewire_renc-videoenc ! gc-firewire_renc-mux. '
            )
@@ -213,15 +213,14 @@ class GCfirewire_renc(Gst.Bin, base.Base):
         element.set_property("mute", False)
 
     def disable_preview(self):
-        src1 = self.get_by_name('sink-'+self.options['name'])
-        src1.set_property('saturation', -1000)
-        src1.set_property('contrast', -1000)
+        src1 = self.get_by_name('gc-firewire_renc-videobox-pre')
+        src1.set_properties(top = -10000, bottom = 10000)
         element = self.get_by_name("gc-firewire_renc-volume")
         element.set_property("mute", True)
 
     def enable_preview(self):
-        src1 = self.get_by_name('sink-'+self.options['name'])
-        src1.set_property('saturation',0)
-        src1.set_property('contrast',0)
+        src1 = self.get_by_name('gc-firewire_renc-videobox-pre')
+        src1.set_property('top',0)
+        src1.set_property('bottom',0)
         element = self.get_by_name("gc-firewire_renc-volume")
         element.set_property("mute", False)

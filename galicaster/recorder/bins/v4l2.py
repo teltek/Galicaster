@@ -20,7 +20,7 @@ from galicaster.recorder.utils import get_videosink
 
 pipestr = (' v4l2src name=gc-v4l2-src ! capsfilter name=gc-v4l2-filter ! queue ! gc-v4l2-dec ! videobox name=gc-v4l2-videobox top=0 bottom=0 !'
            ' videorate ! videoconvert ! capsfilter name=gc-v4l2-vrate ! videocrop name=gc-v4l2-crop ! gc-videofilter ! '
-           ' tee name=gc-v4l2-tee ! queue ! caps-preview ! gc-vsink '
+           ' tee name=gc-v4l2-tee ! videobox name=gc-v4l2-videobox-pre top=0 bottom=0  ! queue ! caps-preview ! gc-vsink '
            ' gc-v4l2-tee. ! queue ! valve drop=false name=gc-v4l2-valve ! videoconvert ! queue ! '
            ' gc-v4l2-enc ! queue ! gc-v4l2-mux ! '
            ' queue ! filesink name=gc-v4l2-sink async=false')
@@ -193,11 +193,10 @@ class GCv4l2(Gst.Bin, base.Base):
         src1.set_property('bottom',0)
 
     def disable_preview(self):
-        src1 = self.get_by_name('sink-'+self.options['name'])
-        src1.set_property('saturation', -1000)
-        src1.set_property('contrast', -1000)
+        src1 = self.get_by_name('gc-v4l2-videobox-pre')
+        src1.set_properties(top = -10000, bottom = 10000)
 
     def enable_preview(self):
-        src1 = self.get_by_name('sink-'+self.options['name'])
-        src1.set_property('saturation',0)
-        src1.set_property('contrast',0)
+        src1 = self.get_by_name('gc-v4l2-videobox-pre')
+        src1.set_property('top',0)
+        src1.set_property('bottom',0)

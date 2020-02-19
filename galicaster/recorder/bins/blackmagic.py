@@ -22,7 +22,7 @@ from galicaster.recorder.utils import get_videosink, get_audiosink
 videostr = ( ' decklinkvideosrc connection=gc-blackmagic-conn mode=gc-blackmagic-mode device-number=gc-blackmagic-subd name=gc-blackmagic-src ! deinterlace ! videoconvert ! queue ! videobox name=gc-blackmagic-videobox top=0 bottom=0 ! '
              ' videorate ! gc-blackmagic-capsfilter !'
              ' queue ! videocrop name=gc-blackmagic-crop ! '
-             ' tee name=gc-blackmagic-tee  ! queue ! videoconvert ! caps-preview ! gc-vsink '
+             ' tee name=gc-blackmagic-tee ! videobox name=gc-blackmagic-videobox-pre top=0 bottom=0 ! queue ! videoconvert ! caps-preview ! gc-vsink '
              #REC VIDEO
              ' gc-blackmagic-tee. ! queue ! valve drop=false name=gc-blackmagic-valve ! videoconvert ! '
              ' gc-blackmagic-enc ! queue ! gc-blackmagic-muxer ! '
@@ -320,18 +320,17 @@ class GCblackmagic(Gst.Bin, base.Base):
       element.set_property("mute", False)
 
   def disable_preview(self):
-    src1 = self.get_by_name('sink-'+self.options['name'])
-    src1.set_property('saturation', -1000)
-    src1.set_property('contrast', -1000)
+    src1 = self.get_by_name('gc-blackmagic-videobox-pre')
+    src1.set_properties(top = -10000, bottom = 10000)
     if self.has_audio:
       element = self.get_by_name("gc-blackmagic-volume")
       element.set_property("mute", True)
 
 
   def enable_preview(self):
-    src1 = self.get_by_name('sink-'+self.options['name'])
-    src1.set_property('saturation',0)
-    src1.set_property('contrast',0)
+    src1 = self.get_by_name('gc-blackmagic-videobox-pre')
+    src1.set_property('top',0)
+    src1.set_property('bottom',0)
     if self.has_audio:
       element = self.get_by_name("gc-blackmagic-volume")
       element.set_property("mute", False)
