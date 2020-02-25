@@ -46,9 +46,9 @@ from tests import get_resource
 class TestFunctions(TestCase):
 
     class WorkerMock(object):
-        def enqueue_job_by_name(self, operation, mp):
+        def enqueue_job_by_name(self, operation, mp, params):
             pass
-        def enqueue_nightly_job_by_name(self, operation,  mp):
+        def enqueue_nightly_job_by_name(self, operation,  mp, params):
             pass
 
 

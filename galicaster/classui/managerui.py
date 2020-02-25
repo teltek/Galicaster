@@ -224,10 +224,11 @@ class ManagerUI(Gtk.Box):
 
         elif 0 < operations_dialog.response <= len(response_list):
             chosen_job = response_list[operations_dialog.response-1].lower().replace (" ", "")
+            params = package.getProperty('enqueue_params')
             if chosen_job.count('nightly'):
-                context.get_worker().do_job_nightly(chosen_job.replace("_",""), package)
+                context.get_worker().do_job_nightly(chosen_job.replace("_",""), package, params)
             else:
-                context.get_worker().do_job(chosen_job, package)
+                context.get_worker().do_job(chosen_job, package, params)
             return True
 
         else:

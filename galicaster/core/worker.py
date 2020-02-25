@@ -14,7 +14,6 @@
 import os
 import tempfile
 import Queue
-import json
 
 from datetime import datetime
 
@@ -237,7 +236,7 @@ class Worker(object):
         """
         self.logger.info("Set nightly operation {} for MP {}".format(operation, mp.getIdentifier()))
         mp.setOpStatus(operation,mediapackage.OP_NIGHTLY)
-        mp.setProperty("enqueue_params", json.dumps(params))
+        mp.setProperty("enqueue_params", params)
         self.repo.update(mp)
         self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
 
@@ -259,7 +258,7 @@ class Worker(object):
 
 
     def do_job_nightly(self, name, mp, params={}):
-        """Calls cancel_nightly or operation_nithly depending on the argument's value.
+        """Calls cancel_nightly or operation_nightly depending on the argument's value.
         Args:
             name (str): the name of a nightly operation. It must contain the word "cancel" in order to cancel the operation.
             mp (Mediapackage): the mediapackage.
@@ -298,17 +297,21 @@ class Worker(object):
         return os.path.join(self.export_path, name + '.' + extension)
 
 
-    def _ingest(self, mp, params={}):
+    def _ingest(self, mp, params=None):
         """Tries to immediately ingest the mediapackage into opencast.
         If the ingest cannot be done, logger prints it properly.
         Args:
-            mp(Mediapackage): the mediapackage to be immediately ingested.
+            mp (Mediapackage): the mediapackage to be immediately ingested.
+            params (dict): workflow and workflow_parameters for ingesting.
         """
         if not self.oc_client:
             raise Exception('Opencast client is not enabled')
 
-        workflow = None if not "workflow" in params else params["workflow"]
-        workflow_parameters = None if not "workflow_parameters" in params else params["workflow_parameters"]
+        workflow = None
+        workflow_parameters = None
+        if isinstance(params, dict):
+            workflow = params.get('workflow')
+            workflow_parameters = params.get('workflow_parameters')
 
         self.dispatcher.emit('action-mm-refresh-row', mp.identifier)
 
@@ -508,7 +511,5 @@ class Worker(object):
         for mp in self.repo.values():
             for (op_name, op_status) in mp.operations.iteritems():
                 if op_status == mediapackage.OP_NIGHTLY:
-                    params = {}
-                    if mp.getProperty("enqueue_params"):
-                        params = json.loads(mp.getProperty("enqueue_params"))
+                    params = mp.getProperty("enqueue_params")
                     self.enqueue_job_by_name(op_name, mp, params)
