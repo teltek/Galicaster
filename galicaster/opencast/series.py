@@ -18,9 +18,7 @@ import json
 import getpass
 
 
-NAMESP = 'http://purl.org/dc/terms/'
 DISALLOWED_QUERIES = [ 'q', 'edit', 'sort', 'startPage', 'count', 'default' ]
-RESULTS_PER_PAGE = 100
 MAPPINGS = { 'user': getpass.getuser() }
 
 
@@ -32,7 +30,7 @@ def get_series():
     series_conf = context.get_conf().get_section('series')
 
     # Init 'queries' dictionary
-    queries = {'startPage': 0, 'count': RESULTS_PER_PAGE}
+    queries = { }
 
     # Filter out keys that do not refer to a certain series property
     # Also, substitute any placeholder(s) used to filter the series
@@ -48,28 +46,16 @@ def get_series():
 
     try:
         series_list = []
-        check_default = True
-        while True:
-            if not ocservice.net:
-                break
+        series_json = json.loads(ocservice.client.getseries(**queries))
 
-            series_json = json.loads(ocservice.client.getseries(**queries))
-            for catalog in series_json['catalogs']:
-                try:
-                    series_list.append(parse_json_series(catalog))
-                except KeyError:
-                    # Ignore ill-formated series
-                    pass
-            if len(series_list) >= int(series_json['totalCount']):
-                # Check the default series is present, otherwise query for it
-                if 'default' in series_conf and check_default and series_conf['default'] not in dict(series_list):
-                    check_default = False
-                    queries = { "seriesId": series_conf['default'] }
-                else:
-                    break
-            else:
-                queries['startPage'] += 1
+        for catalog in series_json['series']:
+            try:
+                series_list.append(parse_json_series(catalog))
+            except KeyError:
+                # Ignore ill-formated series
+                pass
 
+        series_list = sorted(series_list, key=lambda series: series[1]['title']);
         repo.save_attach('series.json', json.dumps(series_list))
 
     except (ValueError, IOError, RuntimeError, AttributeError):
@@ -85,16 +71,15 @@ def get_series():
 
 def parse_json_series(json_series):
     series = {}
-    for term in json_series[NAMESP].iterkeys():
-        try:
-            series[term] = json_series[NAMESP][term][0]['value']
-        except (KeyError, IndexError):
-            # Ignore non-existant items
-            # TODO Log the exception
-            pass
+    try:
+        series['identifier'] = json_series['identifier']
+        series['title'] = json_series['title']
+    except (KeyError, IndexError):
+        # Ignore non-existant items
+        # TODO Log the exception
+        pass
 
-    return (series['identifier'], series )
-
+    return (series['identifier'], series)
 
 def transform(a):
     return a.strip()
