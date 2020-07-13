@@ -315,21 +315,19 @@ class Player(object):
     def __set_vumeter(self, message):
         struct = message.get_structure()
         rms_values = struct.get_value('rms')
-        stereo = True
+        stereo = False
+        valor = "Inf"
+        valor2 = valor
 
-        if float(rms_values[0]) == float("-inf"):
-            valor = "Inf"
-        else:
+        if len(rms_values) > 0 and float(rms_values[0]) != float("-inf"):
             valor = float(rms_values[0])
+            valor2 = valor
 
         if len(rms_values) > 1:
-            if float(rms_values[1]) == float("-inf"):
-                valor2 = "Inf"
-            else:
+            stereo = True
+            valor2 = "Inf"
+            if float(rms_values[1]) != float("-inf"):
                 valor2 = float(rms_values[1])
-        else:
-            stereo = False
-            valor2 = valor
 
         self.dispatcher.emit("player-vumeter", valor, valor2, stereo)
 
