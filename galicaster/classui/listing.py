@@ -26,6 +26,7 @@ from galicaster.utils import readable
 from galicaster.utils.i18n import _
 
 import cgi
+import html
 
 logger = context.get_logger()
 
@@ -95,10 +96,10 @@ class ListingClassUI(ManagerUI):
             duration = round(mp.getDuration(), -3)
             if duration in ["", None]:
                 duration = 0
-            # TODO: Use of cgi.escape(mp.getTitle()) is a WORKAROUND for https://github.com/teltek/Galicaster/issues/458
+            # TODO: Use of html.escape(mp.getTitle()) is a WORKAROUND for https://github.com/teltek/Galicaster/issues/458
             if mp.status != mediapackage.SCHEDULED:
                 lista.append([mp.getIdentifier(),
-                    cgi.escape(mp.getTitle() or ""),
+                    html.escape(mp.getTitle() or ""),
                     mp.getCreator(),
                     mp.series_title ,
                     int(mp.getSize()),
@@ -258,8 +259,8 @@ class ListingClassUI(ManagerUI):
     def _refresh(self,mp,i):
         """Fills the new values of a refreshed row"""
         self.lista.set(i,0,mp.getIdentifier())
-        # TODO: Use of cgi.escape(mp.getTitle()) is a WORKAROUND for https://github.com/teltek/Galicaster/issues/458
-        self.lista.set(i,1,cgi.escape(mp.getTitle() or ""))
+        # TODO: Use of html.escape(mp.getTitle()) is a WORKAROUND for https://github.com/teltek/Galicaster/issues/458
+        self.lista.set(i,1,html.escape(mp.getTitle() or ""))
         self.lista.set(i,2,mp.getCreator())
         self.lista.set(i,3,mp.series_title)
         self.lista.set(i,4,int(mp.getSize()))
