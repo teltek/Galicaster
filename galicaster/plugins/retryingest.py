@@ -72,7 +72,7 @@ def reingest(sender=None):
         return
 
     worker = context.get_worker()
-    for mp_id, mp in repo.iteritems():
+    for mp_id, mp in list(repo.items()):
         logger.debug('reingest checking: {0} status: {1}'.format(mp_id,
                                                                  mediapackage.op_status[mp.getOpStatus('ingest')]))
         # only finished recordings

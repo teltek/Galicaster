@@ -16,7 +16,7 @@ ConfigParser.ConfigParser not in valida to read no section ini file.
 """
 
 from os import path
-import ConfigParser
+import configparser
 
 class FakeSecHead(object):
     def __init__(self, fp):
@@ -32,7 +32,7 @@ class FakeSecHead(object):
 
 
 def read_ini(f):
-    c = ConfigParser.ConfigParser()
+    c = configparser.ConfigParser()
     c.optionxform = str # To avoid lower in INI keys (trimHold no trimhold)
     c.readfp(FakeSecHead(open(f)))
     return c.items('asection')

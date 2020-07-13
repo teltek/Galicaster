@@ -179,7 +179,7 @@ class GCpulse(Gst.Bin, base.Base):
         if self.options["delay"] > 0.0:
             delay = float(self.options["delay"])
             minttime = self.get_by_name('gc-min-threshold-time')
-            minttime.set_property('min-threshold-time', long(delay * 1000000000))
+            minttime.set_property('min-threshold-time', int(delay * 1000000000))
 
 
     def changeValve(self, value):

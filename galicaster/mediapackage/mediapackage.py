@@ -108,7 +108,7 @@ class Element(object):
         """
         # Avoids direct instantiation of Element
         if self.__class__ is Element:
-            raise RuntimeError, "Element is an abstract class"
+            raise RuntimeError("Element is an abstract class")
 
         # Element could not exist and going to be created:
         # Examples: - episode.xml in new MediaPackages
@@ -293,7 +293,7 @@ class Track(Element):
 
         super(Track, self).__init__(uri=uri, flavor=flavor, mimetype=mimetype, identifier=identifier, tags=tags)
         self.etype = TYPE_TRACK
-        if isinstance(duration, basestring):
+        if isinstance(duration, str):
             self.duration = int(duration)
         else:
             self.duration = duration
@@ -311,7 +311,7 @@ class Track(Element):
         return self.duration
 
     def setDuration(self, duration):
-        if isinstance(duration, basestring):
+        if isinstance(duration, str):
             self.duration = int(duration)
         else:
             self.duration = duration
@@ -483,7 +483,7 @@ class Mediapackage(object):
         Returns:
             Str: the value of the parameter name in the mediapackage.
         """
-        if self.metadata_episode.has_key(name):
+        if name in self.metadata_episode:
             return self.metadata_episode[name]
         elif name.lower() == "ispartof":
             return self.getSeries()
@@ -520,20 +520,20 @@ class Mediapackage(object):
 
 
     def setFromDict(self, info={}):
-        if 'id' in info.keys():
+        if 'id' in list(info.keys()):
             self.setIdentifier(info['id'])
-        if 'title' in info.keys():
+        if 'title' in list(info.keys()):
             self.setTitle(info['title'])
-        if 'status' in info.keys():
+        if 'status' in list(info.keys()):
             self.status = info['status']
-        if 'start' in info.keys():
+        if 'start' in list(info.keys()):
             try:
                 self.setDate(datetime.strptime(info['start'], "%Y-%m-%dT%H:%M:%S"))
             except Exception:
                 pass
-        if 'creator' in info.keys():
+        if 'creator' in list(info.keys()):
             self.setCreator(info['creator'])
-        if 'uri' in info.keys():
+        if 'uri' in list(info.keys()):
             self.setURI(info['uri'])
             for elem in self.getElements():
                 bname = os.path.basename(elem.getURI())
@@ -548,11 +548,11 @@ class Mediapackage(object):
         """
         if (etype in ELEMENT_TYPES):
             for count in range(self.__howmany[etype]):
-                identifier = etype.lower() + '-' + unicode(count)
+                identifier = etype.lower() + '-' + str(count)
                 if not self.contains(identifier):
                     return identifier
 
-            return etype.lower() + '-' + unicode(self.__howmany[etype])
+            return etype.lower() + '-' + str(self.__howmany[etype])
         else:
             return None
 
@@ -573,7 +573,7 @@ class Mediapackage(object):
     def setNewIdentifier(self):
         """Gets a new identifier from uuid and sets it to the mediapackage episode.
         """
-        self.setIdentifier(unicode(uuid.uuid4()))
+        self.setIdentifier(str(uuid.uuid4()))
 
     identifier = property(getIdentifier, setIdentifier)
 
@@ -789,9 +789,9 @@ class Mediapackage(object):
                 return self.getDate().isoformat()
         else:
             if local:
-                return unicode(self.getLocalDate())
+                return str(self.getLocalDate())
             else:
-                return unicode(self.getDate())
+                return str(self.getDate())
 
     def getDuration(self):
         """Gets the duration of the largest mediapackage track.
@@ -822,7 +822,7 @@ class Mediapackage(object):
         Args:
             duration (Str or int): the duration to be set as an int.
         """
-        if isinstance(duration, basestring):
+        if isinstance(duration, str):
             self.__duration = int(duration)
         else:
             self.__duration = duration
@@ -880,7 +880,7 @@ class Mediapackage(object):
         if element is None:
             raise ValueError("Argument 'element' must not be None")
         elif isinstance(element, Element):
-            return element in self.elements.values()
+            return element in list(self.elements.values())
         else:
             return self.getElementById(element) != None
 
@@ -894,21 +894,21 @@ class Mediapackage(object):
         Returns:
             List[Element]: set of elements that satisfies the requested parameters.
         """
-        results = sorted(self.elements.values(), key=lambda e: e.getIdentifier())
+        results = sorted(list(self.elements.values()), key=lambda e: e.getIdentifier())
         if etype != None:
-            results = filter(lambda elem: elem.getElementType() == etype, results)
+            results = [elem for elem in results if elem.getElementType() == etype]
         if flavor != None:
-            results = filter(lambda elem: elem.getFlavor() == flavor, results)
+            results = [elem for elem in results if elem.getFlavor() == flavor]
         if tags != None:
-            if isinstance(tags, basestring):
+            if isinstance(tags, str):
                 # It's a single tag
-                results = filter(lambda elem: elem.containsTag(tags), results)
+                results = [elem for elem in results if elem.containsTag(tags)]
             else:
                 # Assuming it's a list of tags
                 tagset = set(tags)
-                exc_set = set(filter(lambda tag: tag[0] == '-', tagset))
+                exc_set = set([tag for tag in tagset if tag[0] == '-'])
                 tagset -= exc_set
-                results = filter(lambda elem: (len((set(elem.getTags()) - exc_set) & tagset) > 0), results)
+                results = [elem for elem in results if (len((set(elem.getTags()) - exc_set) & tagset) > 0)]
         return results
 
     def getElementById(self, identifier, etype=None):
@@ -940,8 +940,8 @@ class Mediapackage(object):
         results = None
 
         if uri:
-            results = sorted(self.elements.values(), key=lambda e: e.getIdentifier())
-            results = filter(lambda elem: elem.getURI() == uri, results)
+            results = sorted(list(self.elements.values()), key=lambda e: e.getIdentifier())
+            results = [elem for elem in results if elem.getURI() == uri]
 
         if results:
             result = results[0]
@@ -960,8 +960,8 @@ class Mediapackage(object):
         results = None
 
         if basename:
-            results = sorted(self.elements.values(), key=lambda e: e.getIdentifier())
-            results = filter(lambda elem: os.path.basename(elem.getURI()) == basename, results)
+            results = sorted(list(self.elements.values()), key=lambda e: e.getIdentifier())
+            results = [elem for elem in results if os.path.basename(elem.getURI()) == basename]
 
         if results:
             result = results[0]
@@ -1003,7 +1003,7 @@ class Mediapackage(object):
             This method is not present in the original Java implementation, but it is included here for completeness
         """
         if etype is None:
-            return sum(self.__howmany[x] for x in self.__howmany.keys()) > 0
+            return sum(self.__howmany[x] for x in list(self.__howmany.keys())) > 0
         elif etype in ELEMENT_TYPES:
             return self.__howmany[etype] > 0
         else:
@@ -1028,9 +1028,9 @@ class Mediapackage(object):
         """
         result = self.getElements(etype=TYPE_TRACK)
         if (flavor != None):
-            result = filter(lambda elem: elem.getFlavor() == flavor, result)
+            result = [elem for elem in result if elem.getFlavor() == flavor]
         if (mimetype != None):
-            result = filter(lambda elem: elem.getMimeType() == mimetype, result)
+            result = [elem for elem in result if elem.getMimeType() == mimetype]
         return result
 
     def getTracksAudio(self):
@@ -1042,7 +1042,7 @@ class Mediapackage(object):
             List[Track]: a list of tracks with the specified flavor.
         """
         result = self.getElements(etype=TYPE_TRACK)
-        result = filter(lambda elem: "audio" in elem.getMimeType(), result)
+        result = [elem for elem in result if "audio" in elem.getMimeType()]
         return result
 
 
@@ -1052,8 +1052,7 @@ class Mediapackage(object):
         Returns:
             List[Track]: a list of master tracks.
         """
-        result = filter(lambda elem: "presenter/source" in elem.getFlavor() or "presentation/source" in elem.getFlavor(),
-                        self.getElements(etype=TYPE_TRACK))
+        result = [elem for elem in self.getElements(etype=TYPE_TRACK) if "presenter/source" in elem.getFlavor() or "presentation/source" in elem.getFlavor()]
 
         return result
 
@@ -1064,7 +1063,7 @@ class Mediapackage(object):
         Returns:
             List[Track]: a list of master tracks.
         """
-        result = filter(lambda elem: "video" in elem.getMimeType(), self.getTracksMaster())
+        result = [elem for elem in self.getTracksMaster() if "video" in elem.getMimeType()]
 
         return result
 
@@ -1075,7 +1074,7 @@ class Mediapackage(object):
         Returns:
             List[Track]: a list of master tracks.
         """
-        result = filter(lambda elem: "audio" in elem.getMimeType(), self.getTracksMaster())
+        result = [elem for elem in self.getTracksMaster() if "audio" in elem.getMimeType()]
 
         return result
 
@@ -1086,8 +1085,7 @@ class Mediapackage(object):
         Returns:
             List[Track]: a list of delivery tracks.
         """
-        result = filter(lambda elem: "delivery" in elem.getFlavor(),
-                        self.getElements(etype=TYPE_TRACK))
+        result = [elem for elem in self.getElements(etype=TYPE_TRACK) if "delivery" in elem.getFlavor()]
 
         return result
 
@@ -1288,7 +1286,7 @@ class Mediapackage(object):
                 elem = arg
             else:
                 return None
-        elif isinstance(arg, basestring):
+        elif isinstance(arg, str):
             identifier = arg
             if self.contains(identifier):
                 elem = self.getElementById(identifier)

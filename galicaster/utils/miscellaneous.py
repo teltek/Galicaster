@@ -53,8 +53,8 @@ def get_timezone():
 
 def count_files(folder):
     try:
-        path, dirs, files = os.walk(folder).next()
+        path, dirs, files = next(os.walk(folder))
         return len(files)
     except Exception as exc:
-        print traceback.format_exc()
-        print exc
+        print((traceback.format_exc()))
+        print(exc)

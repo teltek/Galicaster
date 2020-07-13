@@ -140,7 +140,7 @@ class Recorder(object):
 
     def preview(self):
         logger.debug("recorder preview")
-        for bin in self.bins.values():
+        for bin in list(self.bins.values()):
             bin.changeValve(True)
         self.__valves_status = True
         self.__set_state(Gst.State.PLAYING)
@@ -163,7 +163,7 @@ class Recorder(object):
         if change == Gst.StateChangeReturn.FAILURE:
             # text = None
             random_bin = None
-            for key, value in self.bins.iteritems():
+            for key, value in list(self.bins.items()):
                 if not value.getSource():
                     random_bin = value
                     # text = "Error on track : "+ key
@@ -188,7 +188,7 @@ class Recorder(object):
 
     def record(self):
         if self.get_status()[1] == Gst.State.PLAYING:
-            for bin in self.bins.values():
+            for bin in list(self.bins.values()):
                 bin.changeValve(False)
             self.__valves_status = False
 
@@ -208,7 +208,7 @@ class Recorder(object):
         if self.is_recording:
             logger.debug("recording paused (warning: this doesn't pause pipeline, just stops recording)")
             self.__pause_timestamp = self.__query_position()
-            for bin in self.bins.values():
+            for bin in list(self.bins.values()):
                 bin.changeValve(True)
             self.__valves_status = True
 
@@ -221,7 +221,7 @@ class Recorder(object):
 
     def resume_recording(self):
         logger.debug("recording resumed")
-        for bin in self.bins.values():
+        for bin in list(self.bins.values()):
             bin.changeValve(False)
         self.__valves_status = False
 
@@ -245,7 +245,7 @@ class Recorder(object):
             self.__duration = self.__query_position() - self.__start_record_time - self.__paused_time
             a = Gst.Structure.new_from_string('letpass')
             event = Gst.Event.new_custom(Gst.EventType.EOS, a)
-            for bin_name, bin in self.bins.iteritems():
+            for bin_name, bin in list(self.bins.items()):
                 bin.send_event_to_src(event)
 
             msg = self.bus.timed_pop_filtered(GST_TIMEOUT, Gst.MessageType.ERROR | Gst.MessageType.EOS)
@@ -264,7 +264,7 @@ class Recorder(object):
 
     def _debug(self, bus, msg):
         if msg.type != Gst.MessageType.ELEMENT or msg.get_structure().get_name() != 'level':
-            print "DEBUG ", msg
+            print(("DEBUG ", msg))
 
 
     def _on_error(self, bus, msg):
@@ -319,11 +319,11 @@ class Recorder(object):
 
 
     def is_pausable(self):
-        return all(bin.is_pausable for bin in self.bins.values())
+        return all(bin.is_pausable for bin in list(self.bins.values()))
 
 
     def mute_preview(self, value):
-        for bin_name, bin in self.bins.iteritems():
+        for bin_name, bin in list(self.bins.items()):
             if bin.has_audio:
                 bin.mute_preview(value)
 
@@ -331,13 +331,13 @@ class Recorder(object):
     def disable_input(self, bin_names=[]):
         if bin_names:
             for elem in bin_names:
-                if elem in self.bins.keys():
+                if elem in list(self.bins.keys()):
                     self.bins[elem].disable_input()
                     self.mute_status["input"][elem] = False
                 else:
                     raise Exception("Bin: "+elem+" not loaded in this profile")
         else:
-            for bin_nam,bin in self.bins.iteritems():
+            for bin_nam,bin in list(self.bins.items()):
                 bin.disable_input()
                 self.mute_status["input"][bin_nam] = False
 
@@ -345,13 +345,13 @@ class Recorder(object):
     def enable_input(self, bin_names=[]):
         if bin_names:
             for elem in bin_names:
-                if elem in self.bins.keys():
+                if elem in list(self.bins.keys()):
                     self.bins[elem].enable_input()
                     self.mute_status["input"][elem] = True
                 else:
                     raise Exception("Bin: "+elem+" not loaded in this profile")
         else:
-            for bin_nam,bin in self.bins.iteritems():
+            for bin_nam,bin in list(self.bins.items()):
                 bin.enable_input()
                 self.mute_status["input"][bin_nam] = True
 
@@ -360,13 +360,13 @@ class Recorder(object):
         try:
             if bin_names:
                 for elem in bin_names:
-                    if elem in self.bins.keys():
+                    if elem in list(self.bins.keys()):
                         self.bins[elem].disable_preview()
                         self.mute_status["preview"][elem] = False
                     else:
                         raise Exception("Bin: "+elem+" not loaded in this profile")
             else:
-                for bin_nam,bin in self.bins.iteritems():
+                for bin_nam,bin in list(self.bins.items()):
                     bin.disable_preview()
                     self.mute_status["preview"][bin_nam] = False
         except Exception as exc:
@@ -377,13 +377,13 @@ class Recorder(object):
         try:
             if bin_names:
                 for elem in bin_names:
-                    if elem in self.bins.keys():
+                    if elem in list(self.bins.keys()):
                         self.bins[elem].enable_preview()
                         self.mute_status["preview"][elem] = True
                     else:
                         raise Exception("Bin: "+elem+" not loaded in this profile")
             else:
-                for bin_nam,bin in self.bins.iteritems():
+                for bin_nam,bin in list(self.bins.items()):
                     bin.enable_preview()
                     self.mute_status["preview"][bin_nam] = True
         except Exception as exc:
@@ -393,7 +393,7 @@ class Recorder(object):
         self.players = players
 
         # Link videoareas with sinks
-        for name, element in self.players.iteritems():
+        for name, element in list(self.players.items()):
             # TODO: check xid
             xid = element.get_property('window').get_xid()
             try:
@@ -404,13 +404,13 @@ class Recorder(object):
 
     def get_display_areas_info(self):
         display_areas_info = []
-        for bin_name, bin in self.bins.iteritems():
+        for bin_name, bin in list(self.bins.items()):
             display_areas_info.extend(bin.get_display_areas_info())
         return display_areas_info
 
 
     def get_bins_info(self):
         bins_info = []
-        for bin_name, bin in self.bins.iteritems():
+        for bin_name, bin in list(self.bins.items()):
             bins_info.extend(bin.get_bins_info())
         return bins_info

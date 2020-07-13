@@ -62,7 +62,7 @@ class Scheduler(object):
 
     def _check_next_recording(self, origin):
         next_mp = self.repo.get_next_mediapackage()
-        if next_mp and not self.start_timers.has_key(next_mp.getIdentifier()):
+        if next_mp and next_mp.getIdentifier() not in self.start_timers:
             self.create_timer(next_mp)
 
 
@@ -72,7 +72,7 @@ class Scheduler(object):
             mp (Mediapackage): the mediapackage whose timer is going to be created.
         """
         diff = (mp.getDate() - datetime.datetime.utcnow())
-        if diff < datetime.timedelta(minutes=30) and mp.getIdentifier() != self.mp_rec and not self.start_timers.has_key(mp.getIdentifier()):
+        if diff < datetime.timedelta(minutes=30) and mp.getIdentifier() != self.mp_rec and mp.getIdentifier() not in self.start_timers:
             self.logger.info('Create timer for MP {}, it starts at {}'.format(mp.getIdentifier(), mp.getStartDateAsString()))
             self.dispatcher.emit('recorder-scheduled-event', mp.getIdentifier())
 
@@ -81,13 +81,13 @@ class Scheduler(object):
 
 
     def remove_timer(self, mp):
-        if mp and self.start_timers.has_key(mp.getIdentifier()):
+        if mp and mp.getIdentifier() in self.start_timers:
             GObject.source_remove(self.start_timers[mp.getIdentifier()])
             del self.start_timers[mp.getIdentifier()]
 
 
     def update_timer(self, mp):
-        if self.start_timers.has_key(mp.getIdentifier()) and mp.status == mediapackage.SCHEDULED:
+        if mp.getIdentifier() in self.start_timers and mp.status == mediapackage.SCHEDULED:
             GObject.source_remove(self.start_timers[mp.getIdentifier()])
             del self.start_timers[mp.getIdentifier()]
             self.create_timer(mp)

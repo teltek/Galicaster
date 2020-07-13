@@ -241,7 +241,7 @@ class PlayerClassUI(ManagerUI):
             main.remove(child)
             child.destroy()
         areas = dict()
-        for key in source.keys():
+        for key in list(source.keys()):
             new_area = Gtk.DrawingArea()
             new_area.set_name("playerarea "+str(key))
             areas[key]=new_area

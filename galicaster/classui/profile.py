@@ -186,7 +186,7 @@ class ProfileDialog(Gtk.HBox):
     def append_profiles(self):
         """Lists the available profiles"""
         profile_list = context.get_conf().get_profiles()
-        for name,profile in profile_list.iteritems():
+        for name,profile in list(profile_list.items()):
             if not profile.to_delete:
                 self.list.append([profile, profile.name])
 

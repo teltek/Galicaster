@@ -76,7 +76,7 @@ class ListingClassUI(ManagerUI):
         self.dispatcher.connect_ui("operation-stopped", self.refresh_operation)
         self.dispatcher.connect_ui("view-changed", self.event_change_mode)
 
-        self.populate_treeview(self.repository.list().values())
+        self.populate_treeview(list(self.repository.list().values()))
         self.box.pack_start(self.strip,False,False,0)
         self.box.reorder_child(self.strip,0)
         self.box.show()
@@ -101,7 +101,7 @@ class ListingClassUI(ManagerUI):
                     cgi.escape(mp.getTitle() or ""),
                     mp.getCreator(),
                     mp.series_title ,
-                    long(mp.getSize()),
+                    int(mp.getSize()),
                     int(duration),
                     mp.getStartDateAsString(),
                     mp.status,
@@ -226,7 +226,7 @@ class ListingClassUI(ManagerUI):
         """Refresh all the values on the list"""
         logger.info("Refreshing TreeView")
         model, selected = self.vista.get_selection().get_selected_rows()
-        self.insert_data_in_list(self.lista, self.repository.list().values())
+        self.insert_data_in_list(self.lista, list(self.repository.list().values()))
         s = 0 if len(selected) == 0 else selected[0][0]
         self.vista.get_selection().select_path(s)
 
@@ -262,7 +262,7 @@ class ListingClassUI(ManagerUI):
         self.lista.set(i,1,cgi.escape(mp.getTitle() or ""))
         self.lista.set(i,2,mp.getCreator())
         self.lista.set(i,3,mp.series_title)
-        self.lista.set(i,4,long(mp.getSize()))
+        self.lista.set(i,4,int(mp.getSize()))
         self.lista.set(i,5,int(mp.getDuration()))
         self.lista.set(i,6,mp.getStartDateAsString())
         self.lista.set(i,7,mp.status)

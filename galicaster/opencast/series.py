@@ -37,7 +37,7 @@ def get_series():
     # Filter out keys that do not refer to a certain series property
     # Also, substitute any placeholder(s) used to filter the series
     # TODO Currently the only placeholder is {user}
-    for key in series_conf.keys():
+    for key in list(series_conf.keys()):
         if key not in DISALLOWED_QUERIES:
             try:
                 queries[key] = series_conf[key].format(**MAPPINGS)
@@ -85,7 +85,7 @@ def get_series():
 
 def parse_json_series(json_series):
     series = {}
-    for term in json_series[NAMESP].iterkeys():
+    for term in list(json_series[NAMESP].keys()):
         try:
             series[term] = json_series[NAMESP][term][0]['value']
         except (KeyError, IndexError):
@@ -136,7 +136,7 @@ def getSeriesbyName(seriesname):
     """
     list_series = dict(get_series())
     match = None
-    for key,series in list_series.iteritems():
+    for key,series in list(list_series.items()):
         if series['title'] == seriesname:
             match =  {"id": key, "name": seriesname, "list": list_series[key]}
             break

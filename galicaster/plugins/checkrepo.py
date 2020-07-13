@@ -30,7 +30,7 @@ def check_repository(self):
     #mp_list is collection of mediapackages ID's
     mp_list = context.get_repository()
 
-    for uid,mp in mp_list.iteritems():
+    for uid,mp in list(mp_list.items()):
         if mp.status == mediapackage.SCHEDULED and mp.getDate() < datetime.datetime.utcnow() and mp.getDate()+datetime.timedelta(seconds=(mp.getDuration()/1000)) > datetime.datetime.utcnow():
             #duration update			
 	    x = datetime.datetime.utcnow() - mp.getDate()

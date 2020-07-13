@@ -18,7 +18,7 @@ from galicaster.utils import ical
 from galicaster.opencast.series import get_series
 
 from galicaster.utils.queuethread import T
-import Queue
+import queue
 
 """
 This class manages the timers and its respective signals in order to start and stop scheduled recordings.
@@ -84,7 +84,7 @@ class OCService(object):
         self.series = []
 
         self.ical_data = None
-        self.jobs = Queue.Queue()
+        self.jobs = queue.Queue()
         t = T(self.jobs)
         t.setDaemon(True)
         t.start()

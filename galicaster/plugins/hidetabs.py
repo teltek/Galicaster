@@ -36,14 +36,14 @@ def post_init(source=None):
     try: 
         tabs_to_hide = set( x for x in set(conf.get('hidetabs', 'hide').split()) if x in ALL_TABS )
         if tabs_to_hide:
-            for tab, obj_name in ALL_TABS.iteritems():
+            for tab, obj_name in list(ALL_TABS.items()):
                 page = recorder_ui.get_object(obj_name)
                 if tab in tabs_to_hide:
                     page.hide()
 
     except AttributeError:
         # The conf parameter isn't defined. Ignore
-        print "Attribute error"
+        print("Attribute error")
 
     default_tab = conf.get('hidetabs', 'default') or None
     try:

@@ -66,13 +66,13 @@ class Base(object):
 
 
         # Init options with default gc_parameters values and options
-        self.options = dict([(k,v['default']) for k,v in self.gc_parameters.iteritems()])
+        self.options = dict([(k,v['default']) for k,v in list(self.gc_parameters.items())])
         # TODO parsear
 
         # Validate option values
-        for k, v in options.iteritems():
+        for k, v in list(options.items()):
             gc_parameter = None
-            if self.gc_parameters.has_key(k):
+            if k in self.gc_parameters:
                 gc_parameter = self.gc_parameters[k]
             if v is not None:
                 error, self.options[k] = validator.parse_validate(k, v, gc_parameter)
@@ -107,7 +107,7 @@ class Base(object):
         return []
 
     def get_bins_info(self):
-        if not self.options.has_key('mimetype'):
+        if 'mimetype' not in self.options:
             ext = self.options['file'].split('.')[1].lower()
             self.options['mimetype'] = 'audio/' + ext if self.has_audio and not self.has_video else 'video/' + ext
         return [self.options]

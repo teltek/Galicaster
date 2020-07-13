@@ -113,7 +113,7 @@ def is_event_changed(new_event, old_event):
 
 
 def create_mp(repo, event):
-    if repo.has_key(event['UID']):
+    if event['UID'] in repo:
         mp = repo.get(event['UID'])
         if mp.status != mediapackage.SCHEDULED:
             return False

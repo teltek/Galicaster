@@ -284,7 +284,7 @@ class GCmultistream(Gst.Bin, base.Base):
             delay = float(self.options["delay"])
             minttime = self.get_by_name('gc-min-threshold-time')
             minttime.set_property('min-threshold-time',
-                                  long(delay * 1000000000))
+                                  int(delay * 1000000000))
 
     def changeValve(self, value):
         valve1 = self.get_by_name('gc-multi-valve')

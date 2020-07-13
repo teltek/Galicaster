@@ -25,7 +25,7 @@ def init():
     conf = context.get_conf()
 
     list_plugins = conf.get_section('plugins')
-    for plugin, v in list_plugins.iteritems():
+    for plugin, v in list(list_plugins.items()):
         if v.lower() == 'true':
             for prefix in prefixes:
                 plugin_type = prefixes[prefix]

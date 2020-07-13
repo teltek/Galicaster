@@ -11,7 +11,7 @@
 # or send a letter to Creative Commons, 171 Second Street, Suite 300, 
 # San Francisco, California, 94105, USA.
 
-from StringIO import StringIO
+from io import StringIO
 
 from galicaster.core import context
 from galicaster.utils.miscellaneous import get_screenshot_as_pixbuffer
