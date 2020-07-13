@@ -312,8 +312,7 @@ def set_manifest(mp, use_namespace=True):
         attachments.appendChild(attachment)
 
     # FIXME ADD checksum
-    # return doc.toprettyxml(indent="   ", newl="\n",encoding="utf-8")
-    return doc.toprettyxml(indent="   ", newl="\n", encoding="utf-8")
+    return doc.toprettyxml(indent="   ", newl="\n", encoding="utf-8").decode('utf-8')
 
 
 def set_manifest_json(mp):
@@ -458,7 +457,7 @@ def set_episode(mp):
         elem.appendChild(text)
         xml.appendChild(elem)
 
-    return doc.toprettyxml(indent="   ", newl="\n", encoding="utf-8") #without encoding
+    return doc.toprettyxml(indent="   ", newl="\n", encoding="utf-8").decode('utf-8') #without encoding
 
 
 
@@ -486,4 +485,4 @@ def set_series(mp, logger=None):
                 if logger:
                     logger.warning("KeyError in serializer.set_series")
                 continue
-    return doc.toprettyxml(indent="   ", newl="\n", encoding="utf-8") #without encoding
+    return doc.toprettyxml(indent="   ", newl="\n", encoding="utf-8").decode('utf-8') #without encoding
