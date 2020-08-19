@@ -86,7 +86,7 @@ class Repository(object):
 
         info_repo_file = os.path.join(self.root, self.attach_dir, 'info.ini')
         if not os.path.isfile(info_repo_file):
-            with open(info_repo_file, 'wb') as configfile:
+            with open(info_repo_file, 'w') as configfile:
                 conf = configparser.ConfigParser()
                 conf.add_section('repository')
                 conf.set('repository', 'version', __version__)
@@ -124,9 +124,9 @@ class Repository(object):
             if info['uri']:
                 ca_prop = os.path.join(info['uri'], "org.opencastproject.capture.agent.properties")
                 if os.path.exists(ca_prop):
-                    with open(ca_prop, 'rb') as fsrc:
+                    with open(ca_prop, 'r') as fsrc:
                         dst = os.path.join(self.get_rectemp_path(), "org.opencastproject.capture.agent.properties")
-                        with open(dst, 'wb') as fdst:
+                        with open(dst, 'w') as fdst:
                             self.logger.info("Copying file {} to {}".format(ca_prop, dst))
                             shutil.copyfileobj(fsrc, fdst)
                             os.fsync(fdst)
@@ -153,9 +153,9 @@ class Repository(object):
 
             # Copy the capture agent properties from the original mediapackage folder (for scheduled recordings)
             if ca_prop and os.path.exists(ca_prop):
-                with open(ca_prop, 'rb') as fsrc:
+                with open(ca_prop, 'r') as fsrc:
                     dst = os.path.join(mp.getURI(), "org.opencastproject.capture.agent.properties")
-                    with open(dst, 'wb') as fdst:
+                    with open(dst, 'w') as fdst:
                         self.logger.info("Copying file {} to {}".format(ca_prop, dst))
                         shutil.copyfileobj(fsrc, fdst)
                         os.fsync(fdst)

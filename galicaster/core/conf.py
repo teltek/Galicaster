@@ -575,8 +575,8 @@ class Conf(object): # TODO list get and other ops arround profile
             dst = self.conf_file + ".orig_" + now
 
             try:
-                with open(src, 'rb') as fsrc:
-                    with open(dst, 'wb') as fdst:
+                with open(src, 'r') as fsrc:
+                    with open(dst, 'w') as fdst:
                         self.logger and self.logger.warning("Copying original conf file due to an error: {0} to {1}".format(src, dst))
                         shutil.copyfileobj(fsrc, fdst)
                         os.fsync(fdst)
@@ -585,12 +585,12 @@ class Conf(object): # TODO list get and other ops arround profile
                 self.logger and self.logger.warning("Error trying to copy the original conf file {} to {}".format(src, dst))
 
         try:
-            configfile = open(self.conf_file, 'wb')
+            configfile = open(self.conf_file, 'w')
             self.logger and self.logger.info("Saving current configuration to {}".format(configfile.name))
             self.__user_conf.write(configfile)
             configfile.close()
         except Exception as exc:
-            self.logger and self.logger.error('Erros saving configuration: {}'.format(exc))
+            self.logger and self.logger.error('Errors saving configuration: {}'.format(exc))
 
 
     def update_profiles(self):
@@ -1038,7 +1038,7 @@ class Profile(object):
                     parser.set(section,key,track[key])
             index+=1
 
-        configfile = open(filepath, 'wb')
+        configfile = open(filepath, 'w')
         parser.write(configfile)
         configfile.close()
 
