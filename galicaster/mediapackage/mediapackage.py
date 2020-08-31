@@ -294,7 +294,7 @@ class Track(Element):
         super(Track, self).__init__(uri=uri, flavor=flavor, mimetype=mimetype, identifier=identifier, tags=tags)
         self.etype = TYPE_TRACK
         if isinstance(duration, str):
-            self.duration = int(duration)
+            self.duration = int(float(duration))
         else:
             self.duration = duration
 
@@ -312,7 +312,7 @@ class Track(Element):
 
     def setDuration(self, duration):
         if isinstance(duration, str):
-            self.duration = int(duration)
+            self.duration = int(float(duration))
         else:
             self.duration = duration
 
@@ -823,7 +823,7 @@ class Mediapackage(object):
             duration (Str or int): the duration to be set as an int.
         """
         if isinstance(duration, str):
-            self.__duration = int(duration)
+            self.__duration = int(float(duration))
         else:
             self.__duration = duration
 
