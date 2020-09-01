@@ -175,11 +175,13 @@ class OCHTTPClient(object):
                     b.close()
                 except Exception as e:
                     # We did our best!
-                    self.logger and self.logger.warning("Could not close StringIO object properly: {}", e)
+                    self.logger and self.logger.warning("Could not close BytesIO object properly: {}", e)
 
-    def scanforetag(self, buffer):
-        if buffer.startswith('ETag:'):
-            etag = buffer[5:]
+    def scanforetag(self, header_line):
+        # HTTP standard specifies that headers are encoded in iso-8859-1.
+        header_line = header_line.decode('iso-8859-1')
+        if header_line.startswith('ETag:'):
+            etag = header_line[5:]
             self.response['ETag'] = etag.strip()
 
     def whoami(self):
