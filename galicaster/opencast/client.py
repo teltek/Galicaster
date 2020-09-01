@@ -15,7 +15,7 @@ import re
 import json
 import socket
 #IDEA use cStringIO to improve performance
-from io import StringIO
+import io
 import pycurl
 from collections import OrderedDict
 import urllib.parse
@@ -138,7 +138,7 @@ class OCHTTPClient(object):
                 else:
                     c.setopt(pycurl.HTTPPOST, postfield)
 
-            b = StringIO()
+            b = io.BytesIO()
             c.setopt(pycurl.WRITEFUNCTION, b.write)
 
             #c.setopt(pycurl.VERBOSE, True) ##TO DEBUG
