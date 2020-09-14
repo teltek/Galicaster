@@ -245,15 +245,21 @@ class Player(object):
             # if element_name == 'presenter' or len(self.files) == 1:
             if not self.has_audio:
                 self.has_audio = True
-                self.audio_sink = Gst.ElementFactory.make('autoaudiosink', 'audio')
+                audioconvert = Gst.ElementFactory.make('audioconvert', 'audioconvert')
+                self.pipeline.add(audioconvert)
+                pad.link(audioconvert.get_static_pad('sink'))
+                audioconvert.set_state(Gst.State.PAUSED)
+
                 vumeter = Gst.ElementFactory.make('level', 'level')
                 vumeter.set_property('message', True)
                 vumeter.set_property('interval', 100000000)  # 100 ms
-                self.pipeline.add(self.audio_sink)
                 self.pipeline.add(vumeter)
-                pad.link(vumeter.get_static_pad('sink'))
-                vumeter.link(self.audio_sink)
+                audioconvert.link(vumeter)
                 vumeter.set_state(Gst.State.PAUSED)
+
+                self.audio_sink = Gst.ElementFactory.make('autoaudiosink', 'audio')
+                self.pipeline.add(self.audio_sink)
+                vumeter.link(self.audio_sink)
                 assert self.audio_sink.set_state(Gst.State.PAUSED)
 
         elif name.startswith('video/'):
