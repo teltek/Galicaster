@@ -157,7 +157,7 @@ class OCHTTPClient(object):
                                                       urllib.parse.urlunparse(url), status_code, title)
                     raise IOError('Error in Opencast client')
 
-            return b.getvalue()
+            return b.getvalue().decode('utf-8')
         except IOError:
             # Do not wrap the IOError. We raise it ourselves
             raise
