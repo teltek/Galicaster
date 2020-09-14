@@ -585,7 +585,7 @@ class Repository(object):
 
         if mp.manual and not mp.getSeriesIdentifier():
             conf = context.get_conf()
-            if conf.get('series','default'):
+            if conf.has('series','default'):
                 series.setSeriebyId(mp, conf.get('series','default'))
 
         mp.forceDuration(duration)

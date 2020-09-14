@@ -100,6 +100,12 @@ class Conf(object): # TODO list get and other ops arround profile
                     if option not in self.__conf_dist.options(section):
                         self.logger and self.logger.warning('No option "{0}" in section "{1}". Please check the file {2}'.format(option, section, self.conf_file))
 
+    def has(self, sect, opt):
+        try:
+            response = self.__conf.get(sect, opt)
+            return True
+        except Exception as exc:
+            return False
 
     def get(self, sect, opt, default=None): # TODO overload ConfigParser?
         """Tries to return the value of a specific option in a specific section.
