@@ -71,11 +71,11 @@ def get_updated_events(old_events, new_events):
             if old_event['UID'] == new_event['UID']:
                 append = is_event_changed(new_event, old_event)
                 for attach_enc in new_event['ATTACH']:
-                    attach =  base64.b64decode(attach_enc)
+                    attach =  base64.b64decode(attach_enc).decode('utf-8')
                     if not attach_enc.params['X-APPLE-FILENAME'] == 'episode.xml' and not attach_enc.params['X-APPLE-FILENAME'] == 'series.xml':
                         break
                 for attach_enc in old_event['ATTACH']:
-                    attach1 =  base64.b64decode(attach_enc)
+                    attach1 =  base64.b64decode(attach_enc).decode('utf-8')
                     if not attach_enc.params['X-APPLE-FILENAME'] == 'episode.xml' and not attach_enc.params['X-APPLE-FILENAME'] == 'series.xml':
                         break
 
@@ -146,7 +146,7 @@ def create_mp(repo, event):
 
     # ca_properties_name = 'org.opencastproject.capture.agent.properties'
     for attach_enc in event['ATTACH']:
-        attach =  base64.b64decode(attach_enc)
+        attach =  base64.b64decode(attach_enc).decode('utf-8')
         if attach_enc.params['X-APPLE-FILENAME'] == 'episode.xml':
             mp.addDublincoreAsString(attach, 'episode.xml')
         elif attach_enc.params['X-APPLE-FILENAME'] == 'series.xml':
