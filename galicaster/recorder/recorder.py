@@ -23,7 +23,7 @@ from galicaster.utils.gstreamer import WeakMethod
 
 logger = context.get_logger()
 
-GST_TIMEOUT= Gst.SECOND*10
+GST_TIMEOUT = Gst.SECOND*10
 
 class Recorder(object):
     def __del__(self):
@@ -231,33 +231,41 @@ class Recorder(object):
 
 
     def stop(self, force=False):
+        if force:
+            self.pipeline.set_state(Gst.State.NULL)
+            return
+
         if self.get_status()[1] == Gst.State.PAUSED:
             logger.debug("Resume recorder before stopping")
             self.resume()
 
-        if self.is_recording and not force:
-            if self.__valves_status == True:
-                self.resume_recording()
+        if not self.is_recording:
+            # Add log with warning, the code should not enter here
+            self.pipeline.set_state(Gst.State.NULL)
+            return
+            
+        if self.__valves_status == True:
+            self.resume_recording()
 
-            logger.debug("Stopping recorder, sending EOS event to sources")
+        logger.debug("Stopping recorder, sending EOS event to sources")
 
-            self.is_recording = False
-            self.__duration = self.__query_position() - self.__start_record_time - self.__paused_time
-            a = Gst.Structure.new_from_string('letpass')
-            event = Gst.Event.new_custom(Gst.EventType.EOS, a)
-            for bin_name, bin in list(self.bins.items()):
-                bin.send_event_to_src(event)
+        self.is_recording = False
+        self.__duration = self.__query_position() - self.__start_record_time - self.__paused_time
+        a = Gst.Structure.new_from_string('letpass')
+        event = Gst.Event.new_custom(Gst.EventType.EOS, a)
+        for bin_name, bin in list(self.bins.items()):
+            bin.send_event_to_src(event)
 
-            msg = self.bus.timed_pop_filtered(GST_TIMEOUT, Gst.MessageType.ERROR | Gst.MessageType.EOS)
-            if not msg:
-                self.__emit_error('Timeout trying to receive EOS message', '', stop=False)
-            elif msg.type == Gst.MessageType.EOS:
-                logger.debug('EOS message successfully received')
-            elif msg.type == Gst.MessageType.ERROR:
-                err, debug = msg.parse_error()
-                logger.error("Error received from element {}: {}".format(msg.sr.get_name(), err))
-                logger.debug("Debugging information: {}".format(debug))
-                self.__emit_error('Received ERROR message from pipeline', '', stop=False)
+        msg = self.bus.timed_pop_filtered(GST_TIMEOUT, Gst.MessageType.ERROR | Gst.MessageType.EOS)
+        if not msg:
+            self.__emit_error('Timeout trying to receive EOS message', '', stop=False)
+        elif msg.type == Gst.MessageType.EOS:
+            logger.debug('EOS message successfully received')
+        elif msg.type == Gst.MessageType.ERROR:
+            err, debug = msg.parse_error()
+            logger.error("Error received from element {}: {}".format(msg.sr.get_name(), err))
+            logger.debug("Debugging information: {}".format(debug))
+            self.__emit_error('Received ERROR message from pipeline', '', stop=False)
 
         self.pipeline.set_state(Gst.State.NULL)
 
