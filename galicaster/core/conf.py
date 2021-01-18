@@ -51,7 +51,7 @@ class Conf(object): # TODO list get and other ops arround profile
             profile_folder (str): the given path of the profile folder.
             logger (Logger): the object that prints all the information, warning and error messages. See galicaster/context/logger
         """
-        self.__conf = configparser.ConfigParser()
+        self.__conf = configparser.RawConfigParser()
         self.__conf.optionxform = str
         self.__user_conf = configparser.ConfigParser()
         self.__conf_dist = configparser.ConfigParser()
