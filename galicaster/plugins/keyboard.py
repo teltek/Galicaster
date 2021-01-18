@@ -30,12 +30,12 @@ def init():
 
 def configure_keyboard(dispatcher=None):
     configuration = {
-            '/org/onboard/auto-show/enabled'            : 'true',
+            '/org/onboard/auto-show/enabled'            : 'false',
             '/org/onboard/layout'                       : "'Phone'",
             '/org/onboard/theme'                        : "'Ambiance'",
             '/org/onboard/theme-settings/color-scheme'  : "'/usr/share/onboard/themes/Aubergine.colors'",
             '/org/onboard/window/landscape/dock-expand' : 'false',
-            '/org/onboard/start-minimized'              : 'true',
+            '/org/onboard/start-minimized'              : 'false',
             '/org/onboard/system-theme-tracking-enabled': 'false',
             '/org/onboard/use-system-defaults'          : 'false',
             }
