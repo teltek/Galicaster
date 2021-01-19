@@ -163,7 +163,7 @@ class Conf(object): # TODO list get and other ops arround profile
                 return int(self.get(sect, opt))
             except Exception as exc:
                 self.logger and self.logger.warning('The parameter "{0}" in section "{1}" is not an int, FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
-
+                return int(self.__conf_dist.get(sect, opt))
         return default
 
 
@@ -182,7 +182,7 @@ class Conf(object): # TODO list get and other ops arround profile
                 return float(self.get(sect, opt))
             except Exception as exc:
                 self.logger and self.logger.warning('The parameter "{0}" in section "{1}" is not a float, FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
-
+                return float(self.__conf_dist.get(sect, opt))
         return default
 
 
