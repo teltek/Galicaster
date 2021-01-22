@@ -501,7 +501,7 @@ class RecorderClassUI(Gtk.Box):
         i = 0
         areas = dict()
         for child in main.get_children():
-            if i > sources_num:
+            if i >= sources_num:
                 main.remove(child)
                 child.destroy()
                 continue
