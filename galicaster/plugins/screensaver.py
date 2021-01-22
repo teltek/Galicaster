@@ -39,9 +39,8 @@ def init():
     logger = context.get_logger()
     conf = context.get_conf()
 
-    inactivity_val = conf.get('screensaver', 'inactivity')
     try:
-        inactivity = int(inactivity_val)
+        inactivity = conf.get_int('screensaver', 'inactivity')
     except Exception as exc:
         raise Exception("Error trying to convert inactivity value to integer: {}".format(exc))
 
