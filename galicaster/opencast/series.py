@@ -109,7 +109,7 @@ def filterSeriesbyId(list_series, seriesid):
     Generate a list with the series value name, shortname and id
     """
     for element in list_series:
-        if seriesid and seriesid in element[1]["identifier"].encode('utf8'):
+        if seriesid and seriesid in element[1]["identifier"]:
             try:
                 match = {"id": seriesid, "name": element[1]["title"], "list": element[1]}
                 return match
