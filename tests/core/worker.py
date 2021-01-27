@@ -99,8 +99,6 @@ class TestFunctions(TestCase):
 
     def test_get_all_job_types(self):
         jtypes = self.worker.get_all_job_types()
-        jtypes_1 = jtypes[0:len(jtypes)/2]
-        jtypes_2 = jtypes[len(jtypes)/2:]
 
         # Even length
         self.assertTrue(len(jtypes)%2 == 0)
@@ -112,8 +110,8 @@ class TestFunctions(TestCase):
 
     def test_get_ui_job_types(self):
         jtypes = self.worker.get_ui_job_types()
-        jtypes_1 = jtypes[0:len(jtypes)/2]
-        jtypes_2 = jtypes[len(jtypes)/2:]
+        jtypes_1 = jtypes[0:int(len(jtypes)/2)]
+        jtypes_2 = jtypes[int(len(jtypes)/2):]
 
         # Even length
         self.assertTrue(len(jtypes)%2 == 0)

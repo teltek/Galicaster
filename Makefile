@@ -32,8 +32,8 @@ all:
 	@echo 'make pep8                    - Run PEP8 compliance tests(using pep8)'
 test:
 	nosetests --all-modules -a '!nodefault'
-test-travis: check
-	nosetests --all-modules -a '!nodefault,!notravis' --with-coverage --cover-inclusive --cover-package=galicaster
+test-travis: 
+	nosetests3 --all-modules -a '!nodefault,!notravis' --with-coverage --cover-inclusive --cover-package=galicaster
 test-with-coverage:
 	nosetests --all-modules -a '!nodefault' --with-coverage --cover-inclusive --cover-package=galicaster
 test-with-coverage-html:
