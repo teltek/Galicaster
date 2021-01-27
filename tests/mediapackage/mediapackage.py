@@ -166,7 +166,7 @@ class TestFunctions(TestCase):
         self.assertEqual(mp.title, "Opening a folder...")
         self.assertEqual(mp.getIdentifier(), "dae91194-2114-481b-8908-8a8962baf8dc")
         self.assertEqual(mp.status, 0)
-        self.assertEqual(mp.properties['notes'], u"Nota de Prueba <?php Caracteres ñ I'm raros >")
+        self.assertEqual(mp.properties['notes'], "Nota de Prueba <?php Caracteres ñ I'm raros >")
 
 
     def test_fromXML_without_galicaster_xml(self):
@@ -196,13 +196,13 @@ class TestFunctions(TestCase):
 
 
         self.assertEqual(mp.getOCCaptureAgentProperties(), 
-                         {u'org.opencastproject.workflow.config.trimHold': 'false',
-                          u'capture.device.names': 'camera,screen,audio',
-                          u'org.opencastproject.workflow.definition': 'full',
-                          u'event.series': 'f16b43df-d1d4-4a85-8989-c060b85cea8d',
-                          u'event.title': 'Clase 2',
-                          u'event.location': 'GC-Etna',
-                          u'org.opencastproject.workflow.config.captionHold': 'false'})
+                         {'org.opencastproject.workflow.config.trimHold': 'false',
+                          'capture.device.names': 'camera,screen,audio',
+                          'org.opencastproject.workflow.definition': 'full',
+                          'event.series': 'f16b43df-d1d4-4a85-8989-c060b85cea8d',
+                          'event.title': 'Clase 2',
+                          'event.location': 'GC-Etna',
+                          'org.opencastproject.workflow.config.captionHold': 'false'})
 
 
     def test_mp_and_operations(self):
@@ -262,8 +262,8 @@ class TestFunctions(TestCase):
         aux = time.time()
         utcdiff = datetime.datetime.utcfromtimestamp(aux) - datetime.datetime.fromtimestamp(aux)
         self.assertEqual(mp.getStartDateAsString(True, False), (now + utcdiff).isoformat())
-        self.assertEqual(mp.getStartDateAsString(False, True), unicode(mp.getDate() - utcdiff))
-        self.assertEqual(mp.getStartDateAsString(False, False), unicode(mp.getDate()))
+        self.assertEqual(mp.getStartDateAsString(False, True), str(mp.getDate() - utcdiff))
+        self.assertEqual(mp.getStartDateAsString(False, False), str(mp.getDate()))
 
         mp.setSeries(None)
         self.assertEqual(mp.metadata_series, {'title':None, 'identifier': None })
@@ -279,12 +279,12 @@ class TestFunctions(TestCase):
         mp.add(self.path_other, mediapackage.TYPE_OTHER, "other/source")
 
         info = mp.getAsDict()
-        self.assertTrue(info.has_key('id'))
-        self.assertTrue(info.has_key('title'))
-        self.assertTrue(info.has_key('status'))
-        self.assertTrue(info.has_key('start'))
-        self.assertTrue(info.has_key('creator'))
-        self.assertTrue(info.has_key('tracks'))
+        self.assertTrue('id' in info)
+        self.assertTrue('title' in info)
+        self.assertTrue('status' in info)
+        self.assertTrue('start' in info)
+        self.assertTrue('creator' in info)
+        self.assertTrue('tracks' in info)
 
     def test_element_tags(self):
         self.assertEqual(self.track1.getTags(), [])

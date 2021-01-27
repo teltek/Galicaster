@@ -321,7 +321,7 @@ class TestFunctions(TestCase):
         self.assertEqual(recorder_service.current_mediapackage, None)
         self.assertEqual(len(repo), 2)
 
-        for mp in repo.values():
+        for mp in list(repo.values()):
             self.assertEqual(mp.status, mediapackage.RECORDED)
 
 

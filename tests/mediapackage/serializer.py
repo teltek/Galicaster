@@ -64,7 +64,7 @@ class TestFunctions(TestCase):
         mp.add(self.track2)
         mp.add(self.catalog)
         mp.status = mediapackage.SCHEDULED
-        mp.notes = u"Nota de Prueba <?php Caracteres ñ I'm raros >"
+        mp.notes = "Nota de Prueba <?php Caracteres ñ I'm raros >"
 
         try:
             parseString(serializer.set_manifest(mp))

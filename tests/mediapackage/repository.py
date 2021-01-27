@@ -80,7 +80,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(repo), 5)
         self.assertEqual(len(repo.list_by_status(mediapackage.FAILED)), 1)
 
-        for (key, mp) in repo.items():
+        for (key, mp) in list(repo.items()):
             self.assertTrue(mp.getDuration() >= 0)
 
         self.assertEqual(repo["dae91194-2114-481b-8908-8a8962baf8da"].getIdentifier(), 

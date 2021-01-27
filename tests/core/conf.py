@@ -182,8 +182,8 @@ class TestFunctions(TestCase):
         self.assertEqual(track['location'], 'v_location')
         self.assertEqual(track['file'], 'v_file')
 
-        self.assertEqual(track.keys(), ['name', 'device', 'flavor', 'location', 'file'])
-        self.assertEqual(track.values(), ['v_name', 'v_device', 'v_flavor', 'v_location', 'v_file'])
+        self.assertEqual(list(track.keys()), ['name', 'device', 'flavor', 'location', 'file'])
+        self.assertEqual(list(track.values()), ['v_name', 'v_device', 'v_flavor', 'v_location', 'v_file'])
         self.assertEqual(track.basic(), {'name': 'v_name', 'device': 'v_device',
                                         'flavor': 'v_flavor', 'location': 'v_location',
                                         'file': 'v_file'})
@@ -195,16 +195,16 @@ class TestFunctions(TestCase):
         track['new_key'] = 'new_value'
         self.assertEqual(len(track), 6)
         self.assertEqual(track['new_key'], 'new_value')
-        self.assertEqual(track.keys(), ['name', 'device', 'flavor', 'location', 'file', 'new_key'])
-        self.assertEqual(track.values(), ['', '', '', '', '', 'new_value'])
+        self.assertEqual(list(track.keys()), ['name', 'device', 'flavor', 'location', 'file', 'new_key'])
+        self.assertEqual(list(track.values()), ['', '', '', '', '', 'new_value'])
         self.assertEqual(track.basic(), {'name': '', 'device': '', 'flavor': '',
                                         'location': '', 'file': ''})
         self.assertEqual(track.options(), {'new_key': 'new_value'})
 
         del track['new_key']
         self.assertEqual(len(track), 5)
-        self.assertEqual(track.keys(), ['name', 'device', 'flavor', 'location', 'file'])
-        self.assertEqual(track.values(), ['', '', '', '', ''])
+        self.assertEqual(list(track.keys()), ['name', 'device', 'flavor', 'location', 'file'])
+        self.assertEqual(list(track.values()), ['', '', '', '', ''])
         self.assertEqual(track.basic(), {'name': '', 'device': '', 'flavor': '',
                                          'location': '', 'file': ''})
         self.assertEqual(track.options(), {})
@@ -411,7 +411,7 @@ class TestFunctions(TestCase):
         self.assertEqual(self.conf.get_palette(), ["#FFFFF0", "#FFFFF1", "#FFFFF2", "#FFFFF3", "#FFFFF4", "#FFFFF5"])
 
     def test_export_to_file(self):
-        p_name = self.conf.get_profiles().keys()[0]
+        p_name = list(self.conf.get_profiles().keys())[0]
         p = self.conf.get_profiles()[p_name]
 
         p.path = "/tmp/test_profile1.ini"
