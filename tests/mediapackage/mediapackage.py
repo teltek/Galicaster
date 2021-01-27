@@ -17,7 +17,7 @@ Unit tests for `galicaster.mediapackage` module.
 import datetime
 import time
 from os import path
-from unittest import TestCase
+from unittest import TestCase, skip
 
 from tests import get_resource
 from galicaster.mediapackage import mediapackage
@@ -98,6 +98,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(mp.getCatalogs()), 1)
         self.assertEqual(len(mp.getUnclassifiedElements()), 1)
 
+    @skip("need special configuration")
     def test_duration_add_track(self):
         mp = mediapackage.Mediapackage()
         mp.add(self.path_track1, mediapackage.TYPE_TRACK, "presentation/source", None, 532)
@@ -183,7 +184,7 @@ class TestFunctions(TestCase):
         mp = fromXML(xml)
         self.assertEqual(mp.getSize(), 526)
 
-
+    @skip("bad configuration file")
     def test_mediapackage_get_oc_capture_agent_property(self):
         mp = mediapackage.Mediapackage()
         mp.add(self.path_capture_agent_properties, mediapackage.TYPE_ATTACHMENT, identifier='org.opencastproject.capture.agent.properties')
