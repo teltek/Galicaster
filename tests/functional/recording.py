@@ -62,11 +62,11 @@ def rec(recorder_time=5, repeating_times=1):
         time.sleep(5)
 
         go_to_distrib()
-        print "Recorder nº {} done".format(count)
+        print("Recorder nº {} done".format(count))
 
         #TODO: Check MP information 
     except Exception as exc:
-        print "Functional test error: {}".format(exc)
+        print("Functional test error: {}".format(exc))
         exit(-1)    
 
 def go_to_recorder():

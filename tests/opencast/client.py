@@ -143,7 +143,7 @@ class TestFunctions(TestCase):
         client = OCHTTPClient(server, user, password)
         series = client.getseries()    
 
-        self.assertTrue(isinstance(series, basestring))
+        self.assertTrue(isinstance(series, str))
         self.assertTrue(isinstance(json.loads(series), dict))
 
     @skip("check endpoint")

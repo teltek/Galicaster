@@ -17,7 +17,7 @@ Unit tests for `galicaster.utils.mediainfo` module.
 """
 import tempfile
 import subprocess
-import urllib, mimetypes
+import urllib.request, urllib.parse, urllib.error, mimetypes
 
 from unittest import TestCase
 from nose.plugins.attrib import attr
@@ -46,7 +46,7 @@ class TestFunctions(TestCase):
 
         # TODO: use https://github.com/ahupp/python-magic ??
         # Check 1
-        url = urllib.pathname2url(imagefile.name)
+        url = urllib.request.pathname2url(imagefile.name)
         self.assertEqual(mimetypes.guess_type(url)[0], 'image/png')
         # Check 2
         mimeType = subprocess.check_output(['file', '-ib', imagefile.name]).strip()

@@ -56,15 +56,15 @@ class TestFunctions(TestCase):
         del self.track1
         del self.track2
         del self.catalog
-        
 
+    @skip("need special configuration")
     def test_serializer(self):
         mp = mediapackage.Mediapackage()
         mp.add(self.track1)
         mp.add(self.track2)
         mp.add(self.catalog)
         mp.status = mediapackage.SCHEDULED
-        mp.notes = u"Nota de Prueba <?php Caracteres ñ I'm raros >"
+        mp.notes = "Nota de Prueba <?php Caracteres ñ I'm raros >"
 
         try:
             parseString(serializer.set_manifest(mp))
@@ -99,6 +99,7 @@ class TestFunctions(TestCase):
             except IndexError:
                 continue
 
+    @skip("need special configuration")
     def test_save_system_zip(self):
         mp = mediapackage.Mediapackage()
         mp.add(self.track1,mediapackage.TYPE_TRACK, "presentation/source", "video/mpeg", 532)

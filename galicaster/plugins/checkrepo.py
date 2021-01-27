@@ -21,30 +21,32 @@ from galicaster.mediapackage import mediapackage
 
 logger = context.get_logger()
 
-def init():	
+
+def init():
     dispatcher = context.get_dispatcher()
-    dispatcher.connect('ical-processed', check_repository)	
+    dispatcher.connect('ical-processed', check_repository)
+
 
 def check_repository(self):
     global logger
-    #mp_list is collection of mediapackages ID's
+    # mp_list is collection of mediapackages ID's
     mp_list = context.get_repository()
 
-    for uid,mp in list(mp_list.items()):
-        if mp.status == mediapackage.SCHEDULED and mp.getDate() < datetime.datetime.utcnow() and mp.getDate()+datetime.timedelta(seconds=(mp.getDuration()/1000)) > datetime.datetime.utcnow():
-            #duration update			
-	    x = datetime.datetime.utcnow() - mp.getDate()
-	    x = x.seconds-2			
-	    mp.setDuration(mp.getDuration() - x*1000)
-	    #start-datetime update
-	    mp.setDate(datetime.datetime.utcnow()+datetime.timedelta(seconds=2))
-	    #repository update
-	    mp_list.update(mp)
-            
-	    scheduler = context.get_scheduler()
-	    try:
+    for uid, mp in list(mp_list.items()):
+        if mp.status == mediapackage.SCHEDULED and mp.getDate() < datetime.datetime.utcnow() and mp.getDate() + datetime.timedelta(
+                seconds=(mp.getDuration() / 1000)) > datetime.datetime.utcnow():
+            # duration update
+            x = datetime.datetime.utcnow() - mp.getDate()
+            x = x.seconds - 2
+            mp.setDuration(mp.getDuration() - x * 1000)
+            # start-datetime update
+            mp.setDate(datetime.datetime.utcnow() + datetime.timedelta(seconds=2))
+            # repository update
+            mp_list.update(mp)
+
+            scheduler = context.get_scheduler()
+            try:
                 scheduler.create_timer(mp)
                 logger.info("Mediapackage with UID:%s have been reprogrammed", uid)
-	    except Exception as exc:
+            except Exception as exc:
                 logger.error("Error trying to create a new timer for MP {}: {}".format(uid, exc))
-        
