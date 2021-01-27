@@ -17,7 +17,7 @@ Unit tests for `galicaster.utils.nautilus` module.
 """
 import subprocess
 
-from unittest import TestCase
+from unittest import TestCase, skip
 from galicaster.utils import nautilus
 
 class TestFunctions(TestCase):
@@ -27,7 +27,7 @@ class TestFunctions(TestCase):
 
     def tearDown(self):
         pass
-
+    @skip("nautilus is needed, not work in github actions")
     def test_open_folder(self):
         return_code = nautilus.open_folder('/tmp')
         self.assertTrue(return_code)
