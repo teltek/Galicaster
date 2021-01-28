@@ -1,0 +1,73 @@
+name: Galicaster Test Actions
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install python3
+        run: |
+          sudo apt-get update
+          sudo apt-get install python3
+          sudo apt-get install python3-pip
+          sudo apt-get install python3-setuptools
+          sudo apt-get install python3-dev
+          sudo apt-get install python3-pycurl
+          sudo apt-get install python3-bottle
+          sudo apt-get install python3-icalendar
+          sudo apt-get install python3-gi
+          sudo apt-get install python3-dbus
+          sudo apt-get install python3-pil
+          sudo apt-get install python3-simplejson
+          sudo apt-get install python3-ldap
+          #sudo apt-get install python3-gst-1.0
+          sudo apt-get install python3-dogtail
+          sudo apt-get install flake8
+          sudo apt-get install python3-nose
+          sudo apt-get install python3-coverage
+          sudo apt-get install python-is-python3
+
+
+
+
+      - name: Install dependences
+        run: |
+          sudo apt-get install onboard
+          sudo apt-get install onboard-data
+          sudo apt-get install libogg0
+          sudo apt-get install libvorbis0a
+          sudo apt-get install libvorbisenc2
+          sudo apt-get install libsasl2-dev
+          sudo apt-get install libldap2-dev
+          sudo apt-get install libssl-dev
+          sudo apt-get install pep8
+
+
+
+
+      - name: Install gstreamer
+        run: |
+          sudo apt-get install gstreamer1.0-plugins-base
+          sudo apt-get install gstreamer1.0-plugins-base-apps
+          #sudo apt-get install gstreamer1.0-plugins-bad
+          sudo apt-get install gstreamer1.0-plugins-ugly
+          sudo apt-get install gstreamer1.0-plugins-good
+          sudo apt-get install gstreamer1.0-plugins-bad-videoparsers
+          sudo apt-get install gstreamer1.0-plugins-bad-faad
+          sudo apt-get install gstreamer1.0-alsa
+          sudo apt-get install gstreamer1.0-libav
+          sudo apt-get install gstreamer1.0-pulseaudio
+          sudo apt-get install libgstreamer1.0-0
+          sudo apt-get install gir1.2-gstreamer-1.0
+          sudo apt-get install gir1.2-gtk-3.0
+          sudo apt-get install gir1.2-gst-plugins-base-1.0
+
+      - name: Run test
+        run: make test-travis
