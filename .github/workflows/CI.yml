@@ -1,6 +1,6 @@
 name: Galicaster Test Actions
 
-on: [push]
+on: [pull_request]
 
 jobs:
   build:
