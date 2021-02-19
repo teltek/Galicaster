@@ -153,7 +153,7 @@ class Recorder(object):
     def preview_and_record(self):
         logger.debug("recorder preview and record")
         self.__set_state(Gst.State.PLAYING)
-        self.__start_record_time = self.__query_position()
+        self.__start_record_time = 0
         self.is_recording = True
 
 
