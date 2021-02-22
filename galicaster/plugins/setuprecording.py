@@ -46,7 +46,7 @@ def post_init(source=None):
     config = context.get_conf().get_section('setuprecording') or {}
 
     # Get the metadata to setup the mediapackage defaults
-    for key, value in config.iteritems():
+    for key, value in list(config.items()):
         final_key = EQUIV.get(key) or key
         if final_key in DCTERMS:
             try:

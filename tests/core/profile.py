@@ -51,7 +51,7 @@ class TestFunctions(TestCase):
         self.setUp()
         profile=Profile("New")
         self.conf.add_profile(profile)
-        self.assertEqual(self.conf.get_profiles().has_key("New"),True)    
+        self.assertEqual("New" in self.conf.get_profiles(),True)    
 
     
     @skip("out of scope")

@@ -30,7 +30,7 @@ def init():
 
     days = None
     try:
-        days = int(conf.get('cleanstale', 'maxarchivaldays'))
+        days = conf.get_int('cleanstale', 'maxarchivaldays')
     except Exception as exc:
         raise Exception("Wrong parameter maxarchivaldays: {}".format(exc))
 

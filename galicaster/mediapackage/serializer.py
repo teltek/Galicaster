@@ -155,7 +155,7 @@ def save_system_zip(mp, loc, use_namespace=True, logger=None):
 
     # FIXME other elements
 
-    loc = loc if type(loc) in [str,unicode] else loc.name
+    loc = loc if type(loc) in [str,str] else loc.name
     command = 'zip -j0 "'+loc + '" "'+'" "'.join(files) + '"'
     # system('zip -j0 "'+loc + '" "'+'" "'.join(files) + '" >/dev/null')
     # if os.path.isfile(loc+".zip"): # WORKARROUND to eliminate automatic extension .zip
@@ -211,7 +211,7 @@ def set_manifest(mp, use_namespace=True):
     xml.setAttribute("id", mp.getIdentifier())
     xml.setAttribute("start", mp.getDate().isoformat())
     if mp.getDuration() != None:
-        xml.setAttribute("duration", unicode(mp.getDuration()))
+        xml.setAttribute("duration", str(mp.getDuration()))
 
     doc.appendChild(xml)
     media = doc.createElement("media")
@@ -246,7 +246,7 @@ def set_manifest(mp, use_namespace=True):
         utext = doc.createTextNode(os.path.basename(t.getURI()))
         url.appendChild(utext)
         duration = doc.createElement("duration")
-        dtext = doc.createTextNode(unicode(t.getDuration()))
+        dtext = doc.createTextNode(str(t.getDuration()))
         duration.appendChild(dtext)
         track.appendChild(mime)
         track.appendChild(url)
@@ -312,8 +312,7 @@ def set_manifest(mp, use_namespace=True):
         attachments.appendChild(attachment)
 
     # FIXME ADD checksum
-    # return doc.toprettyxml(indent="   ", newl="\n",encoding="utf-8")
-    return doc.toprettyxml(indent="   ", newl="\n", encoding="utf-8")
+    return doc.toprettyxml(indent="   ", newl="\n", encoding="utf-8").decode('utf-8')
 
 
 def set_manifest_json(mp):
@@ -330,9 +329,9 @@ def set_manifest_json(mp):
     mp_json["start"] = mp.getDate().isoformat()
     mp_json["creator"] = mp.getCreator() if mp.getCreator() else ""
 
-    if mp.metadata_episode.has_key("description"):
+    if "description" in mp.metadata_episode:
         mp_json["description"] = mp.getDescription()
-    if mp.metadata_episode.has_key("language"):
+    if "language" in mp.metadata_episode:
         mp_json["language"] = mp.getLanguage()
 
     if mp.getSeriesIdentifier():
@@ -349,7 +348,7 @@ def set_manifest_json(mp):
     if mp.getDuration() != None:
         mp_json["duration"] = int(mp.getDuration())
 
-    mp_json["size"] = long(mp.getSize())
+    mp_json["size"] = int(mp.getSize())
     mp_json["sizeByFlavor"] = mp.getSizeByFlavors()
 
     mp_json["properties"] = mp.properties
@@ -364,7 +363,7 @@ def set_manifest_json(mp):
 
     # OPERATIONS STATUS
     mp_json["operations"] = {}
-    for op, status in mp.operations.iteritems():
+    for op, status in list(mp.operations.items()):
         mp_json["operations"][op] = status
 
     # MEDIA - TRACKS
@@ -426,11 +425,11 @@ def set_episode(mp):
     xml.setAttribute("xmlns:xsi","http://www.w3.org/2001/XMLSchema-instance/")
     xml.setAttribute("xmlns:dcterms","http://purl.org/dc/terms/")
     doc.appendChild(xml)
-    for name in mp.metadata_episode.iterkeys():
+    for name in list(mp.metadata_episode.keys()):
         try:
             if name == "isPartOf" and mp.getSeriesIdentifier() !=None:
                 created = doc.createElement("dcterms:" + name)
-                text = doc.createTextNode(unicode(mp.getSeriesIdentifier()))
+                text = doc.createTextNode(str(mp.getSeriesIdentifier()))
                 created.appendChild(text)
                 xml.appendChild(created)
             elif not mp.metadata_episode[name]:
@@ -442,7 +441,7 @@ def set_episode(mp):
                 xml.appendChild(created)
             else:
                 created = doc.createElement("dcterms:" + name)
-                text = doc.createTextNode(unicode(mp.metadata_episode[name]))
+                text = doc.createTextNode(str(mp.metadata_episode[name]))
                 created.appendChild(text)
                 xml.appendChild(created)
 
@@ -454,11 +453,11 @@ def set_episode(mp):
         start = mp.getDate().isoformat() + "Z"
         end = (mp.getDate() + timedelta(seconds=mp.getDuration()/1000)).isoformat() + "Z"
         temporal_data = 'start={start}; end={end}; scheme=W3C-DTF;'.format(start=start, end=end)
-        text = doc.createTextNode(unicode(temporal_data))
+        text = doc.createTextNode(str(temporal_data))
         elem.appendChild(text)
         xml.appendChild(elem)
 
-    return doc.toprettyxml(indent="   ", newl="\n", encoding="utf-8") #without encoding
+    return doc.toprettyxml(indent="   ", newl="\n", encoding="utf-8").decode('utf-8') #without encoding
 
 
 
@@ -475,15 +474,15 @@ def set_series(mp, logger=None):
     xml.setAttribute("xmlns","http://www.opencastproject.org/xsd/1.0/dublincore/")
     xml.setAttribute("xmlns:dcterms","http://purl.org/dc/terms/")
     doc.appendChild(xml)
-    for name in mp.metadata_series.iterkeys():
+    for name in list(mp.metadata_series.keys()):
         if mp.metadata_series[name] != None:
             try:
                 created = doc.createElement("dcterms:" + name)
-                text = doc.createTextNode(unicode(mp.metadata_series[name]))
+                text = doc.createTextNode(str(mp.metadata_series[name]))
                 created.appendChild(text)
                 xml.appendChild(created)
             except KeyError:
                 if logger:
                     logger.warning("KeyError in serializer.set_series")
                 continue
-    return doc.toprettyxml(indent="   ", newl="\n", encoding="utf-8") #without encoding
+    return doc.toprettyxml(indent="   ", newl="\n", encoding="utf-8").decode('utf-8') #without encoding

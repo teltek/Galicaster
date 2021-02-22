@@ -205,7 +205,7 @@ class RecorderService(object):
 
 
     def __close_mp(self):
-        close_duration = self.recorder.get_recorded_time() / 1000000
+        close_duration = self.recorder.get_recorded_time() // 1000000
         self.current_mediapackage.status = mediapackage.RECORDED
         self.logger.info("Adding new mediapackage ({}) to the repository".format(
                 self.current_mediapackage.getIdentifier()))

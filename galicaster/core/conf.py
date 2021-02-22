@@ -14,7 +14,7 @@
 
 import os
 import shutil
-import ConfigParser
+import configparser
 import socket
 import json
 
@@ -51,10 +51,10 @@ class Conf(object): # TODO list get and other ops arround profile
             profile_folder (str): the given path of the profile folder.
             logger (Logger): the object that prints all the information, warning and error messages. See galicaster/context/logger
         """
-        self.__conf = ConfigParser.ConfigParser()
+        self.__conf = configparser.RawConfigParser()
         self.__conf.optionxform = str
-        self.__user_conf = ConfigParser.ConfigParser()
-        self.__conf_dist = ConfigParser.ConfigParser()
+        self.__user_conf = configparser.ConfigParser()
+        self.__conf_dist = configparser.ConfigParser()
         self.__profiles = OrderedDict()
         self.__default_profile = None
         self.__current_profile = None
@@ -100,6 +100,12 @@ class Conf(object): # TODO list get and other ops arround profile
                     if option not in self.__conf_dist.options(section):
                         self.logger and self.logger.warning('No option "{0}" in section "{1}". Please check the file {2}'.format(option, section, self.conf_file))
 
+    def has(self, sect, opt):
+        try:
+            response = self.__conf.get(sect, opt)
+            return True
+        except Exception as exc:
+            return False
 
     def get(self, sect, opt, default=None): # TODO overload ConfigParser?
         """Tries to return the value of a specific option in a specific section.
@@ -157,7 +163,7 @@ class Conf(object): # TODO list get and other ops arround profile
                 return int(self.get(sect, opt))
             except Exception as exc:
                 self.logger and self.logger.warning('The parameter "{0}" in section "{1}" is not an int, FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
-
+                return int(self.__conf_dist.get(sect, opt))
         return default
 
 
@@ -176,7 +182,7 @@ class Conf(object): # TODO list get and other ops arround profile
                 return float(self.get(sect, opt))
             except Exception as exc:
                 self.logger and self.logger.warning('The parameter "{0}" in section "{1}" is not a float, FORCED TO "{2}". Exception: {3}'.format(opt, sect, default, exc))
-
+                return float(self.__conf_dist.get(sect, opt))
         return default
 
 
@@ -366,7 +372,7 @@ class Conf(object): # TODO list get and other ops arround profile
         """
         try:
             return OrderedDict(self.__conf.items(sect))
-        except ConfigParser.NoSectionError as exc:
+        except configparser.NoSectionError as exc:
             self.logger and self.logger.warning('Error obtaining the section "{0}" , FORCED TO "{1}". Exception: {2}'
                                                              .format(sect, default, exc))
         return default
@@ -383,7 +389,7 @@ class Conf(object): # TODO list get and other ops arround profile
         """
         try:
             return OrderedDict(self.__user_conf.items(sect))
-        except ConfigParser.NoSectionError as exc:
+        except configparser.NoSectionError as exc:
             self.logger and self.logger.warning('Error obtaining the section "{0}" , FORCED TO "{1}". Exception: {2}'
                                                              .format(sect, default, exc))
         return default
@@ -398,7 +404,7 @@ class Conf(object): # TODO list get and other ops arround profile
         """
         try:
             return self.__conf.sections()
-        except ConfigParser.NoSectionError as exc:
+        except configparser.NoSectionError as exc:
             self.logger and self.logger.warning('Error obtaining all the sections, FORCED TO "{0}". Exception: {1}'
                                                              .format(default, exc))
         return default
@@ -414,7 +420,7 @@ class Conf(object): # TODO list get and other ops arround profile
         """
         try:
             return self.__user_conf.sections()
-        except ConfigParser.NoSectionError as exc:
+        except configparser.NoSectionError as exc:
             self.logger and self.logger.warning('Error obtaining all the sections in user configuration file, FORCED TO "{0}". Exception: {1}'.format(default, exc))
         return default
 
@@ -440,7 +446,7 @@ class Conf(object): # TODO list get and other ops arround profile
             if not sect_name:
                 raise Exception("No section name specified")
 
-            for opt,value in sect.iteritems():
+            for opt,value in list(sect.items()):
                 self.__force_set(self.__user_conf, sect_name, opt, value)
                 self.__force_set(self.__conf, sect_name, opt, value)
 
@@ -575,28 +581,28 @@ class Conf(object): # TODO list get and other ops arround profile
             dst = self.conf_file + ".orig_" + now
 
             try:
-                with open(src, 'rb') as fsrc:
-                    with open(dst, 'wb') as fdst:
+                with open(src, 'r') as fsrc:
+                    with open(dst, 'w') as fdst:
                         self.logger and self.logger.warning("Copying original conf file due to an error: {0} to {1}".format(src, dst))
                         shutil.copyfileobj(fsrc, fdst)
                         os.fsync(fdst)
-                        os.chmod(dst, 0666)
+                        os.chmod(dst, 0o666)
             except Exception as exc:
                 self.logger and self.logger.warning("Error trying to copy the original conf file {} to {}".format(src, dst))
 
         try:
-            configfile = open(self.conf_file, 'wb')
+            configfile = open(self.conf_file, 'w')
             self.logger and self.logger.info("Saving current configuration to {}".format(configfile.name))
             self.__user_conf.write(configfile)
             configfile.close()
         except Exception as exc:
-            self.logger and self.logger.error('Erros saving configuration: {}'.format(exc))
+            self.logger and self.logger.error('Errors saving configuration: {}'.format(exc))
 
 
     def update_profiles(self):
         """Write on disk profile modifications, delete file if neccesary.
         """
-        for profile in self.__profiles.values():
+        for profile in list(self.__profiles.values()):
             if profile.to_delete:
                 self.logger and self.logger("Removing profile {} with path {}".format(profile.name, profile.path))
                 os.remove(profile.path)
@@ -654,7 +660,7 @@ class Conf(object): # TODO list get and other ops arround profile
         profile.import_tracks_from_parser(parser)
         if activated:
             def f(x): return x.get('active', 'true').lower() in validator.YES
-            profile.tracks = filter(f, profile.tracks)
+            profile.tracks = list(filter(f, profile.tracks))
         return profile
 
 
@@ -739,10 +745,10 @@ class Conf(object): # TODO list get and other ops arround profile
         count = 0
         for ind,track in enumerate(tracks):
             tracks.pop(count)
-            for k,v in track.iteritems():
+            for k,v in list(track.items()):
                 if k in ['name', 'file']:
                     for aux in tracks:
-                        if k in aux.keys() and v == aux[k]:
+                        if k in list(aux.keys()) and v == aux[k]:
 
                             # Compose error message
                             if error_msg:
@@ -784,7 +790,7 @@ class Conf(object): # TODO list get and other ops arround profile
         profiles = OrderedDict()
 
         #return filter(,self.__
-        for name,profile in self.__profiles.iteritems():
+        for name,profile in list(self.__profiles.items()):
             if not profile.to_delete:
                 profiles[name]=profile
         return profiles
@@ -798,7 +804,7 @@ class Conf(object): # TODO list get and other ops arround profile
         """
         self.__profiles[profile.name] = profile
         if old_key:
-            if self.__profiles.has_key(old_key):
+            if old_key in self.__profiles:
                 del self.__profiles[old_key]
 
 
@@ -994,10 +1000,10 @@ class Profile(object):
         Returns:
             Bool: True if there were no errors. False otherwise.
         """
-        parser = ConfigParser.ConfigParser()
+        parser = configparser.ConfigParser()
         try:
             parser.read(filepath)
-        except ConfigParser.Error:
+        except configparser.Error:
             return False
         if not parser.has_section("data"):
             return False
@@ -1022,7 +1028,7 @@ class Profile(object):
         if not filepath:
             filepath = self.path
 
-        parser = ConfigParser.ConfigParser()
+        parser = configparser.ConfigParser()
         parser.add_section('data')
         parser.set('data','name', self.name)
         if self.execute:
@@ -1033,12 +1039,12 @@ class Profile(object):
         for track in self.original_tracks:
             section = 'track'+str(index)
             parser.add_section(section)
-            for key in track.iterkeys():
+            for key in list(track.keys()):
                 if key not in ['path','active']:
                     parser.set(section,key,track[key])
             index+=1
 
-        configfile = open(filepath, 'wb')
+        configfile = open(filepath, 'w')
         parser.write(configfile)
         configfile.close()
 
@@ -1060,7 +1066,7 @@ class Track(OrderedDict):
         super(Track,self).__init__(*args, **kw)
 
         for key in self.BASIC:
-            if not self.has_key(key):
+            if key not in self:
                 self[key] = ""
 
     def _get_name(self):
@@ -1149,7 +1155,7 @@ class Track(OrderedDict):
             List[Str]: the list of optional parameters of a track. Such as frequency, pattern, colors...
         """
         sequence = []
-        for key in self.keys():
+        for key in list(self.keys()):
             if key not in self.BASIC:
                 sequence.append(key)
         return sequence

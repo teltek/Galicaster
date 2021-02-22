@@ -13,7 +13,7 @@
 
 from gi.repository import Gst
 import time
-import thread
+import _thread
 
 from galicaster.core import context
 
@@ -105,7 +105,7 @@ class Switcher(Gst.Bin):
             self.selector.set_property('active-pad',
                                        self.selector.get_pad('sink0'))
             self.eph_error = True
-            self.thread_id=thread.start_new_thread(self.polling_thread, ())
+            self.thread_id=_thread.start_new_thread(self.polling_thread, ())
             self.device.set_state(Gst.State.NULL)
             self.remove(self.device)  #IDEA remove it when at NULL
 
@@ -171,7 +171,7 @@ class Switcher(Gst.Bin):
                 self.switch("sink0")
                 self.eph_error = True
                 # self.device.set_state(Gst.State.NULL)
-                self.thread_id = thread.start_new_thread(self.polling_thread,())
+                self.thread_id = _thread.start_new_thread(self.polling_thread,())
                 logger.warning("Epiphan BROKEN: Switching Epiphan to Background")
                 return False
             if event.type == Gst.EVENT_NEWSEGMENT and self.eph_error:
@@ -269,11 +269,11 @@ def get_audiosink(audiosink='autoaudiosink', name='gc-apreview', properties = {}
 
 def get_properties(videosink, properties, default_properties):
     props_str = ''
-    if videosink in default_properties.keys():
+    if videosink in list(default_properties.keys()):
         props = default_properties[videosink]
         props.update(properties)
 
-        for k,v in props.iteritems():
+        for k,v in list(props.items()):
             props_str = props_str + k + "=" + v + ' '
 
     return props_str

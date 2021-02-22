@@ -41,7 +41,7 @@ def error_handler(func):
         except Exception as e:
             logger = context.get_logger()
             error_txt = str(e)
-            logger.error("Error in function '{}': {}".format(func.func_name, error_txt))
+            logger.error("Error in function '{}': {}".format(func.__name__, error_txt))
 
             abort(503, error_txt)
     return wrapper
@@ -105,7 +105,7 @@ def list():
     repo = context.get_repository()
     response.content_type = 'application/json'
     keys = []
-    for key,value in repo.iteritems():
+    for key,value in list(repo.items()):
         keys.append(key)
     return json.dumps(keys)
 
@@ -121,11 +121,11 @@ def metadata(id):
     response.content_type = 'application/json'
     mp = context.get_repository().get(id)
     line = mp.metadata_episode.copy()
-    line["duration"] = long(mp.getDuration()/1000)
+    line["duration"] = int(mp.getDuration()/1000)
     line["created"] = mp.getStartDateAsString()
-    for key,value in mp.metadata_series.iteritems():
+    for key,value in list(mp.metadata_series.items()):
         line["series-"+key] = value
-    for key,value in line.iteritems():
+    for key,value in list(line.items()):
         if value in [None,[]]:
             line[key]=''
         json.dumps({key:value})
@@ -242,7 +242,7 @@ def enable_input():
     logger = context.get_logger()
     recorder = context.get_recorder()
     preview = request.json
-    recorder.enable_input(preview.values()[0])
+    recorder.enable_input(list(preview.values())[0])
     logger.info("Input enabled")
 
 @route('/disable_input', method='POST')
@@ -250,7 +250,7 @@ def disable_input():
     logger = context.get_logger()
     recorder = context.get_recorder()
     preview = request.json
-    recorder.disable_input(preview.values()[0])
+    recorder.disable_input(list(preview.values())[0])
     logger.info("Input disabled")
 
 @route('/enable_preview', method='POST')
@@ -258,7 +258,7 @@ def enable_preview():
     logger = context.get_logger()
     recorder = context.get_recorder()
     preview = request.json
-    recorder.enable_preview(preview.values()[0])
+    recorder.enable_preview(list(preview.values())[0])
     logger.info("Preview enabled")
 
 @route('/disable_preview', method='POST')
@@ -266,7 +266,7 @@ def disable_preview():
     logger = context.get_logger()
     recorder = context.get_recorder()
     preview = request.json
-    recorder.disable_preview(preview.values()[0])
+    recorder.disable_preview(list(preview.values())[0])
     logger.info("Preview disabled")
 
 @route('/recording/get_property', method='GET')

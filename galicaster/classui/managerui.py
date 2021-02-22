@@ -287,11 +287,11 @@ class ManagerUI(Gtk.Box):
         data['created'] = readable.date(mp.getStartDateAsString(),
                                    "%B %d, %Y - %H:%M").replace(' 0',' ')
 
-        if data.has_key('seriestitle'):
+        if 'seriestitle' in data:
             data['isPartOf'] = data['seriestitle']
 
         # Operations
-        for op,status in data['operations'].iteritems():
+        for op,status in list(data['operations'].items()):
             data[op] = mediapackage.op_status[status]
         del data['operations']
 

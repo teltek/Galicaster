@@ -21,7 +21,7 @@ def init(**kwargs):
     """
     buttons_conf = conf.get_section('script_button')
     buttons = []
-    for name, button_conf in buttons_conf.iteritems():
+    for name, button_conf in list(buttons_conf.items()):
         button_conf = json.loads(button_conf)
         buttons.append(ScriptButton(button_conf['name'], button_conf['icon'], button_conf['command']))
 

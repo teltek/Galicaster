@@ -32,12 +32,13 @@ def execute(command=[], logger=None, logaserror=True):
 
 
 def write_dconf_settings(settings={}, logger=None, logaserror=False):
-    for key, value in settings.iteritems():
+    for key, value in list(settings.items()):
         execute(["dconf", "write", key, value], logger, logaserror)
 
 def is_running(process):
     s = subprocess.Popen(['ps', 'axw'],stdout=subprocess.PIPE)
     for x in s.stdout:
+        x = x.decode("utf-8")
         if re.search(process, x):
             return x.strip().split(' ')[0]
     return None

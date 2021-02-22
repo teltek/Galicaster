@@ -37,9 +37,9 @@ def validate_track(options, gc_parameters=None, recursive=False):
 
     current_error = None
 
-    for k, gc_parameter in gc_parameters.iteritems():
+    for k, gc_parameter in list(gc_parameters.items()):
         v = None
-        if options.has_key(k):
+        if k in options:
             v = options[k]
         current_error, value = parse_validate(k, v, gc_parameter)
         options[k] = value
@@ -83,7 +83,7 @@ def parse_validate(k, option, gc_parameter=None):
 
     if option is None:
         # If the value is not set, put the default value
-        if gc_parameter.has_key("default") :
+        if "default" in gc_parameter :
             option = gc_parameter['default']
 
     if option is not None:
@@ -193,7 +193,7 @@ def parse_validate(k, option, gc_parameter=None):
 
 
     # If the value is not set, put the default value
-    if option is None or current_error and gc_parameter.has_key("default") :
+    if option is None or current_error and "default" in gc_parameter :
         option = gc_parameter['default']
 
     return current_error, option

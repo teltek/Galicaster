@@ -18,7 +18,7 @@ import gettext
 i18n_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "i18n"))
 
 t = gettext.translation("galicaster", i18n_path, fallback=True)
-_ = t.ugettext
+_ = t.gettext
 
 locale.bindtextdomain("galicaster", i18n_path)
 locale.textdomain("galicaster")

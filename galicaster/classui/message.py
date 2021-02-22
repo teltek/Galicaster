@@ -114,24 +114,24 @@ class PopUp(Gtk.Widget):
 
             frames = {'Cancel': {'Cancel' : -2}}
 
-            for operation, response in buttons.iteritems():
+            for operation, response in list(buttons.items()):
                 if operation.count('Ingest'):
-                    if not frames.has_key('Ingest'):
+                    if 'Ingest' not in frames:
                         frames['Ingest'] = {}
                     frames['Ingest'][operation] = response
                 elif operation.count('Side') or operation.count('Export'):
-                    if not frames.has_key('Export'):
+                    if 'Export' not in frames:
                         frames['Export'] = {}
                     frames['Export'][operation] = response
 
             self.set_buttons(self.gui, frames)
 
         elif message == MP_INFO:
-            if text.has_key('tracks'):
+            if 'tracks' in text:
                 grid = self.gui.get_object('tracks_grid')
                 if grid:
                     self.fill_info(grid, text['tracks'])
-            if text.has_key('catalogs'):
+            if 'catalogs' in text:
                 grid = self.gui.get_object('catalogs_grid')
                 if grid:
                     self.fill_info(grid, text['catalogs'])
@@ -205,7 +205,7 @@ class PopUp(Gtk.Widget):
         # For MP Info PopUP
         series_shown = False
 
-        for label, content in text.iteritems():
+        for label, content in list(text.items()):
 
             if label == 'title':
                 title = content
@@ -286,10 +286,10 @@ class PopUp(Gtk.Widget):
                 }
         }
 
-        for frame, operations in frames.iteritems():
+        for frame, operations in list(frames.items()):
             frame_widget = gui.get_object('{} frame'.format(frame))
             frame_widget.show()
-            for operation, response in operations.iteritems():
+            for operation, response in list(operations.items()):
                 button = gui.get_object("{} button".format(operation))
                 button.set_label(OPERATION_NAMES[operation])
                 button.connect("clicked", self.force_response, response)
@@ -302,7 +302,7 @@ class PopUp(Gtk.Widget):
                 button.show()
 
         # Expand the buttons if the widgets of the same column in different rows are hidden
-        for row, widget in export_frame_pos[0].iteritems():
+        for row, widget in list(export_frame_pos[0].items()):
             if not widget:
                 if export_frame_pos[1][row]:
                     grid.child_set_property(export_frame_pos[1][row], 'top-attach', 0)
@@ -346,7 +346,7 @@ class PopUp(Gtk.Widget):
             void_label.show()
             grid.attach(void_label, 1, row, 1, 1)
             row += 1
-            for info_label, info_content in e.iteritems():
+            for info_label, info_content in list(e.items()):
                 label = Gtk.Label.new(info_label.title())
                 label.set_halign(Gtk.Align.END)
                 label.show()
@@ -367,7 +367,7 @@ class PopUp(Gtk.Widget):
         row = 1
         for mp in info:
             column = 0
-            for label, content in mp.iteritems():
+            for label, content in list(mp.items()):
                 widget = gui.get_object('{}_mp'.format(label))
                 if widget:
                     if isinstance(widget, Gtk.Label):
@@ -472,7 +472,7 @@ GObject.type_register(PopUp)
 
 def main(args):
     """Launcher for debugging purposes"""
-    print "Running Main Message PopUp"
+    print("Running Main Message PopUp")
     PopUp()
     Gtk.main()
     return 0

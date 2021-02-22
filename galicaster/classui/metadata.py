@@ -216,7 +216,7 @@ class MetadataClass(Gtk.Widget):
             row=row+1
 
     def check_mandatory(self, item, button, check_all = False):
-        entries = self.mandatory.keys()
+        entries = list(self.mandatory.keys())
         if not check_all:
             # Put 'item' at the beginning of the list
             entries.insert(0, entries.pop(entries.index(item)))
@@ -258,7 +258,7 @@ class MetadataClass(Gtk.Widget):
                     if child.get_text() == "":
                         mp.metadata_episode[name] = None
                     else:
-                        mp.metadata_episode[name] = unicode(child.get_text().strip(),encoding='utf-8')
+                        mp.metadata_episode[name] = child.get_text().strip()
 
                 elif name in [ "ispartof", "isPartOf" ]:
                     if child.get_active_iter():
@@ -277,8 +277,7 @@ class MetadataClass(Gtk.Widget):
                         if catalog:
                             mp.remove(catalog[0])
                 else:
-                    unicode_text = unicode(child.get_text(),encoding='utf-8')
-                    mp.metadata_episode[name]=unicode_text
+                    mp.metadata_episode[name]=child.get_text()
 
     def edit_date(self,element,event):
         """Filter a Right button double click, show calendar and update date"""

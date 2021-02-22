@@ -91,7 +91,7 @@ class Player(object):
         bus.connect('sync-message::element', WeakMethod(self, '_on_sync_message'))
 
         # Create elements
-        for name, location in self.files.iteritems():
+        for name, location in list(self.files.items()):
             logger.info('playing %r', location)
             src = Gst.ElementFactory.make('filesrc', 'src-' + name)
             src.set_property('location', location)
@@ -152,7 +152,7 @@ class Player(object):
             self.dispatcher.emit("player-status", PLAYING)
             self.pipeline.set_state(Gst.State.PLAYING)
         # TODO: This is a WORKAROUND for https://github.com/teltek/Galicaster/issues/456
-        for player in self.players.values():
+        for player in list(self.players.values()):
             player.set_double_buffered(True)
         return None
 
@@ -165,7 +165,7 @@ class Player(object):
         self.dispatcher.emit("player-status", PAUSED)
         self.get_status()
         # TODO: This is a WORKAROUND for https://github.com/teltek/Galicaster/issues/456
-        for player in self.players.values():
+        for player in list(self.players.values()):
             player.set_double_buffered(False)
 
     def stop(self):
@@ -180,7 +180,7 @@ class Player(object):
         self.dispatcher.emit("player-status", STOPPED)
         self.get_status()
         # TODO: This is a WORKAROUND for https://github.com/teltek/Galicaster/issues/456
-        for player in self.players.values():
+        for player in list(self.players.values()):
             player.set_double_buffered(False)
         return None
 
@@ -245,15 +245,21 @@ class Player(object):
             # if element_name == 'presenter' or len(self.files) == 1:
             if not self.has_audio:
                 self.has_audio = True
-                self.audio_sink = Gst.ElementFactory.make('autoaudiosink', 'audio')
+                audioconvert = Gst.ElementFactory.make('audioconvert', 'audioconvert')
+                self.pipeline.add(audioconvert)
+                pad.link(audioconvert.get_static_pad('sink'))
+                audioconvert.set_state(Gst.State.PAUSED)
+
                 vumeter = Gst.ElementFactory.make('level', 'level')
                 vumeter.set_property('message', True)
                 vumeter.set_property('interval', 100000000)  # 100 ms
-                self.pipeline.add(self.audio_sink)
                 self.pipeline.add(vumeter)
-                pad.link(vumeter.get_static_pad('sink'))
-                vumeter.link(self.audio_sink)
+                audioconvert.link(vumeter)
                 vumeter.set_state(Gst.State.PAUSED)
+
+                self.audio_sink = Gst.ElementFactory.make('autoaudiosink', 'audio')
+                self.pipeline.add(self.audio_sink)
+                vumeter.link(self.audio_sink)
                 assert self.audio_sink.set_state(Gst.State.PAUSED)
 
         elif name.startswith('video/'):
@@ -315,21 +321,19 @@ class Player(object):
     def __set_vumeter(self, message):
         struct = message.get_structure()
         rms_values = struct.get_value('rms')
-        stereo = True
+        stereo = False
+        valor = "Inf"
+        valor2 = valor
 
-        if float(rms_values[0]) == float("-inf"):
-            valor = "Inf"
-        else:
+        if len(rms_values) > 0 and float(rms_values[0]) != float("-inf"):
             valor = float(rms_values[0])
+            valor2 = valor
 
         if len(rms_values) > 1:
-            if float(rms_values[1]) == float("-inf"):
-                valor2 = "Inf"
-            else:
+            stereo = True
+            valor2 = "Inf"
+            if float(rms_values[1]) != float("-inf"):
                 valor2 = float(rms_values[1])
-        else:
-            stereo = False
-            valor2 = valor
 
         self.dispatcher.emit("player-vumeter", valor, valor2, stereo)
 
@@ -347,7 +351,7 @@ class Player(object):
     def __get_duration_and_run(self):
         # choose lighter file
         minsize = location = None
-        for key, value in self.files.iteritems():
+        for key, value in list(self.files.items()):
             size = os.path.getsize(value)
             if not minsize or size < minsize:
                 minsize = size

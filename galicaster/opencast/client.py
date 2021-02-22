@@ -15,11 +15,11 @@ import re
 import json
 import socket
 #IDEA use cStringIO to improve performance
-from StringIO import StringIO
+import io
 import pycurl
 from collections import OrderedDict
-import urlparse
-import urllib
+import urllib.parse
+import urllib.request, urllib.parse, urllib.error
 from galicaster.utils.miscellaneous import get_timezone
 
 try:
@@ -104,15 +104,15 @@ class OCHTTPClient(object):
 
         theServer = server or self.server
 
-        url = list(urlparse.urlparse(theServer, 'http'))
-        url[2] = urlparse.urljoin(url[2], endpoint.format(**path_params))
-        url[4] = urllib.urlencode(query_params)
+        url = list(urllib.parse.urlparse(theServer, 'http'))
+        url[2] = urllib.parse.urljoin(url[2], endpoint.format(**path_params))
+        url[4] = urllib.parse.urlencode(query_params)
 
         c = b = None
         try:
             c = pycurl.Curl()
 
-            c.setopt(pycurl.URL, urlparse.urlunparse(url))
+            c.setopt(pycurl.URL, urllib.parse.urlunparse(url))
 
             c.setopt(pycurl.FOLLOWLOCATION, False)
             c.setopt(pycurl.CONNECTTIMEOUT, self.connect_timeout)
@@ -123,7 +123,7 @@ class OCHTTPClient(object):
             c.setopt(pycurl.USERPWD, self.user + ':' + self.password)
             sendheaders = ['X-Requested-Auth: Digest', 'X-Opencast-Matterhorn-Authorization: true']
             if headers:
-                for h, v in headers.iteritems():
+                for h, v in list(headers.items()):
                     sendheaders.append('{}: {}'.format(h, v))
                 # implies we might be interested in passing the response headers
                 c.setopt(pycurl.HEADERFUNCTION, self.scanforetag)
@@ -134,11 +134,11 @@ class OCHTTPClient(object):
             if (method == 'POST'):
                 if urlencode:
                     c.setopt(pycurl.POST, 1)
-                    c.setopt(pycurl.POSTFIELDS, urllib.urlencode(postfield))
+                    c.setopt(pycurl.POSTFIELDS, urllib.parse.urlencode(postfield))
                 else:
                     c.setopt(pycurl.HTTPPOST, postfield)
 
-            b = StringIO()
+            b = io.BytesIO()
             c.setopt(pycurl.WRITEFUNCTION, b.write)
 
             #c.setopt(pycurl.VERBOSE, True) ##TO DEBUG
@@ -150,19 +150,19 @@ class OCHTTPClient(object):
 
             if status_code != 200 and status_code != 302 and status_code != 304:
                 if (status_code > 200) and (status_code < 300):
-                    self.logger and self.logger.warning("Opencast client ({}) sent a response with status code {}".format(urlparse.urlunparse(url), status_code))
+                    self.logger and self.logger.warning("Opencast client ({}) sent a response with status code {}".format(urllib.parse.urlunparse(url), status_code))
                 else:
                     title = self.find_between(b.getvalue(), "<title>", "</title>")
                     self.logger and self.logger.error('call error in %s, status code {%r}: %s',
-                                                      urlparse.urlunparse(url), status_code, title)
-                    raise IOError, 'Error in Opencast client'
+                                                      urllib.parse.urlunparse(url), status_code, title)
+                    raise IOError('Error in Opencast client')
 
-            return b.getvalue()
+            return b.getvalue().decode('utf-8')
         except IOError:
             # Do not wrap the IOError. We raise it ourselves
             raise
         except Exception as exc:
-            raise RuntimeError, exc
+            raise RuntimeError(exc)
         finally:
             if c is not None:
                 try:
@@ -175,11 +175,13 @@ class OCHTTPClient(object):
                     b.close()
                 except Exception as e:
                     # We did our best!
-                    self.logger and self.logger.warning("Could not close StringIO object properly: {}", e)
+                    self.logger and self.logger.warning("Could not close BytesIO object properly: {}", e)
 
-    def scanforetag(self, buffer):
-        if buffer.startswith('ETag:'):
-            etag = buffer[5:]
+    def scanforetag(self, header_line):
+        # HTTP standard specifies that headers are encoded in iso-8859-1.
+        header_line = header_line.decode('iso-8859-1')
+        if header_line.startswith('ETag:'):
+            etag = header_line[5:]
             self.response['ETag'] = etag.strip()
 
     def whoami(self):
@@ -265,7 +267,7 @@ class OCHTTPClient(object):
         client_conf.update(self.ca_parameters)
 
         xml = ""
-        for k, v in client_conf.iteritems():
+        for k, v in list(client_conf.items()):
             xml = xml + client_conf_xml_body.format(key=k, value=v)
         client_conf = client_conf_xml.format(xml)
         return self.__call('POST', SETCONF_ENDPOINT, {'hostname': self.hostname}, postfield={'configuration': client_conf})
@@ -274,16 +276,16 @@ class OCHTTPClient(object):
     def _prepare_ingest(self, mp_file, workflow=None, workflow_instance=None, workflow_parameters=None):
         "refactor of ingest to unit test"
         postdict = OrderedDict()
-        postdict[u'workflowDefinitionId'] = workflow or self.workflow
+        postdict['workflowDefinitionId'] = workflow or self.workflow
         if workflow_instance:
             postdict['workflowInstanceId'] = str(workflow_instance)
-        if isinstance(workflow_parameters, basestring) and workflow_parameters != '':
+        if isinstance(workflow_parameters, str) and workflow_parameters != '':
             postdict.update(dict(item.split(":") for item in workflow_parameters.split(";")))
         elif isinstance(workflow_parameters, dict) and workflow_parameters:
             postdict.update(workflow_parameters)
         else:
             postdict.update(self.workflow_parameters)
-        postdict[u'track'] = (pycurl.FORM_FILE, mp_file)
+        postdict['track'] = (pycurl.FORM_FILE, mp_file)
         return postdict
 
     def _get_endpoints(self, service_type):
@@ -357,7 +359,7 @@ class OCHTTPClient(object):
         server = self.server if not self.multiple_ingest else self.get_ingest_server()
         if self.logger:
             self.logger.info( 'Ingesting MP {} to Server {}'.format(mp_id, server) )
-        return self.__call('POST', INGEST_ENDPOINT, {}, {}, postdict.items(), False, server, False)
+        return self.__call('POST', INGEST_ENDPOINT, {}, {}, list(postdict.items()), False, server, False)
 
 
     def getseries(self, **query):

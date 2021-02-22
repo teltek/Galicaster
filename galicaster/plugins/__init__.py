@@ -25,7 +25,7 @@ def init():
     conf = context.get_conf()
 
     list_plugins = conf.get_section('plugins')
-    for plugin, v in list_plugins.iteritems():
+    for plugin, v in list(list_plugins.items()):
         if v.lower() == 'true':
             for prefix in prefixes:
                 plugin_type = prefixes[prefix]
@@ -38,7 +38,7 @@ def init():
                     loaded.append(name)
                     break
                 except Exception as e:
-                    if e.message == 'No module named {}'.format(plugin):
+                    if e.msg == 'No module named {}'.format(plugin):
                         logger.warning('{} plugin {} not found'
                                        .format(plugin_type, plugin))
                     else:

@@ -11,7 +11,7 @@
 }
 
 /* BUTTONS */
-GtkButton:insensitive{
+GtkButton:disabled{
 	opacity: 0.5;
 }
 

@@ -17,7 +17,7 @@ import re
 import itertools
 import glob, json
 import shutil
-import ConfigParser
+import configparser
 
 from galicaster import __version__
 from galicaster.mediapackage import mediapackage
@@ -86,8 +86,8 @@ class Repository(object):
 
         info_repo_file = os.path.join(self.root, self.attach_dir, 'info.ini')
         if not os.path.isfile(info_repo_file):
-            with open(info_repo_file, 'wb') as configfile:
-                conf = ConfigParser.ConfigParser()
+            with open(info_repo_file, 'w') as configfile:
+                conf = configparser.ConfigParser()
                 conf.add_section('repository')
                 conf.set('repository', 'version', __version__)
                 conf.set('repository', 'hostname', hostname)
@@ -124,9 +124,9 @@ class Repository(object):
             if info['uri']:
                 ca_prop = os.path.join(info['uri'], "org.opencastproject.capture.agent.properties")
                 if os.path.exists(ca_prop):
-                    with open(ca_prop, 'rb') as fsrc:
+                    with open(ca_prop, 'r') as fsrc:
                         dst = os.path.join(self.get_rectemp_path(), "org.opencastproject.capture.agent.properties")
-                        with open(dst, 'wb') as fdst:
+                        with open(dst, 'w') as fdst:
                             self.logger.info("Copying file {} to {}".format(ca_prop, dst))
                             shutil.copyfileobj(fsrc, fdst)
                             os.fsync(fdst)
@@ -153,9 +153,9 @@ class Repository(object):
 
             # Copy the capture agent properties from the original mediapackage folder (for scheduled recordings)
             if ca_prop and os.path.exists(ca_prop):
-                with open(ca_prop, 'rb') as fsrc:
+                with open(ca_prop, 'r') as fsrc:
                     dst = os.path.join(mp.getURI(), "org.opencastproject.capture.agent.properties")
-                    with open(dst, 'wb') as fdst:
+                    with open(dst, 'w') as fdst:
                         self.logger.info("Copying file {} to {}".format(ca_prop, dst))
                         shutil.copyfileobj(fsrc, fdst)
                         os.fsync(fdst)
@@ -280,7 +280,7 @@ class Repository(object):
         if mp.status > mediapackage.FAILED:
             mp.status = mediapackage.RECORDED
             change = True
-        for (op_name, op_value) in mp.operations.iteritems():
+        for (op_name, op_value) in list(mp.operations.items()):
             if op_value in [mediapackage.OP_PROCESSING, mediapackage.OP_PENDING]:
                 mp.setOpStatus(op_name, mediapackage.OP_FAILED)
                 change = True
@@ -313,7 +313,7 @@ class Repository(object):
             """
             return mp.status == status
 
-        next = filter(is_valid, self.__list.values())
+        next = list(filter(is_valid, list(self.__list.values())))
         return next
 
 
@@ -335,7 +335,7 @@ class Repository(object):
             """
             return (mp.getOpStatus(job) == status)
 
-        next = filter(is_valid, self.__list.values())
+        next = list(filter(is_valid, list(self.__list.values())))
         return next
 
 
@@ -351,14 +351,14 @@ class Repository(object):
         Returns:
             List[Mediapackage]: list of all the mediapackages in the repository.
         """
-        return self.__list.values()
+        return list(self.__list.values())
 
     def items(self):
         """Gets all the mediapackages from the repository and its identifiers as a list of pairs.
         Returns:
             List[(str,Mediapackage)]: the complete list of pairs (mediapackage ID, mediapackage) in the repository.
         """
-        return self.__list.items()
+        return list(self.__list.items())
 
     def iteritems(self):
         """Gets a generator of a list with all the mediapackages from the repository and its identifiers as a list of pairs.
@@ -367,7 +367,7 @@ class Repository(object):
         """
         # Avoid error: dictionary changed size during iteration
         to_return = self.__list.copy()
-        return to_return.iteritems()
+        return iter(list(to_return.items()))
 
     def __iter__(self):
         """Allows the Repository to be iterable so that it's possible to obtain a list of mediapackages identifiers in the repository
@@ -422,7 +422,7 @@ class Repository(object):
             """
             return mp.getDate() > datetime.datetime.utcnow()
 
-        next = filter(is_future, self.__list.values())
+        next = list(filter(is_future, list(self.__list.values())))
         next = sorted(next, key=lambda mp: mp.startTime)
         if limit > 0:
             next = next[0:limit]
@@ -435,7 +435,7 @@ class Repository(object):
             Mediapackage: the next mediapackage to be recorded.
         """
         next = None
-        for mp in self.__list.values():
+        for mp in list(self.__list.values()):
             if mp.getDate() > datetime.datetime.utcnow():
                 if next is None:
                     next = mp
@@ -463,7 +463,7 @@ class Repository(object):
             """
             return True if mp.status == RECORDED else False
 
-        next = filter(is_recorded, self.__list.values())
+        next = list(filter(is_recorded, list(self.__list.values())))
         mps_sorted = sorted(next, key=lambda mp: (mp.getDate()), reverse=True)
 
         if mps_sorted:
@@ -488,7 +488,7 @@ class Repository(object):
             """
             return mp.getDate() < (datetime.datetime.utcnow() - datetime.timedelta(days=days))
 
-        next = filter(is_stale, self.__list.values())
+        next = list(filter(is_stale, list(self.__list.values())))
         next = sorted(next, key=lambda mp: mp.startTime)
         return next
 
@@ -510,7 +510,7 @@ class Repository(object):
         Returns:
             Bool: True if the mediapackage mp is in the repository. False otherwise.
         """
-        return self.__list.has_key(mp.getIdentifier())
+        return mp.getIdentifier() in self.__list
 
 
     def has_key(self, key):
@@ -520,7 +520,7 @@ class Repository(object):
         Returns:
             Bool: True if the repository has a mediapackage with the ID key. False otherwise.
         """
-        return self.__list.has_key(key)
+        return key in self.__list
 
 
     def add(self, mp):
@@ -585,7 +585,7 @@ class Repository(object):
 
         if mp.manual and not mp.getSeriesIdentifier():
             conf = context.get_conf()
-            if conf.get('series','default'):
+            if conf.has('series','default'):
                 series.setSeriebyId(mp, conf.get('series','default'))
 
         mp.forceDuration(duration)
@@ -666,7 +666,7 @@ class Repository(object):
             """
             return mp.getDate() > datetime.datetime.utcnow()
 
-        next = filter(is_future, self.__list.values())
+        next = list(filter(is_future, list(self.__list.values())))
         next = sorted(next, key=lambda mp: mp.startTime)
         if limit > 0:
             next = next[0:limit]
