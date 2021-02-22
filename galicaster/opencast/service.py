@@ -76,7 +76,7 @@ class OCService(object):
         self.dispatcher.connect('init', self.on_start)
         self.dispatcher.connect("quit", self.on_quit)
 
-        self.t_stop = None
+        self.t_stop = 0
 
         self.mp_rec = None
         self.last_events = self.init_last_events()
