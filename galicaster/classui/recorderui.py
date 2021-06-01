@@ -26,6 +26,7 @@ from gi.repository import GObject
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib
 from gi.repository import Pango
 import datetime
+import time
 
 from galicaster.utils.miscellaneous import get_footer
 from galicaster.core import context
@@ -525,6 +526,9 @@ class RecorderClassUI(Gtk.Box):
 
     def event_change_mode(self, orig, old_state, new_state):
         """Handles the focus or the Rercording Area, launching messages when focus is recoverde"""
+
+        if not self.conf.get_boolean("basic", "admin"):
+            time.sleep(0.1)
         if new_state == 0:
             self.focus_is_active = True
             self.recorder.mute_preview(False)
@@ -534,7 +538,6 @@ class RecorderClassUI(Gtk.Box):
         if old_state == 0:
             self.focus_is_active = False
             self.recorder.mute_preview(True)
-
 
     def change_mode(self, button):
         """GUI callback Launch the signal to change to another area"""
