@@ -18,24 +18,14 @@ ConfigParser.ConfigParser not in valida to read no section ini file.
 from os import path
 import configparser
 
-class FakeSecHead(object):
-    def __init__(self, fp):
-        self.fp = fp
-        self.sechead = '[asection]\n'
 
-    def readline(self):
-        if self.sechead:
-            try: return self.sechead
-            finally: self.sechead = None
-        else: 
-            return self.fp.readline()
-
-
-def read_ini(f):
-    c = configparser.ConfigParser()
-    c.optionxform = str # To avoid lower in INI keys (trimHold no trimhold)
-    c.readfp(FakeSecHead(open(f)))
-    return c.items('asection')
+def read_file(f):
+    params = {}
+    with open(f) as file:
+        for line in file:
+            name, val = line.partition("=")[::2]
+            params[name.strip()] = val.strip()
+    return params
 
 
 def _getElementAbsPath(name, base_path):

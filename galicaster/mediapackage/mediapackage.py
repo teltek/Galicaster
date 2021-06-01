@@ -24,7 +24,7 @@ import time
 import os
 from datetime import datetime
 from xml.dom import minidom
-from galicaster.mediapackage.utils import _checknget, read_ini
+from galicaster.mediapackage.utils import _checknget, read_file
 
 from galicaster.utils.mediainfo import get_duration
 from galicaster.utils.i18n import _
@@ -1439,7 +1439,6 @@ class Mediapackage(object):
 
 
     def getOCCaptureAgentProperty(self, name):
-        # FIXME refactor
         """Tries the value of a property in the opencast's configuration file.
         If any error is catched, it returns none.
         Args:
@@ -1449,14 +1448,13 @@ class Mediapackage(object):
         """
         try:
             attach = self.getAttachment('org.opencastproject.capture.agent.properties')
-            values = dict(read_ini(attach.getURI()))
+            values = read_file(attach.getURI())
             return values[name].lower()
         except Exception:
             return None
 
 
     def getOCCaptureAgentProperties(self):
-        # FIXME refactor
         """Tries to get the properties of the opencast's configuration file.
         If any error is catched, it returns an empty dictionary.
         Returns:
@@ -1464,7 +1462,7 @@ class Mediapackage(object):
         """
         try:
             attach = self.getAttachment('org.opencastproject.capture.agent.properties')
-            return dict(read_ini(attach.getURI()))
+            return read_file(attach.getURI())
         except Exception:
             return {}
 
