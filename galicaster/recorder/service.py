@@ -69,6 +69,7 @@ class RecorderService(object):
         self.__create_drawing_areas_func = None
         self.__handle_recover_id = None
         self.autorecover = autorecover
+        self.title_standin = None
 
         self.logger.info("Autorecover mode: {}".format(self.autorecover))
 
@@ -316,6 +317,8 @@ class RecorderService(object):
         """Proxy function to get the recorder time"""
         return self.recorder.get_recorded_time() if self.recorder else 0
 
+    def set_title_standin(self, title):
+        self.title_standin = title
 
     def _handle_error(self, origin, error_msg):
         self.logger.error("Handle error ({})". format(error_msg))
