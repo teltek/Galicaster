@@ -166,12 +166,10 @@ def operationt(op, mpid):
 
 @route('/screen')
 def screen():
-    response.content_type = 'image/png'
-    pb = get_screenshot_as_pixbuffer()
+    screenshot = get_screenshot_as_pixbuffer()
     ifile = tempfile.NamedTemporaryFile(suffix='.png')
-    pb.savev(ifile.name, "png", [], ["100"])
-    pb= open(ifile.name, 'r')
     if pb:
+        screenshot.save(ifile.name)
         return static_file(os.path.basename(ifile.name), root=os.path.dirname(ifile.name), mimetype='image/png')
     else:
         abort(500, "couldn't take screenshot")

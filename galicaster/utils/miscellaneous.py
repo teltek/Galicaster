@@ -16,6 +16,7 @@ import datetime
 import os
 import os.path
 import traceback
+import pyautogui
 
 from gi.repository import Gdk
 from galicaster import __version__
@@ -24,11 +25,8 @@ from galicaster.core import context
 conf = context.get_conf()
 
 def get_screenshot_as_pixbuffer():
-    """makes screenshot of the current root window, yields Gtk.Pixbuf"""
-    window = Gdk.get_default_root_window()
-    x, y, width, height = window.get_geometry()
-    pb = Gdk.pixbuf_get_from_window(window, x, y, width, height)
-    return pb
+    screenshot = pyautogui.screenshot()
+    return screenshot
 
 
 def get_footer():

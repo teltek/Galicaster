@@ -40,7 +40,7 @@ class TestFunctions(TestCase):
     def test_screenshot(self):
         pb = miscellaneous.get_screenshot_as_pixbuffer()
         ifile = tempfile.NamedTemporaryFile(suffix='.png')
-        pb.savev(ifile.name, "png", [], ["100"])
+        pb.save(ifile.name)
         imagefile = open(ifile.name, 'r')
         self.assertIsNotNone(imagefile)
 
