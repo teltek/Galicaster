@@ -168,7 +168,7 @@ def operationt(op, mpid):
 def screen():
     screenshot = get_screenshot_as_pillow()
     ifile = tempfile.NamedTemporaryFile(suffix='.png')
-    if pb:
+    if screenshot:
         screenshot.save(ifile.name)
         return static_file(os.path.basename(ifile.name), root=os.path.dirname(ifile.name), mimetype='image/png')
     else:
