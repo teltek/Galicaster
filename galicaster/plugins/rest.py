@@ -17,7 +17,7 @@ import json
 import math
 import threading
 import tempfile
-from bottle import route, run, response, abort, request, install, HTTPError
+from bottle import route, run, response, abort, request, install, HTTPError, static_file
 from gi.repository import GObject, Gdk, GLib
 
 from galicaster.core import context
@@ -25,7 +25,7 @@ from galicaster.mediapackage.serializer import set_manifest
 from galicaster.opencast import series
 from galicaster.utils import readable
 from galicaster.utils import ical
-from galicaster.utils.miscellaneous import get_screenshot_as_pixbuffer
+from galicaster.utils.miscellaneous import get_screenshot_as_pillow, get_screenshot_as_pixbuffer
 
 """
 Description: Galicaster REST endpoint using bottle micro web-framework.
@@ -166,15 +166,13 @@ def operationt(op, mpid):
 
 @route('/screen')
 def screen():
-    response.content_type = 'image/png'
-    pb = get_screenshot_as_pixbuffer()
+    screenshot = get_screenshot_as_pillow()
     ifile = tempfile.NamedTemporaryFile(suffix='.png')
-    pb.savev(ifile.name, "png", [], ["100"])
-    pb= open(ifile.name, 'r')
-    if pb:
-        return pb
+    if screenshot:
+        screenshot.save(ifile.name)
+        return static_file(os.path.basename(ifile.name), root=os.path.dirname(ifile.name), mimetype='image/png')
     else:
-        return "Error"
+        abort(500, "couldn't take screenshot")
 
 @route('/logstale')
 def logstale():

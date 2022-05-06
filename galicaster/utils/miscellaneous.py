@@ -16,6 +16,7 @@ import datetime
 import os
 import os.path
 import traceback
+import pyautogui
 
 from gi.repository import Gdk
 from galicaster import __version__
@@ -30,6 +31,9 @@ def get_screenshot_as_pixbuffer():
     pb = Gdk.pixbuf_get_from_window(window, x, y, width, height)
     return pb
 
+def get_screenshot_as_pillow():
+    screenshot = pyautogui.screenshot()
+    return screenshot
 
 def get_footer():
     return "Galicaster "+ __version__ + "  -  " + conf.get_hostname()
