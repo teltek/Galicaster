@@ -31,22 +31,22 @@ all:
 	@echo 'make doblecheck              - Check the python source code (using pyflakes)'
 	@echo 'make pep8                    - Run PEP8 compliance tests(using pep8)'
 test:
-	nosetests --all-modules -a '!nodefault'
+	nosetests3 --all-modules -a '!nodefault'
 test-travis: 
 	nosetests3 --all-modules -a '!nodefault,!notravis' --with-coverage --cover-inclusive --cover-package=galicaster
 test-with-coverage:
-	nosetests --all-modules -a '!nodefault' --with-coverage --cover-inclusive --cover-package=galicaster
+	nosetests3 --all-modules -a '!nodefault' --with-coverage --cover-inclusive --cover-package=galicaster
 test-with-coverage-html:
-	nosetests --all-modules -a '!nodefault' --with-coverage --cover-inclusive --cover-package=galicaster --cover-html
+	nosetests3 --all-modules -a '!nodefault' --with-coverage --cover-inclusive --cover-package=galicaster --cover-html
 test-opencast:
-	nosetests --all-modules -a 'opencast'
+	nosetests3 --all-modules -a 'opencast'
 test-recorder:
-	nosetests --all-modules -a 'recorder'
+	nosetests3 --all-modules -a 'recorder'
 	#python -m unittest tests.recorder.recorder
 test-functional:
-	nosetests --all-modules -a 'functional'
+	nosetests3 --all-modules -a 'functional'
 test-all:
-	nosetests --all-modules --no-skip
+	nosetests3 --all-modules --no-skip
 check:
 	flake8 --ignore=E,W --builtins="int,long,unicode" --format pylint `find galicaster -name '*.py'`
 doblecheck:

@@ -25,7 +25,7 @@ from galicaster.mediapackage.serializer import set_manifest
 from galicaster.opencast import series
 from galicaster.utils import readable
 from galicaster.utils import ical
-from galicaster.utils.miscellaneous import get_screenshot_as_pixbuffer
+from galicaster.utils.miscellaneous import get_screenshot_as_pillow, get_screenshot_as_pixbuffer
 
 """
 Description: Galicaster REST endpoint using bottle micro web-framework.
@@ -166,7 +166,7 @@ def operationt(op, mpid):
 
 @route('/screen')
 def screen():
-    screenshot = get_screenshot_as_pixbuffer()
+    screenshot = get_screenshot_as_pillow()
     ifile = tempfile.NamedTemporaryFile(suffix='.png')
     if pb:
         screenshot.save(ifile.name)
