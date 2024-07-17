@@ -97,15 +97,15 @@ def load_series_from_file():
 def parse_json_series(json_series):
     series = {}
     #{"identifier": "2886ab13-e292-4272-9361-7d055bf6c14c", "created": "2019-12-02T07:09:26Z", "title": "18/19 Better Lives"}]
-    for term in ['id','creation_date','title']:
-        try:
-            series[term] = json_series[term]
-        except (KeyError, IndexError):
-            # Ignore non-existant items
-            # TODO Log the exception
-            pass
-
-    return (series['id'], series)
+    try:
+        series['identifier'] = json_series['id']
+        series['created'] = json_series['creation_date']
+        series['title'] = json_series['title']
+    except (KeyError, IndexError):
+        # Ignore non-existant items
+        # TODO Log the exception
+        pass
+    return (series['identifier'], series)
 
 
 def transform(a):
