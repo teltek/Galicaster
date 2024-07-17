@@ -20,6 +20,7 @@ import pycurl
 from collections import OrderedDict
 import urllib.parse
 import urllib.request, urllib.parse, urllib.error
+from packaging.version import Version
 from galicaster.utils.miscellaneous import get_timezone
 
 try:
@@ -35,10 +36,12 @@ SETSTATE_ENDPOINT = 'capture-admin/agents/{hostname}'
 SETCONF_ENDPOINT = 'capture-admin/agents/{hostname}/configuration'
 INGEST_ENDPOINT = 'ingest/addZippedMediaPackage'
 ICAL_ENDPOINT = 'recordings/calendars'
-SERIES_ENDPOINT = 'series/series.json'
+#TODO use external API
+SERIES_ENDPOINT = 'admin-ng/series/series.json'
 SERVICE_REGISTRY_ENDPOINT = 'services/available.json'
 SEARCH_ENDPOINT = 'search/episode.json'
 WORKFLOWS_ENDPOINT = 'workflow/definitions.json'
+HEALTH_ENDPOINT = 'info/health'
 
 SEARCH_SERVICE_TYPE = 'org.opencastproject.search'
 INGEST_SERVICE_TYPE = 'org.opencastproject.ingest'
@@ -364,9 +367,23 @@ class OCHTTPClient(object):
 
     def getseries(self, **query):
         """ Get series according to the page count and offset provided"""
+        series_endpoint = SERIES_ENDPOINT
+        try:
+            version = Version(self.get_opencast_version())
+        except Exception as exc:
+            self.logger and self.logger.error("Getting Opencast Version %s",version)
+            raise Exception
 
-        return self.__call('GET', SERIES_ENDPOINT, query_params = query)
+        if (version < Version('6.0.0')):
+            self.logger and self.logger.error("Opencast %s version not suported",version)
+            raise Exception
+        if self.logger:
+            self.logger.info( 'Getting  series from Server %s', self.server)
+        return self.__call('GET', series_endpoint, query_params = query)
 
+
+    def countSeries(self):
+        return self.__call('GET', 'series/count')
 
     def get_workflows(self, server=None):
         """ Get workflow names """
@@ -392,6 +409,10 @@ class OCHTTPClient(object):
                                               "title" : d["title"]})
 
         return workflows
+
+    def get_opencast_version(self):
+        info_health = json.loads(self.__call('GET', HEALTH_ENDPOINT))
+        return info_health['releaseId'].replace(".SNAPSHOT","")
 
 
     def find_between(self, s, first, last):
